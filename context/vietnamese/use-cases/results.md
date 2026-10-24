@@ -155,7 +155,7 @@ Ban tổ chức / Người quản lý mùa giải.
 1. Trận chưa kết thúc hoặc biên bản không hợp lệ: từ chối xác nhận.
 2. Người dùng không đủ quyền: từ chối thao tác.
 3. Dữ liệu kết quả thay đổi đồng thời: yêu cầu tải lại và kiểm tra.
-4. Lỗi khi cập nhật kết quả, bảng xếp hạng hoặc thống kê: không để lại trạng thái chính thức nhưng các dữ liệu phụ thuộc vẫn cũ.
+4. Lỗi khi cập nhật kết quả, bảng xếp hạng hoặc thống kê: không để lại trạng thái chính thức khi các dữ liệu phụ thuộc vẫn cũ.
 
 ## UC19
 
