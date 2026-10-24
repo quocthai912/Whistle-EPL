@@ -126,7 +126,7 @@ Bản v1 được kiểm tra bằng đọc đối chiếu Chương 1-2, bảng �
 
 Kết quả kiểm tra cơ học của bản v1 trước chuyển đổi ngày 24/10/2026: 14 tệp Markdown thuộc gói/hướng dẫn được kiểm tra; 134 liên kết nội bộ và fragment đều có đích khi bàn giao. Có đúng một bản ghi cho mỗi UC01-UC25, mỗi bản đủ bảy trường mô tả/tác nhân/tiền điều kiện/hậu điều kiện/luồng chính/thay thế/ngoại lệ; kiểm tra trước đây so khớp 175 trường với văn bản trích xuất, nhưng chưa phát hiện nhãn bảng bị lệch do thứ tự đọc. Khi chuyển song ngữ, đã đối chiếu ô bảng PDF để đặt lại đúng tiêu đề, tác nhân, điều kiện và luồng, giữ nguyên nội dung. Kết quả cũ không chứng minh việc phân nhóm ô là đúng. Có đủ 37 mã điều khoản riêng biệt, 34 mã chất lượng riêng biệt và 10 Phase đủ tám thành phần bắt buộc. `git diff --check` đạt; không có PDF, script, Spec/Plan/Tasks hoặc mã chức năng mới trong Context. Hướng dẫn GitHub Issues/SDD và domain hiện có được giữ lại.
 
-Chưa kiểm chứng hoạt động sản phẩm, bộ kiểm thử ứng dụng, hiệu năng, bảo mật, tương thích hay khôi phục vì checkout chưa có triển khai. Không kiểm tra các nhánh/checkout khác, không kiểm tra Issues từ xa và không thay đổi tracker. Không khẳng định số liệu thực tế EPL ngoài PDF còn đúng ở thời điểm hiện tại. Context chờ nhóm trưởng rà soát/phê duyệt, bao gồm cách chia Phase và quyết định cần xử lý tại v2.
+Chưa kiểm chứng hoạt động sản phẩm, bộ kiểm thử ứng dụng, hiệu năng, bảo mật, tương thích hay khôi phục vì checkout chưa có triển khai. Không kiểm tra các nhánh/checkout khác, không kiểm tra Issues từ xa và không thay đổi tracker. Không khẳng định số liệu thực tế EPL ngoài PDF còn đúng ở thời điểm hiện tại. Tại thời điểm kiểm tra trước phê duyệt đó, Context còn chờ nhóm trưởng rà soát/phê duyệt, bao gồm cách chia Phase và quyết định cần xử lý tại v2.
 
 ## Kiểm tra chuyển đổi song ngữ
 
@@ -136,4 +136,14 @@ Chuyển đổi ngày 24/10/2026: mỗi ngôn ngữ có 13 tệp tương ứng, 
 
 Hai Progress Checker có cùng 10 Phase và 79 checkbox theo cùng thứ tự/ý nghĩa, đều `[ ]`; trạng thái từng Phase vẫn `NOT_STARTED`, theo bằng chứng kiểm kê đã ghi, không do thiếu dấu checkbox. Mỗi Phase tách chuẩn bị Specification/Plan/Tasks khỏi các nhóm chức năng, kiểm thử và nghiệm thu cụ thể. Hai bản là một sổ tiến độ với hai ngôn ngữ; thay đổi sau này phải đồng bộ cùng bằng chứng. Checklist không thay thế `tasks.md` hoặc GitHub Issues.
 
-Kiểm tra cấu trúc, mã tham chiếu, bảng/danh sách, trạng thái và liên kết nội bộ trên 26 tệp Context cùng AGENTS/domain/issue-tracker; không có liên kết nội bộ hỏng. Các ghi nhận kiểm tra v1 trước chuyển đổi ở trên được giữ như lịch sử, không dùng số liên kết cũ để mô tả gói song ngữ. Dịch thuật đã được đối chiếu nội dung; kiểm tra cơ học không tự chứng minh tương đương ngữ nghĩa. Nhóm trưởng vẫn là người rà soát/phê duyệt cuối; 16 điểm nghiệp vụ/thiết kế mở chưa được giải quyết trong lần chuyển đổi này. Không xác minh chức năng sản phẩm hay kết nối nguồn ngoài trong công việc dịch/tái cấu trúc.
+Kiểm tra cấu trúc, mã tham chiếu, bảng/danh sách, trạng thái và liên kết nội bộ trên 26 tệp Context cùng AGENTS/domain/issue-tracker; không có liên kết nội bộ hỏng. Các ghi nhận kiểm tra v1 trước chuyển đổi ở trên được giữ như lịch sử, không dùng số liên kết cũ để mô tả gói song ngữ. Dịch thuật đã được đối chiếu nội dung; kiểm tra cơ học không tự chứng minh tương đương ngữ nghĩa. Tại thời điểm bàn giao chuyển đổi, nhóm trưởng vẫn là người rà soát/phê duyệt cuối; 16 điểm nghiệp vụ/thiết kế mở chưa được giải quyết trong lần chuyển đổi này. Không xác minh chức năng sản phẩm hay kết nối nguồn ngoài trong công việc dịch/tái cấu trúc.
+
+## Phê duyệt chính thức v1
+
+**Phiên bản:** `v1` | **Trạng thái:** `APPROVED` | **Người phê duyệt:** Nhóm trưởng | **Ngày phê duyệt:** `2026-10-24`
+
+**Commit được rà soát:** `adad61f2a0625d62538aa10ce0ec8b6a91defa53` | **Nhánh:** `docs/build-agent-context`
+
+Nhóm trưởng đã phê duyệt nền tảng yêu cầu nghiệp vụ, cấu trúc tài liệu, khả năng truy vết và phương án phân chia Phase sau rà soát chuyên sâu cuối cùng. Phê duyệt này không phê duyệt Context v2 hoặc các lựa chọn công nghệ, kiến trúc, ERD, cấu trúc cơ sở dữ liệu hay API chưa chốt. Cả 16 quyết định mở vẫn ở trạng thái OPEN; trạng thái Phase và checkbox không thay đổi. Đây không phải xác nhận phần mềm đã được triển khai hoặc nghiệm thu.
+
+Nhóm trưởng đã chấp nhận rủi ro đường dẫn cục bộ còn trong lịch sử Git và yêu cầu không xử lý thêm vấn đề này. Việc chấp nhận không yêu cầu viết lại lịch sử hoặc khắc phục bổ sung. Các ghi nhận kiểm tra và chuyển đổi ở trên mô tả đúng thời điểm lịch sử, không phải trạng thái phê duyệt hiện tại.

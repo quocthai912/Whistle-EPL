@@ -1,6 +1,12 @@
 # Progress Checker - Phát triển và nghiệm thu theo Phase
 
-Đây là **phân rã phạm vi dự kiến của Context v1, chờ nhóm trưởng duyệt**, không phải Spec/Plan/Task. Yêu cầu gốc tại [nghiệp vụ](business.md), [chất lượng](quality.md), [UC](README.md); ma trận đầy đủ tại [sources.md](sources.md). Mã PHASE 1-PHASE 10 là mã tổ chức nội bộ, không có trong PDF. Mười Phase đều bắt buộc cho phạm vi hiện tại; tích hợp API ngoài ở TT-05 là điều kiện, không phát sinh Phase tích hợp bắt buộc.
+**Phiên bản:** `v1` | **Trạng thái:** `APPROVED` | **Người phê duyệt:** Nhóm trưởng | **Ngày phê duyệt:** `2026-10-24`
+
+**Commit được rà soát:** `adad61f2a0625d62538aa10ce0ec8b6a91defa53` | **Nhánh:** `docs/build-agent-context`
+
+Đây là **phân rã phạm vi của Context v1 đã được phê duyệt**, không phải Spec/Plan/Task. Yêu cầu gốc tại [nghiệp vụ](business.md), [chất lượng](quality.md), [UC](README.md); ma trận đầy đủ tại [sources.md](sources.md). Mã PHASE 1-PHASE 10 là mã tổ chức nội bộ, không có trong PDF. Mười Phase đều bắt buộc cho phạm vi hiện tại; tích hợp API ngoài ở TT-05 là điều kiện, không phát sinh Phase tích hợp bắt buộc.
+
+Nhóm trưởng đã phê duyệt nền tảng yêu cầu nghiệp vụ, cấu trúc tài liệu, khả năng truy vết và phương án phân chia Phase sau rà soát chuyên sâu cuối cùng. Phê duyệt này không phê duyệt Context v2 hoặc các lựa chọn công nghệ, kiến trúc, ERD, cấu trúc cơ sở dữ liệu hay API chưa chốt. Cả 16 quyết định mở vẫn ở trạng thái OPEN; trạng thái Phase và checkbox không thay đổi. Đây không phải xác nhận phần mềm đã được triển khai hoặc nghiệm thu.
 
 ## Trạng thái và bằng chứng
 
@@ -28,7 +34,7 @@ Tạo Context/Specification/Plan/Tasks không hoàn thành chức năng. Đóng 
 
 ## Chọn Phase và thứ tự
 
-**G0 - Tiên quyết ngoài Phase triển khai:** nhóm trưởng phê duyệt Context v1, hoàn thiện/duyệt các quyết định v2 cần cho Phase (đặc biệt O12 về nền tảng), và giải quyết các điểm mở làm thay đổi đặc tả của Phase. G0 là điều kiện, không phải Phase phần mềm đã hoàn thành vì đã viết tài liệu. Chưa có Phase nào được khẳng định sẵn sàng triển khai khi G0 chưa đáp ứng.
+**G0 - Tiên quyết ngoài Phase triển khai:** nhóm trưởng phê duyệt Context v1, hoàn thiện/duyệt các quyết định v2 cần cho Phase (đặc biệt O12 về nền tảng), và giải quyết các điểm mở làm thay đổi đặc tả của Phase. Điều kiện phê duyệt v1 đã được đáp ứng theo thông tin trên; các quyết định v2 cần thiết và điều kiện G0 khác vẫn chưa được đáp ứng. G0 là điều kiện, không phải Phase phần mềm đã hoàn thành vì đã viết tài liệu. Chưa có Phase nào được khẳng định sẵn sàng triển khai khi toàn bộ G0 chưa đáp ứng.
 
 Sau G0, chọn Phase đủ phụ thuộc → Specification theo Context duyệt → Plan bằng Spec Kit → Tasks và phụ thuộc → duyệt Tasks → mỗi Task một GitHub Issue theo [quy ước](../../docs/agents/issue-tracker.md) → Implementation → Testing & Acceptance → `COMPLETED`. Chỉ bắt đầu bước phụ thuộc khi có đầu vào phù hợp; lập tài liệu cho Phase chưa giải quyết blocker không giải phóng triển khai.
 

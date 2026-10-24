@@ -1,6 +1,12 @@
 # Progress Checker - Phase development and acceptance
 
-This is **Context v1's proposed scope decomposition, awaiting team leader approval**, not a Spec/Plan/Task. Source requirements are in [business](business.md), [quality](quality.md), and [UC navigation](README.md); the full matrix is in [sources.md](sources.md). PHASE 1-PHASE 10 are internal organizational codes absent from the PDF. All ten Phases are mandatory for the current scope; TT-05 external API integration is conditional and does not create a mandatory integration Phase.
+**Version:** `v1` | **Status:** `APPROVED` | **Approved by:** Team Leader | **Approval Date:** `2026-10-24`
+
+**Reviewed Commit:** `adad61f2a0625d62538aa10ce0ec8b6a91defa53` | **Branch:** `docs/build-agent-context`
+
+This is **Context v1's approved scope decomposition**, not a Spec/Plan/Task. Source requirements are in [business](business.md), [quality](quality.md), and [UC navigation](README.md); the full matrix is in [sources.md](sources.md). PHASE 1-PHASE 10 are internal organizational codes absent from the PDF. All ten Phases are mandatory for the current scope; TT-05 external API integration is conditional and does not create a mandatory integration Phase.
+
+The team leader approved the business-requirements foundation, document structure, traceability, and Phase decomposition after Final Deep Review. This approval does not approve Context v2 or unsettled technology, architecture, ERD, database schema, or API choices. All 16 Open Decisions remain OPEN; Phase statuses and checkboxes are unchanged. It does not establish software implementation or acceptance.
 
 ## Status and evidence
 
@@ -28,7 +34,7 @@ Creating Context/Specification/Plan/Tasks does not complete functionality. Closi
 
 ## Phase selection and ordering
 
-**G0 - Prerequisites outside implementation Phases:** the team leader approves Context v1, finalizes/approves the v2 decisions needed by the Phase (especially O12 for the foundation), and resolves open points affecting its Specification. G0 is a condition, not a software Phase completed by writing documents. No Phase is asserted ready for implementation until G0 is satisfied.
+**G0 - Prerequisites outside implementation Phases:** the team leader approves Context v1, finalizes/approves the v2 decisions needed by the Phase (especially O12 for the foundation), and resolves open points affecting its Specification. The v1 approval condition is satisfied by the approval recorded above; the required v2 decisions and other G0 conditions remain outstanding. G0 is a condition, not a software Phase completed by writing documents. No Phase is asserted ready for implementation until G0 is fully satisfied.
 
 After G0, select a Phase with satisfied dependencies → Specification against approved Context → Plan using Spec Kit → Tasks and dependencies → Task approval → one GitHub Issue per Task under the [conventions](../../docs/agents/issue-tracker.md) → Implementation → Testing & Acceptance → `COMPLETED`. Begin dependent steps only with appropriate inputs; documenting a Phase with unresolved blockers does not release implementation.
 

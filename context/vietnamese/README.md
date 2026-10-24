@@ -1,6 +1,10 @@
 # Whistle-EPL Agent Context Package v1
 
-Trạng thái: **BẢN V1 CHỜ NHÓM TRƯỞNG RÀ SOÁT VÀ PHÊ DUYỆT**, ngày 24/10/2026 (Asia/Bangkok). Người có thẩm quyền hoàn thiện, phê duyệt v1 và v2 là nhóm trưởng. Đây là nền tảng nghiệp vụ cho Codex, Antigravity và thành viên viết Chương 3; chưa phải thiết kế hay bằng chứng sản phẩm đã tồn tại.
+**Phiên bản:** `v1` | **Trạng thái:** `APPROVED` | **Người phê duyệt:** Nhóm trưởng | **Ngày phê duyệt:** `2026-10-24`
+
+**Commit được rà soát:** `adad61f2a0625d62538aa10ce0ec8b6a91defa53` | **Nhánh:** `docs/build-agent-context`
+
+Nhóm trưởng đã phê duyệt nền tảng yêu cầu nghiệp vụ, cấu trúc tài liệu, khả năng truy vết và phương án phân chia Phase sau rà soát chuyên sâu cuối cùng. Phê duyệt này không phê duyệt Context v2 hoặc các lựa chọn công nghệ, kiến trúc, ERD, cấu trúc cơ sở dữ liệu hay API chưa chốt. Cả 16 quyết định mở vẫn ở trạng thái OPEN; trạng thái Phase và checkbox không thay đổi. Đây không phải xác nhận phần mềm đã được triển khai hoặc nghiệm thu. Nhóm trưởng tiếp tục giữ quyền phê duyệt v2. V1 là nền tảng nghiệp vụ đã được phê duyệt cho Codex, Antigravity và thành viên viết Chương 3.
 
 ## Nạp theo nhiệm vụ
 

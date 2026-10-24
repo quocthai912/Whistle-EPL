@@ -12,8 +12,14 @@ Read Vietnamese context only when requested by the user or when resolving
 a translation issue or business ambiguity against the source; do not load
 both language sets automatically. Project Phase IDs use `PHASE 1`, etc.;
 these are distinct from the internal phases of Spec Kit `tasks.md`.
-Context v1 is awaiting the team leader's approval; documentation does not
-establish implementation or authorize technical choices for Context v2.
+Context Package `v1` is `APPROVED` by Team Leader on `2026-10-24`.
+Reviewed Commit: `adad61f2a0625d62538aa10ce0ec8b6a91defa53`;
+Branch: `docs/build-agent-context`. Approval covers the business-requirements foundation,
+document structure, traceability, and Phase decomposition only. It satisfies
+only the v1 approval condition in G0; v2 decisions and implementation
+dependencies remain required. It does not approve Context v2, authorize
+unsettled technical choices, resolve Open Decisions, or establish software
+implementation or acceptance. Preserve Phase statuses and checkboxes.
 
 ### Human Documentation and bilingual maintenance
 

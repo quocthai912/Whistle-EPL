@@ -124,7 +124,7 @@ V1 was checked by reading Chapters 1-2, comparing specification tables to their 
 
 Mechanical checks of v1 before migration, dated 24/10/2026: 14 package/guidance Markdown files were checked; 134 internal links/fragments resolved at handover. There was one record per UC01-UC25, each with seven fields: description/actors/preconditions/postconditions/main/alternative/exception flows; the previous check compared these 175 fields with extracted text but did not detect table labels displaced by reading order. During bilingual migration, PDF table cells were checked to restore correct titles, actors, conditions, and flows while preserving content. The old result does not prove correct cell grouping. There were 37 distinct clause codes, 34 distinct quality codes, and 10 Phases with all eight required components. `git diff --check` passed; Context contained no PDF, script, Spec/Plan/Tasks, or new functional code. Existing GitHub Issues/SDD and domain guidance was retained.
 
-Product behavior, application tests, performance, security, compatibility, and recovery remain unverified because this checkout has no implementation. Other branches/checkouts and remote Issues were not inspected, and the tracker was not changed. No claim is made that real-world EPL facts outside the PDF remain current. Context awaits team leader review/approval, including Phase decomposition and v2 decisions.
+Product behavior, application tests, performance, security, compatibility, and recovery remain unverified because this checkout has no implementation. Other branches/checkouts and remote Issues were not inspected, and the tracker was not changed. No claim is made that real-world EPL facts outside the PDF remain current. At that pre-approval inspection, Context awaited team leader review/approval, including Phase decomposition and v2 decisions.
 
 ## Bilingual migration checks
 
@@ -134,5 +134,14 @@ Translations were checked section by section, table cell by table cell, and flow
 
 Both Progress Checkers have the same 10 Phases and 79 checkboxes in matching order/meaning, all `[ ]`; each Phase remains `NOT_STARTED` according to the recorded inventory evidence, not because boxes are unchecked. Each Phase separates Specification/Plan/Tasks preparation from its specific functional, testing, and acceptance groups. The two views form one Phase ledger and future updates must synchronize evidence. The checklist does not replace `tasks.md` or GitHub Issues.
 
-Structure, reference codes, tables/lists, statuses, and internal links were checked across 26 Context files plus AGENTS/domain/issue-tracker; no broken internal links were found. Pre-migration v1 check records above remain historical and their old link count does not describe the bilingual package. Translation content was reviewed; mechanical checks alone do not prove semantic equivalence. Final review/approval remains with the team leader; the 16 open business/design points were not resolved during migration. Product behavior and external-source connections were not verified during this translation/restructuring work.
+Structure, reference codes, tables/lists, statuses, and internal links were checked across 26 Context files plus AGENTS/domain/issue-tracker; no broken internal links were found. Pre-migration v1 check records above remain historical and their old link count does not describe the bilingual package. Translation content was reviewed; mechanical checks alone do not prove semantic equivalence. At migration handover, final review/approval remained with the team leader; the 16 open business/design points were not resolved during migration. Product behavior and external-source connections were not verified during this translation/restructuring work.
 
+## Official v1 approval
+
+**Version:** `v1` | **Status:** `APPROVED` | **Approved by:** Team Leader | **Approval Date:** `2026-10-24`
+
+**Reviewed Commit:** `adad61f2a0625d62538aa10ce0ec8b6a91defa53` | **Branch:** `docs/build-agent-context`
+
+The team leader approved the business-requirements foundation, document structure, traceability, and Phase decomposition after Final Deep Review. This approval does not approve Context v2 or unsettled technology, architecture, ERD, database schema, or API choices. All 16 Open Decisions remain OPEN; Phase statuses and checkboxes are unchanged. It does not establish software implementation or acceptance.
+
+The team leader accepted the residual local-path risk in Git History and explicitly requested no further action on it. This acceptance does not require history rewriting or additional remediation. Earlier check and migration records above describe their historical dates; they are not the current approval status.

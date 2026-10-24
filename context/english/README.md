@@ -1,6 +1,10 @@
 # Whistle-EPL Agent Context Package v1
 
-Status: **V1 DRAFT AWAITING TEAM LEADER REVIEW AND APPROVAL**, dated 24/10/2026 (Asia/Bangkok). The team leader has authority to finalize and approve v1 and v2. This is the business foundation for Codex, Antigravity, and members writing Chapter 3; it is neither a design nor evidence that the product already exists.
+**Version:** `v1` | **Status:** `APPROVED` | **Approved by:** Team Leader | **Approval Date:** `2026-10-24`
+
+**Reviewed Commit:** `adad61f2a0625d62538aa10ce0ec8b6a91defa53` | **Branch:** `docs/build-agent-context`
+
+The team leader approved the business-requirements foundation, document structure, traceability, and Phase decomposition after Final Deep Review. This approval does not approve Context v2 or unsettled technology, architecture, ERD, database schema, or API choices. All 16 Open Decisions remain OPEN; Phase statuses and checkboxes are unchanged. It does not establish software implementation or acceptance. The team leader retains approval authority for v2. V1 is the approved business foundation for Codex, Antigravity, and members writing Chapter 3.
 
 ## Load by task
 
