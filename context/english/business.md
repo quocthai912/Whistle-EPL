@@ -1,19 +1,19 @@
 # Business requirements, forms, and regulations
 
-Source: §1.2.1, Table 1.1, and §1.2.1.1 pp.6–11. The sections below retain PDF codes and do not add external EPL regulations. [Provenance](sources.md) · [Open decisions](open-decisions.md).
+Source: §1.2.1, Table 1.1, and §1.2.1.1 pp.6-11. The sections below retain PDF codes and do not add external EPL regulations. [Provenance](sources.md) · [Open decisions](open-decisions.md).
 
 ## Six business requirements
 
 | Original no. | Requirement | Forms | Regulations | Related UCs | Owning Phase |
 |---|---|---|---|---|---|
-| 1 | Receive registration applications | BM1 | QĐ1 | UC08–UC11; data from UC07, UC09, UC12 | PHASE 3 |
-| 2 | Create the match schedule | BM2 | QĐ2 | UC13–UC15 | PHASE 4; lookup in PHASE 6 |
-| 3 | Record match results | BM3 | QĐ3 | UC16–UC20 | PHASE 5 |
-| 4 | Look up competition information | BM4.1–BM4.4 | QĐ4 | UC15, UC21, UC23; season information in UC05 | PHASE 6 |
-| 5 | Generate competition reports | BM5.1–BM5.3 | QĐ5 | UC20, UC22 | PHASE 5 calculates statistics; PHASE 7 generates/exports reports |
+| 1 | Receive registration applications | BM1 | QĐ1 | UC08-UC11; data from UC07, UC09, UC12 | PHASE 3 |
+| 2 | Create the match schedule | BM2 | QĐ2 | UC13-UC15 | PHASE 4; lookup in PHASE 6 |
+| 3 | Record match results | BM3 | QĐ3 | UC16-UC20 | PHASE 5 |
+| 4 | Look up competition information | BM4.1-BM4.4 | QĐ4 | UC15, UC21, UC23; season information in UC05 | PHASE 6 |
+| 5 | Generate competition reports | BM5.1-BM5.3 | QĐ5 | UC20, UC22 | PHASE 5 calculates statistics; PHASE 7 generates/exports reports |
 | 6 | Change regulations | No separate form in Table 1.1 | QĐ6 | UC06 | PHASE 2 |
 
-Accounts/logs (PHASE 1), master data (PHASE 2), news (PHASE 8), data import/export (PHASE 9), and whole-system acceptance (PHASE 10) are traced to other sections of Chapters 1–2; they are not added as a seventh requirement in Table 1.1.
+Accounts/logs (PHASE 1), master data (PHASE 2), news (PHASE 8), data import/export (PHASE 9), and whole-system acceptance (PHASE 10) are traced to other sections of Chapters 1-2; they are not added as a seventh requirement in Table 1.1.
 
 ## Fields in the 10 forms
 
@@ -23,12 +23,12 @@ The columns and information below are business form content, not UI, schema, or 
 |---|---|---|
 | BM1 - Team Profile | 6 | Representative: Full name, Phone number, Contact address. Team: Team name, Home ground, Coach. Registration list: No., Player, Date of birth, Playing position, Shirt number, Registration category, Notes |
 | BM2 - Match Schedule | 7 | Match round, Season; No., Team 1 (Home), Team 2 (Away), Date - Time, Stadium |
-| BM3 - Match Result | 7–8 | Season, Match round, Date - Time, Team 1 (Home), Team 2 (Away), Final score, Stadium. Appearance list: No., Player, Team, Position, Shirt number. Goals: No., Player, Team, Goal type, Time. Cards: No., Player, Team, Card type, Time. Referee's signature |
+| BM3 - Match Result | 7-8 | Season, Match round, Date - Time, Team 1 (Home), Team 2 (Away), Final score, Stadium. Appearance list: No., Player, Team, Position, Shirt number. Goals: No., Player, Team, Goal type, Time. Cards: No., Player, Team, Card type, Time. Referee's signature |
 | BM4.1 - Competition Information Lookup | 8 | Competition name, Season, Number of participating clubs, Number of rounds, Total matches, Start - End dates |
 | BM4.2 - Team Information Lookup | 8 | Season; No., Team name, Head coach, Home ground, Number of players, Representative |
 | BM4.3 - Player Information Lookup | 9 | Season; No., Player, Date of birth, Registration category, Shirt number, Team name, Goals |
 | BM4.4 - Schedule and Results Lookup | 9 | Season; Round, Home team, Away team, Date - Time, Stadium, Score |
-| BM5.1 - Standings | 9–10 | Season, Date; Rank, Team, Matches, Wins, Draws, Losses, BT, BB, HS, Points |
+| BM5.1 - Standings | 9-10 | Season, Date; Rank, Team, Matches, Wins, Draws, Losses, BT, BB, HS, Points |
 | BM5.2 - Goalscorers List | 10 | Season, Date; No., Player name, Team name, Registration category, Total goals |
 | BM5.3 - Season Summary | 10 | Season, Report date; Champion, Runner-up, Third place; relegated clubs table: No., Standings position, Club name (three rows in the form); Top scorer, Golden Glove, Total competition goals |
 
@@ -38,7 +38,7 @@ The 37 clauses are transcribed from the PDF by group below. Default values follo
 
 ### QĐ1
 
-Source: §1.2.1.1.1, pp.6–7.
+Source: §1.2.1.1.1, pp.6-7.
 
 - **QĐ1.1:** Each participating club must have a registration application for each season, containing club information, its representative, and its player list.
 - **QĐ1.2:** Each club may register at most 25 players on its official squad list, including at most 17 players who do not meet the homegrown criteria.
@@ -82,7 +82,7 @@ Source: §1.2.1.1.4, p.9.
 
 ### QĐ5
 
-Source: §1.2.1.1.5, pp.10–11.
+Source: §1.2.1.1.5, pp.10-11.
 
 - **QĐ5.1:** Competition reports must be generated per season using confirmed match data and results. Standings and goalscorers lists reflect valid results at report-generation time.
 - **QĐ5.2:** Points are awarded as follows: win 3, draw 1, loss 0. Goal difference equals total goals scored minus total goals conceded.

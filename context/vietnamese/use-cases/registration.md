@@ -1,4 +1,4 @@
-# Mùa giải, quy định và đăng ký: UC05–UC11
+# Mùa giải, quy định và đăng ký: UC05-UC11
 
 [Điểm truy cập](../README.md) · [Nghiệp vụ/BM/QĐ](../business.md) · [Chất lượng](../quality.md) · [Điểm mở](../open-decisions.md)
 
@@ -8,7 +8,7 @@ Các bản ghi dưới đây chuyển bảng đặc tả từ PDF sang Markdown,
 
 **Quản lý mùa giải**
 
-Nguồn: §2.4.1.5, tr.77–78 (mô tả, bảng đặc tả và hình phân tích). Xem [cách đối chiếu PDF](../sources.md#pdf).
+Nguồn: §2.4.1.5, tr.77-78 (mô tả, bảng đặc tả và hình phân tích). Xem [cách đối chiếu PDF](../sources.md#pdf).
 
 **Bối cảnh nghiệp vụ:** Cho phép người có thẩm quyền tạo và quản lý thông tin các mùa giải Premier League. Mỗi mùa giải phải được nhận diện riêng để dữ liệu về câu lạc bộ tham dự, quy định, lịch thi đấu và kết quả không bị trộn lẫn giữa các mùa.
 
@@ -53,7 +53,7 @@ Người dùng chỉ tra cứu: hệ thống hiển thị thông tin mùa giải
 
 **Quản lý quy định mùa giải**
 
-Nguồn: §2.4.1.6, tr.79–82 (mô tả, bảng đặc tả và hình phân tích). Xem [cách đối chiếu PDF](../sources.md#pdf).
+Nguồn: §2.4.1.6, tr.79-82 (mô tả, bảng đặc tả và hình phân tích). Xem [cách đối chiếu PDF](../sources.md#pdf).
 
 **Bối cảnh nghiệp vụ:** Cho phép người có thẩm quyền quản lý các quy định áp dụng cho từng mùa giải. Những quy định này ảnh hưởng đến điều kiện đăng ký cầu thủ, thể thức thi đấu, cách ghi nhận sự kiện trận đấu, tính điểm và xếp hạng. Mọi thay đổi phải có thẩm quyền phù hợp, thời điểm hiệu lực và lịch sử để tránh làm sai lệch dữ liệu của các mùa đã hoàn tất.
 
@@ -86,7 +86,7 @@ Ban tổ chức / Người quản lý mùa giải.
 5. Người dùng nhập nội dung, căn cứ và thời điểm hiệu lực theo quy trình đã được phê duyệt.
 6. Hệ thống kiểm tra tính hợp lệ và xung đột với dữ liệu liên quan.
 7. Người có thẩm quyền xác nhận hoặc phê duyệt theo chính sách.
-8. Hệ thống lưu quy định mới và lịch sử trước–sau.
+8. Hệ thống lưu quy định mới và lịch sử trước-sau.
 9. Hệ thống thông báo kết quả.
 
 **Luồng thay thế:**
@@ -105,7 +105,7 @@ Ban tổ chức / Người quản lý mùa giải.
 
 **Quản lý câu lạc bộ**
 
-Nguồn: §2.4.1.7, tr.82–84 (mô tả, bảng đặc tả và hình phân tích). Xem [cách đối chiếu PDF](../sources.md#pdf).
+Nguồn: §2.4.1.7, tr.82-84 (mô tả, bảng đặc tả và hình phân tích). Xem [cách đối chiếu PDF](../sources.md#pdf).
 
 **Bối cảnh nghiệp vụ:** Cho phép quản lý thông tin cơ bản của các câu lạc bộ tham gia hệ thống. Hồ sơ câu lạc bộ được quản lý riêng với hồ sơ tham dự một mùa giải cụ thể, bởi trạng thái tham dự và danh sách đăng ký có thể khác nhau theo từng mùa.
 
@@ -150,7 +150,7 @@ Người dùng tìm kiếm câu lạc bộ: hệ thống lọc danh sách theo �
 
 **Quản lý hồ sơ đăng ký câu lạc bộ**
 
-Nguồn: §2.4.1.8, tr.85–88 (mô tả, bảng đặc tả và hình phân tích). Xem [cách đối chiếu PDF](../sources.md#pdf).
+Nguồn: §2.4.1.8, tr.85-88 (mô tả, bảng đặc tả và hình phân tích). Xem [cách đối chiếu PDF](../sources.md#pdf).
 
 **Bối cảnh nghiệp vụ:** Cho phép nhân viên có thẩm quyền tiếp nhận hồ sơ tham dự của câu lạc bộ cho một mùa giải, kiểm tra tính đầy đủ, ghi nhận kết quả thẩm định và quản lý trạng thái hồ sơ. Chức năng này không đồng nghĩa với việc đại diện câu lạc bộ mặc nhiên có quyền tự phê duyệt hồ sơ của mình.
 
@@ -202,7 +202,7 @@ Nhân viên phụ trách đăng ký; Ban tổ chức / Người quản lý mùa 
 
 **Quản lý hồ sơ cầu thủ**
 
-Nguồn: §2.4.1.9, tr.88–90 (mô tả, bảng đặc tả và hình phân tích). Xem [cách đối chiếu PDF](../sources.md#pdf).
+Nguồn: §2.4.1.9, tr.88-90 (mô tả, bảng đặc tả và hình phân tích). Xem [cách đối chiếu PDF](../sources.md#pdf).
 
 **Bối cảnh nghiệp vụ:** Cho phép quản lý hồ sơ định danh và thông tin cơ bản của cầu thủ. Hồ sơ này cần được phân biệt với đăng ký cầu thủ ở một câu lạc bộ và mùa giải cụ thể, nhằm bảo toàn lịch sử và tránh nhầm lẫn khi cầu thủ thay đổi tình trạng đăng ký.
 
@@ -248,7 +248,7 @@ Người dùng tra cứu theo tên hoặc thông tin định danh: hệ thống 
 
 **Quản lý đăng ký cầu thủ**
 
-Nguồn: §2.4.1.10, tr.91–94 (mô tả, bảng đặc tả và hình phân tích). Xem [cách đối chiếu PDF](../sources.md#pdf).
+Nguồn: §2.4.1.10, tr.91-94 (mô tả, bảng đặc tả và hình phân tích). Xem [cách đối chiếu PDF](../sources.md#pdf).
 
 **Bối cảnh nghiệp vụ:** Cho phép tiếp nhận và quản lý việc đăng ký cầu thủ cho câu lạc bộ trong một mùa giải. Đây là nghiệp vụ trọng tâm vì trạng thái đăng ký quyết định cầu thủ có đủ điều kiện được đưa vào danh sách thi đấu hay không. Hệ thống phải kiểm tra giới hạn danh sách, tiêu chí đào tạo nội địa, điều kiện U21, thời hạn đăng ký và việc trùng đăng ký còn hiệu lực.
 
@@ -279,7 +279,7 @@ Nhân viên phụ trách đăng ký.
 2. Hệ thống hiển thị danh sách đăng ký hiện có.
 3. Nhân viên chọn cầu thủ cần đăng ký.
 4. Hệ thống kiểm tra thông tin cầu thủ, hồ sơ tham dự và thời hạn đăng ký.
-5. Hệ thống thực hiện UC11 – Kiểm tra điều kiện đăng ký cầu thủ.
+5. Hệ thống thực hiện UC11 - Kiểm tra điều kiện đăng ký cầu thủ.
 6. Hệ thống trả về kết quả kiểm tra và các điều kiện chưa đáp ứng, nếu có.
 7. Nếu hợp lệ, nhân viên xác nhận đăng ký.
 8. Hệ thống lưu bản ghi đăng ký và trạng thái.
@@ -301,7 +301,7 @@ Nhân viên phụ trách đăng ký.
 
 **Kiểm tra điều kiện đăng ký cầu thủ**
 
-Nguồn: §2.4.1.11, tr.94–97 (mô tả, bảng đặc tả và hình phân tích). Xem [cách đối chiếu PDF](../sources.md#pdf).
+Nguồn: §2.4.1.11, tr.94-97 (mô tả, bảng đặc tả và hình phân tích). Xem [cách đối chiếu PDF](../sources.md#pdf).
 
 **Bối cảnh nghiệp vụ:** Đây là nghiệp vụ kiểm tra được sử dụng trong quá trình quản lý đăng ký cầu thủ. Nó xác định hồ sơ đăng ký có đáp ứng các quy định áp dụng cho mùa giải hay không. Kết quả kiểm tra cần có thể giải thích được, thay vì chỉ trả về trạng thái đạt hoặc không đạt.
 

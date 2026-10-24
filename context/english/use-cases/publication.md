@@ -1,4 +1,4 @@
-# Lookup, reports, and news: UC21–UC25
+# Lookup, reports, and news: UC21-UC25
 
 [Entry point](../README.md) · [Business/BM/QĐ](../business.md) · [Quality](../quality.md) · [Open decisions](../open-decisions.md)
 
@@ -8,7 +8,7 @@ The records below convert PDF specification tables to Markdown, retaining conten
 
 **Look up match information**
 
-Source: §2.4.1.21, pp.123–126 (description, specification table, and analysis figures). See [PDF cross-check guidance](../sources.md#pdf).
+Source: §2.4.1.21, pp.123-126 (description, specification table, and analysis figures). See [PDF cross-check guidance](../sources.md#pdf).
 
 **Business context:** Allows users to search match information by season, round, or club, including the pairing, time, stadium, and corresponding result. Information follows access rights; a score becomes public only after official confirmation.
 
@@ -51,7 +51,7 @@ No detailed conditions: display data within the default scope.
 
 **Generate and export competition reports**
 
-Source: §2.4.1.22, pp.127–130 (description, specification table, and analysis figures). See [PDF cross-check guidance](../sources.md#pdf).
+Source: §2.4.1.22, pp.127-130 (description, specification table, and analysis figures). See [PDF cross-check guidance](../sources.md#pdf).
 
 **Business context:** Allows authorized users to generate reports from confirmed data and applicable seasonal regulations. The function must provide BM5.1, BM5.2, and BM5.3. It must not fabricate unsupported data or substitute draft results for official ones.
 
@@ -99,7 +99,7 @@ Aggregate reports from valid sources, with preview and file export in supported 
 
 **Look up club and player information and statistics**
 
-Source: §2.4.1.23, pp.130–133 (description, specification table, and analysis figures). See [PDF cross-check guidance](../sources.md#pdf).
+Source: §2.4.1.23, pp.130-133 (description, specification table, and analysis figures). See [PDF cross-check guidance](../sources.md#pdf).
 
 **Business context:** Allows users to search club/player information and statistics by season and access scope. Statistics must be aggregated from valid business data, particularly confirmed results and related events.
 
@@ -143,7 +143,7 @@ No detailed filters: display statistics within the default scope.
 
 **Manage competition news and announcements**
 
-Source: §2.4.1.24, pp.134–136 (description, specification table, and analysis figures). See [PDF cross-check guidance](../sources.md#pdf).
+Source: §2.4.1.24, pp.134-136 (description, specification table, and analysis figures). See [PDF cross-check guidance](../sources.md#pdf).
 
 **Business context:** Allows the Organizing Committee to create, update, and manage news/announcement statuses for the Premier League. Content may be saved as draft or published with appropriate authority; only published content is public.
 
@@ -187,7 +187,7 @@ Save content in an appropriate status; only published content is publicly visibl
 
 **View competition news and announcements**
 
-Source: §2.4.1.25, pp.136–139 (description, specification table, and analysis figures). See [PDF cross-check guidance](../sources.md#pdf).
+Source: §2.4.1.25, pp.136-139 (description, specification table, and analysis figures). See [PDF cross-check guidance](../sources.md#pdf).
 
 **Business context:** Allows users to search and view news/announcement lists and content published by the Organizing Committee. Only published content is publicly visible.
 

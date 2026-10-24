@@ -1,4 +1,4 @@
-# Xác thực và quản trị: UC01–UC04
+# Xác thực và quản trị: UC01-UC04
 
 [Điểm truy cập](../README.md) · [Nghiệp vụ/BM/QĐ](../business.md) · [Chất lượng](../quality.md) · [Điểm mở](../open-decisions.md)
 
@@ -8,7 +8,7 @@ Các bản ghi dưới đây chuyển bảng đặc tả từ PDF sang Markdown,
 
 **Đăng nhập**
 
-Nguồn: §2.4.1.1, tr.67–69 (mô tả, bảng đặc tả và hình phân tích). Xem [cách đối chiếu PDF](../sources.md#pdf).
+Nguồn: §2.4.1.1, tr.67-69 (mô tả, bảng đặc tả và hình phân tích). Xem [cách đối chiếu PDF](../sources.md#pdf).
 
 **Bối cảnh nghiệp vụ:** Cho phép người dùng nội bộ xác thực danh tính để truy cập các chức năng quản lý giải đấu. Quyền sử dụng được xác định theo vai trò đã cấp. Người tra cứu công khai không cần đăng nhập để xem những dữ liệu được phép công bố.
 
@@ -56,7 +56,7 @@ Quản trị viên hệ thống, Quản lý giải đấu và nhân viên nghi�
 
 **Đăng xuất**
 
-Nguồn: §2.4.1.2, tr.69–71 (mô tả, bảng đặc tả và hình phân tích). Xem [cách đối chiếu PDF](../sources.md#pdf).
+Nguồn: §2.4.1.2, tr.69-71 (mô tả, bảng đặc tả và hình phân tích). Xem [cách đối chiếu PDF](../sources.md#pdf).
 
 **Bối cảnh nghiệp vụ:** Cho phép người dùng kết thúc phiên làm việc hiện tại. Sau khi đăng xuất, phiên đã kết thúc không được tiếp tục sử dụng để thực hiện các thao tác nội bộ.
 
@@ -98,7 +98,7 @@ Lỗi xử lý phiên: hệ thống thông báo và không cho phép tiếp tụ
 
 **Quản lý tài khoản và vai trò**
 
-Nguồn: §2.4.1.3, tr.72–74 (mô tả, bảng đặc tả và hình phân tích). Xem [cách đối chiếu PDF](../sources.md#pdf).
+Nguồn: §2.4.1.3, tr.72-74 (mô tả, bảng đặc tả và hình phân tích). Xem [cách đối chiếu PDF](../sources.md#pdf).
 
 **Bối cảnh nghiệp vụ:** Cho phép quản trị viên quản lý tài khoản của người dùng nội bộ, trạng thái tài khoản và vai trò được cấp. Chức năng này phải bảo đảm người dùng chỉ được thực hiện nghiệp vụ trong phạm vi quyền hạn đã được phê duyệt.
 
@@ -144,7 +144,7 @@ Quản trị viên chỉ tra cứu tài khoản: hệ thống hiển thị thôn
 
 **Tra cứu nhật ký hoạt động**
 
-Nguồn: §2.4.1.4, tr.75–76 (mô tả, bảng đặc tả và hình phân tích). Xem [cách đối chiếu PDF](../sources.md#pdf).
+Nguồn: §2.4.1.4, tr.75-76 (mô tả, bảng đặc tả và hình phân tích). Xem [cách đối chiếu PDF](../sources.md#pdf).
 
 **Bối cảnh nghiệp vụ:** Cho phép người có thẩm quyền tra cứu lịch sử các thao tác quan trọng trong hệ thống, phục vụ kiểm tra, truy vết và xác định trách nhiệm. Nhật ký cần thể hiện được người thực hiện, thời điểm, đối tượng bị tác động và nội dung thay đổi phù hợp với yêu cầu bảo mật.
 

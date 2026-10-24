@@ -1,4 +1,4 @@
-# Sân vận động và lịch thi đấu: UC12–UC15
+# Sân vận động và lịch thi đấu: UC12-UC15
 
 [Điểm truy cập](../README.md) · [Nghiệp vụ/BM/QĐ](../business.md) · [Chất lượng](../quality.md) · [Điểm mở](../open-decisions.md)
 
@@ -8,7 +8,7 @@ Các bản ghi dưới đây chuyển bảng đặc tả từ PDF sang Markdown,
 
 **Quản lý sân vận động**
 
-Nguồn: §2.4.1.12, tr.97–99 (mô tả, bảng đặc tả và hình phân tích). Xem [cách đối chiếu PDF](../sources.md#pdf).
+Nguồn: §2.4.1.12, tr.97-99 (mô tả, bảng đặc tả và hình phân tích). Xem [cách đối chiếu PDF](../sources.md#pdf).
 
 **Bối cảnh nghiệp vụ:** Cho phép quản lý thông tin các sân vận động được sử dụng trong lịch thi đấu. Dữ liệu sân cần đủ để xác định sân được lựa chọn cho một trận và kiểm tra xung đột lịch sử dụng sân.
 
@@ -53,7 +53,7 @@ Người dùng tra cứu sân: hệ thống hiển thị các sân phù hợp.
 
 **Lập lịch thi đấu**
 
-Nguồn: §2.4.1.13, tr.100–103 (mô tả, bảng đặc tả và hình phân tích). Xem [cách đối chiếu PDF](../sources.md#pdf).
+Nguồn: §2.4.1.13, tr.100-103 (mô tả, bảng đặc tả và hình phân tích). Xem [cách đối chiếu PDF](../sources.md#pdf).
 
 **Bối cảnh nghiệp vụ:** Cho phép người có thẩm quyền xây dựng lịch thi đấu cho mùa giải. Lịch phải đáp ứng thể thức cơ sở gồm 20 câu lạc bộ, 38 vòng và 380 trận, bảo đảm mỗi cặp câu lạc bộ gặp nhau hai lượt theo hình thức sân nhà và sân khách. Hệ thống phải kiểm tra xung đột lịch giữa câu lạc bộ và sân vận động.
 
@@ -109,7 +109,7 @@ Nhân viên phụ trách lịch thi đấu; Ban tổ chức / Người quản l�
 
 **Điều chỉnh lịch thi đấu**
 
-Nguồn: §2.4.1.14, tr.103–106 (mô tả, bảng đặc tả và hình phân tích). Xem [cách đối chiếu PDF](../sources.md#pdf).
+Nguồn: §2.4.1.14, tr.103-106 (mô tả, bảng đặc tả và hình phân tích). Xem [cách đối chiếu PDF](../sources.md#pdf).
 
 **Bối cảnh nghiệp vụ:** Cho phép người có thẩm quyền thay đổi thời gian hoặc sân của trận đấu theo quy định. Việc điều chỉnh phải kiểm tra lại xung đột, không làm mất lịch sử và không được làm sai lệch thông tin của trận đã diễn ra hoặc dữ liệu kết quả đã được xác nhận.
 
@@ -161,7 +161,7 @@ Nhân viên phụ trách lịch thi đấu; Ban tổ chức / Người quản l�
 
 **Tra cứu lịch thi đấu**
 
-Nguồn: §2.4.1.15, tr.106–108 (mô tả, bảng đặc tả và hình phân tích). Xem [cách đối chiếu PDF](../sources.md#pdf).
+Nguồn: §2.4.1.15, tr.106-108 (mô tả, bảng đặc tả và hình phân tích). Xem [cách đối chiếu PDF](../sources.md#pdf).
 
 **Bối cảnh nghiệp vụ:** Cho phép người dùng tra cứu lịch thi đấu đã được công bố theo mùa giải, câu lạc bộ, vòng đấu hoặc thời gian. Chức năng này chỉ đọc dữ liệu lịch được phép công khai và không làm thay đổi lịch thi đấu.
 

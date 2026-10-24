@@ -1,4 +1,4 @@
-# Seasons, regulations, and registration: UC05–UC11
+# Seasons, regulations, and registration: UC05-UC11
 
 [Entry point](../README.md) · [Business/BM/QĐ](../business.md) · [Quality](../quality.md) · [Open decisions](../open-decisions.md)
 
@@ -8,7 +8,7 @@ The records below convert PDF specification tables to Markdown, retaining conten
 
 **Manage seasons**
 
-Source: §2.4.1.5, pp.77–78 (description, specification table, and analysis figures). See [PDF cross-check guidance](../sources.md#pdf).
+Source: §2.4.1.5, pp.77-78 (description, specification table, and analysis figures). See [PDF cross-check guidance](../sources.md#pdf).
 
 **Business context:** Allows authorized users to create and manage Premier League seasons. Each season must be separately identifiable so participating clubs, regulations, schedules, and results are not mixed across seasons.
 
@@ -53,7 +53,7 @@ Lookup only: display season information the user may view.
 
 **Manage season regulations**
 
-Source: §2.4.1.6, pp.79–82 (description, specification table, and analysis figures). See [PDF cross-check guidance](../sources.md#pdf).
+Source: §2.4.1.6, pp.79-82 (description, specification table, and analysis figures). See [PDF cross-check guidance](../sources.md#pdf).
 
 **Business context:** Allows authorized users to manage regulations for each season. These regulations affect player eligibility, competition format, match-event recording, points, and ranking. Every change requires appropriate authority, effective time, and history to avoid distorting completed seasons.
 
@@ -105,7 +105,7 @@ Organizing Committee / Season Manager.
 
 **Manage clubs**
 
-Source: §2.4.1.7, pp.82–84 (description, specification table, and analysis figures). See [PDF cross-check guidance](../sources.md#pdf).
+Source: §2.4.1.7, pp.82-84 (description, specification table, and analysis figures). See [PDF cross-check guidance](../sources.md#pdf).
 
 **Business context:** Allows management of basic information about clubs in the system. A club's master profile is separate from its participation application for a specific season because participation status and registration lists may differ by season.
 
@@ -150,7 +150,7 @@ The user searches for clubs: filter the list by the entered conditions.
 
 **Manage club registration applications**
 
-Source: §2.4.1.8, pp.85–88 (description, specification table, and analysis figures). See [PDF cross-check guidance](../sources.md#pdf).
+Source: §2.4.1.8, pp.85-88 (description, specification table, and analysis figures). See [PDF cross-check guidance](../sources.md#pdf).
 
 **Business context:** Allows authorized staff to receive a club's application for a season, check completeness, record review results, and manage application status. This does not imply a club representative is automatically entitled to approve their own application.
 
@@ -202,7 +202,7 @@ Registration Officer; Organizing Committee / Season Manager.
 
 **Manage player profiles**
 
-Source: §2.4.1.9, pp.88–90 (description, specification table, and analysis figures). See [PDF cross-check guidance](../sources.md#pdf).
+Source: §2.4.1.9, pp.88-90 (description, specification table, and analysis figures). See [PDF cross-check guidance](../sources.md#pdf).
 
 **Business context:** Allows management of player identity records and basic information. These profiles are distinct from registrations for particular clubs and seasons, preserving history and preventing confusion when registration status changes.
 
@@ -248,7 +248,7 @@ The user searches by name or identifying information: display matching results w
 
 **Manage player registrations**
 
-Source: §2.4.1.10, pp.91–94 (description, specification table, and analysis figures). See [PDF cross-check guidance](../sources.md#pdf).
+Source: §2.4.1.10, pp.91-94 (description, specification table, and analysis figures). See [PDF cross-check guidance](../sources.md#pdf).
 
 **Business context:** Allows intake and management of player registration for a club in a season. This is central because registration status determines eligibility for inclusion in the appearance list. The system must check squad limits, homegrown criteria, U21 conditions, deadlines, and overlapping active registrations.
 
@@ -279,7 +279,7 @@ Registration Officer.
 2. The system displays existing registrations.
 3. The officer selects the player to register.
 4. The system checks the player information, participation application, and registration deadline.
-5. The system performs UC11 – Check player registration eligibility.
+5. The system performs UC11 - Check player registration eligibility.
 6. The system returns validation results and any unmet conditions.
 7. If valid, the officer confirms registration.
 8. The system saves the registration and status.
@@ -301,7 +301,7 @@ Registration Officer.
 
 **Check player registration eligibility**
 
-Source: §2.4.1.11, pp.94–97 (description, specification table, and analysis figures). See [PDF cross-check guidance](../sources.md#pdf).
+Source: §2.4.1.11, pp.94-97 (description, specification table, and analysis figures). See [PDF cross-check guidance](../sources.md#pdf).
 
 **Business context:** This validation is used during player-registration management. It determines whether registration meets the season's applicable regulations. Results must explain the reasons rather than returning only pass/fail.
 

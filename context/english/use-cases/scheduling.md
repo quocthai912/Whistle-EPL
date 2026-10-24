@@ -1,4 +1,4 @@
-# Stadiums and scheduling: UC12–UC15
+# Stadiums and scheduling: UC12-UC15
 
 [Entry point](../README.md) · [Business/BM/QĐ](../business.md) · [Quality](../quality.md) · [Open decisions](../open-decisions.md)
 
@@ -8,7 +8,7 @@ The records below convert PDF specification tables to Markdown, retaining conten
 
 **Manage stadiums**
 
-Source: §2.4.1.12, pp.97–99 (description, specification table, and analysis figures). See [PDF cross-check guidance](../sources.md#pdf).
+Source: §2.4.1.12, pp.97-99 (description, specification table, and analysis figures). See [PDF cross-check guidance](../sources.md#pdf).
 
 **Business context:** Allows management of stadiums used in the match schedule. Stadium data must identify the selected venue for a match and support venue-use conflict checks.
 
@@ -53,7 +53,7 @@ The user searches stadiums: display matching stadiums.
 
 **Create the match schedule**
 
-Source: §2.4.1.13, pp.100–103 (description, specification table, and analysis figures). See [PDF cross-check guidance](../sources.md#pdf).
+Source: §2.4.1.13, pp.100-103 (description, specification table, and analysis figures). See [PDF cross-check guidance](../sources.md#pdf).
 
 **Business context:** Allows authorized users to build the season schedule. It must satisfy the base format of 20 clubs, 38 rounds, and 380 matches, with each club pair meeting twice at home and away. The system must check club and stadium schedule conflicts.
 
@@ -109,7 +109,7 @@ Scheduling Officer; Organizing Committee / Season Manager.
 
 **Adjust the match schedule**
 
-Source: §2.4.1.14, pp.103–106 (description, specification table, and analysis figures). See [PDF cross-check guidance](../sources.md#pdf).
+Source: §2.4.1.14, pp.103-106 (description, specification table, and analysis figures). See [PDF cross-check guidance](../sources.md#pdf).
 
 **Business context:** Allows authorized users to change a match's time or stadium under the regulations. Recheck conflicts, retain history, and avoid distorting matches already played or confirmed result data.
 
@@ -161,7 +161,7 @@ Scheduling Officer; Organizing Committee / Season Manager.
 
 **Look up the match schedule**
 
-Source: §2.4.1.15, pp.106–108 (description, specification table, and analysis figures). See [PDF cross-check guidance](../sources.md#pdf).
+Source: §2.4.1.15, pp.106-108 (description, specification table, and analysis figures). See [PDF cross-check guidance](../sources.md#pdf).
 
 **Business context:** Allows users to search published schedules by season, club, round, or time. This function only reads schedule data permitted for publication and does not change the schedule.
 

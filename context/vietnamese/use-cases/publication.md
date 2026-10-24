@@ -1,4 +1,4 @@
-# Tra cứu, báo cáo và tin tức: UC21–UC25
+# Tra cứu, báo cáo và tin tức: UC21-UC25
 
 [Điểm truy cập](../README.md) · [Nghiệp vụ/BM/QĐ](../business.md) · [Chất lượng](../quality.md) · [Điểm mở](../open-decisions.md)
 
@@ -8,7 +8,7 @@ Các bản ghi dưới đây chuyển bảng đặc tả từ PDF sang Markdown,
 
 **Tra cứu thông tin trận đấu**
 
-Nguồn: §2.4.1.21, tr.123–126 (mô tả, bảng đặc tả và hình phân tích). Xem [cách đối chiếu PDF](../sources.md#pdf).
+Nguồn: §2.4.1.21, tr.123-126 (mô tả, bảng đặc tả và hình phân tích). Xem [cách đối chiếu PDF](../sources.md#pdf).
 
 **Bối cảnh nghiệp vụ:** Cho phép người dùng tra cứu thông tin trận đấu theo mùa giải, vòng đấu hoặc câu lạc bộ, bao gồm cặp đấu, thời gian, sân thi đấu và kết quả tương ứng. Hệ thống cung cấp thông tin theo phạm vi quyền truy cập, trong đó tỷ số trận đấu chỉ được công khai sau khi kết quả đã được xác nhận chính thức.
 
@@ -51,7 +51,7 @@ Người dùng không nhập điều kiện chi tiết: hệ thống hiển th�
 
 **Lập và xuất báo cáo giải đấu**
 
-Nguồn: §2.4.1.22, tr.127–130 (mô tả, bảng đặc tả và hình phân tích). Xem [cách đối chiếu PDF](../sources.md#pdf).
+Nguồn: §2.4.1.22, tr.127-130 (mô tả, bảng đặc tả và hình phân tích). Xem [cách đối chiếu PDF](../sources.md#pdf).
 
 **Bối cảnh nghiệp vụ:** Cho phép người có thẩm quyền lập báo cáo từ dữ liệu đã được xác nhận và các quy định áp dụng cho mùa giải. Chức năng này phải đáp ứng ba báo cáo BM5.1, BM5.2 và BM5.3. Báo cáo không được tự tạo dữ liệu thiếu căn cứ hoặc dùng kết quả nháp thay cho kết quả chính thức.
 
@@ -99,7 +99,7 @@ Báo cáo được tổng hợp từ dữ liệu nguồn hợp lệ, có thể x
 
 **Tra cứu thông tin và thống kê câu lạc bộ, cầu thủ**
 
-Nguồn: §2.4.1.23, tr.130–133 (mô tả, bảng đặc tả và hình phân tích). Xem [cách đối chiếu PDF](../sources.md#pdf).
+Nguồn: §2.4.1.23, tr.130-133 (mô tả, bảng đặc tả và hình phân tích). Xem [cách đối chiếu PDF](../sources.md#pdf).
 
 **Bối cảnh nghiệp vụ:** Cho phép người dùng tra cứu thông tin và thống kê của câu lạc bộ, cầu thủ theo mùa giải và phạm vi truy cập. Các thống kê phải được tổng hợp từ dữ liệu nghiệp vụ hợp lệ, đặc biệt là kết quả trận đấu đã được xác nhận và các sự kiện liên quan.
 
@@ -143,7 +143,7 @@ Không có điều kiện lọc chi tiết: hệ thống hiển thị thống k�
 
 **Quản lý tin tức và thông báo giải đấu**
 
-Nguồn: §2.4.1.24, tr.134–136 (mô tả, bảng đặc tả và hình phân tích). Xem [cách đối chiếu PDF](../sources.md#pdf).
+Nguồn: §2.4.1.24, tr.134-136 (mô tả, bảng đặc tả và hình phân tích). Xem [cách đối chiếu PDF](../sources.md#pdf).
 
 **Bối cảnh nghiệp vụ:** Cho phép Ban tổ chức tạo, cập nhật và quản lý trạng thái tin tức, thông báo liên quan đến giải đấu Ngoại hạng Anh (Premier League). Nội dung có thể được lưu ở trạng thái nháp hoặc công bố theo thẩm quyền; chỉ những nội dung đã công bố mới được hiển thị công khai.
 
@@ -187,7 +187,7 @@ Nội dung được lưu ở trạng thái phù hợp; chỉ nội dung đã cô
 
 **Xem tin tức và thông báo giải đấu**
 
-Nguồn: §2.4.1.25, tr.136–139 (mô tả, bảng đặc tả và hình phân tích). Xem [cách đối chiếu PDF](../sources.md#pdf).
+Nguồn: §2.4.1.25, tr.136-139 (mô tả, bảng đặc tả và hình phân tích). Xem [cách đối chiếu PDF](../sources.md#pdf).
 
 **Bối cảnh nghiệp vụ:** Cho phép người dùng tra cứu và xem danh sách, nội dung tin tức và thông báo đã được Ban tổ chức công bố. Chỉ những nội dung ở trạng thái đã công bố mới được hiển thị công khai.
 

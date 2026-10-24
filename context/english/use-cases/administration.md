@@ -1,4 +1,4 @@
-# Authentication and administration: UC01–UC04
+# Authentication and administration: UC01-UC04
 
 [Entry point](../README.md) · [Business/BM/QĐ](../business.md) · [Quality](../quality.md) · [Open decisions](../open-decisions.md)
 
@@ -8,7 +8,7 @@ The records below convert PDF specification tables to Markdown, retaining conten
 
 **Log in**
 
-Source: §2.4.1.1, pp.67–69 (description, specification table, and analysis figures). See [PDF cross-check guidance](../sources.md#pdf).
+Source: §2.4.1.1, pp.67-69 (description, specification table, and analysis figures). See [PDF cross-check guidance](../sources.md#pdf).
 
 **Business context:** Allows internal users to authenticate to access competition-management functions. Permissions follow assigned roles. Public viewers do not need to log in to view information permitted for publication.
 
@@ -56,7 +56,7 @@ System Administrator, Competition Manager, and business staff issued accounts.
 
 **Log out**
 
-Source: §2.4.1.2, pp.69–71 (description, specification table, and analysis figures). See [PDF cross-check guidance](../sources.md#pdf).
+Source: §2.4.1.2, pp.69-71 (description, specification table, and analysis figures). See [PDF cross-check guidance](../sources.md#pdf).
 
 **Business context:** Allows the user to end the current session. After logout, the ended session cannot be reused for internal operations.
 
@@ -98,7 +98,7 @@ Session-processing failure: report the error and do not allow further internal o
 
 **Manage accounts and roles**
 
-Source: §2.4.1.3, pp.72–74 (description, specification table, and analysis figures). See [PDF cross-check guidance](../sources.md#pdf).
+Source: §2.4.1.3, pp.72-74 (description, specification table, and analysis figures). See [PDF cross-check guidance](../sources.md#pdf).
 
 **Business context:** Allows the administrator to manage internal user accounts, account status, and assigned roles. The function must ensure users perform business activities only within approved permissions.
 
@@ -144,7 +144,7 @@ The administrator only searches accounts: display information within the permitt
 
 **Search activity logs**
 
-Source: §2.4.1.4, pp.75–76 (description, specification table, and analysis figures). See [PDF cross-check guidance](../sources.md#pdf).
+Source: §2.4.1.4, pp.75-76 (description, specification table, and analysis figures). See [PDF cross-check guidance](../sources.md#pdf).
 
 **Business context:** Allows authorized users to inspect important-operation history for checking, traceability, and accountability. Logs must identify the person, time, affected object, and changed content as required by security requirements.
 

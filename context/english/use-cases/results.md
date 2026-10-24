@@ -1,4 +1,4 @@
-# Match reports, results, and statistics: UC16–UC20
+# Match reports, results, and statistics: UC16-UC20
 
 [Entry point](../README.md) · [Business/BM/QĐ](../business.md) · [Quality](../quality.md) · [Open decisions](../open-decisions.md)
 
@@ -8,7 +8,7 @@ The records below convert PDF specification tables to Markdown, retaining conten
 
 **Create a match report**
 
-Source: §2.4.1.16, pp.109–112 (description, specification table, and analysis figures). See [PDF cross-check guidance](../sources.md#pdf).
+Source: §2.4.1.16, pp.109-112 (description, specification table, and analysis figures). See [PDF cross-check guidance](../sources.md#pdf).
 
 **Business context:** Allows authorized users to create a report for a validly scheduled match. It records player appearances and match events, including goals, scoring times, goal types, and cards. Data must provide sufficient basis for score validation and result confirmation.
 
@@ -57,7 +57,7 @@ An unfinished report can continue to be updated before proceeding to confirmatio
 
 **Update a match result**
 
-Source: §2.4.1.17, pp.112–114 (description, specification table, and analysis figures). See [PDF cross-check guidance](../sources.md#pdf).
+Source: §2.4.1.17, pp.112-114 (description, specification table, and analysis figures). See [PDF cross-check guidance](../sources.md#pdf).
 
 **Business context:** Allows authorized users to update result data from a match report. The updated result is not automatically official; official recognition is performed through UC18 - Confirm a match result.
 
@@ -105,7 +105,7 @@ No data changed: retain the existing result.
 
 **Confirm a match result**
 
-Source: §2.4.1.18, pp.115–118 (description, specification table, and analysis figures). See [PDF cross-check guidance](../sources.md#pdf).
+Source: §2.4.1.18, pp.115-118 (description, specification table, and analysis figures). See [PDF cross-check guidance](../sources.md#pdf).
 
 **Business context:** Allows authorized users to validate and confirm an official result after the match ends. The system must ensure consistency with the match report, prevent repeated confirmation, and avoid partial updates to dependent data. After successful confirmation, standings, statistics, and related reports must reflect the recognized result.
 
@@ -161,7 +161,7 @@ Organizing Committee / Season Manager.
 
 **Correct a confirmed match result**
 
-Source: §2.4.1.19, pp.118–121 (description, specification table, and analysis figures). See [PDF cross-check guidance](../sources.md#pdf).
+Source: §2.4.1.19, pp.118-121 (description, specification table, and analysis figures). See [PDF cross-check guidance](../sources.md#pdf).
 
 **Business context:** Allows authorized users to correct an officially confirmed result on a valid basis. Because the result affects standings, statistics, and reports, preserve before/after history, check permissions, and process the change consistently. Direct updates that leave dependent data incorrect are not permitted.
 
@@ -217,7 +217,7 @@ Organizing Committee / Season Manager; Results Officer (if authorized).
 
 **Update standings and statistics**
 
-Source: §2.4.1.20, pp.121–123 (description, specification table, and analysis figures). See [PDF cross-check guidance](../sources.md#pdf).
+Source: §2.4.1.20, pp.121-123 (description, specification table, and analysis figures). See [PDF cross-check guidance](../sources.md#pdf).
 
 **Business context:** Status: Internal processing, not an independent function allowing users to change points arbitrarily.
 

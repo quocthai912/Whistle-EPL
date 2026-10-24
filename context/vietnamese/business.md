@@ -1,19 +1,19 @@
 # Yêu cầu nghiệp vụ, biểu mẫu và quy định
 
-Nguồn: §1.2.1, Bảng 1.1 và §1.2.1.1 tr.6–11. Các mục dưới đây giữ mã của PDF; không bổ sung quy định EPL bên ngoài. [Nguồn gốc](sources.md) · [Điểm mở](open-decisions.md).
+Nguồn: §1.2.1, Bảng 1.1 và §1.2.1.1 tr.6-11. Các mục dưới đây giữ mã của PDF; không bổ sung quy định EPL bên ngoài. [Nguồn gốc](sources.md) · [Điểm mở](open-decisions.md).
 
 ## Sáu yêu cầu nghiệp vụ
 
 | STT gốc | Yêu cầu | Biểu mẫu | Quy định | UC liên quan | Phase sở hữu |
 |---|---|---|---|---|---|
-| 1 | Tiếp nhận hồ sơ đăng ký | BM1 | QĐ1 | UC08–UC11; dữ liệu UC07, UC09, UC12 | PHASE 3 |
-| 2 | Lập lịch thi đấu | BM2 | QĐ2 | UC13–UC15 | PHASE 4; tra cứu tại PHASE 6 |
-| 3 | Ghi nhận kết quả trận đấu | BM3 | QĐ3 | UC16–UC20 | PHASE 5 |
-| 4 | Tra cứu thông tin giải đấu | BM4.1–BM4.4 | QĐ4 | UC15, UC21, UC23; thông tin mùa UC05 | PHASE 6 |
-| 5 | Lập báo cáo giải | BM5.1–BM5.3 | QĐ5 | UC20, UC22 | PHASE 5 tính thống kê; PHASE 7 lập/xuất báo cáo |
+| 1 | Tiếp nhận hồ sơ đăng ký | BM1 | QĐ1 | UC08-UC11; dữ liệu UC07, UC09, UC12 | PHASE 3 |
+| 2 | Lập lịch thi đấu | BM2 | QĐ2 | UC13-UC15 | PHASE 4; tra cứu tại PHASE 6 |
+| 3 | Ghi nhận kết quả trận đấu | BM3 | QĐ3 | UC16-UC20 | PHASE 5 |
+| 4 | Tra cứu thông tin giải đấu | BM4.1-BM4.4 | QĐ4 | UC15, UC21, UC23; thông tin mùa UC05 | PHASE 6 |
+| 5 | Lập báo cáo giải | BM5.1-BM5.3 | QĐ5 | UC20, UC22 | PHASE 5 tính thống kê; PHASE 7 lập/xuất báo cáo |
 | 6 | Thay đổi qui định | Không có BM riêng trong Bảng 1.1 | QĐ6 | UC06 | PHASE 2 |
 
-Tài khoản/nhật ký (PHASE 1), dữ liệu nền (PHASE 2), tin tức (PHASE 8), nhập/xuất dữ liệu (PHASE 9) và nghiệm thu toàn hệ thống (PHASE 10) được truy vết từ các mục khác trong Chương 1–2, không thêm thành yêu cầu thứ bảy của Bảng 1.1.
+Tài khoản/nhật ký (PHASE 1), dữ liệu nền (PHASE 2), tin tức (PHASE 8), nhập/xuất dữ liệu (PHASE 9) và nghiệm thu toàn hệ thống (PHASE 10) được truy vết từ các mục khác trong Chương 1-2, không thêm thành yêu cầu thứ bảy của Bảng 1.1.
 
 ## Trường của 10 biểu mẫu
 
@@ -23,12 +23,12 @@ Các cột và thông tin dưới đây là nội dung biểu mẫu nghiệp v�
 |---|---|---|
 | BM1 - Hồ Sơ Đội Bóng | 6 | Người đại diện: Họ và tên, Số điện thoại, Địa chỉ liên hệ. Đội bóng: Tên đội, Sân nhà, Huấn luyện viên. Danh sách đăng ký: STT, Cầu thủ, Ngày sinh, Vị trí thi đấu, Số áo, Diện đăng ký, Ghi chú |
 | BM2 - Lịch Thi Đấu | 7 | Vòng thi đấu, Mùa giải; STT, Đội 1 (Chủ nhà), Đội 2 (Đội khách), Ngày - Giờ, Sân thi đấu |
-| BM3 - Kết Quả Thi Đấu | 7–8 | Mùa giải, Vòng thi đấu, Ngày - Giờ, Đội 1 (Chủ nhà), Đội 2 (Đội khách), Tỷ số chung cuộc, Sân thi đấu. Danh sách ra sân: STT, Cầu thủ, Đội bóng, Vị trí, Số áo. Bàn thắng: STT, Cầu thủ, Đội bóng, Loại bàn thắng, Thời điểm. Thẻ phạt: STT, Cầu thủ, Đội bóng, Loại thẻ phạt, Thời điểm. Chữ ký trọng tài |
+| BM3 - Kết Quả Thi Đấu | 7-8 | Mùa giải, Vòng thi đấu, Ngày - Giờ, Đội 1 (Chủ nhà), Đội 2 (Đội khách), Tỷ số chung cuộc, Sân thi đấu. Danh sách ra sân: STT, Cầu thủ, Đội bóng, Vị trí, Số áo. Bàn thắng: STT, Cầu thủ, Đội bóng, Loại bàn thắng, Thời điểm. Thẻ phạt: STT, Cầu thủ, Đội bóng, Loại thẻ phạt, Thời điểm. Chữ ký trọng tài |
 | BM4.1 - Tra Cứu Thông Tin Giải Đấu | 8 | Tên giải đấu, Mùa giải, Số lượng CLB tham gia, Số vòng đấu, Tổng số trận đấu, Ngày khởi tranh - Kết thúc |
 | BM4.2 - Tra Cứu Thông Tin Đội Bóng | 8 | Mùa giải; STT, Tên đội bóng, HLV trưởng, Sân nhà, Số lượng cầu thủ, Người đại diện |
 | BM4.3 - Tra Cứu Thông Tin Cầu Thủ | 9 | Mùa giải; STT, Cầu thủ, Ngày sinh, Diện đăng ký, Số áo, Tên đội bóng, Số bàn thắng |
 | BM4.4 - Tra Cứu Lịch Thi Đấu Và Kết Quả | 9 | Mùa giải; Vòng đấu, Đội chủ nhà, Đội khách, Ngày - Giờ, Sân thi đấu, Tỷ số |
-| BM5.1 - Bảng Xếp Hạng | 9–10 | Mùa giải, Ngày; Hạng, Đội, Trận, Thắng, Hòa, Thua, BT, BB, HS, Điểm |
+| BM5.1 - Bảng Xếp Hạng | 9-10 | Mùa giải, Ngày; Hạng, Đội, Trận, Thắng, Hòa, Thua, BT, BB, HS, Điểm |
 | BM5.2 - Danh Sách Các Cầu Thủ Ghi Bàn | 10 | Mùa giải, Ngày; STT, Tên cầu thủ, Tên đội bóng, Diện đăng ký, Tổng số bàn thắng |
 | BM5.3 - Tổng Kết Mùa Giải | 10 | Mùa giải, Ngày lập báo cáo; Đội vô địch, Đội á quân, Đội hạng ba; bảng CLB xuống hạng gồm STT, Vị trí trên BXH, Tên CLB (mẫu có ba dòng); Vua phá lưới, Găng tay vàng, Tổng số bàn thắng toàn giải đấu |
 
@@ -39,7 +39,7 @@ Các cột và thông tin dưới đây là nội dung biểu mẫu nghiệp v�
 
 ### QĐ1
 
-Nguồn: §1.2.1.1.1, tr.6–7.
+Nguồn: §1.2.1.1.1, tr.6-7.
 
 - **QĐ1.1:** Mỗi câu lạc bộ tham gia giải đấu phải có hồ sơ đăng ký theo từng mùa giải, bao gồm thông tin câu lạc bộ, người đại diện và danh sách cầu thủ.
 - **QĐ1.2:** Mỗi câu lạc bộ được đăng ký tối đa 25 cầu thủ trong danh sách chính thức, trong đó tối đa 17 cầu thủ không đáp ứng tiêu chí đào tạo nội địa.
@@ -87,7 +87,7 @@ Nguồn: §1.2.1.1.4, tr.9.
 
 ### QĐ5
 
-Nguồn: §1.2.1.1.5, tr.10–11.
+Nguồn: §1.2.1.1.5, tr.10-11.
 
 - **QĐ5.1:** Các báo cáo giải đấu phải được lập theo từng mùa giải, sử dụng dữ liệu trận đấu và kết quả đã được xác nhận. Bảng xếp hạng và danh sách ghi bàn được cập nhật theo kết quả hợp lệ tại thời điểm lập báo cáo.
 - **QĐ5.2:** Điểm số được tính như sau: Thắng 3 điểm, hòa 1 điểm, thua 0 điểm. Hiệu số bàn thắng bằng tổng số bàn ghi được trừ tổng số bàn thua.

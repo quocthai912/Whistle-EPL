@@ -1,8 +1,8 @@
 # Yêu cầu chất lượng và ràng buộc đã có trong báo cáo
 
-Nguồn: §1.2.2–1.2.8 tr.11–32. Giữ 34 mã yêu cầu gốc. Mô tả/tiêu chí dưới đây được trình bày gọn từ bảng chi tiết; mọi ngưỡng số giữ nguyên. Đọc cùng [Progress Checker](progress-checker.md) để biết Phase chịu trách nhiệm; thiết kế cách đạt yêu cầu chờ v2 tại [sổ quyết định](open-decisions.md). Các yêu cầu xuyên suốt phải được kiểm tra trong Phase chức năng và hồi quy ở PHASE 10.
+Nguồn: §1.2.2-1.2.8 tr.11-32. Giữ 34 mã yêu cầu gốc. Mô tả/tiêu chí dưới đây được trình bày gọn từ bảng chi tiết; mọi ngưỡng số giữ nguyên. Đọc cùng [Progress Checker](progress-checker.md) để biết Phase chịu trách nhiệm; thiết kế cách đạt yêu cầu chờ v2 tại [sổ quyết định](open-decisions.md). Các yêu cầu xuyên suốt phải được kiểm tra trong Phase chức năng và hồi quy ở PHASE 10.
 
-## Tiến hóa - TH (Bảng 1.2, chi tiết tr.13–14)
+## Tiến hóa - TH (Bảng 1.2, chi tiết tr.13-14)
 
 | Mã | Yêu cầu và tiêu chí kiểm chứng | Ưu tiên |
 |---|---|---|
@@ -24,7 +24,7 @@ Nguồn: §1.2.2–1.2.8 tr.11–32. Giữ 34 mã yêu cầu gốc. Mô tả/ti�
 
 Chỉ tiêu phải đo trên môi trường xác định và đối chiếu môi trường triển khai dự kiến (§1.2.3.1 tr.14). Không thêm mốc thời gian cho tạo lịch khi báo cáo chưa định lượng.
 
-## Tương thích - TT (Bảng 1.4, chi tiết tr.19–20)
+## Tương thích - TT (Bảng 1.4, chi tiết tr.19-20)
 
 | Mã | Yêu cầu và tiêu chí kiểm chứng | Ưu tiên |
 |---|---|---|
@@ -34,7 +34,7 @@ Chỉ tiêu phải đo trên môi trường xác định và đối chiếu môi
 | TT-04 | Mã hóa ký tự thống nhất (UTF-8 là ví dụ); tiếng Việt có dấu phải lưu, tìm kiếm, hiển thị, xuất đúng. Ngày giờ, tỷ số, định danh giữ giá trị/định dạng khi trao đổi | Cao |
 | TT-05 | Khả năng mở rộng nhận/cung cấp dữ liệu API ngoài. Cốt lõi vẫn vận hành khi không kết nối. **Nếu triển khai tích hợp**, kiểm tra/chuẩn hóa cấu trúc, xử lý dữ liệu sai và giữ bước kiểm tra/xác nhận nghiệp vụ. Không bắt buộc xây tích hợp trong v1 sản phẩm | Thấp |
 
-## Bảo mật - BM có dấu gạch nối (Bảng 1.5, chi tiết tr.23–24)
+## Bảo mật - BM có dấu gạch nối (Bảng 1.5, chi tiết tr.23-24)
 
 BM-01 là yêu cầu bảo mật; BM1 là biểu mẫu. Giữ cách viết để tránh nhầm hai hệ mã.
 
@@ -54,9 +54,9 @@ Việc truyền dữ liệu cần được bảo vệ phù hợp môi trường 
 
 | Mã | Ràng buộc có sẵn và tiêu chí kiểm chứng | Ưu tiên |
 |---|---|---|
-| CN-01 | Ứng dụng web Client–Server, tách giao diện/xử lý máy chủ, thống nhất ngôn ngữ/thư viện/công cụ phù hợp môi trường. Cài/khởi chạy được tại môi trường xác định, dùng chức năng chính và trao đổi với máy chủ qua trình duyệt, không cài ứng dụng riêng | Cao |
+| CN-01 | Ứng dụng web Client-Server, tách giao diện/xử lý máy chủ, thống nhất ngôn ngữ/thư viện/công cụ phù hợp môi trường. Cài/khởi chạy được tại môi trường xác định, dùng chức năng chính và trao đổi với máy chủ qua trình duyệt, không cài ứng dụng riêng | Cao |
 | CN-02 | CSDL **quan hệ**, tập trung theo §1.2.6.1; ràng buộc toàn vẹn và giao dịch cho dữ liệu mùa/CLB/cầu thủ/trận/kết quả. Từ chối dữ liệu sai quan hệ; xác nhận/điều chỉnh kết quả lỗi không được lưu trạng thái cập nhật một phần | Cao |
-| CN-03 | Quản lý phiên bản, phụ thuộc/cấu hình và tài liệu cài đặt–cấu hình–khởi chạy. Trên môi trường mới đủ tiên quyết, làm theo hướng dẫn phải cài, kết nối CSDL và khởi chạy thành công | Cao |
+| CN-03 | Quản lý phiên bản, phụ thuộc/cấu hình và tài liệu cài đặt-cấu hình-khởi chạy. Trên môi trường mới đủ tiên quyết, làm theo hướng dẫn phải cài, kết nối CSDL và khởi chạy thành công | Cao |
 | CN-04 | Phân lớp/mô-đun với trách nhiệm rõ: giao diện, nghiệp vụ, truy cập dữ liệu. Cấu hình quy tắc và mở rộng thành phần phải qua kiểm thử duy trì chức năng liên quan, không gây lỗi nghiệp vụ hiện có | Cao |
 
 Đây là ràng buộc đã nêu, không phải lựa chọn thiết kế mới. Framework, sản phẩm CSDL, mô hình module, ERD/schema, API và môi trường cụ thể chờ v2.
@@ -77,4 +77,4 @@ Việc truyền dữ liệu cần được bảo vệ phù hợp môi trường 
 | AT-01 | Kiểm tra hồ sơ/lịch/kết quả trước ghi. Dữ liệu vi phạm bị từ chối, giữ dữ liệu hợp lệ. Gửi xác nhận cùng kết quả nhiều lần không cộng trùng trận, điểm, bàn thắng; mỗi trận tính một lần trừ điều chỉnh hợp lệ | Cao |
 | AT-02 | Cập nhật liên quan nhất quán, có phát hiện/xử lý xung đột. Giả lập lỗi cập nhật kết quả không để dữ liệu/thống kê dở dang; hai người sửa cùng bản ghi không âm thầm ghi đè thay đổi đã lưu trước, phải báo và yêu cầu xử lý | Cao |
 | AT-03 | Điều chỉnh lịch/kết quả chính thức/quy định phải đúng trạng thái, điều kiện, quyền và phạm vi mùa. Thử thay đổi không hợp lệ phải bị từ chối/giữ nguyên dữ liệu; thay đổi hợp lệ giữ kết quả và thống kê nhất quán | Cao |
-| AT-04 | Bảo toàn liên kết mùa–CLB–cầu thủ–trận–kết quả. Chặn xóa/đổi gây mất liên kết lịch sử; hỗ trợ ngừng dùng/lưu trữ. Ngừng CLB hoặc thêm mùa không làm sai hồ sơ/lịch/kết quả/báo cáo mùa trước; lịch sử còn tra cứu đúng | Cao |
+| AT-04 | Bảo toàn liên kết mùa-CLB-cầu thủ-trận-kết quả. Chặn xóa/đổi gây mất liên kết lịch sử; hỗ trợ ngừng dùng/lưu trữ. Ngừng CLB hoặc thêm mùa không làm sai hồ sơ/lịch/kết quả/báo cáo mùa trước; lịch sử còn tra cứu đúng | Cao |

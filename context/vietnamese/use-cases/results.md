@@ -1,4 +1,4 @@
-# Biên bản, kết quả và thống kê: UC16–UC20
+# Biên bản, kết quả và thống kê: UC16-UC20
 
 [Điểm truy cập](../README.md) · [Nghiệp vụ/BM/QĐ](../business.md) · [Chất lượng](../quality.md) · [Điểm mở](../open-decisions.md)
 
@@ -8,7 +8,7 @@ Các bản ghi dưới đây chuyển bảng đặc tả từ PDF sang Markdown,
 
 **Lập biên bản trận đấu**
 
-Nguồn: §2.4.1.16, tr.109–112 (mô tả, bảng đặc tả và hình phân tích). Xem [cách đối chiếu PDF](../sources.md#pdf).
+Nguồn: §2.4.1.16, tr.109-112 (mô tả, bảng đặc tả và hình phân tích). Xem [cách đối chiếu PDF](../sources.md#pdf).
 
 **Bối cảnh nghiệp vụ:** Cho phép người có thẩm quyền lập biên bản cho trận đấu đã được lên lịch hợp lệ. Biên bản ghi nhận danh sách cầu thủ ra sân và các sự kiện trận đấu, bao gồm bàn thắng, thời điểm ghi bàn, loại bàn thắng và thẻ phạt. Dữ liệu phải đủ căn cứ để kiểm tra tỷ số và xác nhận kết quả.
 
@@ -57,7 +57,7 @@ Biên bản chưa hoàn tất: người dùng tiếp tục cập nhật trước
 
 **Cập nhật kết quả trận đấu**
 
-Nguồn: §2.4.1.17, tr.112–114 (mô tả, bảng đặc tả và hình phân tích). Xem [cách đối chiếu PDF](../sources.md#pdf).
+Nguồn: §2.4.1.17, tr.112-114 (mô tả, bảng đặc tả và hình phân tích). Xem [cách đối chiếu PDF](../sources.md#pdf).
 
 **Bối cảnh nghiệp vụ:** Cho phép người có thẩm quyền cập nhật dữ liệu kết quả từ biên bản trận đấu. Kết quả được cập nhật ở bước này chưa mặc nhiên là kết quả chính thức; việc công nhận chính thức được thực hiện thông qua UC18 - Xác nhận kết quả trận đấu.
 
@@ -105,7 +105,7 @@ Người dùng không thay đổi dữ liệu: hệ thống giữ nguyên kết 
 
 **Xác nhận kết quả trận đấu**
 
-Nguồn: §2.4.1.18, tr.115–118 (mô tả, bảng đặc tả và hình phân tích). Xem [cách đối chiếu PDF](../sources.md#pdf).
+Nguồn: §2.4.1.18, tr.115-118 (mô tả, bảng đặc tả và hình phân tích). Xem [cách đối chiếu PDF](../sources.md#pdf).
 
 **Bối cảnh nghiệp vụ:** Cho phép người có thẩm quyền kiểm tra và xác nhận kết quả chính thức sau khi trận đấu kết thúc. Hệ thống phải bảo đảm kết quả khớp với biên bản, không xác nhận lặp và không cập nhật một phần các dữ liệu phụ thuộc. Sau khi xác nhận thành công, bảng xếp hạng, thống kê và báo cáo liên quan phải phản ánh kết quả đã được công nhận.
 
@@ -161,7 +161,7 @@ Ban tổ chức / Người quản lý mùa giải.
 
 **Điều chỉnh kết quả trận đấu đã xác nhận**
 
-Nguồn: §2.4.1.19, tr.118–121 (mô tả, bảng đặc tả và hình phân tích). Xem [cách đối chiếu PDF](../sources.md#pdf).
+Nguồn: §2.4.1.19, tr.118-121 (mô tả, bảng đặc tả và hình phân tích). Xem [cách đối chiếu PDF](../sources.md#pdf).
 
 **Bối cảnh nghiệp vụ:** Cho phép người có thẩm quyền điều chỉnh một kết quả đã được xác nhận chính thức khi có căn cứ hợp lệ. Do kết quả đã xác nhận ảnh hưởng đến bảng xếp hạng, thống kê và báo cáo, hệ thống phải lưu lịch sử trước-sau, kiểm tra quyền và xử lý thay đổi như một quy trình nhất quán. Không được cập nhật trực tiếp khiến dữ liệu phụ thuộc bị sai lệch.
 
@@ -182,7 +182,7 @@ Ban tổ chức / Người quản lý mùa giải; Nhân viên phụ trách kế
 **Hậu điều kiện:**
 
 1. Kết quả mới được lưu hợp lệ.
-2. Lịch sử trước–sau và lý do điều chỉnh được ghi nhận.
+2. Lịch sử trước-sau và lý do điều chỉnh được ghi nhận.
 3. Bảng xếp hạng, thống kê và báo cáo liên quan được cập nhật nhất quán.
 4. Nhật ký thao tác được lưu.
 
@@ -217,7 +217,7 @@ Ban tổ chức / Người quản lý mùa giải; Nhân viên phụ trách kế
 
 **Cập nhật bảng xếp hạng và thống kê**
 
-Nguồn: §2.4.1.20, tr.121–123 (mô tả, bảng đặc tả và hình phân tích). Xem [cách đối chiếu PDF](../sources.md#pdf).
+Nguồn: §2.4.1.20, tr.121-123 (mô tả, bảng đặc tả và hình phân tích). Xem [cách đối chiếu PDF](../sources.md#pdf).
 
 **Bối cảnh nghiệp vụ:** Trạng thái: Xử lý nội bộ, không phải chức năng độc lập để người dùng tùy ý cập nhật điểm.
 

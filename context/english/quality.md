@@ -1,8 +1,8 @@
 # Quality requirements and constraints already in the report
 
-Source: §1.2.2–1.2.8 pp.11–32. All 34 original requirement codes are retained. Descriptions/criteria below are presented concisely from the detailed tables; all numeric thresholds remain unchanged. Read with the [Progress Checker](progress-checker.md) for responsible Phases; design choices for achieving them await v2 in the [decision register](open-decisions.md). Cross-cutting requirements must be checked in functional Phases and regression-tested in PHASE 10.
+Source: §1.2.2-1.2.8 pp.11-32. All 34 original requirement codes are retained. Descriptions/criteria below are presented concisely from the detailed tables; all numeric thresholds remain unchanged. Read with the [Progress Checker](progress-checker.md) for responsible Phases; design choices for achieving them await v2 in the [decision register](open-decisions.md). Cross-cutting requirements must be checked in functional Phases and regression-tested in PHASE 10.
 
-## Evolution - TH (Table 1.2, details pp.13–14)
+## Evolution - TH (Table 1.2, details pp.13-14)
 
 | Code | Requirement and verifiable criteria | Priority |
 |---|---|---|
@@ -24,7 +24,7 @@ Source: §1.2.2–1.2.8 pp.11–32. All 34 original requirement codes are retain
 
 Measure these targets in a defined environment and compare with the intended deployment environment (§1.2.3.1 p.14). Do not add a schedule-generation time limit that the report has not quantified.
 
-## Compatibility - TT (Table 1.4, details pp.19–20)
+## Compatibility - TT (Table 1.4, details pp.19-20)
 
 | Code | Requirement and verifiable criteria | Priority |
 |---|---|---|
@@ -34,7 +34,7 @@ Measure these targets in a defined environment and compare with the intended dep
 | TT-04 | Use consistent character encoding (UTF-8 is an example); correctly store, search, display, and export Vietnamese text with diacritics. Preserve date/time, score, and identifier values/formats during exchange | High |
 | TT-05 | Extensibility to receive/provide data through external APIs. Core functions remain operational without a connection. **If integration is implemented**, validate/normalize structure, handle invalid data, and retain business validation/confirmation steps. Building integration is not mandatory in the first product version | Low |
 
-## Security - hyphenated BM codes (Table 1.5, details pp.23–24)
+## Security - hyphenated BM codes (Table 1.5, details pp.23-24)
 
 BM-01 is a security requirement; BM1 is a form. Preserve the spelling to distinguish the two code systems.
 
@@ -54,9 +54,9 @@ Data transmission requires protection appropriate to the deployment environment 
 
 | Code | Existing constraint and verifiable criteria | Priority |
 |---|---|---|
-| CN-01 | Client–Server web application with separate UI/server processing and a consistent language/library/tool selection suited to the environment. Install/start successfully in the defined environment; use core functions and communicate with the server through a browser without a separate application installation | High |
+| CN-01 | Client-Server web application with separate UI/server processing and a consistent language/library/tool selection suited to the environment. Install/start successfully in the defined environment; use core functions and communicate with the server through a browser without a separate application installation | High |
 | CN-02 | A **relational** database, centralized under §1.2.6.1, with integrity constraints and transactions for seasons/clubs/players/matches/results. Reject relationship violations; failed result confirmation/correction must not persist partial updates | High |
-| CN-03 | Version control, dependencies/configuration, and installation–configuration–startup instructions. On a new environment meeting prerequisites, following the instructions must successfully install, connect to the database, and start the system | High |
+| CN-03 | Version control, dependencies/configuration, and installation-configuration-startup instructions. On a new environment meeting prerequisites, following the instructions must successfully install, connect to the database, and start the system | High |
 | CN-04 | Layered/modular organization with clear UI, business, and data-access responsibilities. Rule configuration and component extension must be tested to preserve related functionality without introducing existing-business-function failures | High |
 
 These are existing constraints, not new design choices. Framework, database product, module model, ERD/schema, API, and specific environment await v2.
@@ -77,4 +77,4 @@ These are existing constraints, not new design choices. Framework, database prod
 | AT-01 | Validate applications/schedules/results before recording. Reject invalid data and preserve valid saved data. Repeated requests to confirm the same result must not double-count matches, points, or goals; count each match once except for valid corrections | High |
 | AT-02 | Update related data consistently with conflict detection/handling. Simulated result-update failures leave no partial data/statistics; two users editing one record must not silently overwrite the earlier saved change, and must be notified to resolve the conflict | High |
 | AT-03 | Schedule/official-result/regulation corrections respect status, conditions, authority, and season scope. Invalid changes are rejected with data preserved; valid changes leave results and statistics consistent | High |
-| AT-04 | Preserve season–club–player–match–result relationships. Block deletion/changes that break historical references; support discontinuation/archiving. Discontinuing a club or adding a season must not distort previous applications/schedules/results/reports; history remains accurately searchable | High |
+| AT-04 | Preserve season-club-player-match-result relationships. Block deletion/changes that break historical references; support discontinuation/archiving. Discontinuing a club or adding a season must not distort previous applications/schedules/results/reports; history remains accurately searchable | High |
