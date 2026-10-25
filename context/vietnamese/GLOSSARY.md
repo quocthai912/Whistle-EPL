@@ -1,6 +1,6 @@
-# Whistle-EPL - Thuật ngữ nghiệp vụ
+# Whistle-EPL - Glossary nghiệp vụ
 
-Một ngữ cảnh duy nhất cho hệ thống quản lý Premier League. Định nghĩa theo PDF; [quy ước nguồn](sources.md). Chỉ thống nhất nghĩa nghiệp vụ, không xác định mô hình lưu trữ.
+Một ngữ cảnh nghiệp vụ và một glossary mỗi ngôn ngữ. Định nghĩa mô tả ý nghĩa miền; quy tắc và bằng chứng quyết định liên kết tới nơi sở hữu. [Nguồn](sources.md).
 
 ## Giải đấu và tổ chức
 
@@ -16,6 +16,8 @@ Một ngữ cảnh duy nhất cho hệ thống quản lý Premier League. Địn
 
 **Sân nhà**: Sân được CLB đăng ký trong hồ sơ theo mùa, mặc định dùng khi CLB là chủ nhà trừ thay đổi được Ban tổ chức chấp thuận (BM1, QĐ2.3).
 
+**Phiên bản quy định mùa giải**: Một bộ quy định đầy đủ riêng cho một mùa, có nội dung đã duyệt được giữ nguyên làm căn cứ nghiệp vụ; thay đổi nội dung đã duyệt cần phiên bản mới được phê duyệt ([D042](use-cases/registration.md#d042---phiên-bản-quy-định-mùa-giải-đã-duyệt-có-nội-dung-bất-biến), xác nhận 2026-10-25).
+
 ## Hồ sơ và đăng ký
 
 **Cầu thủ / Hồ sơ cầu thủ**: Cá nhân và hồ sơ định danh cơ bản, phân biệt với việc đăng ký cho CLB/mùa cụ thể (UC09 tr.88-90).
@@ -26,11 +28,23 @@ Một ngữ cảnh duy nhất cho hệ thống quản lý Premier League. Địn
 
 **Danh sách chính thức**: Danh sách cầu thủ chịu giới hạn mặc định tối đa 25 và tối đa 17 không đáp ứng tiêu chí đào tạo nội địa; U21 đủ điều kiện đăng ký ngoài giới hạn 25 (QĐ1.2-1.4).
 
-**Cầu thủ đáp ứng tiêu chí đào tạo nội địa (Home Grown Player)**: Có ít nhất ba mùa hoặc 36 tháng đăng ký tại CLB thuộc Liên đoàn Anh hoặc Wales trong giai đoạn tuổi được quy định, không phân biệt quốc tịch (QĐ1.3). _Tránh_: “cầu thủ quốc tịch Anh” thay cho tiêu chí đào tạo.
+**Cầu thủ đáp ứng tiêu chí đào tạo nội địa (Home Grown Player)**: Cầu thủ đáp ứng điều kiện đào tạo của mùa, không phụ thuộc quốc tịch; mặc định nguồn là ba mùa hoặc 36 tháng trong khoảng tuổi quy định tại CLB thuộc liên đoàn Anh/Wales (QĐ1.3).
 
 **U21**: Diện đăng ký xác định bằng mốc ngày sinh của từng mùa; không tự suy ra bằng tuổi tại ngày hiện tại (QĐ1.4).
 
 **Đăng ký còn hiệu lực**: Đăng ký thi đấu đang có hiệu lực trong khoảng thời gian được xem xét; một cầu thủ chỉ được có một đăng ký như vậy tại một thời điểm trong cùng giải (QĐ1.5).
+
+**Hiệu chỉnh đăng ký đã hợp lệ**: Việc sửa sai nội dung, phân loại hoặc khoảng hiệu lực đăng ký đã xác nhận qua phê duyệt độc lập, phân biệt với xác nhận ban đầu và kết thúc/chuyển CLB thông thường ([D057](use-cases/registration.md#d057---hiệu-chỉnh-đăng-ký-đã-hợp-lệ-qua-phê-duyệt-độc-lập), xác nhận 2026-10-25).
+
+**Khoảng hiệu lực thi đấu**: Khoảng từ mốc bắt đầu được tính đến mốc kết thúc không được tính của đăng ký hợp lệ, có thể chưa xác định kết thúc cho tới khi chấm dứt; các khoảng đã xác nhận của cùng cầu thủ và giải không được chồng lấn ([D056](use-cases/registration.md#d056---khoảng-hiệu-lực-thi-đấu-và-chuyển-clb-nhất-quán), xác nhận 2026-10-25).
+
+**Đăng ký cầu thủ hợp lệ**: Đăng ký được Nhân viên đăng ký xác nhận đạt các kiểm tra áp dụng theo UC10; riêng việc xác nhận này không chứng minh khoảng hiệu lực thi đấu bao gồm một thời điểm cụ thể ([D055](use-cases/registration.md#d055---luồng-hồ-sơ-clb-và-đăng-ký-cầu-thủ-theo-phiên-bản), xác nhận 2026-10-25).
+
+**Căn cứ xác minh homegrown**: Tài liệu và đánh giá được nhân sự ghi nhận để chứng minh số mùa hoặc tháng đạt điều kiện homegrown của mùa, phân biệt với quốc tịch hoặc trạng thái U21 ([D054](use-cases/registration.md#d054---tự-xét-u21-và-kiểm-tra-homegrown-bằng-căn-cứ-do-nhân-sự-xác-minh), xác nhận 2026-10-25).
+
+**Đợt tiếp nhận đăng ký**: Khoảng mở/đóng theo mùa để tiếp nhận hồ sơ tham gia CLB hoặc đăng ký/thay đổi danh sách cầu thủ, được quản lý riêng cho hai nhóm ([D053](use-cases/registration.md#d053---đợt-đăng-ký-hạn-tiếp-nhận-và-ngoại-lệ-từng-hồ-sơ), xác nhận 2026-10-25).
+
+**Ngoại lệ hạn tiếp nhận**: Việc miễn điều kiện thời hạn tiếp nhận đã được phê duyệt cho một phiên bản hồ sơ xác định, không miễn điều kiện cầu thủ, hạn mức hoặc quy tắc xung đột đăng ký ([D053](use-cases/registration.md#d053---đợt-đăng-ký-hạn-tiếp-nhận-và-ngoại-lệ-từng-hồ-sơ)).
 
 ## Trận đấu và kết quả
 
@@ -52,6 +66,16 @@ Một ngữ cảnh duy nhất cho hệ thống quản lý Premier League. Địn
 
 **Sự kiện thẻ phạt**: Thẻ vàng hoặc đỏ gắn trận, cầu thủ, CLB, thời điểm; không bao gồm hệ thống kỷ luật/đình chỉ độc lập (QĐ3.5; tr.38-39).
 
+**Phút sự kiện trận**: Phút chính cùng phần bù giờ ghi riêng để xác định lúc bàn thắng/thẻ xảy ra; bù giờ hiệp một vẫn thuộc hiệp một, không chuyển thành phút hiệp hai ([D065](use-cases/results.md#d065---phút-sự-kiện-có-cấu-trúc-kiểm-tra-tỷ-số-và-tham-chiếu-chữ-ký-trọng-tài), xác nhận 2026-10-25).
+
+**Phiên bản biên bản trận**: Một bản nội dung trong hồ sơ biên bản duy nhất của trận; bản đã trình được giữ nguyên khi chờ xác nhận, độc lập với việc kết quả trước đó vẫn chính thức ([D063](use-cases/results.md#d063---tách-vòng-đời-trận-phiên-bản-biên-bản-và-kết-quả-chính-thức), xác nhận 2026-10-25).
+
+**Khoảng thi đấu dự kiến**: Khoảng nửa kín từ giờ bắt đầu theo lịch đến giờ kết thúc dự kiến, dùng kiểm tra xung đột lịch CLB theo thời lượng kế hoạch của mùa ([D061](use-cases/scheduling.md#d061---khoảng-kế-hoạch-theo-mùa-và-kiểm-tra-xung-đột-lịch-toàn-hệ-thống), xác nhận 2026-10-25).
+
+**Khoảng chiếm dụng sân**: Khoảng thi đấu dự kiến nửa kín được mở rộng bằng đệm chuẩn bị và giải phóng sân của mùa, dùng kiểm tra xung đột phân bổ sân ([D061](use-cases/scheduling.md#d061---khoảng-kế-hoạch-theo-mùa-và-kiểm-tra-xung-đột-lịch-toàn-hệ-thống)).
+
+**Giờ bắt đầu thực tế của trận**: Thời điểm được ghi nhận khi trận thực sự bắt đầu, phân biệt với giờ trong lịch và lúc nhập biên bản; dùng xác định danh mục bàn thắng/thẻ áp dụng theo [D047](use-cases/results.md#d047---gắn-danh-mục-sự-kiện-trận-với-giờ-bắt-đầu-thực-tế-được-ghi-nhận), xác nhận 2026-10-25.
+
 ## Tổng hợp và công bố
 
 **Bảng xếp hạng (BXH)**: Thành tích CLB theo mùa tính từ kết quả chính thức, gồm trận, thắng, hòa, thua, bàn thắng, bàn thua, hiệu số, điểm, hạng (BM5.1; QĐ5).
@@ -62,7 +86,7 @@ Một ngữ cảnh duy nhất cho hệ thống quản lý Premier League. Địn
 
 **Trận giữ sạch lưới**: Trận chính thức CLB không thủng lưới, cộng cho thủ môn xác định từ danh sách ra sân; phạm vi hiện tại chưa xét thay thủ môn (QĐ5.7).
 
-**Găng tay vàng**: Danh hiệu xác định theo số trận giữ sạch lưới của thủ môn trong mùa (QĐ5.7); cách xử lý đồng số chưa được nguồn chốt.
+**Găng tay vàng**: Giải mùa dành cho số trận giữ sạch lưới dương cao nhất của thủ môn; cùng mức cao nhất thì đồng giải ([D066](use-cases/publication.md#d066---đồng-hạng-trên-bảng-xếp-hạng-và-đồng-giải-cá-nhân); QĐ5.7).
 
 **Báo cáo tổng kết mùa giải**: BM5.3, chỉ được xác nhận khi đủ kết quả mọi trận và giải quyết phân hạng cần thiết (QĐ5.5).
 
@@ -71,3 +95,29 @@ Một ngữ cảnh duy nhất cho hệ thống quản lý Premier League. Địn
 **Quy định mùa giải**: Bộ điều kiện nghiệp vụ áp dụng theo mùa, có thẩm quyền phê duyệt và thời điểm hiệu lực (QĐ6; UC06).
 
 **Lịch sử thay đổi / Nhật ký hoạt động**: Thông tin truy vết người, thời điểm, thao tác/đối tượng, nội dung trước-sau đối với những thay đổi quan trọng; chỉ được truy cập theo quyền (tr.38; BM-06). Hai cách gọi có phạm vi liên quan trong nguồn, chưa bắt buộc là cùng một cơ chế kỹ thuật.
+
+**Đồng hạng trên bảng xếp hạng**: Hạng thể thao chung cho các CLB bằng toàn bộ tiêu chí chính áp dụng, hạng sau bỏ qua theo số CLB trong nhóm; thứ tự hiển thị trong nhóm không phân định hòa ([D066](use-cases/publication.md#d066---đồng-hạng-trên-bảng-xếp-hạng-và-đồng-giải-cá-nhân), xác nhận 2026-10-25).
+
+## Thẩm quyền và phạm vi thông tin
+
+**Ủy quyền nghiệp vụ**: Quyền cho một thao tác nghiệp vụ, mùa và thời hạn xác định, phân biệt với cấp toàn bộ vai trò ([D013](design/access-control.md#d013---ủy-quyền-nghiệp-vụ-riêng-theo-thao-tác-mùa-và-thời-hạn)).
+
+**Quyền nghiệp vụ trực tiếp**: Quyền có trực tiếp từ vai trò theo mùa tương ứng thay vì nhận qua ủy quyền ([D015](design/access-control.md#d015---ủy-quyền-một-cấp-dựa-trên-quyền-trực-tiếp-từ-vai-trò)).
+
+**Tài khoản nội bộ cá nhân**: Tài khoản duy nhất được cấp cho một nhân sự nội bộ trên toàn hệ thống, mang các vai trò và phân công mùa tương ứng của người đó, không dùng chung với người khác ([D031](use-cases/administration.md#d031---mỗi-người-một-tài-khoản-nội-bộ-cá-nhân), xác nhận 2026-10-25).
+
+**Thông tin giải đấu công khai**: Thông tin giải đấu đã được cho phép xem không cần đăng nhập trong phạm vi mùa/xuất bản, gồm ngày sinh cầu thủ theo quyết định v2 của Nhóm trưởng ([D032](use-cases/publication.md#d032---phạm-vi-công-khai-gồm-ngày-sinh-cầu-thủ), xác nhận 2026-10-25).
+
+**Thông tin giải đấu nội bộ**: Thông tin quản trị, hồ sơ và cá nhân nằm ngoài phạm vi công khai đã duyệt, chỉ được truy cập với thẩm quyền tương ứng ([D032](use-cases/publication.md#d032---phạm-vi-công-khai-gồm-ngày-sinh-cầu-thủ)). Quyền xem theo vai trò phụ trách và mùa, không chỉ dựa vào đăng nhập ([D033](use-cases/publication.md#d033---xem-dữ-liệu-nội-bộ-theo-trách-nhiệm-nghiệp-vụ)).
+
+## Media được quản lý
+
+**Logo CLB**: Nhận diện hình ảnh hiện tại được quản lý cùng hồ sơ CLB gốc dùng chung, hiển thị nhất quán cả ở mùa cũ và có fallback khi không khả dụng; các sự kiện lịch sử CLB khác được giữ độc lập ([LOGO-01](design/media.md#logo-01---thiết-kế-logo-đã-phê-duyệt)).
+
+**Ảnh hồ sơ cầu thủ / Ảnh đại diện**: Ảnh được quản lý gắn với hồ sơ cầu thủ, hiển thị cùng thông tin đăng ký mùa tương ứng và có fallback; chính sách kiểm tra/lịch sử riêng cho ảnh cầu thủ vẫn mở ([phạm vi media](design/media.md#phạm-vi-ảnh-cầu-thủ-và-quyết-định-còn-mở)).
+
+## Trình bày mùa giải
+
+**Trận đã hoãn**: Trận chưa bắt đầu được ghi nhận chưa thể diễn ra theo lịch công bố, khác trận đã bắt đầu bị gián đoạn hoặc bị hủy vĩnh viễn ([POSTPONE-01](use-cases/scheduling.md#postpone-01---quản-lý-hoãn-trận-phiên-bản-đầu)).
+
+**Dashboard tổng quan mùa giải**: Giao diện tổng quan công khai dùng chung cho một mùa được chọn, thống kê giải chính thức và điều hướng liên quan ([DASHBOARD-01](use-cases/publication.md#dashboard-01---dashboard-tổng-quan-mùa-giải)).

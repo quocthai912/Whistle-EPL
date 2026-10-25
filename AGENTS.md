@@ -12,7 +12,7 @@ Read Vietnamese context only when requested by the user or when resolving
 a translation issue or business ambiguity against the source; do not load
 both language sets automatically. Project Phase IDs use `PHASE 1`, etc.;
 these are distinct from the internal phases of Spec Kit `tasks.md`.
-Context Package `v1` is `APPROVED` by Team Leader on `2026-10-24`.
+The current Context Package is v2 under development, with individually confirmed decisions and whole-package approval pending. Versions are milestones of one evolving package; update owning current documents in both languages and preserve approval history in Git. Context Package `v1` was `APPROVED` by Team Leader on `2026-10-24`.
 Reviewed Commit: `adad61f2a0625d62538aa10ce0ec8b6a91defa53`;
 Branch: `docs/build-agent-context`. Approval covers the business-requirements foundation,
 document structure, traceability, and Phase decomposition only. It satisfies
@@ -45,3 +45,5 @@ Specification. Keep Issues consistent with tasks.md.
 
 Single-context layout. Before exploring the codebase,
 read `docs/agents/domain.md`.
+
+For current rule ownership and the [D001](context/english/design/architecture.md#d001---modular-layered-monolithic-backend)-[D068](context/english/use-cases/publication.md#d068---public-season-overview-dashboard) index, use [design navigation](context/english/design/README.md). README routes readers, the single-language glossary defines terms, English ADRs retain rationale/approval evidence, and open-decisions contains only unresolved work. Load the selected owner rather than all decision records. Versions are Git milestones; do not maintain parallel version copies.

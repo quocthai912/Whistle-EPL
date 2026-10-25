@@ -2,7 +2,7 @@
 
 [Điểm truy cập](../README.md) · [Nghiệp vụ/BM/QĐ](../business.md) · [Chất lượng](../quality.md) · [Điểm mở](../open-decisions.md)
 
-Các bản ghi dưới đây chuyển bảng đặc tả từ PDF sang Markdown, giữ nội dung và thứ tự bước; chỉ bỏ header/footer và nối dòng. Không phải feature Specification mới. Trang và hình tham chiếu dùng quy ước [nguồn](../sources.md). Sơ đồ lớp/sequence là mô hình phân tích trong báo cáo, chưa xác lập API, schema hay cấu trúc mã nguồn.
+Luồng UC hiện hành giữ mã/trang nguồn và tích hợp làm rõ được duyệt rõ. Quy tắc chính thức của miền được liên kết bên dưới; bằng chứng duyệt/nguồn/lý do ở ADR English. Đây là tài liệu Context, không phải feature Specification sinh mới. Hình phân tích không phải API/schema đã duyệt. Xem [nguồn](../sources.md).
 
 ## UC12
 
@@ -51,11 +51,13 @@ Người dùng tra cứu sân: hệ thống hiển thị các sân phù hợp.
 
 ## UC13
 
+Quy tắc hiện hành: [D060](scheduling.md#d060---tự-sinh-cặp-đấu-và-hoàn-thiện-lịch-nháp-bằng-nhập-liệu), [D061](scheduling.md#d061---khoảng-kế-hoạch-theo-mùa-và-kiểm-tra-xung-đột-lịch-toàn-hệ-thống), [D062](scheduling.md#d062---duyệt-lịch-đồng-thời-công-bố-và-điều-chỉnh-theo-phiên-bản).
+
 **Lập lịch thi đấu**
 
 Nguồn: §2.4.1.13, tr.100-103 (mô tả, bảng đặc tả và hình phân tích). Xem [cách đối chiếu PDF](../sources.md#pdf).
 
-**Bối cảnh nghiệp vụ:** Cho phép người có thẩm quyền xây dựng lịch thi đấu cho mùa giải. Lịch phải đáp ứng thể thức cơ sở gồm 20 câu lạc bộ, 38 vòng và 380 trận, bảo đảm mỗi cặp câu lạc bộ gặp nhau hai lượt theo hình thức sân nhà và sân khách. Hệ thống phải kiểm tra xung đột lịch giữa câu lạc bộ và sân vận động.
+**Bối cảnh nghiệp vụ:** Cho phép người có thẩm quyền xây dựng lịch thi đấu cho mùa giải. Lịch hỗ trợ số câu lạc bộ chẵn cấu hình từ 4 đến 20 theo D060, mặc định 20 câu lạc bộ, 38 vòng và 380 trận, bảo đảm mỗi cặp câu lạc bộ gặp nhau hai lượt theo hình thức sân nhà và sân khách. Hệ thống phải kiểm tra xung đột lịch giữa câu lạc bộ và sân vận động.
 
 **Mô tả:**
 
@@ -89,14 +91,14 @@ Nhân viên phụ trách lịch thi đấu; Ban tổ chức / Người quản l�
 7. Hệ thống kiểm tra xung đột sử dụng sân.
 8. Hệ thống hiển thị kết quả kiểm tra.
 9. Nhân viên điều chỉnh các mục không hợp lệ và yêu cầu kiểm tra lại.
-10. Khi lịch hợp lệ, nhân viên xác nhận lưu lịch và trình Ban tổ chức phê duyệt.
+10. Khi lịch hợp lệ, nhân viên xác nhận lưu lịch và trình người thuộc Ban tổ chức / Người quản lý mùa giải có thẩm quyền, không tham gia chuẩn bị hoặc chỉnh sửa phiên bản đó, phê duyệt theo [D005](administration.md#d005---tách-biệt-trách-nhiệm-lập-và-phê-duyệt)/[D062](#d062---duyệt-lịch-đồng-thời-công-bố-và-điều-chỉnh-theo-phiên-bản).
 11. Hệ thống lưu lịch ở trạng thái chờ phê duyệt và ghi nhận nhật ký.
 
 **Luồng thay thế:**
 
 1. Người dùng nhập lịch theo từng phần: hệ thống kiểm tra các trận đã nhập và tính nhất quán của lịch tổng thể.
-2. Lịch chưa đủ dữ liệu: hệ thống lưu nháp nếu chức năng lưu nháp được hỗ trợ; lịch nháp không được xem là lịch chính thức.
-3. Ban tổ chức phê duyệt lịch đã trình: hệ thống chuyển lịch sang trạng thái được phép công bố; nếu không chấp thuận, lịch tiếp tục ở trạng thái chưa công bố và được trả về để điều chỉnh.
+2. Lịch chưa đủ dữ liệu: lưu nháp chưa hoàn chỉnh theo [D060](scheduling.md#d060---tự-sinh-cặp-đấu-và-hoàn-thiện-lịch-nháp-bằng-nhập-liệu); không phải lịch chính thức.
+3. Người có thẩm quyền độc lập duyệt lịch: công bố ngay theo [D062](scheduling.md#d062---duyệt-lịch-đồng-thời-công-bố-và-điều-chỉnh-theo-phiên-bản); trả/từ chối giữ lịch chưa công bố để sửa.
 
 **Ngoại lệ:**
 
@@ -106,6 +108,8 @@ Nhân viên phụ trách lịch thi đấu; Ban tổ chức / Người quản l�
 4. Lỗi lưu dữ liệu: không để lại lịch chính thức chỉ được lưu một phần.
 
 ## UC14
+
+Quy tắc hiện hành: [D061](scheduling.md#d061---khoảng-kế-hoạch-theo-mùa-và-kiểm-tra-xung-đột-lịch-toàn-hệ-thống), [D062](scheduling.md#d062---duyệt-lịch-đồng-thời-công-bố-và-điều-chỉnh-theo-phiên-bản).
 
 **Điều chỉnh lịch thi đấu**
 
@@ -141,7 +145,7 @@ Nhân viên phụ trách lịch thi đấu; Ban tổ chức / Người quản l�
 4. Hệ thống kiểm tra quyền và điều kiện điều chỉnh.
 5. Hệ thống kiểm tra xung đột câu lạc bộ và sân.
 6. Hệ thống hiển thị thông tin trước và sau thay đổi.
-7. Người dùng xác nhận đề xuất điều chỉnh; việc thay đổi phải được phê duyệt hoặc ủy quyền hợp lệ theo thẩm quyền.
+7. Trình điều chỉnh theo phiên bản; người có thẩm quyền khác, gồm người nhận ủy quyền đủ điều kiện, duyệt theo [D005](administration.md#d005---tách-biệt-trách-nhiệm-lập-và-phê-duyệt)/[D019](../design/access-control.md#d019---ma-trận-thao-tác-và-vai-trò-được-nhận-ủy-quyền-trong-phiên-bản-đầu)/[D062](scheduling.md#d062---duyệt-lịch-đồng-thời-công-bố-và-điều-chỉnh-theo-phiên-bản).
 8. Hệ thống lưu lịch mới và lịch sử điều chỉnh.
 9. Hệ thống thông báo kết quả.
 
@@ -198,4 +202,81 @@ Người dùng không chọn bộ lọc chi tiết: hệ thống hiển thị l�
 
 1. Không có kết quả: thông báo phù hợp.
 2. Dữ liệu lịch không thể tải: thông báo lỗi mà không thay đổi dữ liệu.
+## Hiển thị media được quản lý hiện hành
 
+Dùng [chính sách media](../design/media.md) cho Logo hiện tại, ảnh cầu thủ và fallback. Hiển thị không đổi thẩm quyền/tính toán nghiệp vụ UC.
+
+## Quy tắc hiện hành đã xác nhận
+
+Các quy tắc dưới đây là chính sách hiện hành chính thức của miền. Đọc luồng UC/điều khoản nguồn phía trên cùng các làm rõ được đánh dấu này, không phải phiên bản riêng. Bằng chứng duyệt và ghi chú tại thời điểm phỏng vấn nằm trong ADR English được liên kết; công việc chưa chốt tại [quyết định mở](../open-decisions.md).
+
+### D060 - Tự sinh cặp đấu và hoàn thiện lịch nháp bằng nhập liệu
+
+**Chính sách đã xác nhận.** [Phê duyệt, nguồn và lý do](../../../docs/adr/0012-schedule-generation-scope-and-drafts.md#d060-english-evidence).
+
+- **Nguồn:** O10/O12; QĐ2, UC13, TH-02; [D005](administration.md#d005---tách-biệt-trách-nhiệm-lập-và-phê-duyệt)/[D044](registration.md#d044---khóa-cấu-trúc-thi-đấu-sau-khi-phê-duyệt-lịch-ban-đầu).
+
+- **Phạm vi hỗ trợ:** Phiên bản đầu vòng tròn hai lượt với số CLB chẵn từ 4 đến 20, mặc định 20. Khoảng 4-20 là lựa chọn phạm vi v2 đã chốt. Báo rõ số lẻ, một lượt và thể thức khác chưa hỗ trợ thay vì sinh lịch sai.
+
+- **Đầu vào/sinh lịch:** Nhân viên lịch thi đấu chọn đúng số CLB theo cấu hình, tất cả có hồ sơ tham gia đã duyệt. Tự sinh đầy đủ vòng/cặp đấu, đảo sân nhà/sân khách giữa hai lượt: 2*(N-1) vòng và N*(N-1) trận; mặc định tạo 38 vòng, 380 trận.
+
+- **Hoàn thiện:** Nhân sự nhập ngày giờ; gợi ý sân nhà đã đăng ký. Thay sân vẫn chịu điều kiện phê duyệt của nguồn. Không yêu cầu tự động tối ưu toàn bộ lịch ngày giờ/phân sân.
+
+- **Nháp/phê duyệt:** Lưu nháp chưa hoàn chỉnh kèm chỉ rõ thiếu trường/xung đột; không công khai nháp. Chỉ trình toàn bộ lịch ban đầu khi đủ dữ liệu, đúng cấu trúc và đạt kiểm tra CLB/sân. Công bố cần phê duyệt theo [D005](administration.md#d005---tách-biệt-trách-nhiệm-lập-và-phê-duyệt); không duyệt riêng từng phần lịch ban đầu.
+
+### D061 - Khoảng kế hoạch theo mùa và kiểm tra xung đột lịch toàn hệ thống
+
+**Chính sách đã xác nhận.** [Phê duyệt, nguồn và lý do](../../../docs/adr/0012-schedule-generation-scope-and-drafts.md#d061-english-evidence).
+
+- **Nguồn:** O03/O07/O10/O12; QĐ2.4-QĐ2.6, UC13/UC14; [D024](../design/architecture.md#d024---thời-điểm-theo-utc-nhậphiển-thị-thống-nhất-múi-giờ-việt-nam)/[D044](registration.md#d044---khóa-cấu-trúc-thi-đấu-sau-khi-phê-duyệt-lịch-ban-đầu)/[D060](scheduling.md#d060---tự-sinh-cặp-đấu-và-hoàn-thiện-lịch-nháp-bằng-nhập-liệu).
+
+- **Tham số:** Bắt buộc có thời lượng trận dự kiến, đệm chuẩn bị sân trước trận và đệm giải phóng sân sau trận được duyệt theo mùa, đơn vị phút. Thời lượng dương; đệm không âm. Không ngầm định 90 phút hoặc giá trị đệm. Khóa cả ba từ khi duyệt lịch ban đầu trong phạm vi phiên bản đầu.
+
+- **Khoảng:** CLB dùng [giờ theo lịch, giờ theo lịch + thời lượng dự kiến). Sân chiếm dụng [giờ theo lịch - đệm chuẩn bị, giờ kết thúc dự kiến + đệm giải phóng). Từ chối khoảng CLB hoặc sân chồng lấn; cho nối tiếp đúng biên.
+
+- **Phạm vi:** Hoãn đã duyệt giải phóng phân bổ theo [D067](#d067---phê-duyệt-hoãn-và-trở-lại-lịch-qua-uc14). Kiểm tra cùng CLB/sân trên toàn hệ thống, gồm khác mùa. Kiểm tra nháp với chính nó và lịch đã duyệt; nháp hoặc đề nghị chờ không giữ chỗ.
+
+- **Phê duyệt/điều chỉnh:** Kiểm tra lại xung đột trước khi duyệt thành công, gồm yêu cầu đồng thời. Điều chỉnh thay phân bổ cũ của chính trận, không xung đột với bản thân. Đổi ngày giờ/sân vẫn theo UC14.
+
+- **Ranh giới vận hành:** Khoảng phục vụ kế hoạch; giờ bắt đầu thực tế vẫn theo [D047](results.md#d047---gắn-danh-mục-sự-kiện-trận-với-giờ-bắt-đầu-thực-tế-được-ghi-nhận)/[D048](results.md#d048---ghi-giờ-bắt-đầu-thực-tế-trong-biên-bản-và-xác-nhận-cùng-kết-quả-chính-thức) và không tự sửa lịch đã duyệt. Phiên bản đầu không thêm ràng buộc nghỉ tối thiểu giữa trận hoặc thời gian di chuyển CLB.
+
+### D062 - Duyệt lịch đồng thời công bố và điều chỉnh theo phiên bản
+
+**Chính sách đã xác nhận.** [Phê duyệt, nguồn và lý do](../../../docs/adr/0012-schedule-generation-scope-and-drafts.md#d062-english-evidence).
+
+- **Nguồn:** O08/O09/O10/O12; UC13-UC15; [D005](administration.md#d005---tách-biệt-trách-nhiệm-lập-và-phê-duyệt)/[D019](../design/access-control.md#d019---ma-trận-thao-tác-và-vai-trò-được-nhận-ủy-quyền-trong-phiên-bản-đầu)/[D044](registration.md#d044---khóa-cấu-trúc-thi-đấu-sau-khi-phê-duyệt-lịch-ban-đầu)/[D060](scheduling.md#d060---tự-sinh-cặp-đấu-và-hoàn-thiện-lịch-nháp-bằng-nhập-liệu)/[D061](scheduling.md#d061---khoảng-kế-hoạch-theo-mùa-và-kiểm-tra-xung-đột-lịch-toàn-hệ-thống).
+
+- **Vòng đời ban đầu:** Nhân viên lịch thi đấu soạn và trình lịch đầy đủ; người có thẩm quyền khác người chuẩn bị/chỉnh sửa duyệt. Duyệt thành công công bố ngay, không thêm bước công bố riêng.
+
+- **Bản đang chờ:** Nội dung đã trình là bất biến. Người lập được rút phiên bản đã trình trước khi có quyết định; người duyệt được trả bổ sung hoặc từ chối kèm lý do. Sửa/trình lại tạo phiên bản mới và giữ lịch sử.
+
+- **Sinh lại:** Chỉ sinh lại khi lịch ban đầu chưa duyệt và đang nháp, có xác nhận thay thế và dấu vết bản trước. Sau công bố không sinh lại toàn bộ hoặc đổi cặp đấu, vòng, vai trò sân nhà/sân khách.
+
+- **Điều chỉnh:** Đề xuất đổi ngày giờ hoặc sân kèm lý do và giá trị trước/sau. Một đề xuất có thể chứa nhiều trận cùng mùa; duyệt/áp dụng toàn bộ hoặc không phần nào. Lịch cũ vẫn công khai khi chờ duyệt.
+
+- **Điều kiện trận:** Chỉ điều chỉnh trận chưa bắt đầu. Nếu quá giờ theo lịch, người duyệt phải có căn cứ xác nhận trận chưa diễn ra; chỉ riêng quá giờ theo lịch không chứng minh đã hoặc chưa thi đấu.
+
+- **Kiểm tra cuối/công bố:** Khi duyệt điều chỉnh kiểm tra lại trạng thái trận, quyền, phiên bản lịch và xung đột [D061](scheduling.md#d061---khoảng-kế-hoạch-theo-mùa-và-kiểm-tra-xung-đột-lịch-toàn-hệ-thống). Dữ liệu nền đã đổi thì yêu cầu rà soát/trình lại. Duyệt thành công cập nhật lịch công khai và giữ lịch sử. Giữ thẩm quyền/tách người theo [D005](administration.md#d005---tách-biệt-trách-nhiệm-lập-và-phê-duyệt)/[D019](../design/access-control.md#d019---ma-trận-thao-tác-và-vai-trò-được-nhận-ủy-quyền-trong-phiên-bản-đầu), gồm người duyệt điều chỉnh được ủy quyền.
+
+## POSTPONE-01 - Quản lý hoãn trận phiên bản đầu
+
+**Phạm vi:** CONFIRMED theo chỉ đạo Nhóm trưởng ngày 2026-10-26 (Asia/Bangkok), sau đặc tả ban đầu. **Thẩm quyền/vòng đời chi tiết:** CONFIRMED tại D067, Q67 phương án A và toàn bộ gói quy tắc chung. Đây là cải tiến rõ của package hiện hành, không phải yêu cầu Chương 1-2 nguồn.
+
+- UC14 phải ghi nhận/hiển thị Postponed (Đã hoãn) cho trận chưa thể diễn ra theo lịch công bố, phân biệt Chưa bắt đầu, Đang diễn ra và Đã kết thúc.
+- Ghi nhận nghiệp vụ xác lập hoãn, không tự suy từ giờ theo lịch. Cần đúng thẩm quyền, lý do, người thực hiện, thời điểm và lịch sử trước/sau.
+- Hiển thị ở lịch công bố, chi tiết trận và tra cứu liên quan. Công khai trạng thái không tự công khai lý do/người thực hiện nội bộ.
+- Ngày giờ/sân mới theo UC14, phê duyệt/tách người D062 và kiểm tra xung đột D061. Không hiển thị đề xuất chưa duyệt như lịch chính thức. Giờ cũ nếu hiển thị cho trận hoãn chỉ là bối cảnh lịch sử, không phải lịch mới đã xác nhận.
+- Hoãn không tạo Official Result hoặc đổi bảng xếp hạng/thống kê. Giữ phân biệt biên bản/kết quả và điều kiện trận kết thúc khi xác nhận theo D063.
+- Không mở rộng sang xử thua, hủy vĩnh viễn hoặc trận đã bắt đầu bị gián đoạn.
+Thẩm quyền, chuyển trạng thái và phân bổ theo [D067](#d067---phê-duyệt-hoãn-và-trở-lại-lịch-qua-uc14).
+
+### D067 - Phê duyệt hoãn và trở lại lịch qua UC14
+
+**Quy tắc đã chốt:** Nhóm trưởng xác nhận rõ Q67 phương án A và toàn bộ gói quy tắc chung. [Phê duyệt và lý do](../../../docs/adr/0012-schedule-generation-scope-and-drafts.md#q67---postponement-approval-and-allocation).
+
+- **Thẩm quyền:** Nhân viên phụ trách lịch thi đấu lập/trình đề xuất hoãn UC14. Người quản lý mùa giải hoặc người được ủy quyền hợp lệ theo D019 phê duyệt; người duyệt phải khác mọi người chuẩn bị/chỉnh sửa. Thao tác ủy quyền duyệt điều chỉnh lịch UC14 hiện có bao gồm hoãn trận; giữ mọi điều kiện ủy quyền khác. Không tạo ngoại lệ Người quản lý thao tác trực tiếp trái D005.
+- **Điều kiện và bản chờ:** Chỉ hoãn trận chưa bắt đầu, kiểm tra lại khi phê duyệt. Từ chối hoãn trận đã bắt đầu/kết thúc hoặc có Official Result. Đề xuất đang chờ không xác lập trạng thái Đã hoãn chính thức; giữ quy tắc phiên bản, tách người và kiểm tra cuối D062, gồm căn cứ chưa thi đấu khi đã quá giờ lịch.
+- **Hoãn có hiệu lực:** Duyệt thành công chuyển Chưa bắt đầu sang Đã hoãn, lưu lý do, người lập/thao tác, người duyệt, thời điểm và lịch sử trước/sau. Tra cứu công khai hiển thị "Đã hoãn - chưa xác định lịch mới"; ngày giờ cũ nếu hiển thị phải nhận diện rõ là lịch trước khi hoãn, không phải lịch thay thế đã xác nhận.
+- **Phân bổ:** Khi hoãn có hiệu lực, giải phóng khoảng sử dụng của CLB và khoảng chiếm dụng sân cũ khỏi kiểm tra xung đột D061, giữ lịch sử. Trước khi duyệt, phân bổ cũ vẫn có hiệu lực. Đề xuất lịch thay thế chưa duyệt không giữ chỗ.
+- **Trở lại lịch đã duyệt:** Chỉ điều chỉnh ngày giờ/sân UC14 được phê duyệt mới chuyển Đã hoãn về Chưa bắt đầu, sau kiểm tra quyền, trạng thái, phiên bản và xung đột D061/D062. Giữ mã trận, vòng, cặp đấu và chủ/khách. Không chuyển trực tiếp Đã hoãn sang Đang diễn ra khi chưa qua bước trở lại đã duyệt.
+- **Hoãn nhầm:** Khôi phục cũng theo phê duyệt UC14 và kiểm tra xung đột; không có hoàn tác bỏ qua phê duyệt. Hoãn/xếp lịch lại không tạo Official Result hoặc đổi BXH/thống kê. Xử thua, hủy vĩnh viễn và gián đoạn trận đã bắt đầu vẫn ngoài bổ sung này.

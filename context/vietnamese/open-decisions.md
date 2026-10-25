@@ -1,28 +1,31 @@
-# Những điểm cần xử lý trước hoặc trong Context v2
+# Quyết định chưa giải quyết
 
-Trạng thái toàn bộ: **OPEN**, chưa có phương án nào được phê duyệt trong lần xây v1. Người quyết định: nhóm trưởng. Dùng danh sách này làm đầu vào `grill-with-docs` khi xây v2; v1 chỉ ghi vấn đề, không chạy quy trình hỏi/chốt v2. Mã Oxx là mã truy vết nội bộ của Context, không phải yêu cầu hay UC mới.
+Sổ này chỉ chứa công việc chưa chốt. Mã O giữ nguồn truy vết; mỗi dòng OPEN cho phần còn lại được nêu, không phải chính sách đã duyệt. Xem [chỉ mục quyết định](design/README.md#quyết-định-đã-xác-nhận) cho [D001](design/architecture.md#d001---backend-nguyên-khối-chia-module-nghiệp-vụ-có-phân-lớp)-[D068](use-cases/publication.md#d068---dashboard-tổng-quan-mùa-giải-công-khai) và tài liệu sở hữu cho quy tắc hiện hành. Làm rõ hợp đồng không tự đòi thêm lượt duyệt nghiệp vụ.
 
-| ID | Nguồn và vấn đề cụ thể | Nội dung cần chốt / ảnh hưởng |
+| Mã | Nguồn | Công việc còn lại |
 |---|---|---|
-| O01 | QĐ1.3-1.4 tr.6; UC11 tr.95: có 3 mùa/36 tháng và mốc ngày sinh U21 nhưng chưa nêu giai đoạn tuổi đào tạo, ngày chốt từng mùa, bằng chứng đào tạo và xử lý biên ngày | Giá trị theo mùa và dữ liệu làm căn cứ kiểm tra; PHASE 2/PHASE 3. Không lấy luật EPL ngoài PDF để điền |
-| O02 | QĐ1.5-1.6 tr.7; UC08/10/11: thiếu ngày mở/đóng đăng ký, ngoại lệ cụ thể, trạng thái và khoảng hiệu lực khi thay CLB | Lịch đăng ký, tiêu chí ngoại lệ, chuyển trạng thái/xét duyệt và kiểm tra một đăng ký hiệu lực tại một thời điểm; PHASE 2/PHASE 3/PHASE 5 |
-| O03 | QĐ2.4-2.5 tr.7; UC13 tr.101 chỉ có thời điểm bắt đầu, nhưng yêu cầu cấm thời gian chồng lấn | Khoảng thời gian trận/sử dụng sân, múi giờ và quy tắc giáp biên; PHASE 4. Không tự gán 90 phút hay buffer |
-| O04 | BM4.2-4.3 tr.8-9 hiển thị người đại diện/ngày sinh; §1.2.5.3 tr.21 và BM-05 tr.23 giới hạn dữ liệu cá nhân | Ma trận trường công khai/nội bộ theo tác nhân, phạm vi API/xuất tệp. Mẫu tra cứu không đồng nghĩa công khai mọi trường; PHASE 1/PHASE 3/PHASE 6/PHASE 9 |
-| O05 | QĐ5.3 tr.10: tiêu chí phụ cuối mùa, suất giải khác, xuống hạng, trận phân hạng; BM5.3 có ba dòng xuống hạng nhưng chưa có quy trình xử lý/ghi nhận trận phân hạng hoặc chính sách bằng nhau giữa mùa | Thời điểm áp dụng, điều kiện kích hoạt, ai xác nhận, cách biểu diễn đồng hạng và xử lý phân hạng, số vị trí xuống hạng theo mùa; PHASE 2/PHASE 5/PHASE 7. Không tự thêm UC thứ 26 |
-| O06 | QĐ5.7 tr.11; UC20 tr.122: tính giữ sạch lưới từ thủ môn ra sân, không xét thay thủ môn; chưa chỉ cách xử lý thiếu/nhiều thủ môn hoặc đồng số cao nhất | Căn cứ vị trí thủ môn, dữ liệu không đủ căn cứ và trao Găng tay vàng đồng số; PHASE 3/PHASE 5/PHASE 7. Không mở rộng tính thay thủ môn |
-| O07 | QĐ6 tr.11; UC06 tr.80-81: thay đổi theo mùa và hiệu lực/phê duyệt; thiếu chính sách áp dụng thay đổi trong mùa đã có dữ liệu, người đề xuất/người duyệt | Quyền ủy quyền, phân tách người duyệt nếu cần, thời điểm và cách xử lý tác động lên đăng ký/lịch/kết quả đã xác nhận; PHASE 2 và hồi quy PHASE 3-PHASE 7 |
-| O08 | §1.4.3 tr.42-46; UC08/13/14/17-19: trạng thái được mô tả bằng ngôn ngữ tự nhiên, chưa có tập trạng thái/chuyển đầy đủ; “Yêu cầu ủy quyền” chỉ ở Hình 2.2 tr.60 | Ma trận quyền-hành động-phạm vi/phân công trận, chu trình phê duyệt và trạng thái hợp lệ; xử lý khóa tài khoản với phiên đang dùng, tài khoản quản trị đầu tiên; PHASE 1/PHASE 3/PHASE 4/PHASE 5. Giữ nguyên 6 tác nhân/25 UC |
-| O09 | BM1-BM3 và §1.3.4 tr.37-38; UC kiểm tra “trường bắt buộc”, “định danh trùng” nhưng chưa mô tả đầy đủ; BM3 có chữ ký trọng tài | Trường bắt buộc/định dạng/định danh nghiệp vụ, số áo, phạm vi sửa biên bản chính thức, phút bù giờ và tính hợp lệ sự kiện, cách ghi nhận thông tin/chữ ký trọng tài. Không suy ra đội hình 11 người, luật thay người hoặc chữ ký số; PHASE 2-PHASE 5 |
-| O10 | UC13 tr.101-102 cho nhập/thiết lập lịch, nháp “nếu được hỗ trợ”; TH-02 tr.13 yêu cầu tạo lịch hợp lệ | Mức tự động hóa lập lịch, có lưu nháp hay không, cấu hình được hỗ trợ ở bản đầu, hành vi với lịch nhập từng phần; PHASE 4. Vòng tròn hai lượt/20-38-380 vẫn là cấu hình cơ sở phải nghiệm thu |
-| O11 | TT-03 tr.19, HQ-04 tr.16, UC22 tr.128: định dạng được chọn hỗ trợ, chưa nêu tập dữ liệu nhập/xuất, cột, xử lý lỗi từng phần | CSV hoặc XLSX (không tự bắt buộc cả hai), định dạng báo cáo, template/mapping, quyền nhập/xuất, trùng bản ghi, cách xử lý lỗi và an toàn dữ liệu; PHASE 7/PHASE 9 |
-| O12 | CN-01-CN-04 tr.26; BM-03 tr.23 nêu ví dụ băm; TT-04 tr.19 nêu ví dụ UTF-8 | Stack/framework/ngôn ngữ, sản phẩm CSDL, module, ERD/schema, API, xác thực/phiên, băm mật khẩu, mã hóa ký tự, bảo vệ truyền dữ liệu, audit/xung đột/giao dịch. Các ràng buộc web Client-Server, CSDL quan hệ tập trung, phân lớp đã có trong PDF phải được tôn trọng; PHASE 1 và toàn hệ thống |
-| O13 | HQ-01-04 tr.16, TT-01 tr.19, BM-01 tr.23, TD-01 tr.29 | Môi trường triển khai/đo kiểm, phiên bản trình duyệt, tải và phân bố yêu cầu/dataset, cách đo thời gian, đại diện người dùng. Giữ nguyên mọi ngưỡng đã nêu; PHASE 10 và đo cục bộ các Phase |
-| O14 | BM-07 tr.24; BM-06 tr.24; TH-06 tr.14 | Vị trí/giới hạn quyền sao lưu, lịch và công cụ phục hồi, vận hành kiểm chứng; lưu giữ/bảo vệ nhật ký và lịch sử. Giữ 24 giờ/7 bản/30 phút; PHASE 1/PHASE 10 |
-| O15 | UC24-25 tr.134-139; Hình 2.53/2.55 có unpublish, Hình 2.54 có lọc mùa tùy chọn, bảng UC không liệt kê đầy đủ thao tác thu hồi/thuộc tính | Trường nội dung bắt buộc, trạng thái/thu hồi, gắn mùa hay tin chung, công bố và quyền; PHASE 8. Không tự thêm gửi email, push, bình luận hay media upload |
-| O16 | Hình 2.28 tr.97 vẽ EligibilityCheckPage/Controller trong khi UC11/Hình 2.27 nói kiểm tra nội bộ qua UC10; Hình 2.42/2.44/2.49/2.51 thiếu một số chỉ số có ở UC20/Hình 2.45 (giữ sạch lưới) | Đối chiếu mô hình phân tích khi viết Chương 3. Giữ UC11 là luồng qua UC10 và giữ QĐ5.7/UC20; không coi thiếu thuộc tính trên hình là bỏ yêu cầu hoặc coi hình là thiết kế API/schema đã duyệt |
+| O01 | QĐ1.3-1.4 p.6; UC11 p.95 | Giá trị U21/khoảng tuổi mùa đầu cụ thể và kiểm tra trường/định dạng căn cứ chi tiết. |
+| O02 | QĐ1.5-1.6 p.7; UC08/10/11 | Lịch cụ thể; mã ngoại lệ/thao tác; sửa/hủy kế hoạch đăng ký tương lai, kiểm tra hạn mức qua khoảng kế hoạch, đóng mùa và hợp đồng hiệu chỉnh chi tiết. |
+| O03 | QĐ2.4-2.5 p.7; UC13 p.101 | Giá trị phút kế hoạch mùa đầu và thực thi thời gian/schema/đồng thời chi tiết. |
+| O04 | BM4.2-4.3 pp.8-9; BM-05 pp.21/23 | Hợp đồng trường UI/API/xuất tệp, lọc nội dung nhật ký/lịch sử, phạm vi/lịch sử riêng ảnh cầu thủ và phân phối media công khai cụ thể. |
+| O05 | QĐ5.3/5.5 p.10; BM5.3 | Tính đối đầu/nhóm nhiều CLB, tham số suất dự giải/xuống hạng, ghi nhận/phân định playoff, duyệt và mở lại tổng kết mùa. |
+| O06 | QĐ5.7 p.11; UC20 p.122 | Hợp đồng tổng hợp/hiệu chỉnh/báo cáo giữ sạch lưới và giải thưởng chi tiết. |
+| O07 | QĐ6 p.11; UC06 pp.80-81 | Thiếu bản hiệu lực ban đầu, kiểm tra căn cứ/xung đột, lỗi kỹ thuật/thử lại khi kích hoạt, hợp đồng vòng đời/thời gian chính xác và chi tiết công bố quy định còn lại. |
+| O08 | PDF pp.42-46/60; UC03/08/13/14/17-19 | Ma trận thao tác đầy đủ, quyền tạo mùa đầu, vòng đời tài khoản/mật khẩu còn lại, mã luồng/lỗi chính xác và hợp đồng việc đang chờ/đồng thời. |
+| O09 | BM1-BM3; PDF pp.37-38; UC07-UC20 | Kiểu/độ dài/chuẩn hóa/danh mục vị trí còn lại, sinh mã nghiệp vụ, xử lý sự kiện nghi trùng, định dạng tham chiếu nguồn và trường bản chụp/hiệu chỉnh/API cụ thể. |
+| O10 | TH-02 p.13; UC13 pp.101-102 | Thuật toán sinh và hợp đồng kỹ thuật sinh lại/phiên bản/định danh trận. |
+| O11 | TT-03 p.19; HQ-04 p.16; UC22 p.128 | Bộ dữ liệu, chọn CSV/XLSX, định dạng báo cáo, mẫu/cột, quyền, chính sách trùng/lỗi/nhập một phần và ảnh trong tệp xuất. |
+| O12 | CN-01-CN-04 p.26; BM-03 p.23; TT-04 p.19 | Ranh giới/phụ thuộc mô-đun, ERD/schema/kiểu khóa, hợp đồng REST/xác thực/phiên/băm mật khẩu/mã hóa ký tự/truyền tải/nhật ký/giao dịch/lỗi chi tiết. |
+| O13 | HQ-01-04 p.16; TT-01 p.19; BM-01 p.23; TD-01 p.29 | Môi trường triển khai/trình duyệt/tải/đo và dữ liệu đại diện, gồm số lượng cụ thể trong quy mô hàng trăm cầu thủ và ảnh có quyền sử dụng. Giữ ngưỡng nguồn. |
+| O14 | BM-06/BM-07 p.24; TH-06 p.14 | Đường lưu trữ/triển khai bền vững, backup/restore metadata cùng tệp, quyền, kiểm chứng và giữ/dọn nhật ký/media. Giữ 24 giờ/7 bản/30 phút. |
+| O15 | UC24-25 pp.134-139; Figs.2.53-2.55 | Trường/trạng thái tin, thu hồi, gắn mùa/tin chung và quyền công bố. Media CLB/cầu thủ không tự cho phép tệp tin tức, email, push hoặc bình luận. |
+| O16 | Figs.2.27/2.28 p.97; 2.42/2.44/2.45/2.49/2.51 | Đối chiếu Chương 3: UC11 là kiểm tra qua UC10, giữ sạch lưới/chỉ số nguồn; sơ đồ phân tích không phải API/schema đã duyệt. |
 
-## Cách giải quyết và cập nhật
+## Câu hỏi media, hoãn trận và dashboard
 
-Với mỗi điểm: ghi câu hỏi, trang nguồn, phương án/căn cứ, quyết định của nhóm trưởng và ngày duyệt, tài liệu/Phase bị ảnh hưởng; chỉ chuyển `RESOLVED` khi có quyết định xác định được. Chỉ lựa chọn quan trọng, có trade-off thực và hệ quả lâu dài mới tạo ADR theo [quy ước domain](../../docs/agents/domain.md). Không biến điểm mở thành yêu cầu mới hoặc tự sửa PDF; thay đổi nghiệp vụ cần nhóm trưởng xác nhận và cập nhật truy vết.
+- Định dạng/giới hạn byte/pixel, thao tác/lưu giữ/lịch sử và hợp đồng phân phối ảnh cầu thủ còn mở.
+- Thu nhận/nguồn gốc media, hợp đồng API và vận hành còn mở theo INT-01. Highlightly ưu tiên; API-FOOTBALL và football-data.org tham khảo. Nghiên cứu/chọn nhà cung cấp chờ nghiệm thu cốt lõi độc lập.
 
-TT-05/tích hợp ngoài là mở rộng có điều kiện, không phải một blocker bắt buộc phải quyết định nhà cung cấp. Quyết định bỏ tích hợp hiện tại vẫn phải giữ kiểm chứng hệ thống vận hành độc lập. Context v1 và phương án phân chia Phase đã được APPROVED theo thông tin phê duyệt trong [README](README.md). Điều này không giải quyết bất kỳ quyết định nào trong 16 điểm OPEN hoặc phê duyệt Context v2 hay thiết kế kỹ thuật chưa chốt; tiêu chí nghiệm thu và trạng thái triển khai Phase hiện có được giữ nguyên.
+## Giải quyết và cập nhật
+
+Chỉ giữ việc chưa giải quyết ở đây. Phạm vi/lịch sử đã duyệt nằm ở [điều hướng thiết kế](design/README.md); LS-01 đã đóng, không tạo việc phỏng vấn/triển khai/nghiệm thu bắt buộc. Giữ PDF/Git và trạng thái Phase theo bằng chứng.

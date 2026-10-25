@@ -1,4 +1,6 @@
-# Sources, traceability, and Context v1 checks
+# Sources, traceability and approval history
+
+Current owner documents incorporate approved refinements. The v1 review/migration notes below are historical evidence, not a claim that current files are unchanged source transcriptions. Current decisions are indexed in [design navigation](design/README.md); open-decisions contains unresolved work only.
 
 ## PDF
 
@@ -145,3 +147,7 @@ Structure, reference codes, tables/lists, statuses, and internal links were chec
 The team leader approved the business-requirements foundation, document structure, traceability, and Phase decomposition after Final Deep Review. This approval does not approve Context v2 or unsettled technology, architecture, ERD, database schema, or API choices. All 16 Open Decisions remain OPEN; Phase statuses and checkboxes are unchanged. It does not establish software implementation or acceptance.
 
 The team leader accepted the residual local-path risk in Git History and explicitly requested no further action on it. This acceptance does not require history rewriting or additional remediation. Earlier check and migration records above describe their historical dates; they are not the current approval status.
+
+## Scope-change provenance - 2026-10-26
+
+The Team Leader explicitly added first-version match postponement and season dashboard after the original specification and communicated the group's decision LS-01 to exclude Live Score. These are direct approved scope instructions, not retroactive PDF requirements or independent verification of API plans. Source PDF/history remain unchanged. See [ADR 0017](../../docs/adr/0017-live-score-excluded-from-first-version.md) and the [current scope index](design/README.md).

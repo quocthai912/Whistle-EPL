@@ -36,7 +36,6 @@ Các cột và thông tin dưới đây là nội dung biểu mẫu nghiệp v�
 
 37 điều khoản được chuyển từ PDF theo từng nhóm dưới đây. Các giá trị mặc định áp dụng theo nguồn; QĐ6 cho phép thay đổi có kiểm soát theo mùa, không có nghĩa tự áp dụng cấu hình khác.
 
-
 ### QĐ1
 
 Nguồn: §1.2.1.1.1, tr.6-7.
@@ -48,18 +47,16 @@ Nguồn: §1.2.1.1.1, tr.6-7.
 - **QĐ1.5:** Mỗi cầu thủ chỉ được có một đăng ký thi đấu còn hiệu lực tại một thời điểm trong cùng giải đấu.
 - **QĐ1.6:** Hồ sơ đăng ký và các thay đổi danh sách cầu thủ phải tuân thủ thời hạn đăng ký của mùa giải và các trường hợp ngoại lệ được phép.
 
-
 ### QĐ2
 
 Nguồn: §1.2.1.1.2, tr.7.
 
-- **QĐ2.1:** Mỗi mùa giải có 20 câu lạc bộ tham gia. Chỉ những câu lạc bộ có hồ sơ đăng ký hợp lệ mới được đưa vào lịch thi đấu.
-- **QĐ2.2:** Giải đấu được tổ chức theo thể thức vòng tròn hai lượt. Mỗi câu lạc bộ gặp 19 câu lạc bộ còn lại hai trận (một trận sân nhà, một trận sân khách), tương ứng 38 trận mỗi đội và 380 trận toàn giải trong 38 vòng đấu.
+- **QĐ2.1:** Mặc định nguồn là 20 CLB; [D060](use-cases/scheduling.md#d060---tự-sinh-cặp-đấu-và-hoàn-thiện-lịch-nháp-bằng-nhập-liệu) sở hữu cấu hình phiên bản đầu được hỗ trợ và chọn CLB đã duyệt.
+- **QĐ2.2:** Với mặc định nguồn 20 CLB vòng tròn hai lượt, mỗi CLB gặp 19 CLB còn lại sân nhà/sân khách: 38 trận mỗi CLB, 38 vòng và 380 trận. D060 sở hữu sinh/kiểm tra số CLB thay đổi được hỗ trợ.
 - **QĐ2.3:** Mỗi trận đấu phải xác định rõ vòng thi đấu, đội chủ nhà, đội khách, ngày giờ và sân thi đấu. Đội chủ nhà sử dụng sân nhà đã đăng ký, trừ trường hợp thay đổi sân được Ban tổ chức chấp thuận.
 - **QĐ2.4:** Một câu lạc bộ không được tham gia hai trận đấu có thời gian diễn ra trùng nhau.
 - **QĐ2.5:** Một sân vận động không được tổ chức hai trận đấu có thời gian diễn ra chồng lấn nhau. Các câu lạc bộ dùng chung sân phải được bố trí lịch thi đấu phù hợp.
 - **QĐ2.6:** Ban tổ chức được phép điều chỉnh ngày giờ hoặc sân thi đấu của trận đấu chưa diễn ra. Mọi thay đổi phải bảo đảm tính hợp lệ của lịch thi đấu và được lưu lại để phục vụ tra cứu, đối chiếu.
-
 
 ### QĐ3
 
@@ -72,7 +69,6 @@ Nguồn: §1.2.1.1.3, tr.8.
 - **QĐ3.5:** Hệ thống ghi nhận hai loại thẻ phạt là thẻ vàng và thẻ đỏ, bao gồm cầu thủ nhận thẻ, đội bóng và thời điểm nhận thẻ. Các sự kiện thẻ phạt phải thuộc trận đấu được ghi nhận.
 - **QĐ3.6:** Kết quả trận đấu sau khi được xác nhận phải được sử dụng để cập nhật bảng xếp hạng và thống kê cầu thủ. Mọi điều chỉnh kết quả đã xác nhận phải do người có thẩm quyền thực hiện và được lưu lại lịch sử thay đổi.
 
-
 ### QĐ4
 
 Nguồn: §1.2.1.1.4, tr.9.
@@ -83,7 +79,6 @@ Nguồn: §1.2.1.1.4, tr.9.
 - **QĐ4.4:** Hệ thống cho phép tra cứu lịch thi đấu và kết quả theo vòng đấu hoặc câu lạc bộ. Lịch thi đấu phải tương ứng với BM2, tỷ số chỉ được hiển thị là kết quả chính thức sau khi được xác nhận theo BM3.
 - **QĐ4.5:** Các thông tin thống kê và kết quả tra cứu phải được tổng hợp từ dữ liệu nghiệp vụ hợp lệ. Khi có điều chỉnh được xác nhận, thông tin tra cứu phải được cập nhật nhất quán mà không làm sai lệch dữ liệu lịch sử.
 - **QĐ4.6:** Người dùng được phép tra cứu các thông tin công khai của giải đấu. Những dữ liệu nội bộ hoặc thông tin cá nhân không thuộc phạm vi công khai chỉ được hiển thị cho người dùng có quyền truy cập phù hợp.
-
 
 ### QĐ5
 
@@ -97,7 +92,6 @@ Nguồn: §1.2.1.1.5, tr.10-11.
 - **QĐ5.6:** Khi kết quả trận đấu đã xác nhận được điều chỉnh hợp lệ, hệ thống phải cập nhật lại bảng xếp hạng, thống kê cầu thủ và các báo cáo liên quan, đồng thời bảo đảm khả năng truy xuất lịch sử thay đổi.
 - **QĐ5.7:** Hệ thống tự động thống kê số trận giữ sạch lưới của thủ môn dựa trên kết quả trận đấu đã được xác nhận chính thức. Một trận giữ sạch lưới được ghi nhận khi câu lạc bộ không để thủng lưới; thủ môn được xác định từ danh sách cầu thủ ra sân trong biên bản trận đấu và được cộng một trận giữ sạch lưới. Trong phạm vi hiện tại, hệ thống chưa xét đến trường hợp thay thủ môn trong trận đấu. Khi kết quả chính thức được điều chỉnh hợp lệ, thống kê phải được cập nhật lại. Danh hiệu Găng tay vàng được xác định dựa trên số trận giữ sạch lưới của các thủ môn trong mùa giải.
 
-
 ### QĐ6
 
 Nguồn: §1.2.1.1.6, tr.11.
@@ -108,3 +102,72 @@ Nguồn: §1.2.1.1.6, tr.11.
 - **QĐ6.4:** Hệ thống cho phép cập nhật danh mục các loại bàn thắng và thẻ phạt theo quy định áp dụng cho từng mùa giải. Việc thay đổi không được làm sai lệch các sự kiện trận đấu đã được xác nhận.
 - **QĐ6.5:** Hệ thống cho phép điều chỉnh điểm số khi thắng, hòa, thua và thứ tự ưu tiên các tiêu chí xếp hạng theo điều lệ được phê duyệt. Điểm thắng phải lớn hơn điểm hòa và điểm hòa phải lớn hơn điểm thua.
 - **QĐ6.6:** Mọi thay đổi quy định phải được kiểm tra tính hợp lệ, ghi nhận người thực hiện, thời điểm áp dụng, giá trị trước và sau thay đổi. Quy định mới chỉ có hiệu lực từ thời điểm được phê duyệt áp dụng và phải bảo toàn dữ liệu lịch sử của các mùa giải trước.
+## Quy tắc media được quản lý hiện hành
+
+Dùng [chính sách media](design/media.md) chính thức cho ảnh được quản lý và [cổng tích hợp](design/integrations.md) cho phụ thuộc ngoài. Kiểm chứng thuộc [Progress Checker](progress-checker.md); giữ ngưỡng chất lượng nguồn. Trang này không sao chép chính sách đó.
+
+## Quy tắc hiện hành đã xác nhận
+
+Các quy tắc dưới đây là chính sách hiện hành chính thức của miền. Đọc luồng UC/điều khoản nguồn phía trên cùng các làm rõ được đánh dấu này, không phải phiên bản riêng. Bằng chứng duyệt và ghi chú tại thời điểm phỏng vấn nằm trong ADR English được liên kết; công việc chưa chốt tại [quyết định mở](open-decisions.md).
+
+### D035 - Định danh gốc ổn định và bản chụp chọn lọc thông tin nghiệp vụ chính thức
+
+**Chính sách đã xác nhận.** [Phê duyệt, nguồn và lý do](../../docs/adr/0009-stable-identities-and-selective-business-snapshots.md#d035-english-evidence).
+
+- **Nguồn:** O12; AT-04, PDF tr.32; TH-05/TH-06, tr.13-14; phân biệt đối tượng gốc/theo mùa tại §1.3.4.1 tr.37-38; [D034](use-cases/administration.md#d034---cấp-riêng-quyền-quản-lý-hồ-sơ-gốc-dùng-chung).
+
+- **Quyết định:** Giữ định danh ổn định cho CLB, sân và cầu thủ xuyên mùa. Tại mốc ghi nhận nghiệp vụ chính thức, lưu bản chụp chọn lọc những thông tin cần để tái hiện hồ sơ/báo cáo lịch sử tương ứng. Cập nhật hồ sơ gốc không tự ghi đè thông tin lịch sử đã ghi nhận chính thức.
+
+- **Hiệu chỉnh chính thức:** Thay đổi dữ liệu nghiệp vụ chính thức thực hiện qua quy trình có thẩm quyền tương ứng, kèm lý do và lịch sử. Không chụp mọi trường một cách đại trà; trường và mốc chụp cụ thể vẫn cần thiết kế.
+
+- **Ví dụ ranh giới:** CLB đổi tên ở mùa sau không được âm thầm thay tên đã dùng chính thức trong báo cáo mùa trước, đồng thời vẫn nhận diện cùng một CLB. [D036](business.md#d036---sửa-dữ-liệu-gốc-bị-sai-và-rà-soát-riêng-nghiệp-vụ-bị-ảnh-hưởng) bên dưới chốt chính sách sửa sai chung cho thông tin gốc từng bị nhập sai, gồm sai ngày sinh.
+
+### D036 - Sửa dữ liệu gốc bị sai và rà soát riêng nghiệp vụ bị ảnh hưởng
+
+**Chính sách đã xác nhận.** [Phê duyệt, nguồn và lý do](../../docs/adr/0009-stable-identities-and-selective-business-snapshots.md#d036-english-evidence).
+
+- **Nguồn:** O09/O12; UC07 tr.82-84, UC09 tr.88-90 và UC12 tr.97-99; QĐ4.5, PDF tr.9; TH-06 và AT-03/AT-04, tr.14/32; [D034](use-cases/administration.md#d034---cấp-riêng-quyền-quản-lý-hồ-sơ-gốc-dùng-chung)/[D035](business.md#d035---định-danh-gốc-ổn-định-và-bản-chụp-chọn-lọc-thông-tin-nghiệp-vụ-chính-thức).
+
+- **Quyết định:** Người có quyền quản lý hồ sơ gốc được sửa thông tin bị nhập sai, kèm lý do và căn cứ. Giữ giá trị trước/sau, người sửa, thời điểm và xác định hồ sơ/nghiệp vụ liên quan cần rà soát. Không yêu cầu phê duyệt toàn bộ phương án hiệu chỉnh phía sau trước khi sửa hồ sơ gốc.
+
+- **Ranh giới lịch sử:** Giữ bản chụp và quyết định chính thức trước đó cho tới khi được hiệu chỉnh qua quy trình nghiệp vụ có thẩm quyền tương ứng. Sửa hồ sơ gốc không tự hủy đăng ký, sửa kết quả chính thức hoặc thay đổi thống kê.
+
+- **Nghiệp vụ mới:** Kiểm tra lại điều kiện bị ảnh hưởng bằng thông tin đã sửa khi xử lý nghiệp vụ mới; không dựa vào kết quả kiểm tra đã lỗi thời. Ví dụ, sửa ngày sinh có thể đòi hỏi rà soát đăng ký U21 trước đó, không tự viết lại quyết định lịch sử chính thức.
+
+### D058 - Mã nghiệp vụ ổn định, rà soát hồ sơ trùng và số áo duy nhất theo thời gian
+
+**Chính sách đã xác nhận.** [Phê duyệt, nguồn và lý do](../../docs/adr/0009-stable-identities-and-selective-business-snapshots.md#d058-english-evidence).
+
+- **Nguồn:** O09/O12; UC05/UC07/UC09/UC10/UC12, BM1; [D035](business.md#d035---định-danh-gốc-ổn-định-và-bản-chụp-chọn-lọc-thông-tin-nghiệp-vụ-chính-thức)/[D055](use-cases/registration.md#d055---luồng-hồ-sơ-clb-và-đăng-ký-cầu-thủ-theo-phiên-bản)-[D057](use-cases/registration.md#d057---hiệu-chỉnh-đăng-ký-đã-hợp-lệ-qua-phê-duyệt-độc-lập).
+
+- **Định danh:** Mùa, CLB, sân và cầu thủ có mã nghiệp vụ duy nhất, ổn định, không tái sử dụng trong từng nhóm đối tượng. Tên, tên viết tắt và ngày sinh không thay mã định danh. Từ chối mã trùng.
+
+- **Cầu thủ nghi trùng:** Trùng họ tên đã chuẩn hóa, ngày sinh và quốc tịch tạo cảnh báo để nhân sự kiểm tra, không tự gộp hoặc dùng làm ràng buộc duy nhất cứng. Dùng hồ sơ cũ nếu cùng người; người khác nhau được có hồ sơ riêng sau xác nhận kèm lý do được ghi nhận.
+
+- **CLB/sân:** Tên trùng tạo cảnh báo; cùng tên không tự xác định cùng đối tượng.
+
+- **Số áo:** Bắt buộc là số nguyên 1-99 khi xác nhận đăng ký hợp lệ. Trong cùng CLB-mùa, các đăng ký đã xác nhận có khoảng hiệu lực thi đấu chồng lấn không được trùng số, gồm U21 và đăng ký tương lai. Cho tái sử dụng sau khi khoảng cũ kết thúc. Khoảng 1-99 là lựa chọn v2 rõ ràng, không phải luật PDF.
+
+- **Lịch sử/phạm vi:** Đổi tên/số hiện tại không tự viết lại lịch sử đã ghi nhận. Không tự gộp hồ sơ nghi trùng hoặc chuyển tham chiếu. Công cụ tự gộp hồ sơ nằm ngoài phạm vi phiên bản đầu.
+
+### D059 - Dữ liệu đăng ký bắt buộc và mốc chụp thông tin chính thức
+
+**Chính sách đã xác nhận.** [Phê duyệt, nguồn và lý do](../../docs/adr/0009-stable-identities-and-selective-business-snapshots.md#d059-english-evidence).
+
+- **Nguồn:** O04/O09/O12; BM1/BM4, UC05/UC07-UC12; [D032](use-cases/publication.md#d032---phạm-vi-công-khai-gồm-ngày-sinh-cầu-thủ)-[D036](business.md#d036---sửa-dữ-liệu-gốc-bị-sai-và-rà-soát-riêng-nghiệp-vụ-bị-ảnh-hưởng)/[D054](use-cases/registration.md#d054---tự-xét-u21-và-kiểm-tra-homegrown-bằng-căn-cứ-do-nhân-sự-xác-minh)-[D058](business.md#d058---mã-nghiệp-vụ-ổn-định-rà-soát-hồ-sơ-trùng-và-số-áo-duy-nhất-theo-thời-gian).
+
+- **Trường bắt buộc:** Mùa: mã, tên, ngày bắt đầu/kết thúc, quy định quản lý riêng. Hồ sơ gốc CLB: mã, tên, tên viết tắt. Hồ sơ sân: mã, tên. Hồ sơ cầu thủ: mã, họ tên, ngày sinh, quốc tịch, vị trí.
+
+- **Trình hồ sơ CLB:** Cần CLB, mùa, huấn luyện viên, sân nhà, tên/điện thoại/địa chỉ liên hệ đại diện và ít nhất một cầu thủ đề nghị được kiểm tra ở mức chuẩn bị. Không yêu cầu đăng ký đang có hiệu lực thi đấu trước khi duyệt CLB.
+
+- **Xác nhận cầu thủ:** Cần cầu thủ, CLB, mùa, số áo, kết quả phân loại U21/homegrown, mốc bắt đầu hiệu lực và căn cứ kiểm tra tương ứng. Nháp có thể thiếu trường nghiệp vụ; chặn chuyển bước tại mốc cần hoàn chỉnh.
+
+- **Căn cứ homegrown:** Kết luận đạt cần nhánh số mùa/tháng, giá trị đạt điều kiện, tóm tắt và tham chiếu căn cứ. Hệ thống giữ người kiểm tra/thời điểm/phiên bản quy định. Không bắt buộc tải tệp. Ghi chú tùy chọn; không thêm giấy tờ định danh cá nhân.
+
+- **Bản chụp CLB:** Khi duyệt hồ sơ CLB giữ tên/tên viết tắt CLB, huấn luyện viên, sân nhà, thông tin đại diện và danh sách đề nghị của phiên bản được duyệt.
+
+- **Bản chụp cầu thủ:** Khi xác nhận hợp lệ giữ tên, ngày sinh, quốc tịch, vị trí, số áo, phân loại và căn cứ quy định/xác minh. Hiệu chỉnh được duyệt tạo bản kế tiếp, giữ bản cũ.
+
+- **Tra cứu mùa:** Dùng thông tin đã ghi nhận cho mùa, gồm hiệu chỉnh được duyệt, không tự lấy mọi giá trị gốc mới nhất. Ranh giới công khai/nội bộ [D032](use-cases/publication.md#d032---phạm-vi-công-khai-gồm-ngày-sinh-cầu-thủ)/[D033](use-cases/publication.md#d033---xem-dữ-liệu-nội-bộ-theo-trách-nhiệm-nghiệp-vụ) vẫn áp dụng.
+
+- **Ngoại lệ media:** [LOGO-01](design/media.md#logo-01---thiết-kế-logo-đã-phê-duyệt) sở hữu ngoại lệ chỉ cho Logo đối với tra cứu mô tả theo mùa. Lịch sử ảnh cầu thủ vẫn mở.

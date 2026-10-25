@@ -1,4 +1,6 @@
-# Nguồn, truy vết và kiểm tra Context v1
+# Nguồn, truy vết và lịch sử phê duyệt
+
+Tài liệu sở hữu hiện hành tích hợp làm rõ đã duyệt. Ghi chú rà soát/chuyển đổi v1 dưới đây là bằng chứng lịch sử, không khẳng định tệp hiện hành là bản chép nguồn bất biến. Quyết định hiện tại nằm ở [chỉ mục thiết kế](design/README.md); open-decisions chỉ giữ việc chưa giải quyết.
 
 ## PDF
 
@@ -73,7 +75,6 @@ Mỗi UC liên kết đến bản ghi có đầy đủ tác nhân, tiền/hậu 
 | UC24 | [Quản lý tin tức và thông báo giải đấu](use-cases/publication.md#uc24) | 24 | 134-136 | 2.52-2.53 | PHASE 8 |
 | UC25 | [Xem tin tức và thông báo giải đấu](use-cases/publication.md#uc25) | 25 | 136-139 | 2.54-2.55 | PHASE 8 |
 
-
 §2.2 tr.54-58 là danh mục UC01-UC25 và tác nhân/độ phức tạp; §2.3 tr.59-66 gồm Hình 2.1 tổng quan, 2.2 lịch/kết quả, 2.3 đăng ký, 2.4 mùa/quy định, 2.5 báo cáo/tra cứu, 2.6 tài khoản/quyền. Các hình phân rã có tên chức năng con chưa có mã riêng; Context giữ 25 mã gốc. Mức độ phức tạp theo Bảng 2.2-2.6: UC02/12/15/21/25 thấp; UC06/10/11/13/14/16/18/19/20/22 cao; các UC còn lại trung bình. Độ phức tạp không phải mức ưu tiên hoặc bằng chứng triển khai.
 
 ## Ma trận chất lượng → Phase
@@ -117,7 +118,6 @@ Các Phase ghi đầu tiên chịu trách nhiệm xây hành vi tương ứng; P
 | AT-03 | 32 | PHASE 2/PHASE 4/PHASE 5; PHASE 10 đối chiếu cuối |
 | AT-04 | 32 | PHASE 2-PHASE 5/PHASE 9/PHASE 10; PHASE 10 đối chiếu cuối |
 
-
 Tổng bao phủ: **6/6** dòng yêu cầu nghiệp vụ Bảng 1.1; **10/10** biểu mẫu; **37/37** điều khoản QĐ (6+6+6+6+7+6); **25/25** UC; **34/34** mã chất lượng (TH 6, HQ 4, TT 5, BM 7, CN 4, TD 4, AT 4); **6/6** tác nhân. TT-05 được bao phủ bằng điều kiện vận hành độc lập và nhánh tích hợp nếu có, không tuyên bố đã phê duyệt kết nối ngoài. Đây là độ bao phủ tài liệu, không phải tỷ lệ chức năng hoàn thành.
 
 ## Kết quả kiểm tra và giới hạn
@@ -147,3 +147,7 @@ Kiểm tra cấu trúc, mã tham chiếu, bảng/danh sách, trạng thái và l
 Nhóm trưởng đã phê duyệt nền tảng yêu cầu nghiệp vụ, cấu trúc tài liệu, khả năng truy vết và phương án phân chia Phase sau rà soát chuyên sâu cuối cùng. Phê duyệt này không phê duyệt Context v2 hoặc các lựa chọn công nghệ, kiến trúc, ERD, cấu trúc cơ sở dữ liệu hay API chưa chốt. Cả 16 quyết định mở vẫn ở trạng thái OPEN; trạng thái Phase và checkbox không thay đổi. Đây không phải xác nhận phần mềm đã được triển khai hoặc nghiệm thu.
 
 Nhóm trưởng đã chấp nhận rủi ro đường dẫn cục bộ còn trong lịch sử Git và yêu cầu không xử lý thêm vấn đề này. Việc chấp nhận không yêu cầu viết lại lịch sử hoặc khắc phục bổ sung. Các ghi nhận kiểm tra và chuyển đổi ở trên mô tả đúng thời điểm lịch sử, không phải trạng thái phê duyệt hiện tại.
+
+## Nguồn thay đổi phạm vi - 2026-10-26
+
+Nhóm trưởng bổ sung rõ hoãn trận/dashboard phiên bản đầu sau đặc tả gốc và thông báo quyết định nhóm LS-01 bỏ Live Score. Đây là chỉ đạo phạm vi trực tiếp đã duyệt, không phải yêu cầu PDF hồi tố hoặc xác minh độc lập gói API. Giữ PDF/lịch sử nguồn. Xem [ADR 0017](../../docs/adr/0017-live-score-excluded-from-first-version.md) và [chỉ mục phạm vi hiện hành](design/README.md).

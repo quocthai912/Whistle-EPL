@@ -1,6 +1,6 @@
 # Yêu cầu chất lượng và ràng buộc đã có trong báo cáo
 
-Nguồn: §1.2.2-1.2.8 tr.11-32. Giữ 34 mã yêu cầu gốc. Mô tả/tiêu chí dưới đây được trình bày gọn từ bảng chi tiết; mọi ngưỡng số giữ nguyên. Đọc cùng [Progress Checker](progress-checker.md) để biết Phase chịu trách nhiệm; thiết kế cách đạt yêu cầu chờ v2 tại [sổ quyết định](open-decisions.md). Các yêu cầu xuyên suốt phải được kiểm tra trong Phase chức năng và hồi quy ở PHASE 10.
+Nguồn: §1.2.2-1.2.8 tr.11-32. Giữ 34 mã yêu cầu gốc. Mô tả/tiêu chí dưới đây được trình bày gọn từ bảng chi tiết; mọi ngưỡng số giữ nguyên. Đọc cùng [Progress Checker](progress-checker.md) để biết Phase chịu trách nhiệm; thiết kế đã duyệt nằm ở [điều hướng thiết kế](design/README.md), lựa chọn còn lại ở [quyết định mở](open-decisions.md). Các yêu cầu xuyên suốt phải được kiểm tra trong Phase chức năng và hồi quy ở PHASE 10.
 
 ## Tiến hóa - TH (Bảng 1.2, chi tiết tr.13-14)
 
@@ -44,7 +44,7 @@ BM-01 là yêu cầu bảo mật; BM1 là biểu mẫu. Giữ cách viết để
 | BM-02 | Quyền theo vai trò và phạm vi trách nhiệm, kiểm tra ở máy chủ. Vượt quyền qua giao diện, đường dẫn trực tiếp hoặc yêu cầu API bị từ chối và không đổi dữ liệu; ẩn nút trên UI không đủ | Cao |
 | BM-03 | Dùng thuật toán băm mật khẩu chuyên dụng, Argon2id hoặc bcrypt là ví dụ chưa chọn. Kiểm tra không có mật khẩu gốc trong CSDL; xác thực đúng/sai chính xác; giao diện, phản hồi và nhật ký không lộ mật khẩu | Cao |
 | BM-04 | Kiểm tra đầu vào ở máy chủ: thiếu trường, sai kiểu/quy định phải từ chối có thông báo. Truy vấn an toàn, tránh ghép trực tiếp đầu vào vào SQL. Kiểm thử SQL injection/nội dung nguy hiểm không thay đổi trái phép CSDL hoặc thực thi mã ngoài ý muốn | Cao |
-| BM-05 | Tách thông tin công khai khỏi hồ sơ, liên hệ, nội bộ; ngày sinh và liên hệ chỉ cho người có thẩm quyền (§1.2.5.3 tr.21). Lưu dữ liệu nghiệp vụ/cá nhân tập trung phía máy chủ, không công khai truy cập trực tiếp CSDL. Tối thiểu 10 trường hợp trái quyền qua UI/API đều từ chối, không trả dữ liệu nhạy cảm; công khai chỉ trường đã công bố | Cao |
+| BM-05 | Tách thông tin công khai khỏi hồ sơ, liên hệ, nội bộ; [D032](use-cases/publication.md#d032---phạm-vi-công-khai-gồm-ngày-sinh-cầu-thủ) cho công khai ngày sinh cầu thủ trong tra cứu mùa được duyệt; liên hệ và trường nội bộ khác vẫn hạn chế (mặc định nguồn §1.2.5.3 tr.21). Lưu dữ liệu nghiệp vụ/cá nhân tập trung phía máy chủ, không công khai truy cập trực tiếp CSDL. Tối thiểu 10 trường hợp trái quyền qua UI/API đều từ chối, không trả dữ liệu nhạy cảm; công khai chỉ trường đã công bố | Cao |
 | BM-06 | Tự ghi nhật ký thao tác quan trọng thành công: lịch, kết quả chính thức, quy định, phân quyền. Có người, thời điểm, hành động, đối tượng và dữ liệu thay đổi; tra cứu được trước/sau. Người không có quyền không được sửa/xóa nhật ký. Lý do/thời điểm áp dụng khi nghiệp vụ yêu cầu (§1.2.5.4 tr.21) | Cao |
 | BM-07 | Sao lưu CSDL tự động ít nhất một lần/24 giờ, giữ ít nhất 7 bản gần nhất ở vị trí riêng có giới hạn quyền. Giả lập mất/hỏng dữ liệu đủ một mùa: phục hồi từ bản hợp lệ trong 30 phút, khớp thời điểm sao lưu, toàn vẹn quan hệ | Cao |
 
@@ -78,3 +78,12 @@ Việc truyền dữ liệu cần được bảo vệ phù hợp môi trường 
 | AT-02 | Cập nhật liên quan nhất quán, có phát hiện/xử lý xung đột. Giả lập lỗi cập nhật kết quả không để dữ liệu/thống kê dở dang; hai người sửa cùng bản ghi không âm thầm ghi đè thay đổi đã lưu trước, phải báo và yêu cầu xử lý | Cao |
 | AT-03 | Điều chỉnh lịch/kết quả chính thức/quy định phải đúng trạng thái, điều kiện, quyền và phạm vi mùa. Thử thay đổi không hợp lệ phải bị từ chối/giữ nguyên dữ liệu; thay đổi hợp lệ giữ kết quả và thống kê nhất quán | Cao |
 | AT-04 | Bảo toàn liên kết mùa-CLB-cầu thủ-trận-kết quả. Chặn xóa/đổi gây mất liên kết lịch sử; hỗ trợ ngừng dùng/lưu trữ. Ngừng CLB hoặc thêm mùa không làm sai hồ sơ/lịch/kết quả/báo cáo mùa trước; lịch sử còn tra cứu đúng | Cao |
+## Ràng buộc media và phụ thuộc ngoài đã xác nhận
+
+Dùng [chính sách media](design/media.md) chính thức cho ảnh được quản lý và [cổng tích hợp](design/integrations.md) cho phụ thuộc ngoài. Kiểm chứng thuộc [Progress Checker](progress-checker.md); giữ ngưỡng chất lượng nguồn. Trang này không sao chép chính sách đó.
+
+## Kiểm chứng hoãn trận và dashboard
+
+Kiểm chứng [POSTPONE-01](use-cases/scheduling.md#postpone-01---quản-lý-hoãn-trận-phiên-bản-đầu) và [DASHBOARD-01](use-cases/publication.md#dashboard-01---dashboard-tổng-quan-mùa-giải) theo hợp đồng đã chốt: đổi trạng thái đúng quyền/có nhật ký, hiển thị hoãn không có giờ thay chưa duyệt, không tác động thống kê, dữ liệu dashboard thật/đúng quyền, thống kê chỉ chính thức, media responsive và Loading/Empty/Error rõ. Giữ ngưỡng nguồn, không chọn thư viện UI mới.
+
+[LS-01](design/integrations.md#v2-ext-01---live-match-tracking--live-score) loại triển khai/thiết kế Live Score khỏi nghiệm thu phiên bản đầu. Media được quản lý và vận hành độc lập vẫn bắt buộc; chọn nhà cung cấp vẫn sau nghiệm thu cốt lõi.

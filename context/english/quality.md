@@ -1,6 +1,6 @@
 # Quality requirements and constraints already in the report
 
-Source: §1.2.2-1.2.8 pp.11-32. All 34 original requirement codes are retained. Descriptions/criteria below are presented concisely from the detailed tables; all numeric thresholds remain unchanged. Read with the [Progress Checker](progress-checker.md) for responsible Phases; design choices for achieving them await v2 in the [decision register](open-decisions.md). Cross-cutting requirements must be checked in functional Phases and regression-tested in PHASE 10.
+Source: §1.2.2-1.2.8 pp.11-32. All 34 original requirement codes are retained. Descriptions/criteria below are presented concisely from the detailed tables; all numeric thresholds remain unchanged. Read with the [Progress Checker](progress-checker.md) for responsible Phases; approved design is indexed in [design navigation](design/README.md), with remaining choices in [open decisions](open-decisions.md). Cross-cutting requirements must be checked in functional Phases and regression-tested in PHASE 10.
 
 ## Evolution - TH (Table 1.2, details pp.13-14)
 
@@ -44,7 +44,7 @@ BM-01 is a security requirement; BM1 is a form. Preserve the spelling to disting
 | BM-02 | Permissions follow roles and responsibility scope, checked on the server. Unauthorized actions through UI, direct URLs, or API requests are rejected without changing data; hiding UI buttons is insufficient | High |
 | BM-03 | Use a dedicated password-hashing algorithm; Argon2id and bcrypt are examples, not selected choices. Verify no original passwords are stored in the database; correctly accept/reject passwords; do not expose them through UI, responses, or logs | High |
 | BM-04 | Server-side input validation rejects missing fields, invalid types/rules with messages. Use safe queries rather than directly concatenating input into SQL. SQL injection/dangerous-content tests must not modify the database without authorization or execute unintended code | High |
-| BM-05 | Separate public information from application/contact/internal data; dates of birth and contact details require appropriate authority (§1.2.5.3 p.21). Store business/personal data centrally on the server, without public direct database access. At least 10 unauthorized-access cases through UI/API must all be rejected without sensitive data; public users see only published fields | High |
+| BM-05 | Separate public information from application/contact/internal data; [D032](use-cases/publication.md#d032---public-information-boundary-including-player-dates-of-birth) explicitly permits player birth dates within approved seasonal public lookup; contacts and other internal fields remain restricted (source default §1.2.5.3 p.21). Store business/personal data centrally on the server, without public direct database access. At least 10 unauthorized-access cases through UI/API must all be rejected without sensitive data; public users see only published fields | High |
 | BM-06 | Automatically log successful important operations: schedules, official results, regulations, permission changes. Include person, time, action, object, and changed data; before/after values must be searchable. Unauthorized users cannot edit/delete logs. Include reason/effective time when required by the business process (§1.2.5.4 p.21) | High |
 | BM-07 | Automatically back up the database at least once per 24 hours; keep at least the 7 most recent backups in a separate access-restricted location. Simulate loss/corruption of a full season's data: restore a valid backup within 30 minutes, matching the backup time and preserving relational integrity | High |
 
@@ -78,3 +78,12 @@ These are existing constraints, not new design choices. Framework, database prod
 | AT-02 | Update related data consistently with conflict detection/handling. Simulated result-update failures leave no partial data/statistics; two users editing one record must not silently overwrite the earlier saved change, and must be notified to resolve the conflict | High |
 | AT-03 | Schedule/official-result/regulation corrections respect status, conditions, authority, and season scope. Invalid changes are rejected with data preserved; valid changes leave results and statistics consistent | High |
 | AT-04 | Preserve season-club-player-match-result relationships. Block deletion/changes that break historical references; support discontinuation/archiving. Discontinuing a club or adding a season must not distort previous applications/schedules/results/reports; history remains accurately searchable | High |
+## Confirmed media and external-dependency constraints
+
+Use the authoritative [media policy](design/media.md) for managed images and [integration gates](design/integrations.md) for external dependencies. Verification belongs to the [Progress Checker](progress-checker.md); source quality thresholds remain unchanged. This page does not repeat those policies.
+
+## Postponement and dashboard verification
+
+Verify [POSTPONE-01](use-cases/scheduling.md#postpone-01---first-version-match-postponement) and [DASHBOARD-01](use-cases/publication.md#dashboard-01---season-overview-dashboard) under their finalized contracts: authorized audited state changes, visible postponement without unapproved replacement times, no statistical side effects, real access-scoped dashboard data, official-only statistics, responsive media and explicit Loading/Empty/Error states. Preserve all source numeric thresholds; select no new UI library.
+
+[LS-01](design/integrations.md#v2-ext-01---live-match-tracking--live-score) excludes Live Score implementation/design from first-version acceptance. Media management and independent operation remain mandatory; provider choice remains gated by core acceptance.
