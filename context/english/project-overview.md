@@ -62,3 +62,10 @@ UC14 retains the current schedule while approval is pending. UC19 preserves befo
 ## Plan in the report
 
 §1.5 selects Modified Waterfall for a three-member team, with an estimated 10 weeks: investigation in week 1; analysis/specification of 25 UCs in week 2; design in weeks 3-5; implementation/integration in weeks 6-8; testing/acceptance in weeks 9-10. Earlier stages may be revisited following review of errors/changes; progress is monitored weekly and outputs reviewed at handover milestones. This is the report's plan, not observed progress or newly assigned calendar deadlines. Business Phases in the [Progress Checker](progress-checker.md) partition implementation scope within that process; they neither replace its five stages nor assign members/deadlines automatically.
+## Current first-version media and integration scope
+
+Use the authoritative [media policy](design/media.md) for managed images and [integration gates](design/integrations.md) for external dependencies. Verification belongs to the [Progress Checker](progress-checker.md); source quality thresholds remain unchanged. This page does not repeat those policies.
+
+## Confirmed first-version additions after the initial specification
+
+[POSTPONE-01](use-cases/scheduling.md#postpone-01---first-version-match-postponement) and [DASHBOARD-01](use-cases/publication.md#dashboard-01---season-overview-dashboard) are mandatory improvements explicitly added by the Team Leader on 2026-10-26, not requirements attributed to the unchanged Chapters 1-2. Existing UCs own their rules. [LS-01](design/integrations.md#v2-ext-01---live-match-tracking--live-score) removes Live Score from this first version and cancels its detailed interview; external media extensibility remains.

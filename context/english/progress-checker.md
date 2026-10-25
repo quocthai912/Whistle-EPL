@@ -1,12 +1,10 @@
 # Progress Checker - Phase development and acceptance
 
-**Version:** `v1` | **Status:** `APPROVED` | **Approved by:** Team Leader | **Approval Date:** `2026-10-24`
+**Current package:** v2, DRAFT - PARTIALLY CONFIRMED. Whole-package approval pending. The approved v1 scope decomposition remains retrievable at commit `adad61f2a0625d62538aa10ce0ec8b6a91defa53` (Team Leader, 2026-10-24).
 
-**Reviewed Commit:** `adad61f2a0625d62538aa10ce0ec8b6a91defa53` | **Branch:** `docs/build-agent-context`
+This is the current Phase ledger for one evolving package, not a Spec/Plan/Task. See [business](business.md), [quality](quality.md), [UC navigation](README.md) and [source matrix](sources.md). PHASE 1-PHASE 10 remain the same organizational units and retain their existing implementation statuses/checkboxes.
 
-This is **Context v1's approved scope decomposition**, not a Spec/Plan/Task. Source requirements are in [business](business.md), [quality](quality.md), and [UC navigation](README.md); the full matrix is in [sources.md](sources.md). PHASE 1-PHASE 10 are internal organizational codes absent from the PDF. All ten Phases are mandatory for the current scope; TT-05 external API integration is conditional and does not create a mandatory integration Phase.
-
-The team leader approved the business-requirements foundation, document structure, traceability, and Phase decomposition after Final Deep Review. This approval does not approve Context v2 or unsettled technology, architecture, ERD, database schema, or API choices. All 16 Open Decisions remain OPEN; Phase statuses and checkboxes are unchanged. It does not establish software implementation or acceptance.
+The latest confirmed scope includes managed club/player media, with independent core acceptance before API research/selection under [INT-01](design/integrations.md#int-01---acceptance-before-api-research-and-integration). External integration is not a mandatory prerequisite to first-version core acceptance and creates no new mandatory Phase. Documented decisions do not establish implementation or acceptance.
 
 ## Status and evidence
 
@@ -55,6 +53,8 @@ Expected parallel work: after PHASE 2, PHASE 3 and PHASE 8 can be developed inde
 
 ## PHASE 1 - Operational foundation and access administration
 
+**Confirmed media/API scope:** Reuse existing media write authorization/session validation and controlled image delivery; no API provider is required. See [media policy](design/media.md) and [INT-01](design/integrations.md). This adds scope/evidence requirements, not progress.
+
 **Implementation Status:** `NOT_STARTED`.
 
 **Scope:** Application foundation under CN-01-04; UC01-UC04; accounts/roles, sessions, server-side permissions and input validation; shared logging mechanism. Specific business events are added/accepted in the Phases that produce them; full-system backup/recovery belongs to PHASE 10.
@@ -81,6 +81,8 @@ Expected parallel work: after PHASE 2, PHASE 3 and PHASE 8 can be developed inde
 **Verification Evidence:** Source revision plus UC/permission/session/input and authentication-load results; inspection of protected password data; sample audit records; new foundation-environment setup procedure and results. No such evidence exists in v1.
 
 ## PHASE 2 - Seasons, catalogs, and regulations
+
+**Confirmed media/API scope:** UC07 owns managed club logos and all approved LOGO-01 file, reference, failure and audit behavior. See [media policy](design/media.md) and [INT-01](design/integrations.md). This adds scope/evidence requirements, not progress.
 
 **Implementation Status:** `NOT_STARTED`.
 
@@ -109,6 +111,8 @@ Expected parallel work: after PHASE 2, PHASE 3 and PHASE 8 can be developed inde
 
 ## PHASE 3 - Profiles and player registration
 
+**Confirmed media/API scope:** UC09 owns managed portraits for hundreds of player profiles; club/shirt associations remain seasonal. Portrait-specific limits/history remain open. See [media policy](design/media.md) and [INT-01](design/integrations.md). This adds scope/evidence requirements, not progress.
+
 **Implementation Status:** `NOT_STARTED`.
 
 **Scope:** UC08-UC11, including UC09 player master profiles, seasonal club applications, approval, registration lists, and explainable UC11 eligibility checks.
@@ -135,6 +139,8 @@ Expected parallel work: after PHASE 2, PHASE 3 and PHASE 8 can be developed inde
 **Verification Evidence:** Boundary-case matrix for squad limits/training/U21/deadlines/concurrent registrations; approval decisions/history; insufficient-basis and permission-scope cases; BM1 and two-season comparisons.
 
 ## PHASE 4 - Schedule creation and adjustment
+
+**Confirmed media/API scope:** Appropriate schedule screens consume managed logos/fallbacks while retaining approved schedule rules. See [media policy](design/media.md) and [INT-01](design/integrations.md). This adds scope/evidence requirements, not progress.
 
 **Implementation Status:** `NOT_STARTED`.
 
@@ -163,6 +169,8 @@ Expected parallel work: after PHASE 2, PHASE 3 and PHASE 8 can be developed inde
 
 ## PHASE 5 - Official results and statistics
 
+**Confirmed media/API scope:** Appropriate result/report screens consume managed media/fallbacks without automatic changes from external data. See [media policy](design/media.md) and [INT-01](design/integrations.md). This adds scope/evidence requirements, not progress.
+
 **Implementation Status:** `NOT_STARTED`.
 
 **Scope:** UC16-UC20 share one acceptance boundary: match reports, unofficial results, confirmation, official-result corrections, and automatic standings/statistics. UC20 is not a points-entry screen; PHASE 7 aggregates/exports reports from these outputs.
@@ -190,6 +198,8 @@ Expected parallel work: after PHASE 2, PHASE 3 and PHASE 8 can be developed inde
 
 ## PHASE 6 - Competition information lookup
 
+**Confirmed media/API scope:** Verify consistent logos/portraits and fallback on profiles/lists, schedules, results, standings and related views, within access scope. See [media policy](design/media.md) and [INT-01](design/integrations.md). This adds scope/evidence requirements, not progress.
+
 **Implementation Status:** `NOT_STARTED`.
 
 **Scope:** UC15, UC21, UC23, and BM4.1 general information; lookup of schedules, matches, clubs/players, and published statistics/standings. No new UC for BM4.1 and no ownership of statistics algorithms.
@@ -216,6 +226,8 @@ Expected parallel work: after PHASE 2, PHASE 3 and PHASE 8 can be developed inde
 **Verification Evidence:** Filter/expected-result comparisons; public/internal/draft/official cases and updates from PHASE 4/PHASE 5; returned-field checks; browser/viewport screenshots or records; one-season and ≥10-season/3,800-match load logs; navigation trials contributing to final TD-01 validation.
 
 ## PHASE 7 - Reports and season summary
+
+**Confirmed media/API scope:** Consume media in appropriate previews; exported-image requirements remain subject to the export contract. See [media policy](design/media.md) and [INT-01](design/integrations.md). This adds scope/evidence requirements, not progress.
 
 **Implementation Status:** `NOT_STARTED`.
 
@@ -296,6 +308,8 @@ Expected parallel work: after PHASE 2, PHASE 3 and PHASE 8 can be developed inde
 
 ## PHASE 10 - Integration, regression, and system acceptance
 
+**Confirmed media/API scope:** Acceptance covers 20 clubs each with an actual logo and hundreds of player profiles, portrait management/fallback, unauthorized/invalid uploads, replacement failures and metadata-plus-file restore. Verify core operation without APIs before provider research/selection. Exact player dataset count remains open. See [media policy](design/media.md) and [INT-01](design/integrations.md). This adds scope/evidence requirements, not progress.
+
 **Implementation Status:** `NOT_STARTED`.
 
 **Scope:** Integration, implementation of BM-07 backup/recovery, and acceptance of all Chapter 1-2 scope: 25 UCs, 37 QĐ clauses, 10 forms, and 34 quality requirements; a smoke test does not replace earlier Phase criteria. CN-03 and §1.5 testing/handover planning are checked here.
@@ -324,3 +338,10 @@ Expected parallel work: after PHASE 2, PHASE 3 and PHASE 8 can be developed inde
 
 Declare **the entire system complete** only when PHASE 1-PHASE 10 are all `COMPLETED` and final integration results remain valid for the delivered version. Context v1 contains no product test results.
 
+## Confirmed scope additions and acceptance boundaries
+
+- PHASE 4 owns POSTPONE-01 under UC14, including authorized history and D061/D062 rescheduling checks under confirmed [D067](use-cases/scheduling.md#d067---approved-postponement-and-return-through-uc14).
+- PHASE 5 preserves D063 and verifies postponement cannot create official results or statistical changes; interruption/forfeit/permanent-cancellation handling is not added.
+- PHASE 6 owns DASHBOARD-01 within existing lookup UCs: real access-scoped data, official statistics, responsive media and Loading/Empty/Error behavior under [D068](use-cases/publication.md#d068---public-season-overview-dashboard). PHASE 8 supplies only published news.
+- PHASE 10 verifies these additions with core/media functionality independent of external APIs. LS-01 removes Live Score implementation, detailed design and mandatory acceptance; no first-version completion depends on it.
+- Existing Phase statuses and checkboxes are unchanged. These are scope/verification obligations, not evidence of implementation. Postponement and dashboard packages are confirmed in D067/D068; remaining technical contracts stay in the unresolved register.

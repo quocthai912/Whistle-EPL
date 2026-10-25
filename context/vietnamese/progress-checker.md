@@ -1,12 +1,10 @@
 # Progress Checker - Phát triển và nghiệm thu theo Phase
 
-**Phiên bản:** `v1` | **Trạng thái:** `APPROVED` | **Người phê duyệt:** Nhóm trưởng | **Ngày phê duyệt:** `2026-10-24`
+**Package hiện hành:** v2, DRAFT - PARTIALLY CONFIRMED. Chờ duyệt toàn gói. Phân chia phạm vi v1 đã duyệt truy xuất tại commit `adad61f2a0625d62538aa10ce0ec8b6a91defa53` (Nhóm trưởng, 2026-10-24).
 
-**Commit được rà soát:** `adad61f2a0625d62538aa10ce0ec8b6a91defa53` | **Nhánh:** `docs/build-agent-context`
+Đây là sổ Phase hiện hành của một package phát triển liên tục, không phải Spec/Plan/Task. Xem [nghiệp vụ](business.md), [chất lượng](quality.md), [điều hướng UC](README.md) và [ma trận nguồn](sources.md). PHASE 1-PHASE 10 vẫn là các đơn vị tổ chức cũ, giữ trạng thái triển khai/checkbox hiện có.
 
-Đây là **phân rã phạm vi của Context v1 đã được phê duyệt**, không phải Spec/Plan/Task. Yêu cầu gốc tại [nghiệp vụ](business.md), [chất lượng](quality.md), [UC](README.md); ma trận đầy đủ tại [sources.md](sources.md). Mã PHASE 1-PHASE 10 là mã tổ chức nội bộ, không có trong PDF. Mười Phase đều bắt buộc cho phạm vi hiện tại; tích hợp API ngoài ở TT-05 là điều kiện, không phát sinh Phase tích hợp bắt buộc.
-
-Nhóm trưởng đã phê duyệt nền tảng yêu cầu nghiệp vụ, cấu trúc tài liệu, khả năng truy vết và phương án phân chia Phase sau rà soát chuyên sâu cuối cùng. Phê duyệt này không phê duyệt Context v2 hoặc các lựa chọn công nghệ, kiến trúc, ERD, cấu trúc cơ sở dữ liệu hay API chưa chốt. Cả 16 quyết định mở vẫn ở trạng thái OPEN; trạng thái Phase và checkbox không thay đổi. Đây không phải xác nhận phần mềm đã được triển khai hoặc nghiệm thu.
+Phạm vi mới đã chốt gồm media CLB/cầu thủ được quản lý, nghiệm thu cốt lõi độc lập trước nghiên cứu/chọn API theo [INT-01](design/integrations.md#int-01---nghiệm-thu-trước-nghiên-cứu-và-tích-hợp-api). Tích hợp ngoài không phải tiên quyết nghiệm thu cốt lõi phiên bản đầu và không tạo Phase bắt buộc mới. Quyết định tài liệu không chứng minh triển khai/nghiệm thu.
 
 ## Trạng thái và bằng chứng
 
@@ -55,6 +53,8 @@ Song song dự kiến: sau PHASE 2, PHASE 3 và PHASE 8 có thể phát triển 
 
 ## PHASE 1 - Nền tảng vận hành và quản trị truy cập
 
+**Phạm vi media/API đã chốt:** Dùng quyền/phiên ghi media hiện có và phân phối ảnh có kiểm soát; không cần nhà cung cấp API. Xem [chính sách media](design/media.md) và [INT-01](design/integrations.md). Bổ sung phạm vi/bằng chứng, không xác lập tiến độ.
+
 **Implementation Status:** `NOT_STARTED`.
 
 **Scope:** Nền tảng ứng dụng theo CN-01-04; UC01-UC04; tài khoản/vai trò, phiên, kiểm tra quyền máy chủ và dữ liệu đầu vào; cơ chế nhật ký dùng chung. Nhật ký nghiệp vụ cụ thể được bổ sung/nghiệm thu tại Phase sinh sự kiện; sao lưu/khôi phục đủ dữ liệu hệ thống thuộc PHASE 10.
@@ -80,8 +80,9 @@ Song song dự kiến: sau PHASE 2, PHASE 3 và PHASE 8 có thể phát triển 
 
 **Verification Evidence:** Revision nguồn + kết quả UC/quyền/phiên/input và tải xác thực; kiểm tra dữ liệu mật khẩu đã bảo vệ; bản ghi audit mẫu; thao tác dựng môi trường nền tảng mới và kết quả. Chưa có bằng chứng nào ở v1.
 
-
 ## PHASE 2 - Mùa giải, danh mục và quy định
+
+**Phạm vi media/API đã chốt:** UC07 sở hữu Logo CLB được quản lý và quy tắc tệp, tham chiếu, lỗi, nhật ký đã duyệt theo LOGO-01. Xem [chính sách media](design/media.md) và [INT-01](design/integrations.md). Bổ sung phạm vi/bằng chứng, không xác lập tiến độ.
 
 **Implementation Status:** `NOT_STARTED`.
 
@@ -108,8 +109,9 @@ Song song dự kiến: sau PHASE 2, PHASE 3 và PHASE 8 có thể phát triển 
 
 **Verification Evidence:** Kịch bản CRUD/duyệt/hiệu lực/dữ liệu sai, mẫu lịch sử trước-sau, đối chiếu hai mùa và dữ liệu tham chiếu; kiểm tra cấu hình và hồi quy khi sử dụng ở các Phase sau.
 
-
 ## PHASE 3 - Hồ sơ và đăng ký cầu thủ
+
+**Phạm vi media/API đã chốt:** UC09 sở hữu ảnh đại diện được quản lý cho hàng trăm hồ sơ; quan hệ CLB/số áo vẫn theo mùa. Giới hạn/lịch sử ảnh cầu thủ còn mở. Xem [chính sách media](design/media.md) và [INT-01](design/integrations.md). Bổ sung phạm vi/bằng chứng, không xác lập tiến độ.
 
 **Implementation Status:** `NOT_STARTED`.
 
@@ -136,8 +138,9 @@ Song song dự kiến: sau PHASE 2, PHASE 3 và PHASE 8 có thể phát triển 
 
 **Verification Evidence:** Ma trận ca biên giới hạn/đào tạo/U21/thời hạn/đăng ký đồng thời, quyết định xét duyệt và lịch sử; ca thiếu căn cứ và phạm vi quyền; đối chiếu BM1 và hai mùa.
 
-
 ## PHASE 4 - Lập và điều chỉnh lịch
+
+**Phạm vi media/API đã chốt:** Màn hình lịch phù hợp dùng Logo/fallback được quản lý, giữ quy tắc lịch đã duyệt. Xem [chính sách media](design/media.md) và [INT-01](design/integrations.md). Bổ sung phạm vi/bằng chứng, không xác lập tiến độ.
 
 **Implementation Status:** `NOT_STARTED`.
 
@@ -164,8 +167,9 @@ Song song dự kiến: sau PHASE 2, PHASE 3 và PHASE 8 có thể phát triển 
 
 **Verification Evidence:** Bộ dữ liệu 20 CLB và kiểm tra toàn lịch, trường hợp sân chung/chồng lấn, lịch thiếu/sai, phê duyệt/từ chối, sửa đồng thời, lịch sử; bằng chứng công bố chỉ lịch được phép.
 
-
 ## PHASE 5 - Kết quả chính thức và thống kê
+
+**Phạm vi media/API đã chốt:** Màn hình kết quả/biên bản phù hợp dùng media/fallback được quản lý, không tự đổi dữ liệu theo nguồn ngoài. Xem [chính sách media](design/media.md) và [INT-01](design/integrations.md). Bổ sung phạm vi/bằng chứng, không xác lập tiến độ.
 
 **Implementation Status:** `NOT_STARTED`.
 
@@ -192,8 +196,9 @@ Song song dự kiến: sau PHASE 2, PHASE 3 và PHASE 8 có thể phát triển 
 
 **Verification Evidence:** Dữ liệu có kết quả nháp/chính thức/điều chỉnh, cả loại bàn/phản lưới/bù giờ/thẻ, ca phân hạng và thủ môn sau khi O05/O06 được chốt; kết quả tính tay đối chiếu; thử xác nhận lặp, lỗi giữa quy trình, hai người sửa; lịch sử và phép đo HQ-02.
 
-
 ## PHASE 6 - Tra cứu thông tin giải đấu
+
+**Phạm vi media/API đã chốt:** Kiểm chứng Logo/ảnh/fallback nhất quán ở hồ sơ/danh sách, lịch, kết quả, bảng xếp hạng và tra cứu liên quan, đúng quyền. Xem [chính sách media](design/media.md) và [INT-01](design/integrations.md). Bổ sung phạm vi/bằng chứng, không xác lập tiến độ.
 
 **Implementation Status:** `NOT_STARTED`.
 
@@ -220,8 +225,9 @@ Song song dự kiến: sau PHASE 2, PHASE 3 và PHASE 8 có thể phát triển 
 
 **Verification Evidence:** Đối chiếu bộ lọc và kết quả mong đợi; ca công khai/nội bộ/nháp/chính thức, cập nhật từ PHASE 4/PHASE 5; kiểm tra trường trả về; ảnh/biên bản trình duyệt và viewport, log tải một mùa và ≥10 mùa/3.800 trận; kết quả thử điều hướng góp vào TD-01 cuối hệ thống.
 
-
 ## PHASE 7 - Báo cáo và tổng kết mùa giải
+
+**Phạm vi media/API đã chốt:** Dùng media ở xem trước phù hợp; yêu cầu ảnh xuất tệp còn theo hợp đồng xuất. Xem [chính sách media](design/media.md) và [INT-01](design/integrations.md). Bổ sung phạm vi/bằng chứng, không xác lập tiến độ.
 
 **Implementation Status:** `NOT_STARTED`.
 
@@ -247,7 +253,6 @@ Song song dự kiến: sau PHASE 2, PHASE 3 và PHASE 8 có thể phát triển 
 **Acceptance Criteria:** Đúng toàn bộ trường BM5, đúng mùa, dùng kết quả chính thức; BXH/ghi bàn theo thời điểm lập và quy định. Vua phá lưới có đồng nhận; Găng tay vàng từ giữ sạch lưới; tổng bàn giải đúng, không loại bàn phản lưới khỏi tỷ số/tổng giải. Tổng kết chỉ xác nhận khi đủ mọi kết quả và xử lý phân hạng cần thiết. Thiếu dữ liệu/không nhất quán/vượt quyền báo rõ, không xuất như chính thức; lỗi xuất không trả tệp dở dang như thành công. Đổi loại báo cáo tổng hợp lại. Sau UC19 báo cáo liên quan phản ánh dữ liệu mới và truy vết thay đổi. Tạo và xuất từng báo cáo ≤5 giây với đủ một mùa/380 trận, tiếng Việt/giá trị không sai lệch.
 
 **Verification Evidence:** Ba báo cáo đối chiếu nguồn chính thức/tính tay, ca thiếu kết quả/phân hạng/đồng danh hiệu sau quyết định, ca trước-sau điều chỉnh và xuất lỗi, tệp xuất thực và log thời gian HQ-04.
-
 
 ## PHASE 8 - Tin tức và thông báo
 
@@ -275,7 +280,6 @@ Song song dự kiến: sau PHASE 2, PHASE 3 và PHASE 8 có thể phát triển 
 
 **Verification Evidence:** Ma trận quyền quản lý/công bố/xem; dữ liệu nháp/đã công bố/không còn công khai, truy cập trực tiếp, nhật ký; kết quả các luồng UC và tiếng Việt.
 
-
 ## PHASE 9 - Nhập và xuất dữ liệu trao đổi
 
 **Implementation Status:** `NOT_STARTED`.
@@ -302,8 +306,9 @@ Song song dự kiến: sau PHASE 2, PHASE 3 và PHASE 8 có thể phát triển 
 
 **Verification Evidence:** Tệp vào/ra thật theo mỗi định dạng chọn, tập ≥100 bản ghi và phép đối chiếu từng trường; tệp sai và kiểm tra dữ liệu trước-sau, quyền, ràng buộc/quy trình tương ứng.
 
-
 ## PHASE 10 - Tích hợp, hồi quy và nghiệm thu hệ thống
+
+**Phạm vi media/API đã chốt:** Nghiệm thu bao phủ 20 CLB mỗi CLB có Logo thật, hàng trăm hồ sơ, quản lý ảnh/fallback, tải sai quyền/không hợp lệ, lỗi thay ảnh và khôi phục metadata cùng tệp. Kiểm chứng cốt lõi không API trước nghiên cứu/chọn nhà cung cấp. Số hồ sơ kiểm thử cụ thể còn mở. Xem [chính sách media](design/media.md) và [INT-01](design/integrations.md). Bổ sung phạm vi/bằng chứng, không xác lập tiến độ.
 
 **Implementation Status:** `NOT_STARTED`.
 
@@ -331,5 +336,12 @@ Song song dự kiến: sau PHASE 2, PHASE 3 và PHASE 8 có thể phát triển 
 
 **Verification Evidence:** Revision/snapshot bản tích hợp, môi trường/dataset, báo cáo từng tiêu chí và log thực, kết quả luồng đầu-cuối/hồi quy/quyền/xung đột/lỗi/tải/khôi phục/tương thích/tiện dụng, tệp bàn giao và biên bản nhóm trưởng nghiệm thu. Test mock/ảnh giao diện riêng lẻ không thay bằng chứng cập nhật dữ liệu và phục hồi thực.
 
-
 Chỉ xác nhận **toàn bộ hệ thống hoàn chỉnh** khi cả PHASE 1-PHASE 10 đều `COMPLETED` và kết quả tích hợp cuối cùng vẫn còn hiệu lực trên phiên bản bàn giao. Chưa có kết quả kiểm thử sản phẩm nào trong Context v1.
+
+## Bổ sung phạm vi và ranh giới nghiệm thu đã chốt
+
+- PHASE 4 sở hữu POSTPONE-01 qua UC14, gồm lịch sử đúng quyền và kiểm tra xếp lại D061/D062 theo quy tắc đã chốt [D067](use-cases/scheduling.md#d067---phê-duyệt-hoãn-và-trở-lại-lịch-qua-uc14).
+- PHASE 5 giữ D063, kiểm chứng hoãn không tạo kết quả chính thức hoặc đổi thống kê; không thêm xử lý gián đoạn/xử thua/hủy vĩnh viễn.
+- PHASE 6 sở hữu DASHBOARD-01 trong UC tra cứu hiện có: dữ liệu thật/đúng quyền, thống kê chính thức, media responsive, Loading/Empty/Error theo [D068](use-cases/publication.md#d068---dashboard-tổng-quan-mùa-giải-công-khai). PHASE 8 chỉ cấp tin đã công bố.
+- PHASE 10 kiểm chứng bổ sung cùng cốt lõi/media độc lập API ngoài. LS-01 bỏ triển khai, thiết kế chi tiết và nghiệm thu bắt buộc Live Score; hoàn thành phiên bản đầu không phụ thuộc nó.
+- Giữ nguyên trạng thái và checkbox Phase. Đây là nghĩa vụ phạm vi/kiểm chứng, không phải bằng chứng triển khai. Gói hoãn và Dashboard đã chốt tại D067/D068; hợp đồng kỹ thuật còn lại ở sổ chưa giải quyết.

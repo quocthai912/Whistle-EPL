@@ -62,3 +62,10 @@ UC10 «include» UC11 (Hình 2.3 tr.61-62); UC18 và UC19 «include» UC20 (Hìn
 ## Kế hoạch trong báo cáo
 
 §1.5 chốt Modified Waterfall cho nhóm ba thành viên, dự kiến 10 tuần: khảo sát tuần 1; phân tích/đặc tả 25 UC tuần 2; thiết kế tuần 3-5; cài đặt/tích hợp tuần 6-8; kiểm thử/nghiệm thu tuần 9-10. Có thể quay lại giai đoạn trước khi sai sót/thay đổi được xem xét; theo dõi hằng tuần và rà soát đầu ra ở mốc chuyển giao. Đây là kế hoạch trong báo cáo, không phải tiến độ đã thực hiện hoặc hạn lịch mới. Các Phase nghiệp vụ trong [Progress Checker](progress-checker.md) chia phạm vi triển khai trong quy trình đó, không thay thế năm giai đoạn hay tự gán thành viên/thời hạn.
+## Phạm vi media và tích hợp phiên bản đầu hiện hành
+
+Dùng [chính sách media](design/media.md) chính thức cho ảnh được quản lý và [cổng tích hợp](design/integrations.md) cho phụ thuộc ngoài. Kiểm chứng thuộc [Progress Checker](progress-checker.md); giữ ngưỡng chất lượng nguồn. Trang này không sao chép chính sách đó.
+
+## Bổ sung phiên bản đầu đã chốt sau đặc tả ban đầu
+
+[POSTPONE-01](use-cases/scheduling.md#postpone-01---quản-lý-hoãn-trận-phiên-bản-đầu) và [DASHBOARD-01](use-cases/publication.md#dashboard-01---dashboard-tổng-quan-mùa-giải) là cải tiến bắt buộc được Nhóm trưởng bổ sung rõ ngày 2026-10-26, không gán thành yêu cầu Chương 1-2 không đổi. UC hiện có sở hữu quy tắc. [LS-01](design/integrations.md#v2-ext-01---live-match-tracking--live-score) bỏ Live Score khỏi phiên bản đầu, hủy phỏng vấn chi tiết; giữ khả năng mở rộng media ngoài.

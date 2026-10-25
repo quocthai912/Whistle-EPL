@@ -2,9 +2,11 @@
 
 [Điểm truy cập](../README.md) · [Nghiệp vụ/BM/QĐ](../business.md) · [Chất lượng](../quality.md) · [Điểm mở](../open-decisions.md)
 
-Các bản ghi dưới đây chuyển bảng đặc tả từ PDF sang Markdown, giữ nội dung và thứ tự bước; chỉ bỏ header/footer và nối dòng. Không phải feature Specification mới. Trang và hình tham chiếu dùng quy ước [nguồn](../sources.md). Sơ đồ lớp/sequence là mô hình phân tích trong báo cáo, chưa xác lập API, schema hay cấu trúc mã nguồn.
+Luồng UC hiện hành giữ mã/trang nguồn và tích hợp làm rõ được duyệt rõ. Quy tắc chính thức của miền được liên kết bên dưới; bằng chứng duyệt/nguồn/lý do ở ADR English. Đây là tài liệu Context, không phải feature Specification sinh mới. Hình phân tích không phải API/schema đã duyệt. Xem [nguồn](../sources.md).
 
 ## UC21
+
+Quy tắc hiện hành: [D032](publication.md#d032---phạm-vi-công-khai-gồm-ngày-sinh-cầu-thủ), [D033](publication.md#d033---xem-dữ-liệu-nội-bộ-theo-trách-nhiệm-nghiệp-vụ).
 
 **Tra cứu thông tin trận đấu**
 
@@ -48,6 +50,8 @@ Người dùng không nhập điều kiện chi tiết: hệ thống hiển th�
 3. Lỗi truy vấn: thông báo không thể tải dữ liệu.
 
 ## UC22
+
+Quy tắc hiện hành: [D066](publication.md#d066---đồng-hạng-trên-bảng-xếp-hạng-và-đồng-giải-cá-nhân).
 
 **Lập và xuất báo cáo giải đấu**
 
@@ -96,6 +100,8 @@ Báo cáo được tổng hợp từ dữ liệu nguồn hợp lệ, có thể x
 3. Lỗi tổng hợp hoặc xuất: thông báo lỗi và không trả về tệp không hoàn chỉnh như báo cáo thành công.
 
 ## UC23
+
+Quy tắc hiện hành: [D032](publication.md#d032---phạm-vi-công-khai-gồm-ngày-sinh-cầu-thủ), [D033](publication.md#d033---xem-dữ-liệu-nội-bộ-theo-trách-nhiệm-nghiệp-vụ), [D066](publication.md#d066---đồng-hạng-trên-bảng-xếp-hạng-và-đồng-giải-cá-nhân).
 
 **Tra cứu thông tin và thống kê câu lạc bộ, cầu thủ**
 
@@ -223,4 +229,88 @@ Không có tin tức hoặc thông báo được công bố: hệ thống hiển
 
 1. Nội dung không còn được phép công bố: hệ thống không hiển thị nội dung đó.
 2. Lỗi truy vấn: thông báo không thể tải dữ liệu.
+## Hiển thị media được quản lý hiện hành
 
+Dùng [chính sách media](../design/media.md) cho Logo hiện tại, ảnh cầu thủ và fallback. Hiển thị không đổi thẩm quyền/tính toán nghiệp vụ UC.
+
+## Quy tắc hiện hành đã xác nhận
+
+Các quy tắc dưới đây là chính sách hiện hành chính thức của miền. Đọc luồng UC/điều khoản nguồn phía trên cùng các làm rõ được đánh dấu này, không phải phiên bản riêng. Bằng chứng duyệt và ghi chú tại thời điểm phỏng vấn nằm trong ADR English được liên kết; công việc chưa chốt tại [quyết định mở](../open-decisions.md).
+
+### D032 - Phạm vi công khai gồm ngày sinh cầu thủ
+
+**Chính sách đã xác nhận.** [Phê duyệt, nguồn và lý do](../../../docs/adr/0008-public-information-and-player-birth-dates.md#d032-english-evidence).
+
+- **Nguồn:** O04; BM4.1-BM4.4, PDF tr.8-9; QĐ4.1-QĐ4.6, tr.9; BM-05 và §1.2.5.3, tr.21/23; UC15/UC21/UC23/UC25.
+
+- **Quyết định:** Công khai thông tin tra cứu theo mùa trong bảng dưới, gồm đầy đủ ngày sinh của cầu thủ. Giữ các giới hạn khác của phương án A đã đề xuất. Ngoại lệ ngày sinh áp dụng cho cầu thủ thuộc phạm vi tra cứu mùa công khai, không mở truy cập mọi hồ sơ cầu thủ/đăng ký.
+
+| Nhóm | Thông tin công khai |
+|---|---|
+| Mùa giải | Tên giải/mùa, số CLB, số vòng, tổng số trận, ngày bắt đầu/kết thúc |
+| CLB tham gia mùa | Tên, tên viết tắt, huấn luyện viên, sân nhà, số cầu thủ đăng ký hợp lệ |
+| Cầu thủ trong mùa | Họ tên, ngày sinh, quốc tịch, vị trí, CLB, số áo, diện đăng ký |
+| Lịch/kết quả | Lịch đã công bố: vòng, hai CLB, ngày/giờ và sân; tỷ số chỉ sau xác nhận chính thức |
+| Thống kê | BXH, danh sách ghi bàn và thống kê giữ sạch lưới từ kết quả chính thức |
+| Tin tức | Nội dung đã công bố; trường chi tiết còn chốt tại O15 |
+
+- **Ranh giới nội bộ:** Thông tin đại diện CLB, liên hệ, bằng chứng đào tạo/homegrown, nội dung hồ sơ/xét duyệt, bản nháp, kết quả chưa xác nhận, lý do thay đổi và nhật ký hệ thống giữ nội bộ theo quyền phù hợp. Trường chưa được duyệt công khai giữ nội bộ. Ngày sinh cầu thủ là ngoại lệ rõ đối với danh sách nội bộ đề xuất ban đầu ở Q32 A.
+
+- **Thay đổi mặc định theo nguồn:** BM-05 v1 ghi ngày sinh cần quyền phù hợp. Nhóm trưởng thay đổi rõ mặc định đó cho ngày sinh cầu thủ trong v2. Giữ PDF nguồn và phê duyệt v1 trong Git; Specification/nghiệm thu sau này phải truy vết ngoại lệ đã duyệt, không khẳng định công khai ngày sinh vốn là mặc định v1. Quyết định này không công khai liên hệ hoặc dữ liệu nội bộ khác.
+
+- **Phạm vi cung cấp:** Backend phải áp dụng thống nhất phạm vi công khai cho dữ liệu UI/API công khai và tệp phục vụ công khai nếu có. Quyết định này không tự cho phép tạo chức năng xuất tệp công khai. Phạm vi xem/xuất nội bộ vẫn cần thiết kế.
+
+### D033 - Xem dữ liệu nội bộ theo trách nhiệm nghiệp vụ
+
+**Chính sách đã xác nhận.** [Phê duyệt, nguồn và lý do](../../../docs/adr/0008-public-information-and-player-birth-dates.md#d033-english-evidence).
+
+- **Nguồn:** O04/O08; BM-02/BM-05/BM-06, PDF tr.23-24; UC03/UC04, các UC đăng ký/lịch/kết quả; [D003](administration.md#d003---quyền-nghiệp-vụ-theo-phạm-vi-mùa-giải)/[D004](administration.md#d004---nhiều-vai-trò-nghiệp-vụ-trong-cùng-mùa-giải)/[D019](../design/access-control.md#d019---ma-trận-thao-tác-và-vai-trò-được-nhận-ủy-quyền-trong-phiên-bản-đầu)/[D032](publication.md#d032---phạm-vi-công-khai-gồm-ngày-sinh-cầu-thủ).
+
+- **Quyết định:** Đăng nhập và được phân công trong mùa không tự cho phép xem mọi thông tin nội bộ. Áp dụng phạm vi xem theo trách nhiệm sau.
+
+| Nhóm dữ liệu nội bộ | Vai trò được xem trong mùa phụ trách |
+|---|---|
+| Hồ sơ tham gia CLB, đại diện và liên hệ | Ban tổ chức / Người quản lý mùa giải; Nhân viên đăng ký |
+| Hồ sơ đăng ký cầu thủ và bằng chứng homegrown | Ban tổ chức / Người quản lý mùa giải; Nhân viên đăng ký |
+| Lịch nháp và đề nghị điều chỉnh chưa duyệt | Ban tổ chức / Người quản lý mùa giải; Nhân viên lịch thi đấu |
+| Biên bản, kết quả chưa chính thức và đề xuất sửa kết quả | Ban tổ chức / Người quản lý mùa giải; Nhân viên kết quả |
+| Đề xuất thay đổi quy định | Ban tổ chức / Người quản lý mùa giải; nhân viên có ủy quyền tương ứng theo [D019](../design/access-control.md#d019---ma-trận-thao-tác-và-vai-trò-được-nhận-ủy-quyền-trong-phiên-bản-đầu) |
+| Quản trị tài khoản và tra cứu nhật ký toàn hệ thống | Quản trị viên hệ thống theo UC03/UC04 |
+
+- **Nhiều vai trò và ủy quyền:** Người kiêm vai trò được xem theo các vai trò thực sự được phân công trong mùa. Ủy quyền chỉ bổ sung dữ liệu cần cho thao tác. Chức năng cần kiểm tra đủ điều kiện có thể nhận kết quả và lý do cần thiết, không mặc nhiên nhận toàn bộ hồ sơ nguồn.
+
+- **Quản trị và lịch sử:** Quản trị viên hệ thống không tự có quyền xem mọi màn hình hồ sơ nghiệp vụ; làm nghiệp vụ cần vai trò tương ứng. Lịch sử gắn đối tượng được xem trong phạm vi quyền của đối tượng; tra cứu nhật ký toàn hệ thống vẫn theo UC04. Trường nhật ký và quyền xuất tệp cụ thể còn mở, nên UC04 không ngầm cấp mọi màn hình nghiệp vụ hoặc nội dung nhật ký không giới hạn.
+
+### D066 - Đồng hạng trên bảng xếp hạng và đồng giải cá nhân
+
+**Chính sách đã xác nhận.** [Phê duyệt, nguồn và lý do](../../../docs/adr/0014-shared-ranks-and-individual-awards.md#d066-english-evidence).
+
+- **Nguồn:** O05/O06/O12; QĐ5.3-QĐ5.5/QĐ5.7, BM5.1-BM5.3; [D045](registration.md#d045---khóa-điểm-số-và-thứ-tự-tiêu-chí-xếp-hạng-sau-kết-quả-chính-thức-đầu-tiên)/[D064](results.md#d064---xét-ra-sân-tại-giờ-bắt-đầu-và-xác-định-thủ-môn-theo-biên-bản).
+
+- **Hạng trong mùa:** CLB bằng toàn bộ tiêu chí chính đang áp dụng cùng hạng theo kiểu 1, 2, 2, 4. Không dùng tiêu chí đối đầu dành cho phân định cuối mùa trong mùa. Sắp theo mã CLB ổn định trong nhóm hòa chỉ để hiển thị, không tạo lợi thế hoặc hạng thể thao riêng.
+
+- **Vị trí quan trọng cuối mùa:** Đánh dấu nhóm hòa ảnh hưởng chức vô địch, suất dự giải hoặc xuống hạng cần phân định bằng tiêu chí phụ/playoff của nguồn. Không phân định kết quả thể thao bằng tên/mã CLB. Luồng phân định chi tiết vẫn mở.
+
+- **Giải cá nhân:** Giữ đồng Vua phá lưới theo nguồn, không tự thêm kiến tạo/số trận/phút thi đấu. Thủ môn cùng số trận giữ sạch lưới cao nhất đồng Găng tay vàng, không thêm tỷ lệ, số trận ra sân hoặc bàn thua làm tiêu chí phụ.
+
+- **Thành tích dương:** Chỉ xác định người nhận Vua phá lưới khi có ít nhất một bàn cá nhân hợp lệ, Găng tay vàng khi có ít nhất một trận giữ sạch lưới. Nếu chưa có thì hiển thị chưa có người đạt, không trao đồng giải toàn bộ người có số 0.
+
+- **Tính lại/chốt:** Hiệu chỉnh kết quả chính thức hợp lệ cập nhật nhóm đồng hạng và dẫn đầu giải cá nhân. Danh hiệu cuối cùng được xác nhận qua tổng kết mùa.
+
+## DASHBOARD-01 - Dashboard tổng quan mùa giải
+
+**Phạm vi:** CONFIRMED bắt buộc phiên bản đầu theo chỉ đạo Nhóm trưởng ngày 2026-10-26 (Asia/Bangkok). UC15/UC21/UC23 hiện có cùng xem trước UC22/UC24-UC25 phù hợp cung cấp tổng quan chỉ đọc; không thêm tác nhân hoặc UC.
+
+Hợp đồng thành phần/chỉ số/bố cục đã chốt do [D068](#d068---dashboard-tổng-quan-mùa-giải-công-khai) sở hữu.
+
+### D068 - Dashboard tổng quan mùa giải công khai
+
+**Quy tắc đã chốt:** Nhóm trưởng xác nhận rõ Q68 phương án A và toàn bộ gói đề xuất. [Phê duyệt và lý do](../../../docs/adr/0008-public-information-and-player-birth-dates.md#q68---shared-public-season-dashboard).
+
+- **Người xem:** Khách và người đã đăng nhập cùng dùng Dashboard của mùa được chọn, chỉ chứa dữ liệu công khai theo D032. Người nội bộ có liên kết đến chức năng theo quyền; hồ sơ nháp, yêu cầu chờ duyệt và dữ liệu nhạy cảm ở màn hình nghiệp vụ. Quyết định này không yêu cầu Dashboard công việc nội bộ riêng.
+- **Bộ đếm:** Hiển thị tên/trạng thái mùa, số CLB đã duyệt tham gia, tổng trận thuộc lịch đã công bố, số trận có Official Result và số trận chưa diễn ra. Chưa diễn ra bằng Chưa bắt đầu cộng Đã hoãn. Hiển thị số trận hoãn riêng và ghi rõ là tập con của chưa diễn ra, không cộng thành tổng nhóm độc lập. Nhận diện riêng Đang diễn ra và Đã kết thúc chưa có Official Result; không tính hai trạng thái này là chưa diễn ra hoặc có kết quả chính thức. Không công khai tỷ số chưa xác nhận hoặc chi tiết duyệt nội bộ.
+- **Lịch/kết quả:** Tối đa năm trận Chưa bắt đầu sắp tới có lịch đã duyệt, theo giờ lịch tăng dần. Trận hoãn có khu vực riêng thông báo chưa xác định lịch mới theo D067. Hiển thị năm Official Results gần nhất theo thời điểm thi đấu thực tế giảm dần. Có Logo, trường trạng thái/thời gian/sân/tỷ số phù hợp và điều hướng đầy đủ, tuân thủ ranh giới trường công khai.
+- **BXH/thành tích:** Xem trước năm CLB đầu bảng và danh sách dẫn đầu ghi bàn/giữ sạch lưới theo D066. Phần xem trước bị rút gọn phải báo còn mục và liên kết danh sách đầy đủ; không khiến người xem hiểu người đồng dẫn đầu bị ẩn không cùng hạng/giải. Xem trước không phải xác nhận danh hiệu cuối mùa.
+- **Hồ sơ/tin:** Liên kết rõ tới danh sách CLB/cầu thủ có tìm kiếm/lọc tại đó; không tải hàng trăm hồ sơ vào Dashboard. Tối đa năm tin/thông báo đã công bố, mới nhất trước. Bản nháp chưa công bố vẫn nội bộ.
+- **Bố cục:** Tổng quan mùa ở đầu, sau đó lịch sắp tới/kết quả gần đây, BXH/thành tích, điều hướng hồ sơ/tin tức. Điện thoại xếp một cột. Đây là bố cục nền; chi tiết mỹ thuật hoàn thiện khi thiết kế UI, không chọn thêm framework/thư viện.
+- **Độ mới/lỗi:** Tải khi mở trang, đổi mùa hoặc chủ động làm mới; không yêu cầu cập nhật liên tục. Hiển thị thời điểm tải thành công. Từng khối có Loading, Empty, Error và thử lại độc lập; khối lỗi không làm mất khối thành công hoặc biến lỗi thành số 0/dữ liệu giả. Giữ thống kê chỉ từ kết quả chính thức và vận hành độc lập API ngoài.

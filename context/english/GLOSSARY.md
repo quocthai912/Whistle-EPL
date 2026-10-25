@@ -1,6 +1,6 @@
 # Whistle-EPL - Business glossary
 
-One business context for the Premier League management system. Definitions follow the PDF; see [source conventions](sources.md). This glossary standardizes business meaning only; it does not define storage models.
+One business context and one glossary per language. Definitions describe domain meaning; normative rules and decision evidence are linked to their owners. [Sources](sources.md).
 
 ## Competition and organization
 
@@ -16,6 +16,8 @@ One business context for the Premier League management system. Definitions follo
 
 **Home ground**: The stadium registered in a club's seasonal application, used by default when the club is the home team unless the Organizing Committee approves a change (BM1, QĐ2.3).
 
+**Seasonal regulation version**: A distinct full set of regulations for one season whose approved content is retained unchanged as a business reference; changing approved content requires a newly approved version ([D042](use-cases/registration.md#d042---immutable-approved-versions-of-seasonal-regulations), confirmed 2026-10-25).
+
 ## Profiles and registration
 
 **Player / Player profile**: An individual and their basic identity record, distinct from registration for a particular club/season (UC09 pp.88-90).
@@ -26,11 +28,23 @@ One business context for the Premier League management system. Definitions follo
 
 **Official squad list**: The player list subject to default limits of 25 players and 17 players who do not meet the homegrown criteria; eligible U21 players register outside the 25-player limit (QĐ1.2-1.4).
 
-**Player meeting homegrown criteria (Home Grown Player)**: A player registered for at least three seasons or 36 months with clubs affiliated to the English or Welsh football associations during the prescribed age period, regardless of nationality (QĐ1.3). _Avoid_: using “English-nationality player” instead of the training criteria.
+**Player meeting homegrown criteria (Home Grown Player)**: A player satisfying the season’s qualifying training conditions, independent of nationality; source defaults are three seasons or 36 months in the prescribed age period with English/Welsh association clubs (QĐ1.3).
 
 **U21**: A registration category determined by the season's date-of-birth cutoff; do not infer it from age on the current date (QĐ1.4).
 
 **Active registration**: A playing registration effective during the period being examined; a player may have only one such registration at a time in the same competition (QĐ1.5).
+
+**Validated-registration correction**: An independently approved correction of erroneous confirmed registration content, classification or playing intervals, distinct from initial validation and ordinary termination/transfer ([D057](use-cases/registration.md#d057---independently-approved-correction-of-validated-registrations), confirmed 2026-10-25).
+
+**Playing-effective interval**: The period from a validated registration's start, inclusive, to its end, exclusive, which may remain unspecified until termination; confirmed intervals for the same player and competition must not overlap ([D056](use-cases/registration.md#d056---playing-effective-intervals-and-consistent-club-transfers), confirmed 2026-10-25).
+
+**Validated player registration**: A registration confirmed as meeting applicable checks by a Registration Officer under UC10; this confirmation alone does not establish that its playing-effective period includes a particular instant ([D055](use-cases/registration.md#d055---versioned-club-application-and-player-registration-workflows), confirmed 2026-10-25).
+
+**Homegrown verification basis**: The evidence and recorded staff assessment supporting a player's qualifying seasons or months under the season's homegrown conditions, distinct from nationality or U21 status ([D054](use-cases/registration.md#d054---automatic-u21-assessment-and-evidence-based-staff-verification-of-homegrown-status), confirmed 2026-10-25).
+
+**Registration intake window**: A seasonal opening/closing interval for receipt of club applications or player registration/squad changes, maintained separately for those groups ([D053](use-cases/registration.md#d053---registration-windows-receipt-deadlines-and-individual-exceptions), confirmed 2026-10-25).
+
+**Receipt-deadline exception**: An approved waiver of receipt timing for one specified application version, without waiving eligibility, squad limits or conflicting-registration rules ([D053](use-cases/registration.md#d053---registration-windows-receipt-deadlines-and-individual-exceptions)).
 
 ## Matches and results
 
@@ -52,6 +66,16 @@ One business context for the Premier League management system. Definitions follo
 
 **Card event**: A yellow or red card associated with a match, player, club, and time; it does not include a separate disciplinary/suspension system (QĐ3.5; pp.38-39).
 
+**Match-event minute**: The main minute plus any separately recorded added time identifying when a goal/card occurred; first-half added time remains part of the first half rather than a second-half minute ([D065](use-cases/results.md#d065---structured-event-minutes-score-checks-and-referee-signature-references), confirmed 2026-10-25).
+
+**Match report version**: A recorded revision within a match's single report case; a submitted revision is preserved unchanged while awaiting confirmation, independently of whether an earlier result remains official ([D063](use-cases/results.md#d063---separate-match-report-version-and-official-result-lifecycles), confirmed 2026-10-25).
+
+**Planned match interval**: The half-open period from scheduled kickoff to planned end, used to check club scheduling conflicts under the season's planning duration ([D061](use-cases/scheduling.md#d061---seasonal-planning-intervals-and-system-wide-schedule-conflict-checks), confirmed 2026-10-25).
+
+**Stadium occupancy interval**: The half-open planned match period extended by the season's preparation and release buffers, used to check stadium allocation conflicts ([D061](use-cases/scheduling.md#d061---seasonal-planning-intervals-and-system-wide-schedule-conflict-checks)).
+
+**Actual kickoff**: The recorded instant when a match actually begins, distinct from its scheduled start and the time its report is entered; it determines the applicable goal/card catalog under [D047](use-cases/results.md#d047---bind-match-event-catalogs-to-recorded-actual-kickoff), confirmed 2026-10-25.
+
 ## Aggregation and publication
 
 **Standings (BXH)**: Seasonal club performance calculated from official results, including matches, wins, draws, losses, goals for, goals against, goal difference, points, and rank (BM5.1; QĐ5).
@@ -62,7 +86,7 @@ One business context for the Premier League management system. Definitions follo
 
 **Clean sheet**: An official match in which the club concedes no goals, credited to the goalkeeper identified from the appearance list; goalkeeper substitutions are not considered in the current scope (QĐ5.7).
 
-**Golden Glove**: An award determined from goalkeepers' seasonal clean-sheet totals (QĐ5.7); the source has not settled how ties are handled.
+**Golden Glove**: The seasonal award for the highest positive goalkeeper clean-sheet total; equal highest totals share the award ([D066](use-cases/publication.md#d066---shared-standings-ranks-and-shared-individual-awards); QĐ5.7).
 
 **Season summary report**: BM5.3, confirmable only after all match results are available and necessary ranking decisions are resolved (QĐ5.5).
 
@@ -72,42 +96,28 @@ One business context for the Premier League management system. Definitions follo
 
 **Change history / Activity log**: Traceability information identifying the person, time, action/object, and before/after content of important changes, accessible only with appropriate permissions (p.38; BM-06). The two source terms have related scopes but do not necessarily require a single technical mechanism.
 
-## Context v2 additions
+**Shared standings rank**: A sporting rank held jointly by clubs equal on all applicable main criteria, with subsequent ranks skipped according to group size; display order within the group does not break the tie ([D066](use-cases/publication.md#d066---shared-standings-ranks-and-shared-individual-awards), confirmed 2026-10-25).
 
-**Shared standings rank**: A sporting rank held jointly by clubs equal on all applicable main criteria, with subsequent ranks skipped according to group size; display order within the group does not break the tie ([D066](design/README.md#d066---shared-standings-ranks-and-shared-individual-awards), confirmed 2026-10-25).
+## Authority and information scope
 
-**Match-event minute**: The main minute plus any separately recorded added time identifying when a goal/card occurred; first-half added time remains part of the first half rather than a second-half minute ([D065](design/README.md#d065---structured-event-minutes-score-checks-and-referee-signature-references), confirmed 2026-10-25).
+**Business delegation**: Authority for a specified business operation, season and validity period, distinct from assigning an entire role ([D013](design/access-control.md#d013---action-scoped-seasonal-and-time-bounded-business-delegation)).
 
-**Match report version**: A recorded revision within a match's single report case; a submitted revision is preserved unchanged while awaiting confirmation, independently of whether an earlier result remains official ([D063](design/README.md#d063---separate-match-report-version-and-official-result-lifecycles), confirmed 2026-10-25).
+**Direct business authority**: Authority held directly through the applicable seasonal role rather than received through delegation ([D015](design/access-control.md#d015---single-level-delegation-based-on-direct-role-authority)).
 
-**Planned match interval**: The half-open period from scheduled kickoff to planned end, used to check club scheduling conflicts under the season's planning duration ([D061](design/README.md#d061---seasonal-planning-intervals-and-system-wide-schedule-conflict-checks), confirmed 2026-10-25).
+**Personal internal account**: The single account assigned to one internal staff member across the system, carrying their applicable roles and seasonal assignments rather than being shared with others ([D031](use-cases/administration.md#d031---one-personal-internal-account-per-person), confirmed 2026-10-25).
 
-**Stadium occupancy interval**: The half-open planned match period extended by the season's preparation and release buffers, used to check stadium allocation conflicts ([D061](design/README.md#d061---seasonal-planning-intervals-and-system-wide-schedule-conflict-checks)).
+**Public competition information**: Competition information approved for unauthenticated viewing within the seasonal/publication scope, including player dates of birth under the Team Leader's v2 decision ([D032](use-cases/publication.md#d032---public-information-boundary-including-player-dates-of-birth), confirmed 2026-10-25).
 
-**Validated-registration correction**: An independently approved correction of erroneous confirmed registration content, classification or playing intervals, distinct from initial validation and ordinary termination/transfer ([D057](design/README.md#d057---independently-approved-correction-of-validated-registrations), confirmed 2026-10-25).
+**Internal competition information**: Competition administration, application and personal information outside the approved public scope, accessible only with the applicable authority ([D032](use-cases/publication.md#d032---public-information-boundary-including-player-dates-of-birth)). Viewing follows the responsible role and season rather than login alone ([D033](use-cases/publication.md#d033---internal-viewing-follows-business-responsibility)).
 
-**Playing-effective interval**: The period from a validated registration's start, inclusive, to its end, exclusive, which may remain unspecified until termination; confirmed intervals for the same player and competition must not overlap ([D056](design/README.md#d056---playing-effective-intervals-and-consistent-club-transfers), confirmed 2026-10-25).
+## Managed media
 
-**Validated player registration**: A registration confirmed as meeting applicable checks by a Registration Officer under UC10; this confirmation alone does not establish that its playing-effective period includes a particular instant ([D055](design/README.md#d055---versioned-club-application-and-player-registration-workflows), confirmed 2026-10-25).
+**Club logo**: The current visual identity managed with the shared club master, displayed consistently even in old-season views with fallback when unavailable; other historical club facts remain independently preserved ([LOGO-01](design/media.md#logo-01---approved-logo-design)).
 
-**Homegrown verification basis**: The evidence and recorded staff assessment supporting a player's qualifying seasons or months under the season's homegrown conditions, distinct from nationality or U21 status ([D054](design/README.md#d054---automatic-u21-assessment-and-evidence-based-staff-verification-of-homegrown-status), confirmed 2026-10-25).
+**Player profile image / Portrait**: A managed image associated with a player profile, displayed alongside the applicable seasonal registration information with fallback; portrait-specific validation/history policy remains open ([media scope](design/media.md#player-image-scope-and-remaining-decisions)).
 
-**Registration intake window**: A seasonal opening/closing interval for receipt of club applications or player registration/squad changes, maintained separately for those groups ([D053](design/README.md#d053---registration-windows-receipt-deadlines-and-individual-exceptions), confirmed 2026-10-25).
+## Season presentation
 
-**Receipt-deadline exception**: An approved waiver of receipt timing for one specified application version, without waiving eligibility, squad limits or conflicting-registration rules ([D053](design/README.md#d053---registration-windows-receipt-deadlines-and-individual-exceptions)).
+**Postponed match**: A not-yet-started match recorded as unable to proceed under its published schedule, distinct from a started/interrupted or permanently cancelled match ([POSTPONE-01](use-cases/scheduling.md#postpone-01---first-version-match-postponement)).
 
-**Actual kickoff**: The recorded instant when a match actually begins, distinct from its scheduled start and the time its report is entered; it determines the applicable goal/card catalog under [D047](design/README.md#d047---bind-match-event-catalogs-to-recorded-actual-kickoff), confirmed 2026-10-25.
-
-**Seasonal regulation version**: A distinct full set of regulations for one season whose approved content is retained unchanged as a business reference; changing approved content requires a newly approved version ([D042](design/README.md#d042---immutable-approved-versions-of-seasonal-regulations), confirmed 2026-10-25).
-
-The source-based v1 definitions above are retained. The following business definitions come from the Team Leader's confirmed v2 decisions, not additional PDF clauses.
-
-**Business delegation**: Authorization to perform a specified competition-management operation for a specified season within a defined validity period, distinct from assigning an entire business role ([D013](design/README.md#d013---action-scoped-seasonal-and-time-bounded-business-delegation), confirmed 2026-10-25; O07/O08). The Season Manager proposes it and the System Administrator records grants/revocations ([D014](design/README.md#d014---season-manager-proposes-delegation-system-administrator-records-grantsrevocations)); the recipient must have an active account and a business role in the target season ([D018](design/README.md#d018---delegation-recipients-must-already-hold-a-business-role-in-the-target-season)), within the approved role/operation matrix ([D019](design/README.md#d019---first-version-delegation-operation-and-recipient-role-matrix)).
-
-**Direct business authority**: Authority held directly through a person's business role in the applicable season, rather than received through delegation; only this authority may support a delegation proposal ([D015](design/README.md#d015---single-level-delegation-based-on-direct-role-authority), confirmed 2026-10-25). Business delegation is single-level: its recipient cannot use the delegated authority to delegate onward.
-
-**Personal internal account**: The single account assigned to one internal staff member across the system, carrying their applicable roles and seasonal assignments rather than being shared with others ([D031](design/README.md#d031---one-personal-internal-account-per-person), confirmed 2026-10-25).
-
-**Public competition information**: Competition information approved for unauthenticated viewing within the seasonal/publication scope, including player dates of birth under the Team Leader's v2 decision ([D032](design/README.md#d032---public-information-boundary-including-player-dates-of-birth), confirmed 2026-10-25).
-
-**Internal competition information**: Competition administration, application and personal information outside the approved public scope, accessible only with the applicable authority ([D032](design/README.md#d032---public-information-boundary-including-player-dates-of-birth)). Viewing follows the responsible role and season rather than login alone ([D033](design/README.md#d033---internal-viewing-follows-business-responsibility)).
+**Season Overview Dashboard**: A shared public overview of a selected season, its official competition statistics and related navigation ([DASHBOARD-01](use-cases/publication.md#dashboard-01---season-overview-dashboard)).

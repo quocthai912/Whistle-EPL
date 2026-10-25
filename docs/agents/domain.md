@@ -27,3 +27,7 @@ for domain-modeling.
 
 Explicitly identify any proposal that contradicts an existing ADR,
 including the ADR reference and the reason to revisit it.
+
+## Current rule ownership
+
+Use [design navigation](../../context/english/design/README.md) to select the owning domain document. Each [D001](../../context/english/design/architecture.md#d001---modular-layered-monolithic-backend)-[D068](../../context/english/use-cases/publication.md#d068---public-season-overview-dashboard) rule has one owner; ADRs preserve decisions/rationale and approval evidence. README is navigation, GLOSSARY defines terms, and [open-decisions](../../context/english/open-decisions.md) contains unresolved work only. V1 is retrieved from Git history, not a parallel current document set.

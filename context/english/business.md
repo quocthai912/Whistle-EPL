@@ -51,8 +51,8 @@ Source: §1.2.1.1.1, pp.6-7.
 
 Source: §1.2.1.1.2, p.7.
 
-- **QĐ2.1:** Each season has 20 participating clubs. Only clubs with valid registration applications may be included in the schedule.
-- **QĐ2.2:** The competition uses a double round-robin format. Each club plays the other 19 clubs twice (one home and one away match), giving 38 matches per club and 380 matches across 38 rounds.
+- **QĐ2.1:** The source default is 20 clubs; [D060](use-cases/scheduling.md#d060---automatic-fixture-pairing-with-manually-completed-schedule-drafts) owns supported first-version configurations and approved-club selection.
+- **QĐ2.2:** For the source-default 20-club double round-robin, each club meets the other 19 home and away: 38 matches per club, 38 rounds and 380 matches. D060 owns supported variable-count generation and validation.
 - **QĐ2.3:** Each match must identify its round, home team, away team, date/time, and stadium. The home team uses its registered home ground unless the Organizing Committee approves a stadium change.
 - **QĐ2.4:** A club must not participate in two matches whose playing times coincide.
 - **QĐ2.5:** A stadium must not host two matches with overlapping playing times. Clubs sharing a stadium must be scheduled appropriately.
@@ -102,3 +102,72 @@ Source: §1.2.1.1.6, p.11.
 - **QĐ6.4:** Goal-type and card-type catalogs may be updated according to each season's regulations. Changes must not distort confirmed match events.
 - **QĐ6.5:** Win/draw/loss points and the priority order of ranking criteria may be adjusted according to approved rules. Win points must exceed draw points, and draw points must exceed loss points.
 - **QĐ6.6:** Every regulation change must be validated and record the person making it, effective time, and before/after values. New regulations take effect only from their approved effective time and must preserve previous seasons' historical data.
+## Current managed media rules
+
+Use the authoritative [media policy](design/media.md) for managed images and [integration gates](design/integrations.md) for external dependencies. Verification belongs to the [Progress Checker](progress-checker.md); source quality thresholds remain unchanged. This page does not repeat those policies.
+
+## Current confirmed rules
+
+The rules below are the authoritative current policy for this domain. The UC flows/source clauses above are read with these explicit refinements, not as a separate version. Approval evidence and interview-time notes are in the linked English ADR records; outstanding work is in [open decisions](open-decisions.md).
+
+### D035 - Stable master identity with selective snapshots of official business information
+
+**Confirmed policy.** [Approval, source and rationale](../../docs/adr/0009-stable-identities-and-selective-business-snapshots.md#d035-english-evidence).
+
+- **Source:** O12; AT-04, PDF p.32; TH-05/TH-06, pp.13-14; master/seasonal object distinction in §1.3.4.1 pp.37-38; [D034](use-cases/administration.md#d034---separately-assigned-shared-master-record-management-permissions).
+
+- **Decision:** Keep stable identities for clubs, stadiums and players across seasons. At official business-recording milestones, retain selective snapshots of the information needed to reproduce the corresponding historical records/reports. A master-record update does not automatically overwrite officially recorded historical information.
+
+- **Official corrections:** Changes to official business data use the corresponding authorized process with a reason and history. Do not snapshot every field indiscriminately; the exact fields and capture milestones remain to be designed.
+
+- **Boundary example:** A club renaming in a later season should not silently replace the name officially used in an earlier season's report, while its identity remains the same club. [D036](business.md#d036---correct-erroneous-master-data-with-separate-review-of-affected-business-records) below settles the general correction policy for originally incorrect master information, including birth-date errors.
+
+### D036 - Correct erroneous master data with separate review of affected business records
+
+**Confirmed policy.** [Approval, source and rationale](../../docs/adr/0009-stable-identities-and-selective-business-snapshots.md#d036-english-evidence).
+
+- **Source:** O09/O12; UC07 pp.82-84, UC09 pp.88-90 and UC12 pp.97-99; QĐ4.5, PDF p.9; TH-06 and AT-03/AT-04, pp.14/32; [D034](use-cases/administration.md#d034---separately-assigned-shared-master-record-management-permissions)/[D035](business.md#d035---stable-master-identity-with-selective-snapshots-of-official-business-information).
+
+- **Decision:** An authorized master-record manager may correct erroneous source information with a reason and supporting basis. Preserve before/after values, operator and time, and identify related records/operations needing review. Do not require prior approval of the entire downstream correction plan before correcting the master.
+
+- **Historical boundary:** Keep snapshots and previously official decisions unchanged until corrected through their corresponding authorized business processes. A master correction must not automatically cancel registrations, alter official results or change statistics.
+
+- **New business work:** Recheck affected eligibility using corrected information when processing new business operations; do not rely on outdated validation results. For example, correcting a birth date may require review of prior U21 registration without automatically rewriting its official historical decision.
+
+### D058 - Stable business codes, duplicate review and temporal shirt-number uniqueness
+
+**Confirmed policy.** [Approval, source and rationale](../../docs/adr/0009-stable-identities-and-selective-business-snapshots.md#d058-english-evidence).
+
+- **Source:** O09/O12; UC05/UC07/UC09/UC10/UC12, BM1; [D035](business.md#d035---stable-master-identity-with-selective-snapshots-of-official-business-information)/[D055](use-cases/registration.md#d055---versioned-club-application-and-player-registration-workflows)-[D057](use-cases/registration.md#d057---independently-approved-correction-of-validated-registrations).
+
+- **Identity:** Seasons, clubs, stadiums and players have unique, stable, non-reusable business codes within each entity group. Names, abbreviations and birth dates do not replace identity codes. Duplicate codes are rejected.
+
+- **Suspected duplicate players:** Matching normalized full name, birth date and nationality triggers staff review, not automatic merging or a hard uniqueness rule. Reuse the existing profile for the same person; distinct people may have separate profiles after confirmation with a recorded reason.
+
+- **Clubs/stadiums:** Matching names trigger review; a shared name does not automatically identify the same entity.
+
+- **Shirt numbers:** Require an integer 1-99 when confirming registration validity. In the same club-season, confirmed registrations with overlapping playing-effective intervals cannot share a number, including U21 and future-start registrations. Reuse is allowed after the old interval ends. The 1-99 range is an explicit v2 choice, not a PDF rule.
+
+- **History/scope:** Current name/number changes do not automatically rewrite recorded history. Suspected duplicate records are not automatically merged or their references reassigned. Automatic profile-merging tools are outside the first-version scope.
+
+### D059 - Required registration data and official snapshot milestones
+
+**Confirmed policy.** [Approval, source and rationale](../../docs/adr/0009-stable-identities-and-selective-business-snapshots.md#d059-english-evidence).
+
+- **Source:** O04/O09/O12; BM1/BM4, UC05/UC07-UC12; [D032](use-cases/publication.md#d032---public-information-boundary-including-player-dates-of-birth)-[D036](business.md#d036---correct-erroneous-master-data-with-separate-review-of-affected-business-records)/[D054](use-cases/registration.md#d054---automatic-u21-assessment-and-evidence-based-staff-verification-of-homegrown-status)-[D058](business.md#d058---stable-business-codes-duplicate-review-and-temporal-shirt-number-uniqueness).
+
+- **Required fields:** Season: code, name, start/end dates, with regulations managed separately. Club master: code, name, abbreviation. Stadium master: code, name. Player master: code, full name, birth date, nationality, position.
+
+- **Club submission:** Require club, season, coach, home ground, representative name/phone/contact address and at least one proposed player, checked at preparation level. This does not require an already playing-effective registration before club approval.
+
+- **Player confirmation:** Require player, club, season, shirt number, U21/homegrown classification results, playing-effective start and corresponding validation basis. Drafts may omit business fields; block progression at the milestone requiring completeness.
+
+- **Homegrown evidence:** A positive finding requires qualifying-seasons/months branch, qualifying value, evidence summary and reference. Retain verifier/time/regulation version through the system. Upload functionality is not mandatory. Notes are optional; do not add personal identity papers.
+
+- **Club snapshot:** At club-application approval preserve the approved version's club name/abbreviation, coach, home ground, representative details and proposed player list.
+
+- **Player snapshot:** At validity confirmation preserve name, birth date, nationality, position, shirt number, classifications and regulation/verification basis. Approved corrections create a successor record while retaining the old one.
+
+- **Seasonal lookup:** Use season-recorded information, including approved corrections, rather than automatically reading all latest master values. [D032](use-cases/publication.md#d032---public-information-boundary-including-player-dates-of-birth)/[D033](use-cases/publication.md#d033---internal-viewing-follows-business-responsibility) public/internal boundaries still apply.
+
+- **Media exception:** [LOGO-01](design/media.md#logo-01---approved-logo-design) owns the approved logo-only exception to seasonal descriptive lookup. Portrait history remains unresolved.
