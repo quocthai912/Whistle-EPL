@@ -91,7 +91,7 @@ Nhân viên phụ trách lịch thi đấu; Ban tổ chức / Người quản l�
 7. Hệ thống kiểm tra xung đột sử dụng sân.
 8. Hệ thống hiển thị kết quả kiểm tra.
 9. Nhân viên điều chỉnh các mục không hợp lệ và yêu cầu kiểm tra lại.
-10. Khi lịch hợp lệ, nhân viên xác nhận lưu lịch và trình Ban tổ chức phê duyệt.
+10. Khi lịch hợp lệ, nhân viên xác nhận lưu lịch và trình người thuộc Ban tổ chức / Người quản lý mùa giải có thẩm quyền, không tham gia chuẩn bị hoặc chỉnh sửa phiên bản đó, phê duyệt theo [D005](administration.md#d005---tách-biệt-trách-nhiệm-lập-và-phê-duyệt)/[D062](#d062---duyệt-lịch-đồng-thời-công-bố-và-điều-chỉnh-theo-phiên-bản).
 11. Hệ thống lưu lịch ở trạng thái chờ phê duyệt và ghi nhận nhật ký.
 
 **Luồng thay thế:**

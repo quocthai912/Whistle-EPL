@@ -91,7 +91,7 @@ Scheduling Officer; Organizing Committee / Season Manager.
 7. The system checks stadium-use conflicts.
 8. The system displays validation results.
 9. The officer corrects invalid items and requests revalidation.
-10. Once valid, the officer confirms saving and submits the schedule to the Organizing Committee for approval.
+10. Once valid, the officer confirms saving and submits the schedule for approval by an authorized Organizing Committee / Season Manager who did not prepare or edit it, under [D005](administration.md#d005---separate-preparation-and-approval-responsibilities)/[D062](#d062---schedule-approval-publishes-immediately-and-adjustments-are-versioned).
 11. The system saves the schedule as pending approval and records the log.
 
 **Alternative flow:**
