@@ -1,0 +1,5 @@
+# ADR 0001 - Modular, layered monolithic backend
+
+**Status:** accepted. **Approver:** Team Leader. **Date:** 2026-10-25 (Asia/Bangkok).
+
+Under O12 and CN-01-CN-04 (PDF p.26), Whistle-EPL needs a browser-based Client-Server application, centralized relational storage and clear UI/business/data-access responsibilities. In interview Q1, the Team Leader explicitly selected option A: one backend deployed as a single unit, organized into business modules with layered responsibilities, using one centralized relational database. Compared with organization solely by technical layers, business modules make responsibility boundaries clearer; compared with independently deployed services, this choice keeps deployment and cross-functional transactions manageable for the three-member SE104 project (§1.5 pp.50-52). Module dependencies must remain controlled. At Q1, frontend architecture, stack, database product, concrete modules/dependencies and transaction contracts remained open. ADR 0002 subsequently settles the stack and API style; O12 remains partially settled. See [Context v2 D001](../../context/english/design/README.md#d001---modular-layered-monolithic-backend).

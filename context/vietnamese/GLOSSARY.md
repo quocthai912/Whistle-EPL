@@ -71,3 +71,17 @@ Một ngữ cảnh duy nhất cho hệ thống quản lý Premier League. Địn
 **Quy định mùa giải**: Bộ điều kiện nghiệp vụ áp dụng theo mùa, có thẩm quyền phê duyệt và thời điểm hiệu lực (QĐ6; UC06).
 
 **Lịch sử thay đổi / Nhật ký hoạt động**: Thông tin truy vết người, thời điểm, thao tác/đối tượng, nội dung trước-sau đối với những thay đổi quan trọng; chỉ được truy cập theo quyền (tr.38; BM-06). Hai cách gọi có phạm vi liên quan trong nguồn, chưa bắt buộc là cùng một cơ chế kỹ thuật.
+
+## Bổ sung Context v2
+
+Các định nghĩa v1 theo nguồn phía trên được giữ nguyên. Các định nghĩa nghiệp vụ sau đến từ những quyết định v2 đã được Nhóm trưởng xác nhận, không phải điều khoản PDF bổ sung.
+
+**Ủy quyền nghiệp vụ**: Việc cho phép thực hiện một thao tác quản lý giải đấu cụ thể trong một mùa xác định và thời hạn hiệu lực xác định, phân biệt với cấp toàn bộ vai trò nghiệp vụ ([D013](design/README.md#d013---ủy-quyền-nghiệp-vụ-riêng-theo-thao-tác-mùa-và-thời-hạn), xác nhận 2026-10-25; O07/O08). Ban tổ chức đề nghị và Quản trị viên hệ thống ghi nhận cấp/thu hồi ([D014](design/README.md#d014---ban-tổ-chức-đề-nghị-ủy-quyền-quản-trị-viên-ghi-nhận-cấpthu-hồi)); người nhận phải có tài khoản hoạt động và vai trò nghiệp vụ trong mùa đích ([D018](design/README.md#d018---người-nhận-phải-có-vai-trò-nghiệp-vụ-trong-mùa-đích-trước-khi-nhận-ủy-quyền)), trong ma trận vai trò/thao tác đã duyệt ([D019](design/README.md#d019---ma-trận-thao-tác-và-vai-trò-được-nhận-ủy-quyền-trong-phiên-bản-đầu)).
+
+**Quyền nghiệp vụ trực tiếp**: Quyền một người có trực tiếp từ vai trò nghiệp vụ của mình trong mùa tương ứng, thay vì nhận qua ủy quyền; chỉ quyền này được dùng làm căn cứ đề nghị ủy quyền ([D015](design/README.md#d015---ủy-quyền-một-cấp-dựa-trên-quyền-trực-tiếp-từ-vai-trò), xác nhận 2026-10-25). Ủy quyền nghiệp vụ chỉ có một cấp: người nhận không được dùng quyền được ủy quyền để ủy quyền tiếp.
+
+**Tài khoản nội bộ cá nhân**: Tài khoản duy nhất được cấp cho một nhân sự nội bộ trên toàn hệ thống, mang các vai trò và phân công mùa tương ứng của người đó, không dùng chung với người khác ([D031](design/README.md#d031---mỗi-người-một-tài-khoản-nội-bộ-cá-nhân), xác nhận 2026-10-25).
+
+**Thông tin giải đấu công khai**: Thông tin giải đấu đã được cho phép xem không cần đăng nhập trong phạm vi mùa/xuất bản, gồm ngày sinh cầu thủ theo quyết định v2 của Nhóm trưởng ([D032](design/README.md#d032---phạm-vi-công-khai-gồm-ngày-sinh-cầu-thủ), xác nhận 2026-10-25).
+
+**Thông tin giải đấu nội bộ**: Thông tin quản trị, hồ sơ và cá nhân nằm ngoài phạm vi công khai đã duyệt, chỉ được truy cập với thẩm quyền tương ứng ([D032](design/README.md#d032---phạm-vi-công-khai-gồm-ngày-sinh-cầu-thủ)). Quyền xem theo vai trò phụ trách và mùa, không chỉ dựa vào đăng nhập ([D033](design/README.md#d033---xem-dữ-liệu-nội-bộ-theo-trách-nhiệm-nghiệp-vụ)).
