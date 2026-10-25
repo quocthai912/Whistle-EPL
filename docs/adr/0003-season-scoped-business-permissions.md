@@ -1,6 +1,48 @@
 # ADR 0003 - Season-scoped business permissions
 
-Current confirmed follow-ups in this record: D003-D007, D009-D010, D012, D031 and D034. Earlier open-point notes below describe the scope at their interview round; the later follow-ups govern where those points have since been settled. D008 settles first-administrator bootstrap in [ADR 0004](0004-first-administrator-cli-bootstrap.md). D009 settles self-locking/self-revocation and last-active-administrator safeguards; D010 settles administrator self-granting of seasonal business permissions. D011 settles the separate emergency recovery flow in ADR 0004; ordinary password operations remain open. D012 settles season-wide Results Officer scope without per-match assignments. D031 establishes one personal internal account per person. D034 separately assigns shared master-record management permissions.
+## Account locking and shared master-management assignments
+
+**Status:** accepted. **Approver:** Team Leader. **Date:** 2026-10-25 (Asia/Bangkok). **Interview:** Q41, option A; Context decision D041.
+
+Account locking blocks login and permission use and invalidates all sessions under D007, but does not itself remove role assignments or terminate separately granted shared master-management permissions. Unlocking requires a new login and permits only still-valid access. If the last corresponding role assignment was removed during the lock, D038 still terminates the shared permission; unlocking does not restore it. D020 remains unchanged: business delegation terminated by locking does not revive automatically.
+
+Terminating shared permissions on every lock and requiring a fresh grant after unlocking was considered. The Team Leader chose to separate account locking from responsibility revocation and simplify temporary locking, accepting review of retained permissions on unlocking and different lifecycle treatment for delegation. UI/error contracts, permanent account retirement, season closure/archive behavior and technical enforcement remain open. See [Context v2 D041](../../context/english/design/README.md#d041---retain-shared-master-management-assignments-while-an-account-is-locked).
+
+## Administrator self-reduction of business permissions
+
+**Status:** accepted. **Approver:** Team Leader. **Date:** 2026-10-25 (Asia/Bangkok). **Interview:** Q40, option A; Context decision D040.
+
+A System Administrator may use UC03 to remove their own seasonal business roles, narrow their season scope or revoke their shared master-management permissions, provided the operation only reduces access and does not grant or expand their own permissions. Preserve history and prior accountability, apply D038's dependent-permission termination, D007/D039 session invalidation and D030 final authorization checks. Restoration requires another administrator under D010/D037. D009 still prohibits self-locking and self-removal of the System Administrator role.
+
+Requiring another administrator for every change to one's own business permissions was considered. The Team Leader chose timely removal of unneeded permissions and simpler staffing coordination, accepting accidental loss of needed business access and reliance on another administrator for restoration. UI/error contracts, pending-work handover and technical consistency/concurrency mechanisms remain open. See [Context v2 D040](../../context/english/design/README.md#d040---allow-administrator-self-reduction-of-business-permissions).
+
+## Session invalidation for shared master-management permissions
+
+**Status:** accepted. **Approver:** Team Leader. **Date:** 2026-10-25 (Asia/Bangkok). **Interview:** Q39, option A; Context decision D039.
+
+Successfully granting, expanding, revoking or terminating shared master-management permissions invalidates all sessions of the affected recipient, including D038 termination. The next internal request with an old session is rejected and displays D007's account/permission-change notice requesting login again; real-time notification is not required. In-flight writes remain subject to D030's final in-transaction authorization/session check and consistent ordering with access changes. Previously valid completed operations are not undone.
+
+Retaining sessions while checking current permissions and updating the UI was considered. The Team Leader chose the same explicit login boundary as D007/D022, accepting interruptions even for additional grants. Session technology/storage, detailed error contracts, unsaved-input handling and concurrency mechanisms remain open. See [Context v2 D039](../../context/english/design/README.md#d039---invalidate-sessions-after-shared-master-management-permission-changes).
+
+D037 prohibits administrator self-grants of shared master-management permissions. D038 makes continued possession of a corresponding role assignment a prerequisite; see the confirmed follow-ups below.
+
+## Shared master-management permission depends on a corresponding role
+
+**Status:** accepted. **Approver:** Team Leader. **Date:** 2026-10-25 (Asia/Bangkok). **Interview:** Q38, option A; Context decision D038.
+
+Separately granted shared club, stadium and player master-management permissions require, respectively, a Season Manager, Scheduling Officer or Registration Officer role assignment in at least one season. Removing the last corresponding assignment ends the related shared permission with history. Reassigning the role does not revive it: a new grant under D034/D037 is required. Retaining a corresponding assignment in another season avoids this termination trigger. Season end dates alone do not mean role removal; closure/archive behavior remains open.
+
+Checking the role only at grant time and retaining permission until explicit revocation was considered. The Team Leader chose continuing responsibility-based access to prevent leftover permissions, accepting coordination of assignment order and possible regranting. Session handling, self-reduction/revocation, account-lock effects and technical concurrency mechanisms remain open. See [Context v2 D038](../../context/english/design/README.md#d038---end-shared-master-management-permission-after-loss-of-the-last-corresponding-role-assignment).
+
+## Administrator self-granting of shared master-management permissions
+
+**Status:** accepted. **Approver:** Team Leader. **Date:** 2026-10-25 (Asia/Bangkok). **Interview:** Q37, option A; Context decision D037.
+
+A System Administrator cannot grant or expand their own shared club, stadium or player master-management permissions, even when holding the corresponding business role. Another administrator must grant them through UC03, with backend enforcement and assignment history. A sole administrator can still assign these permissions to other eligible personnel, but needs another administrator to receive additional permissions themselves.
+
+Allowing self-grants based on the corresponding business responsibility with logging was considered. The Team Leader chose consistency with D010 and separation of grantor and recipient, accepting dependence on another administrator. Self-reduction/revocation, session handling and qualifying-role lifecycle remain open; this decision adds no separate grant-approval workflow. See [Context v2 D037](../../context/english/design/README.md#d037---prohibit-administrator-self-granting-of-shared-master-management-permissions).
+
+Current confirmed follow-ups in this record: D003-D007, D009-D010, D012, D031, D034 and D037-D041. Earlier open-point notes below describe the scope at their interview round; the later follow-ups govern where those points have since been settled. D008 settles first-administrator bootstrap in [ADR 0004](0004-first-administrator-cli-bootstrap.md). D009 settles self-locking/self-revocation and last-active-administrator safeguards; D010 settles administrator self-granting of seasonal business permissions. D011 settles the separate emergency recovery flow in ADR 0004; ordinary password operations remain open. D012 settles season-wide Results Officer scope without per-match assignments. D031 establishes one personal internal account per person. D034 separately assigns shared master-record management permissions.
 
 **Status:** accepted. **Approver:** Team Leader. **Date:** 2026-10-25 (Asia/Bangkok).
 
@@ -76,4 +118,4 @@ Multiple accounts linked to a separate person identity were considered. The Team
 
 The System Administrator separately assigns/revokes shared permissions through UC03 for club master management (Season Manager responsibility, UC07), stadium master management (Scheduling Officer responsibility, UC12) and player master profiles (Registration Officer responsibility, UC09). A seasonal role does not automatically grant shared-master management. This applies to shared records without granting access to other seasons' applications/internal business data and creates no new actor or UC.
 
-Automatically deriving global shared-management access from a corresponding role in any season was considered. The Team Leader chose an explicit shared-data boundary at the cost of additional permission configuration. Exact representation, qualifying-role lifecycle, self-grant/session rules for these permissions, field access, historical preservation and write constraints remain open. No destructive deletion or new operation beyond applicable UCs/integrity rules is authorized. See [Context v2 D034](../../context/english/design/README.md#d034---separately-assigned-shared-master-record-management-permissions).
+Automatically deriving global shared-management access from a corresponding role in any season was considered. The Team Leader chose an explicit shared-data boundary at the cost of additional permission configuration. Exact representation, qualifying-role lifecycle and session rules for these permissions (D037 above settles self-granting), field access, historical preservation and write constraints remain open. No destructive deletion or new operation beyond applicable UCs/integrity rules is authorized. See [Context v2 D034](../../context/english/design/README.md#d034---separately-assigned-shared-master-record-management-permissions).

@@ -74,6 +74,32 @@ One business context for the Premier League management system. Definitions follo
 
 ## Context v2 additions
 
+**Shared standings rank**: A sporting rank held jointly by clubs equal on all applicable main criteria, with subsequent ranks skipped according to group size; display order within the group does not break the tie ([D066](design/README.md#d066---shared-standings-ranks-and-shared-individual-awards), confirmed 2026-10-25).
+
+**Match-event minute**: The main minute plus any separately recorded added time identifying when a goal/card occurred; first-half added time remains part of the first half rather than a second-half minute ([D065](design/README.md#d065---structured-event-minutes-score-checks-and-referee-signature-references), confirmed 2026-10-25).
+
+**Match report version**: A recorded revision within a match's single report case; a submitted revision is preserved unchanged while awaiting confirmation, independently of whether an earlier result remains official ([D063](design/README.md#d063---separate-match-report-version-and-official-result-lifecycles), confirmed 2026-10-25).
+
+**Planned match interval**: The half-open period from scheduled kickoff to planned end, used to check club scheduling conflicts under the season's planning duration ([D061](design/README.md#d061---seasonal-planning-intervals-and-system-wide-schedule-conflict-checks), confirmed 2026-10-25).
+
+**Stadium occupancy interval**: The half-open planned match period extended by the season's preparation and release buffers, used to check stadium allocation conflicts ([D061](design/README.md#d061---seasonal-planning-intervals-and-system-wide-schedule-conflict-checks)).
+
+**Validated-registration correction**: An independently approved correction of erroneous confirmed registration content, classification or playing intervals, distinct from initial validation and ordinary termination/transfer ([D057](design/README.md#d057---independently-approved-correction-of-validated-registrations), confirmed 2026-10-25).
+
+**Playing-effective interval**: The period from a validated registration's start, inclusive, to its end, exclusive, which may remain unspecified until termination; confirmed intervals for the same player and competition must not overlap ([D056](design/README.md#d056---playing-effective-intervals-and-consistent-club-transfers), confirmed 2026-10-25).
+
+**Validated player registration**: A registration confirmed as meeting applicable checks by a Registration Officer under UC10; this confirmation alone does not establish that its playing-effective period includes a particular instant ([D055](design/README.md#d055---versioned-club-application-and-player-registration-workflows), confirmed 2026-10-25).
+
+**Homegrown verification basis**: The evidence and recorded staff assessment supporting a player's qualifying seasons or months under the season's homegrown conditions, distinct from nationality or U21 status ([D054](design/README.md#d054---automatic-u21-assessment-and-evidence-based-staff-verification-of-homegrown-status), confirmed 2026-10-25).
+
+**Registration intake window**: A seasonal opening/closing interval for receipt of club applications or player registration/squad changes, maintained separately for those groups ([D053](design/README.md#d053---registration-windows-receipt-deadlines-and-individual-exceptions), confirmed 2026-10-25).
+
+**Receipt-deadline exception**: An approved waiver of receipt timing for one specified application version, without waiving eligibility, squad limits or conflicting-registration rules ([D053](design/README.md#d053---registration-windows-receipt-deadlines-and-individual-exceptions)).
+
+**Actual kickoff**: The recorded instant when a match actually begins, distinct from its scheduled start and the time its report is entered; it determines the applicable goal/card catalog under [D047](design/README.md#d047---bind-match-event-catalogs-to-recorded-actual-kickoff), confirmed 2026-10-25.
+
+**Seasonal regulation version**: A distinct full set of regulations for one season whose approved content is retained unchanged as a business reference; changing approved content requires a newly approved version ([D042](design/README.md#d042---immutable-approved-versions-of-seasonal-regulations), confirmed 2026-10-25).
+
 The source-based v1 definitions above are retained. The following business definitions come from the Team Leader's confirmed v2 decisions, not additional PDF clauses.
 
 **Business delegation**: Authorization to perform a specified competition-management operation for a specified season within a defined validity period, distinct from assigning an entire business role ([D013](design/README.md#d013---action-scoped-seasonal-and-time-bounded-business-delegation), confirmed 2026-10-25; O07/O08). The Season Manager proposes it and the System Administrator records grants/revocations ([D014](design/README.md#d014---season-manager-proposes-delegation-system-administrator-records-grantsrevocations)); the recipient must have an active account and a business role in the target season ([D018](design/README.md#d018---delegation-recipients-must-already-hold-a-business-role-in-the-target-season)), within the approved role/operation matrix ([D019](design/README.md#d019---first-version-delegation-operation-and-recipient-role-matrix)).

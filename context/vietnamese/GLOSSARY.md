@@ -74,6 +74,32 @@ Một ngữ cảnh duy nhất cho hệ thống quản lý Premier League. Địn
 
 ## Bổ sung Context v2
 
+**Đồng hạng trên bảng xếp hạng**: Hạng thể thao chung cho các CLB bằng toàn bộ tiêu chí chính áp dụng, hạng sau bỏ qua theo số CLB trong nhóm; thứ tự hiển thị trong nhóm không phân định hòa ([D066](design/README.md#d066---đồng-hạng-trên-bảng-xếp-hạng-và-đồng-giải-cá-nhân), xác nhận 2026-10-25).
+
+**Phút sự kiện trận**: Phút chính cùng phần bù giờ ghi riêng để xác định lúc bàn thắng/thẻ xảy ra; bù giờ hiệp một vẫn thuộc hiệp một, không chuyển thành phút hiệp hai ([D065](design/README.md#d065---phút-sự-kiện-có-cấu-trúc-kiểm-tra-tỷ-số-và-tham-chiếu-chữ-ký-trọng-tài), xác nhận 2026-10-25).
+
+**Phiên bản biên bản trận**: Một bản nội dung trong hồ sơ biên bản duy nhất của trận; bản đã trình được giữ nguyên khi chờ xác nhận, độc lập với việc kết quả trước đó vẫn chính thức ([D063](design/README.md#d063---tách-vòng-đời-trận-phiên-bản-biên-bản-và-kết-quả-chính-thức), xác nhận 2026-10-25).
+
+**Khoảng thi đấu dự kiến**: Khoảng nửa kín từ giờ bắt đầu theo lịch đến giờ kết thúc dự kiến, dùng kiểm tra xung đột lịch CLB theo thời lượng kế hoạch của mùa ([D061](design/README.md#d061---khoảng-kế-hoạch-theo-mùa-và-kiểm-tra-xung-đột-lịch-toàn-hệ-thống), xác nhận 2026-10-25).
+
+**Khoảng chiếm dụng sân**: Khoảng thi đấu dự kiến nửa kín được mở rộng bằng đệm chuẩn bị và giải phóng sân của mùa, dùng kiểm tra xung đột phân bổ sân ([D061](design/README.md#d061---khoảng-kế-hoạch-theo-mùa-và-kiểm-tra-xung-đột-lịch-toàn-hệ-thống)).
+
+**Hiệu chỉnh đăng ký đã hợp lệ**: Việc sửa sai nội dung, phân loại hoặc khoảng hiệu lực đăng ký đã xác nhận qua phê duyệt độc lập, phân biệt với xác nhận ban đầu và kết thúc/chuyển CLB thông thường ([D057](design/README.md#d057---hiệu-chỉnh-đăng-ký-đã-hợp-lệ-qua-phê-duyệt-độc-lập), xác nhận 2026-10-25).
+
+**Khoảng hiệu lực thi đấu**: Khoảng từ mốc bắt đầu được tính đến mốc kết thúc không được tính của đăng ký hợp lệ, có thể chưa xác định kết thúc cho tới khi chấm dứt; các khoảng đã xác nhận của cùng cầu thủ và giải không được chồng lấn ([D056](design/README.md#d056---khoảng-hiệu-lực-thi-đấu-và-chuyển-clb-nhất-quán), xác nhận 2026-10-25).
+
+**Đăng ký cầu thủ hợp lệ**: Đăng ký được Nhân viên đăng ký xác nhận đạt các kiểm tra áp dụng theo UC10; riêng việc xác nhận này không chứng minh khoảng hiệu lực thi đấu bao gồm một thời điểm cụ thể ([D055](design/README.md#d055---luồng-hồ-sơ-clb-và-đăng-ký-cầu-thủ-theo-phiên-bản), xác nhận 2026-10-25).
+
+**Căn cứ xác minh homegrown**: Tài liệu và đánh giá được nhân sự ghi nhận để chứng minh số mùa hoặc tháng đạt điều kiện homegrown của mùa, phân biệt với quốc tịch hoặc trạng thái U21 ([D054](design/README.md#d054---tự-xét-u21-và-kiểm-tra-homegrown-bằng-căn-cứ-do-nhân-sự-xác-minh), xác nhận 2026-10-25).
+
+**Đợt tiếp nhận đăng ký**: Khoảng mở/đóng theo mùa để tiếp nhận hồ sơ tham gia CLB hoặc đăng ký/thay đổi danh sách cầu thủ, được quản lý riêng cho hai nhóm ([D053](design/README.md#d053---đợt-đăng-ký-hạn-tiếp-nhận-và-ngoại-lệ-từng-hồ-sơ), xác nhận 2026-10-25).
+
+**Ngoại lệ hạn tiếp nhận**: Việc miễn điều kiện thời hạn tiếp nhận đã được phê duyệt cho một phiên bản hồ sơ xác định, không miễn điều kiện cầu thủ, hạn mức hoặc quy tắc xung đột đăng ký ([D053](design/README.md#d053---đợt-đăng-ký-hạn-tiếp-nhận-và-ngoại-lệ-từng-hồ-sơ)).
+
+**Giờ bắt đầu thực tế của trận**: Thời điểm được ghi nhận khi trận thực sự bắt đầu, phân biệt với giờ trong lịch và lúc nhập biên bản; dùng xác định danh mục bàn thắng/thẻ áp dụng theo [D047](design/README.md#d047---gắn-danh-mục-sự-kiện-trận-với-giờ-bắt-đầu-thực-tế-được-ghi-nhận), xác nhận 2026-10-25.
+
+**Phiên bản quy định mùa giải**: Một bộ quy định đầy đủ riêng cho một mùa, có nội dung đã duyệt được giữ nguyên làm căn cứ nghiệp vụ; thay đổi nội dung đã duyệt cần phiên bản mới được phê duyệt ([D042](design/README.md#d042---phiên-bản-quy-định-mùa-giải-đã-duyệt-có-nội-dung-bất-biến), xác nhận 2026-10-25).
+
 Các định nghĩa v1 theo nguồn phía trên được giữ nguyên. Các định nghĩa nghiệp vụ sau đến từ những quyết định v2 đã được Nhóm trưởng xác nhận, không phải điều khoản PDF bổ sung.
 
 **Ủy quyền nghiệp vụ**: Việc cho phép thực hiện một thao tác quản lý giải đấu cụ thể trong một mùa xác định và thời hạn hiệu lực xác định, phân biệt với cấp toàn bộ vai trò nghiệp vụ ([D013](design/README.md#d013---ủy-quyền-nghiệp-vụ-riêng-theo-thao-tác-mùa-và-thời-hạn), xác nhận 2026-10-25; O07/O08). Ban tổ chức đề nghị và Quản trị viên hệ thống ghi nhận cấp/thu hồi ([D014](design/README.md#d014---ban-tổ-chức-đề-nghị-ủy-quyền-quản-trị-viên-ghi-nhận-cấpthu-hồi)); người nhận phải có tài khoản hoạt động và vai trò nghiệp vụ trong mùa đích ([D018](design/README.md#d018---người-nhận-phải-có-vai-trò-nghiệp-vụ-trong-mùa-đích-trước-khi-nhận-ủy-quyền)), trong ma trận vai trò/thao tác đã duyệt ([D019](design/README.md#d019---ma-trận-thao-tác-và-vai-trò-được-nhận-ủy-quyền-trong-phiên-bản-đầu)).

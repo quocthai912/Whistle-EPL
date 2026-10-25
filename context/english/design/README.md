@@ -482,7 +482,7 @@ Confirmed by the Team Leader on 2026-10-25: design documentation lives in `conte
 - **Alternatives/basis:** Explicit separate shared permissions versus automatically deriving them from the corresponding role in any season. The Team Leader chose an explicit shared-data assignment boundary, accepting additional permission configuration.
 - **Record:** [ADR 0003](../../../docs/adr/0003-season-scoped-business-permissions.md#separately-assigned-shared-master-management-permissions).
 - **Affected Phases:** PHASE 1 UC03/authorization, PHASE 2 clubs/stadiums, PHASE 3 player profiles and PHASE 10 access/history verification. No Phase status changes.
-- **Still open:** Exact permission representation and qualifying-role lifecycle, self-grant/session-change rules for these shared permissions, field-level access, snapshot details under D035 and detailed write constraints. D034 does not approve destructive deletion or any new operation beyond the applicable UCs and integrity rules.
+- **Still open:** Exact permission representation, qualifying-role lifecycle as settled by D038 below, session-change rules for these shared permissions (D037 settles self-granting), field-level access, snapshot details under D035 and detailed write constraints. D034 does not approve destructive deletion or any new operation beyond the applicable UCs and integrity rules.
 
 ### D035 - Stable master identity with selective snapshots of official business information
 
@@ -510,15 +510,439 @@ Confirmed by the Team Leader on 2026-10-25: design documentation lives in `conte
 - **Affected Phases:** PHASE 2 masters/regulations, PHASE 3 profiles/registration, PHASE 4 schedules, PHASE 5 official results, PHASE 6/PHASE 7 lookup/reports and PHASE 10 integration/integrity verification. No Phase status changes.
 - **Still open:** Impacted field/record mapping, supporting-basis format, review ownership/states, handling of registrations no longer eligible, historical correction/public display rules, snapshot details and transaction/concurrency contracts. No upload mechanism, automatic disciplinary action or new workflow-state code is selected.
 
+### D037 - Prohibit administrator self-granting of shared master-management permissions
+
+- **Status:** CONFIRMED by Team Leader on 2026-10-25 (Asia/Bangkok).
+- **Confirmation evidence:** In response to Q37, the Team Leader selected option A: “Tôi chọn A.” (“I choose A.”).
+- **Source:** O08/O12; UC03 and D010/D034. This extends the confirmed self-grant safeguard to separately assigned shared master-management permissions.
+- **Decision:** A System Administrator cannot grant or expand their own shared club, stadium or player master-management permissions. Another System Administrator must make the grant through UC03. Holding the corresponding business role does not permit self-granting.
+- **Administration boundary:** A sole administrator may still grant these permissions to other eligible personnel. Receiving additional shared-management permissions themselves requires a second administrator. Enforce the restriction on the backend and retain assignment history.
+- **Alternatives/basis:** Prohibit self-granting versus allow it when the administrator holds the corresponding business responsibility, with audit logging. The Team Leader chose consistency with D010 and separation of grantor and recipient, accepting coordination with another administrator.
+- **Record:** [ADR 0003](../../../docs/adr/0003-season-scoped-business-permissions.md#administrator-self-granting-of-shared-master-management-permissions).
+- **Affected Phases:** PHASE 1 account/permission administration, PHASE 2 club/stadium masters, PHASE 3 player masters and PHASE 10 authorization verification. No Phase status changes.
+- **Still open:** Exact permission representation; D040 below settles self-reduction/revocation. D038 below settles the qualifying-role lifecycle; D039 settles session-change handling. D037 does not settle these aspects or introduce a separate grant-approval workflow.
+
+### D038 - End shared master-management permission after loss of the last corresponding role assignment
+
+- **Status:** CONFIRMED by Team Leader on 2026-10-25 (Asia/Bangkok).
+- **Confirmation evidence:** In response to Q38, the Team Leader selected option A: “Tôi chọn A.” (“I choose A.”).
+- **Source:** O08/O12; UC03 and D034/D037.
+- **Decision:** Shared club master-management permission requires a Season Manager role assignment in at least one season; stadium master-management requires a Scheduling Officer assignment in at least one season; player master-management requires a Registration Officer assignment in at least one season. A corresponding role remains a prerequisite after the separate permission grant.
+- **Termination and restoration:** Removing the person's last corresponding role assignment ends the related shared-management permission and preserves history. Assigning a corresponding role again does not revive that permission; a new separate grant under D034/D037 is required. Retaining a corresponding assignment in another season prevents this particular termination trigger.
+- **Boundary:** Loss means removal of the role assignment, not merely the season reaching its end date. Season closure/archive behavior remains undecided. This decision does not grant access to other seasons' internal records.
+- **Alternatives/basis:** Continuing role dependency versus checking the corresponding role only at grant time and retaining permission until explicit revocation. The Team Leader chose responsibility-aligned access and prevention of leftover permissions, accepting reassignment-order coordination and possible regranting.
+- **Record:** [ADR 0003](../../../docs/adr/0003-season-scoped-business-permissions.md#shared-master-management-permission-depends-on-a-corresponding-role).
+- **Affected Phases:** PHASE 1 role/permission lifecycle, PHASE 2 club/stadium masters, PHASE 3 player masters and PHASE 10 authorization verification. No Phase status changes.
+- **Still open:** Session-change handling is settled by D039. Self-reduction/revocation is settled by D040. Account-lock effects are settled by D041. Season closure/archive rules and technical consistency/concurrency mechanisms. No permission storage structure or automatic scheduling mechanism is selected.
+
+### D039 - Invalidate sessions after shared master-management permission changes
+
+- **Status:** CONFIRMED by Team Leader on 2026-10-25 (Asia/Bangkok).
+- **Confirmation evidence:** In response to Q39, the Team Leader selected option A: “Tôi chọn A.” (“I choose A.”).
+- **Source:** O08/O12; UC03 and D007/D022/D030/D034/D038.
+- **Decision:** Successfully granting, expanding, revoking or terminating shared master-management permissions invalidates all existing sessions of the affected recipient, including termination under D038. The next internal request using an old session is rejected; the user must log in again with current permissions.
+- **User notice:** Display the D007 notice: “Phiên đăng nhập không còn hiệu lực do tài khoản hoặc quyền truy cập đã thay đổi. Vui lòng đăng nhập lại.” No real-time notification infrastructure is required.
+- **In-flight writes:** D030 still requires final authorization/session revalidation inside the business transaction. Permission/session changes and concurrent writes must have consistent ordering; previously valid completed operations are not undone.
+- **Alternatives/basis:** Invalidate all recipient sessions versus retain sessions and check current permissions on each request with UI updates. The Team Leader chose consistency with D007/D022 and an explicit user-visible permission-change boundary, accepting login interruptions even for additional grants.
+- **Record:** [ADR 0003](../../../docs/adr/0003-season-scoped-business-permissions.md#session-invalidation-for-shared-master-management-permissions).
+- **Affected Phases:** PHASE 1 authorization/sessions, PHASE 2 club/stadium masters, PHASE 3 player masters and PHASE 10 access/concurrency verification. No Phase status changes.
+- **Still open:** Session technology/storage, error contracts, unsaved-input behavior and technical enforcement/concurrency mechanisms. D040 settles self-reduction/revocation. No new supporting technology is selected.
+
+### D040 - Allow administrator self-reduction of business permissions
+
+- **Status:** CONFIRMED by Team Leader on 2026-10-25 (Asia/Bangkok).
+- **Confirmation evidence:** In response to Q40, the Team Leader selected option A: “Tôi chọn A.” (“I choose A.”).
+- **Source:** O08/O12; UC03 and D007/D009/D010/D037-D039.
+- **Decision:** Through UC03, a System Administrator may remove their own seasonal business roles, narrow their own season scope or revoke their own shared master-management permissions. The operation must only reduce permission, without granting or expanding their own access.
+- **Consequences:** Preserve change history. Losing the last corresponding role assignment ends related shared-management permission under D038. Apply session invalidation under D007/D039 and final authorization checks under D030. A later regrant requires another administrator under D010/D037. Preserve history and responsibility for earlier operations.
+- **Administration boundary:** D009 still prohibits self-locking and removal of the person's own System Administrator role. D040 permits business-permission reduction only.
+- **Alternatives/basis:** Allow self-reduction versus require another administrator for every change to one's own business permissions. The Team Leader chose prompt removal of unneeded access and simpler staffing coordination, accepting accidental loss of needed business access and dependence on another administrator for restoration.
+- **Record:** [ADR 0003](../../../docs/adr/0003-season-scoped-business-permissions.md#administrator-self-reduction-of-business-permissions).
+- **Affected Phases:** PHASE 1 UC03/authorization, PHASE 2-PHASE 9 business access and PHASE 10 verification. No Phase status changes.
+- **Still open:** Detailed UI/error contracts, pending-work handover and technical consistency/concurrency mechanisms. D041 settles account-lock effects on shared permissions. No new technology or automatic handover workflow is selected.
+
+### D041 - Retain shared master-management assignments while an account is locked
+
+- **Status:** CONFIRMED by Team Leader on 2026-10-25 (Asia/Bangkok).
+- **Confirmation evidence:** In response to Q41, the Team Leader selected option A: “Tôi chọn A.” (“I choose A.”).
+- **Source:** O08/O12; UC03 and D007/D020/D034/D038-D040.
+- **Decision:** Locking an account prevents login and all use of its permissions, and invalidates all sessions under D007. Locking alone does not remove its role assignments or terminate separately granted shared master-management permissions.
+- **Unlocking:** Require a new login; old sessions never revive. The person may use only permissions still valid at that time. Removal of the last corresponding role assignment during the lock still ends the shared permission under D038, and unlocking does not restore it.
+- **Delegation boundary:** Business delegations remain governed by D020: delegation terminated because of account locking does not automatically revive on unlocking. Retention of shared assignments does not change that policy.
+- **Alternatives/basis:** Retain assignments while blocking account access versus terminate shared-management permission on locking and require a new grant after unlocking. The Team Leader chose separation of account locking from responsibility revocation and simpler temporary-lock operations, accepting review of retained permissions on unlocking and different lifecycle treatment for delegation.
+- **Record:** [ADR 0003](../../../docs/adr/0003-season-scoped-business-permissions.md#account-locking-and-shared-master-management-assignments).
+- **Affected Phases:** PHASE 1 account/access lifecycle, PHASE 2 club/stadium masters, PHASE 3 player masters and PHASE 10 verification. No Phase status changes.
+- **Still open:** UI/error contracts, permanent account retirement, season closure/archive behavior and technical enforcement/concurrency mechanisms. No new technology or automatic permission-review workflow is selected.
+
+### D042 - Immutable approved versions of seasonal regulations
+
+- **Status:** CONFIRMED by Team Leader on 2026-10-25 (Asia/Bangkok).
+- **Confirmation evidence:** In response to Q42, the Team Leader selected option A: “Tôi chọn A.” (“I choose A.”).
+- **Source:** O07/O12; QĐ6, PDF p.11; UC06 pp.79-82; D005/D035.
+- **Decision:** Each approval establishes a distinct seasonal regulation version containing the full regulation configuration for that season. Approved content is immutable; changing it requires a new proposal and approval of a new version. Retain older versions for lookup and as the basis of related business records.
+- **Proposal boundary:** Proposals may be edited during drafting. Draft or pending versions do not replace regulations currently in effect. Approval still requires a person other than the submitted content's preparers/editors under D005.
+- **Alternatives/basis:** Immutable approved full versions versus one mutable current configuration with change-history reconstruction. The Team Leader chose explicit approved baselines and historical traceability, accepting duplicated configuration and version/approval/effectivity management.
+- **Record:** [ADR 0010](../../../docs/adr/0010-immutable-approved-season-regulation-versions.md); [glossary](../GLOSSARY.md#context-v2-additions).
+- **Affected Phases:** PHASE 2 regulations, PHASE 3 registration, PHASE 4 schedules, PHASE 5 results, PHASE 6/PHASE 7 statistics/reports and PHASE 10 verification. No Phase status changes.
+- **Still open:** D043 below settles basic effective-time rules. Detailed effectivity, in-season change restrictions, pending/approved record treatment, exact version references/capture points, proposal lifecycle and schema/API/concurrency contracts. D042 does not approve automatic retrospective revalidation or recalculation.
+
+### D043 - Immediate or future regulation effectivity without backdating
+
+- **Status:** CONFIRMED by Team Leader on 2026-10-25 (Asia/Bangkok).
+- **Confirmation evidence:** In response to Q43, the Team Leader selected option A: “Tôi chọn A.” (“I choose A.”).
+- **Source:** O07/O12; QĐ6.6, PDF p.11; UC06 pp.79-82; D024/D042.
+- **Decision:** A regulation proposal specifies either immediate effectivity or a future effective instant for the approver to review. Immediate effectivity begins when the system successfully records approval. A future-dated approved version does not replace the currently effective regulations before its approved instant. Backdated effectivity is not allowed.
+- **Late approval:** Reject approval if the proposed future instant has already passed; do not silently switch to immediate effectivity. Revising the proposal requires resubmission for approval.
+- **Time convention:** Apply D024: store/compare UTC instants and use Asia/Ho_Chi_Minh for input/display.
+- **Alternatives/basis:** Immediate or future effectivity versus immediate-only approval. The Team Leader chose advance preparation and an explicit time boundary, accepting management of approved-but-not-yet-effective versions and resubmission when approval is late.
+- **Record:** [ADR 0010](../../../docs/adr/0010-immutable-approved-season-regulation-versions.md#effective-time-policy).
+- **Affected Phases:** PHASE 2 regulations, PHASE 3-PHASE 7 dependent business work and PHASE 10 time-boundary verification. No Phase status changes.
+- **Still open:** Exact equality/precision and transaction boundaries, overlapping future versions, replacement/cancellation, in-season change limits, activation eligibility checks and pending/approved record treatment. D043 does not permit every type of change mid-season or automatically recalculate prior data. No activation scheduler, SQL type or library is selected.
+
+### D044 - Freeze competition structure after initial schedule approval
+
+- **Status:** CONFIRMED by Team Leader on 2026-10-25 (Asia/Bangkok).
+- **Confirmation evidence:** In response to Q44, the Team Leader selected option A: “Tôi chọn A.” (“I choose A.”).
+- **Source:** O07/O10/O12; QĐ6.3, PDF p.11; QĐ2; UC13/UC14; D042/D043.
+- **Decision:** From the first approval of the season's initial schedule, freeze the configured club count, competition format and number of legs for that season. Later regulation versions must retain these structural settings, even if no match has started.
+- **Scope:** The current project scope includes no unlocking or whole-schedule cancellation process for changing competition structure. Date/time or stadium adjustments for unplayed matches remain subject to UC14 and its separate conditions.
+- **Alternatives/basis:** Freeze at initial schedule approval versus permit structural changes before the first match through impact review, schedule replacement and renewed approval. The Team Leader chose consistency between regulations and the approved schedule and reduced implementation/testing complexity, accepting reduced flexibility before kickoff.
+- **Record:** [ADR 0010](../../../docs/adr/0010-immutable-approved-season-regulation-versions.md#competition-structure-freeze).
+- **Affected Phases:** PHASE 2 regulations, PHASE 4 scheduling and PHASE 10 integrity verification. No Phase status changes.
+- **Still open:** Club withdrawal/replacement policy, other regulation groups, pre-approval draft invalidation, future-version activation checks and transaction/concurrency contracts. D044 does not select supported competition formats or authorize changes outside existing approval/integrity conditions.
+
+### D045 - Freeze points and ranking priority after the first official result
+
+- **Status:** CONFIRMED by Team Leader on 2026-10-25 (Asia/Bangkok).
+- **Confirmation evidence:** In response to Q45, the Team Leader selected option A: “Tôi chọn A.” (“I choose A.”).
+- **Source:** O07/O12; QĐ5.2/QĐ5.3 and QĐ6.5, PDF pp.10-11; UC18-UC20; D042-D044.
+- **Decision:** From the season's first officially confirmed result, freeze win/draw/loss points and the priority order of ranking criteria for that season. Later regulation versions must preserve these settings. Before this milestone, changes still require regulation versioning and approval under D042/D043.
+- **Corrections and scope:** UC19 official-result corrections and UC20 recalculation remain available under their applicable conditions, using the frozen points/ranking rules. No unlocking workflow for these settings is included in the current project scope.
+- **Alternatives/basis:** Freeze after the first official result versus permit separately approved mid-season changes and recalculate the entire season. The Team Leader chose a consistent seasonal calculation basis and reduced processing/testing complexity, accepting inability to change these rules mid-season even with an organizing-committee basis.
+- **Record:** [ADR 0010](../../../docs/adr/0010-immutable-approved-season-regulation-versions.md#points-and-ranking-priority-freeze).
+- **Affected Phases:** PHASE 2 regulations, PHASE 5 results/statistics, PHASE 6 lookup, PHASE 7 reports and PHASE 10 regression verification. No Phase status changes.
+- **Still open:** Supported ranking criteria, tie handling, playoffs/relegation, future-version activation checks and transaction/concurrency contracts. D045 settles a configuration-freeze milestone, not the remaining O05 ranking policies.
+
+### D046 - Preserve codes and meanings of referenced goal and card types
+
+- **Status:** CONFIRMED by Team Leader on 2026-10-25 (Asia/Bangkok).
+- **Confirmation evidence:** In response to Q46, the Team Leader selected option A: “Tôi chọn A.” (“I choose A.”).
+- **Source:** O07/O09/O12; QĐ3.3-QĐ3.5 and QĐ6.4; D042/D043.
+- **Decision:** Once a goal/card type has been used, including in a draft match report, retain its code and business meaning and prohibit deletion while it is referenced. Do not reinterpret a used type, including its score/statistics treatment, or reuse its code for a different meaning.
+- **Evolution:** A different meaning requires proposing a new type through a regulation version and approval. Withdrawal from selection for new input may be proposed while retaining the old type for historical reading and interpretation. Adding a type does not itself authorize a new calculation formula or unapproved business behavior.
+- **Alternatives/basis:** Stable referenced codes/meanings versus allowing the same code to have different definitions by regulation version, with each event bound to its definition. The Team Leader chose stable references and simpler history protection, accepting retention of unused types and inability to directly redefine an erroneously used type.
+- **Record:** [ADR 0010](../../../docs/adr/0010-immutable-approved-season-regulation-versions.md#preserve-referenced-goal-and-card-type-meanings).
+- **Affected Phases:** PHASE 2 regulation catalogs, PHASE 5 match events/results, PHASE 6/PHASE 7 historical lookup/reports and PHASE 10 integrity verification. No Phase status changes.
+- **Still open:** Display-name typo correction, detailed withdrawal workflow, correction of old events, catalog fields and technical constraints. D047 below settles match-time catalog applicability. No new goal/card type or calculation behavior is selected.
+
+### D047 - Bind match event catalogs to recorded actual kickoff
+
+- **Status:** CONFIRMED by Team Leader on 2026-10-25 (Asia/Bangkok).
+- **Confirmation evidence:** In response to Q47, the Team Leader selected option A: “Tôi chọn A.” (“I choose A.”).
+- **Source:** O07/O09/O12; QĐ6.4, UC16/UC19; D042/D043/D046.
+- **Decision:** Use the goal/card catalog effective at the match's recorded actual kickoff, rather than the data-entry or correction time. Record that actual-start instant and the applicable regulation-version basis. Late entry or correction does not by itself switch the match to a newer catalog.
+- **Withdrawal boundary:** A type withdrawn in a later regulation version remains available for a match whose applicable catalog included it. The withdrawal affects matches starting when the new version is effective, while preserving historical event interpretation.
+- **Official corrections:** Corrections to official results still require the confirmed authorized approval process; no automatic historical data modification is authorized.
+- **Alternatives/basis:** Match-time applicability versus current catalog at entry/correction time while retaining previously saved types. The Team Leader chose rules aligned with the match as played and consistent late entry/history, accepting actual-kickoff recording, version references and historical catalog presentation.
+- **Record:** [ADR 0010](../../../docs/adr/0010-immutable-approved-season-regulation-versions.md#match-event-catalog-applicability-at-actual-kickoff); [glossary](../GLOSSARY.md#context-v2-additions).
+- **Affected Phases:** PHASE 2 regulations, PHASE 5 reports/results/corrections, PHASE 6/PHASE 7 history/reports and PHASE 10 temporal verification. No Phase status changes.
+- **Still open:** D048 below settles actual-kickoff recording/confirmation through the report/result workflow. Detailed kickoff correction effects, missing or ambiguous effective versions, draft behavior before kickoff is known, catalog withdrawal workflow and technical contracts. D047 applies only to goal/card catalogs, not player-registration eligibility or every regulation group. No external API or Live Score design is selected.
+
+### D048 - Record actual kickoff in the report and confirm it with the official result
+
+- **Status:** CONFIRMED by Team Leader on 2026-10-25 (Asia/Bangkok).
+- **Confirmation evidence:** In response to Q48, the Team Leader selected option A: “Tôi chọn A.” (“I choose A.”).
+- **Source:** O07/O09/O12; UC16-UC19; D005/D047.
+- **Decision:** The Results Officer enters actual kickoff from the match's business basis within UC16/UC17. Distinguish scheduled and actual start in the UI; do not silently treat the scheduled time as confirmed actual kickoff. Actual kickoff is mandatory before submitting the result for official confirmation.
+- **Confirmation/correction:** The authorized confirmer reviews this instant together with the report under UC18 and D005's separation rule. After official confirmation, changing actual kickoff must use the approved UC19 correction process. There is no separate actual-kickoff approval workflow.
+- **Operational scope:** Entry may occur after the match; staff are not required to operate the system at kickoff. The report's catalog/events require rechecking if draft actual kickoff changes; detailed handling of a version-boundary crossing remains open.
+- **Alternatives/basis:** Record/review within the existing report/result workflow versus a separate submission/approval workflow for actual kickoff. The Team Leader chose reuse of existing responsibilities and support for after-match entry, accepting no independent prior confirmation of kickoff and revalidation needs when draft kickoff changes.
+- **Record:** [ADR 0010](../../../docs/adr/0010-immutable-approved-season-regulation-versions.md#recording-and-confirming-actual-kickoff).
+- **Affected Phases:** PHASE 5 report/result/correction workflow and PHASE 10 validation; PHASE 2 regulation applicability integration. No Phase status changes.
+- **Still open:** Basis format, field precision/validation, pre-kickoff draft behavior, technical contracts. D049 below settles correction across catalog versions. No Live Score integration or external timestamp authority is selected.
+
+### D049 - Revalidate events when corrected kickoff changes the applicable catalog
+
+- **Status:** CONFIRMED by Team Leader on 2026-10-25 (Asia/Bangkok).
+- **Confirmation evidence:** In response to Q49, the Team Leader selected option A: “Tôi chọn A.” (“I choose A.”).
+- **Source:** O07/O09/O12; UC16-UC20; D005/D036/D047/D048.
+- **Decision:** Permit correction of actual kickoff across a catalog-version boundary. Determine the catalog for the proposed corrected instant and revalidate all events in the proposed report. Identify incompatible events; the preparer must correct them using the business basis. Do not automatically remap event types or delete events.
+- **Validation gate:** Block submission or approval until all such errors are resolved.
+- **Official boundary:** For an already official result, keep all changes in the UC19 correction proposal. Existing official kickoff, catalog and result remain unchanged while approval is pending. After a valid proposal is approved by a different authorized person, apply all related changes consistently, recalculate statistics where necessary and retain history.
+- **Alternatives/basis:** Allow correction with full proposed-report revalidation versus prohibit cross-version kickoff corrections once events exist and leave exceptional handling outside current functionality. The Team Leader chose controlled correction of erroneous information, accepting event-level error presentation and potentially wider report review.
+- **Record:** [ADR 0010](../../../docs/adr/0010-immutable-approved-season-regulation-versions.md#kickoff-correction-across-catalog-versions).
+- **Affected Phases:** PHASE 2 regulation applicability, PHASE 5 reports/results/corrections, PHASE 6/PHASE 7 dependent outputs and PHASE 10 integrity/regression verification. No Phase status changes.
+- **Still open:** Draft persistence/error representation, supporting-basis format, missing or ambiguous applicable versions and transaction/concurrency contracts. No automatic event conversion or new correction authority is selected.
+
+### D050 - At most one approved future regulation version per season
+
+- **Status:** CONFIRMED by Team Leader on 2026-10-25 (Asia/Bangkok).
+- **Confirmation evidence:** In response to Q50, the Team Leader selected option A: “Tôi chọn A.” (“I choose A.”).
+- **Source:** O07/O12; D042/D043.
+- **Decision:** Each season may have at most one approved regulation version awaiting its future effective instant. While it exists, block approval of another version, including an immediately effective version.
+- **Preparation:** Further proposals may be drafted, but must be rechecked against the regulations currently in effect before approval. Replacing or cancelling an approved waiting version requires a separate process still to be decided; do not edit approved content directly.
+- **Alternatives/basis:** One approved waiting version versus multiple future versions with timeline/dependency checks and possible downstream reapproval. The Team Leader chose simpler full-version management and fewer configuration conflicts, accepting inability to preapprove a sequence and the need to handle a waiting version before urgent approval.
+- **Record:** [ADR 0010](../../../docs/adr/0010-immutable-approved-season-regulation-versions.md#one-approved-future-version-per-season).
+- **Affected Phases:** PHASE 2 regulation workflow and PHASE 10 validation/concurrency verification. No Phase status changes.
+- **Still open:** D051 below settles cancellation/replacement authority, the controlled replacement exception and business-incompatibility checks at activation. Baseline/conflict checks, technical failures/retries and concurrency enforcement remain open. No new proposal-count limit or implementation mechanism is selected.
+
+### D051 - Controlled cancellation, replacement and activation of waiting regulations
+
+- **Status:** CONFIRMED by Team Leader on 2026-10-25 (Asia/Bangkok).
+- **Confirmation evidence:** In response to grouped Q51, the Team Leader selected option A: “Tôi chọn A.” (“I choose A.”), confirming the whole proposed policy package.
+- **Source:** O07/O08/O12; UC06; D005/D042-D045/D050.
+- **Cancellation:** Before the approved effective instant, an authorized Season Manager proposes cancellation with a reason and another authorized Season Manager approves it. Preserve approved content and history; record cancellation separately.
+- **Replacement:** One proposal may request cancellation of the waiting version and approval of its replacement together. Record both only after the entire valid proposal is approved; on failure retain the waiting version. This is an explicit controlled exception to D050's block on approving another version while one is waiting, not permission for two approved future versions.
+- **Time boundary:** A pending cancellation/replacement request does not postpone effectivity. Once the effective instant is reached, the future-version cancellation process is unavailable; further changes require a new regulation version.
+- **Activation eligibility:** At the effective instant, recheck constraints arising since approval, including D044/D045 freeze milestones. If the version has become incompatible, do not apply it: retain the currently effective regulations, record the reason and require a new proposal for resolution. Do not silently edit approved content or move its effective time.
+- **Alternatives/basis:** Separate proposal/approval for cancellation versus direct cancellation by an authorized Season Manager with a reason/history; both alternatives included consistent replacement and activation checks. The Team Leader chose independent responsibility control, accepting two authorized people and handling of requests still pending at effectivity or versions blocked from activation.
+- **Record:** [ADR 0010](../../../docs/adr/0010-immutable-approved-season-regulation-versions.md#controlled-cancellation-replacement-and-activation).
+- **Affected Phases:** PHASE 2 regulation lifecycle, PHASE 3-PHASE 7 dependent business work and PHASE 10 boundary/concurrency verification. No Phase status changes.
+- **Still open:** Detailed lifecycle/error codes, technical failure/retry handling, initial-version absence, baseline/conflict checks, other regulation-group impact policies and concurrency mechanisms. D051 does not select a scheduler, storage representation or notification technology.
+
+### D052 - Compatible registration-rule changes and revalidation of pending records
+
+- **Status:** CONFIRMED by Team Leader on 2026-10-25 (Asia/Bangkok).
+- **Confirmation evidence:** In response to grouped Q52, the Team Leader selected option A: “Tôi chọn A.” (“I choose A.”), confirming the proposed policy package.
+- **Source:** O01/O02/O07/O12; QĐ6.2, UC06/UC10/UC11; D036/D042/D043/D051.
+- **Decision:** Permit controlled mid-season changes to squad limits, homegrown and U21 conditions only if they do not invalidate approved registrations/lists currently in effect. Check impact at approval and at effectivity; block an incompatible change.
+- **Existing decisions:** Do not automatically cancel registrations, remove players or rewrite approved decisions to force compliance with new rules. Preserve the original regulation-version basis of historical decisions.
+- **Pending work:** Revalidate draft/pending records against regulations effective at decision time. Earlier submission does not guarantee assessment under the old eligibility/limit rules. Record the regulation version supporting each decision.
+- **Correction boundary:** Erroneous master data or previous decisions follow their corresponding correction processes; regulation changes do not substitute for correction.
+- **Alternatives/basis:** Controlled compatible changes versus freezing these conditions from the first approved registration. The Team Leader chose support for QĐ6.2 seasonal adjustment without mass revocation or grandfathering of incompatible current registrations, accepting impact checks and possible supplementation/change of pending records.
+- **Record:** [ADR 0010](../../../docs/adr/0010-immutable-approved-season-regulation-versions.md#registration-rule-changes-and-affected-records).
+- **Affected Phases:** PHASE 2 regulations, PHASE 3 registration, PHASE 5 participation checks and PHASE 10 regression verification. No Phase status changes.
+- **Still open:** Concrete homegrown/U21 criteria and values, registration windows/deadline exceptions, detailed record lifecycle and schema/concurrency contracts. This decision concerns player conditions and squad limits, not the deadline time basis; it does not introduce an additional approver into UC10.
+
+### D053 - Registration windows, receipt deadlines and individual exceptions
+
+- **Status:** CONFIRMED by Team Leader on 2026-10-25 (Asia/Bangkok).
+- **Confirmation evidence:** In response to grouped Q53, the Team Leader selected option A: “Tôi chọn A.” (“I choose A.”), confirming the proposed policy package.
+- **Source:** O02/O07/O08/O12; QĐ1.6/QĐ6.2, UC06/UC08/UC10/UC11; D024/D052.
+- **Calendars:** Configure separate seasonal intake calendars for club participation applications and player registration/squad changes. Each group may have multiple windows, without overlap within the group, managed through seasonal regulations. Use explicit opening/closing instants and half-open intervals [open, close), following D024. Do not import external EPL transfer-calendar defaults.
+- **Deadline basis:** Use the server instant successfully recording receipt of the application version being assessed, not draft creation or a user-declared timestamp. Timely received versions may be processed after closing. Player conditions/limits still use decision-time rules under D052.
+- **Supplementation:** Supplementing or changing assessed content creates a new received version whose timeliness must be checked again.
+- **Individual exception:** A Registration Officer proposes an exception for a specific application/version with a reason and basis; an authorized Season Manager separately approves it. The exception waives only receipt timing for that version, not player conditions, limits or conflicting registrations. Exception approval does not replace the registration-processing decision.
+- **Traceability:** Retain receipt instants, calendar basis and exception decisions. Do not edit calendars or backdate timestamps to legitimize previous receipts.
+- **Alternatives/basis:** Individual approved exceptions versus requiring the next window or an additional generally approved window. The Team Leader chose bounded case-specific flexibility under QĐ1.6, accepting an exception-approval step and possible exceptions for post-deadline supplementation.
+- **Record:** [ADR 0011](../../../docs/adr/0011-registration-windows-and-receipt-exceptions.md); [glossary](../GLOSSARY.md#context-v2-additions).
+- **Affected Phases:** PHASE 2 regulation calendars, PHASE 3 intake/registration and PHASE 10 time/permission verification. No Phase status changes.
+- **Still open:** Concrete seasonal dates, record/exception lifecycle and required fields, eligibility details, schema/API/error/concurrency contracts. No public submission portal, file-upload mechanism or new general approval step in UC10 is selected.
+
+### D054 - Automatic U21 assessment and evidence-based staff verification of homegrown status
+
+- **Status:** CONFIRMED by Team Leader on 2026-10-25 (Asia/Bangkok).
+- **Confirmation evidence:** In response to grouped Q54, the Team Leader selected option A: “Tôi chọn A.” (“I choose A.”), confirming the proposed policy package.
+- **Source:** O01/O07/O09/O12; QĐ1.2-QĐ1.4/QĐ6.2, UC10/UC11; D024/D033/D052.
+- **Season parameters:** Require the U21 birth-date cutoff and homegrown qualifying training-age range in regulations submitted for approval. Do not fill these gaps from external EPL rules. Retain the source thresholds of at least three seasons or 36 months as defaults; changes follow D052. Actual seasonal values must be entered and approved as configuration, not silently assumed.
+- **U21:** Automatically qualify a player whose birth date is on or after the seasonal cutoff. Compare calendar dates rather than age today; missing birth date means insufficient basis to conclude.
+- **Homegrown:** A Registration Officer checks evidence and records the qualifying-seasons or qualifying-months basis, conclusion, verifier, time and regulation version. The basis must support the prescribed age range and English/Welsh association requirement; nationality is not a proxy.
+- **Insufficient evidence:** Do not mark homegrown as satisfied. The preparer may choose non-homegrown treatment if applicable limits and all other requirements are met; missing homegrown evidence does not automatically reject every registration.
+- **Independent attributes and scope:** U21 and homegrown are independent, not inferred from nationality or one another. The first version does not implement automatic accumulation of full multi-club training histories, overlap handling or season/month conversion. Evidence remains internal under confirmed viewing rules.
+- **Alternatives/basis:** Automatic U21 plus staff-verified homegrown evidence versus automatic homegrown calculation from detailed training histories. The Team Leader chose traceable verification at SE104 scope, accepting dependence on staff evidence quality and no automatic proof of the full training history.
+- **Record:** [ADR 0011](../../../docs/adr/0011-registration-windows-and-receipt-exceptions.md#u21-assessment-and-homegrown-verification); [glossary](../GLOSSARY.md#context-v2-additions).
+- **Affected Phases:** PHASE 2 regulation configuration, PHASE 3 eligibility, PHASE 5 participation checks and PHASE 10 boundary/evidence verification. No Phase status changes.
+- **Still open:** Concrete season parameter values, required evidence fields/formats, field validation, lifecycle and technical contracts. No file-upload technology, external eligibility service or extra approval role is selected.
+
+### D055 - Versioned club-application and player-registration workflows
+
+- **Status:** CONFIRMED by Team Leader on 2026-10-25 (Asia/Bangkok).
+- **Confirmation evidence:** In response to grouped Q55, the Team Leader selected option A: “tôi chọn A.” (“I choose A.”), confirming the proposed policy package.
+- **Source:** O02/O08/O09/O12; UC08/UC10/UC11; D005/D052-D054.
+- **Club workflow:** Draft -> Received -> Pending approval -> Approved or Rejected. Registration Officers prepare/review; the authorized Season Manager approves under UC08/D005.
+- **Player workflow:** Draft -> Received -> Valid. The Registration Officer confirms validity after UC11 checks under UC10; no additional manager approval is introduced.
+- **Supplementation/versioning:** Received records, or club applications pending approval, may be returned to Needs supplementation with a reason. Supplementation creates a new version for receipt and rechecking under D053. Submitted club content is immutable; editing requires withdrawal or return for supplementation, then a new submitted version.
+- **Cancellation/resubmission:** Permit cancellation before club approval or player-validity confirmation, retaining reason/history. Rejected/cancelled versions cannot be edited into approved ones; a new processing round links to the history. Keep one club-season application case containing its versions/rounds, not multiple independent participation applications for the same club-season.
+- **Dependency:** Prepare and check player lists while club approval is pending, but confirm a player's registration as valid only after the club participation application is approved. Club approval does not automatically validate every player registration; UC10 must still check and confirm.
+- **Temporal boundary:** Validity confirmation is distinct from playing effectivity, termination and club transfer, which remain to be settled.
+- **Alternatives/basis:** Persist incomplete player-registration work with states/versions versus save only registrations passing validation while leaving incomplete entry on screen. The Team Leader chose traceable supplementation and collaboration, accepting extra workflow/version management. Both options retained the club workflow and UC08/UC10 authority difference.
+- **Record:** [ADR 0011](../../../docs/adr/0011-registration-windows-and-receipt-exceptions.md#club-and-player-registration-workflows); [glossary](../GLOSSARY.md#context-v2-additions).
+- **Affected Phases:** PHASE 3 application/registration workflow, PHASE 4 valid-club scheduling integration, PHASE 5 participation checks and PHASE 10 workflow verification. No Phase status changes.
+- **Still open:** D056 below settles basic playing-effectivity/termination/transfer rules. Cancellation/withdrawal action details, required fields, enum/API/error and concurrency contracts. These business state names do not select technical enum codes.
+
+### D056 - Playing-effective intervals and consistent club transfers
+
+- **Status:** CONFIRMED by Team Leader on 2026-10-25 (Asia/Bangkok).
+- **Confirmation evidence:** In response to grouped Q56, the Team Leader selected option A: “Tôi chọn A.” (“I choose A.”), confirming the proposed policy package.
+- **Source:** O02/O08/O09/O12; QĐ1.5, UC10/UC11; D024/D053-D055.
+- **Intervals:** A validated registration has a playing-effective start and a half-open interval [start, end). End may remain unspecified until valid termination. Ordinary start/termination operations may take effect at successful recording or in the future, never before recording; historical errors require a separate correction process.
+- **Exclusivity:** Reject overlapping confirmed registration intervals for the same player and competition, including future-start registrations and registrations in different seasons. Adjacent intervals sharing an end/start instant are permitted.
+- **Transfer:** Within UC10, terminate the old club registration and start the new one at a common instant in one consistent operation. Record both only when the new registration passes all checks; failure leaves the old registration unchanged.
+- **Authority/validation:** The Registration Officer needs authority over the affected registrations/seasons, with a reason and history. Transfers still satisfy D053 deadlines/exceptions, D054 eligibility, limits and all other checks; no bypass is introduced.
+- **History:** Termination or transfer does not automatically remove earlier appearances, goals or statistics.
+- **Alternatives/basis:** Consistent paired transfer versus independently terminating the old registration and creating the new one. Both alternatives used interval-based effectivity. The Team Leader chose no unintended loss of the old registration when the new one fails, accepting coordination and future-interval checks.
+- **Record:** [ADR 0011](../../../docs/adr/0011-registration-windows-and-receipt-exceptions.md#playing-effectivity-and-club-transfers); [glossary](../GLOSSARY.md#context-v2-additions).
+- **Affected Phases:** PHASE 3 registration/transfers, PHASE 5 appearance eligibility, PHASE 6/PHASE 7 history and PHASE 10 overlap/concurrency verification. No Phase status changes.
+- **Still open:** D057 below settles historical-registration correction policy. Season closure effects, field/temporal precision, future-plan changes/cancellation, quota evaluation across planned intervals and technical contracts. No financial transfer subsystem, external service or database mechanism is selected.
+
+### D057 - Independently approved correction of validated registrations
+
+- **Status:** CONFIRMED by Team Leader on 2026-10-25 (Asia/Bangkok).
+- **Confirmation evidence:** In response to grouped Q57, the Team Leader selected option A: “Tôi chọn A.” (“I choose A.”), explicitly approving this v2 refinement to UC10.
+- **Source:** O02/O08/O09/O12; UC10/UC11/UC19; D036/D055/D056.
+- **Scope:** Correction of erroneous confirmed content/basis, classification conclusions or incorrectly recorded playing intervals, including historical correction, requires a proposal and independent approval. This adds no approval step to initial UC10 validity confirmation or ordinary termination/transfer.
+- **Responsibility:** The Registration Officer reviews and proposes the correction with reason, basis, before/after values and related impacts. An authorized Season Manager other than the proposal's preparers/editors approves, returns for supplementation or rejects.
+- **Pending review:** Keep the current official decision and record the need for review. New business work still validates against corrected source data under D036 rather than stale checks.
+- **Validation:** Recheck conditions, limits and overlap for affected intervals using the corresponding regulations. Correction is not a waiver or a way to legitimize violations.
+- **Invalid prior decision:** If the registration cannot remain valid, the proposal must state the disposition, such as ending effectivity or recording the prior decision as erroneous. Do not erase the registration's historical existence.
+- **Match impacts:** Identify reports/results requiring separate review. Registration-correction approval does not automatically alter results, award a loss or change statistics; official-result changes still follow UC19.
+- **Alternatives/basis:** Independent manager approval versus Registration Officer self-application with equivalent evidence/impact checks and history. The Team Leader chose independent control of data already used as a playing basis, accepting an added correction workflow and coordination with result correction.
+- **Source refinement:** Preserve the v1 UC10 text. This confirmed v2 policy adds approval specifically for corrections of already validated registrations, not a claim that v1 already required it.
+- **Record:** [ADR 0011](../../../docs/adr/0011-registration-windows-and-receipt-exceptions.md#correction-of-validated-registrations); [glossary](../GLOSSARY.md#context-v2-additions).
+- **Affected Phases:** PHASE 3 registration corrections, PHASE 5 match-impact review, PHASE 6/PHASE 7 historical outputs and PHASE 10 integrity verification. No Phase status changes.
+- **Still open:** Detailed correction/impact fields, representation of an erroneous prior decision, historical public display, exact lifecycle/error and transaction/concurrency contracts. No automatic disciplinary action, match forfeiture or new UC is selected.
+
+### D058 - Stable business codes, duplicate review and temporal shirt-number uniqueness
+
+- **Status:** CONFIRMED by Team Leader on 2026-10-25 (Asia/Bangkok).
+- **Confirmation evidence:** In response to grouped Q58, the Team Leader selected option A: “Tôi chọn A.” (“I choose A.”), confirming the proposed policy package.
+- **Source:** O09/O12; UC05/UC07/UC09/UC10/UC12, BM1; D035/D055-D057.
+- **Identity:** Seasons, clubs, stadiums and players have unique, stable, non-reusable business codes within each entity group. Names, abbreviations and birth dates do not replace identity codes. Duplicate codes are rejected.
+- **Suspected duplicate players:** Matching normalized full name, birth date and nationality triggers staff review, not automatic merging or a hard uniqueness rule. Reuse the existing profile for the same person; distinct people may have separate profiles after confirmation with a recorded reason.
+- **Clubs/stadiums:** Matching names trigger review; a shared name does not automatically identify the same entity.
+- **Shirt numbers:** Require an integer 1-99 when confirming registration validity. In the same club-season, confirmed registrations with overlapping playing-effective intervals cannot share a number, including U21 and future-start registrations. Reuse is allowed after the old interval ends. The 1-99 range is an explicit v2 choice, not a PDF rule.
+- **History/scope:** Current name/number changes do not automatically rewrite recorded history. Suspected duplicate records are not automatically merged or their references reassigned. Automatic profile-merging tools are outside the first-version scope.
+- **Alternatives/basis:** Stable codes plus reviewable duplicate warnings versus hard-blocking identical player name/birth-date/nationality tuples; both used the same code/shirt rules. The Team Leader chose support for genuinely distinct people sharing attributes without collecting extra identity papers solely for duplicate resolution, accepting staff verification and residual duplicate risk.
+- **Record:** [ADR 0009](../../../docs/adr/0009-stable-identities-and-selective-business-snapshots.md#business-codes-and-suspected-duplicates); [ADR 0011](../../../docs/adr/0011-registration-windows-and-receipt-exceptions.md#shirt-number-constraints).
+- **Affected Phases:** PHASE 2 identities/masters, PHASE 3 registrations, PHASE 5 appearance/history integration and PHASE 10 duplicate/concurrency verification. No Phase status changes.
+- **Still open:** Code generation/format and database key types, normalization rules, detailed fields and duplicate-review UI, historical snapshot contracts and technical concurrency enforcement.
+
+### D059 - Required registration data and official snapshot milestones
+
+- **Status:** CONFIRMED by Team Leader on 2026-10-25 (Asia/Bangkok).
+- **Confirmation evidence:** In response to grouped Q59, the Team Leader selected option A: “Tôi chọn phương án A.” (“I choose option A.”), confirming the fields and snapshot package.
+- **Source:** O04/O09/O12; BM1/BM4, UC05/UC07-UC12; D032-D036/D054-D058.
+- **Required fields:** Season: code, name, start/end dates, with regulations managed separately. Club master: code, name, abbreviation. Stadium master: code, name. Player master: code, full name, birth date, nationality, position.
+- **Club submission:** Require club, season, coach, home ground, representative name/phone/contact address and at least one proposed player, checked at preparation level. This does not require an already playing-effective registration before club approval.
+- **Player confirmation:** Require player, club, season, shirt number, U21/homegrown classification results, playing-effective start and corresponding validation basis. Drafts may omit business fields; block progression at the milestone requiring completeness.
+- **Homegrown evidence:** A positive finding requires qualifying-seasons/months branch, qualifying value, evidence summary and reference. Retain verifier/time/regulation version through the system. Upload functionality is not mandatory. Notes are optional; do not add personal identity papers.
+- **Club snapshot:** At club-application approval preserve the approved version's club name/abbreviation, coach, home ground, representative details and proposed player list.
+- **Player snapshot:** At validity confirmation preserve name, birth date, nationality, position, shirt number, classifications and regulation/verification basis. Approved corrections create a successor record while retaining the old one.
+- **Seasonal lookup:** Use season-recorded information, including approved corrections, rather than automatically reading all latest master values. D032/D033 public/internal boundaries still apply.
+- **Alternatives/basis:** Milestone completeness and descriptive snapshots versus the same required fields with snapshots limited to references/conclusions and current descriptive lookup. The Team Leader chose reproduction of approved records and stable seasonal views, accepting selective duplication and separation of current versus season-recorded information.
+- **Record:** [ADR 0009](../../../docs/adr/0009-stable-identities-and-selective-business-snapshots.md#registration-snapshot-fields-and-seasonal-lookup); [ADR 0011](../../../docs/adr/0011-registration-windows-and-receipt-exceptions.md#required-fields-at-registration-milestones).
+- **Affected Phases:** PHASE 2 master/season fields, PHASE 3 intake/snapshots, PHASE 6 seasonal lookup and PHASE 10 validation/history verification. No Phase status changes.
+- **Still open:** Detailed types/lengths/formats and normalization, position/nationality representations, exact snapshot schema/record references, schedule/report snapshot contracts and implementation-level concurrency. No upload technology or identity-document collection is selected.
+
+### D060 - Automatic fixture pairing with manually completed schedule drafts
+
+- **Status:** CONFIRMED by Team Leader on 2026-10-25 (Asia/Bangkok).
+- **Confirmation evidence:** In response to grouped Q60, the Team Leader selected option A: “Tôi chọn A.” (“I choose A.”).
+- **Source:** O10/O12; QĐ2, UC13, TH-02; D005/D044.
+- **Supported scope:** First-version double round-robin with an even club count from 4 through 20, default 20. The 4-20 range is a confirmed v2 scope choice. Report odd counts, single-leg and other unsupported formats explicitly rather than generate an invalid schedule.
+- **Input/generation:** The Scheduling Officer selects exactly the configured number of clubs, all with approved participation applications. Generate all rounds and pairings automatically, reversing home/away roles between legs: 2*(N-1) rounds and N*(N-1) matches; the default produces 38 rounds and 380 matches.
+- **Completion:** Staff enter dates/times; suggest the registered home ground. Stadium substitutions remain subject to source approval conditions. No automatic complete calendar/venue optimization is required.
+- **Drafts/approval:** Persist incomplete drafts with missing-field/conflict feedback; drafts are not public. Submit the entire initial schedule only after complete data, correct structure and successful club/stadium checks. Publication requires D005 approval; do not approve the initial schedule in separate partial sections.
+- **Alternatives/basis:** Automatic pairings/rounds/home-away with manual completion versus automatic dates/times/venue assignment as well. The Team Leader chose useful automation at SE104 scope, accepting staff allocation/conflict resolution instead of availability datasets and an optimization engine.
+- **Record:** [ADR 0012](../../../docs/adr/0012-schedule-generation-scope-and-drafts.md).
+- **Affected Phases:** PHASE 2 supported regulation configuration, PHASE 4 generation/drafts/approval, PHASE 6 published lookup and PHASE 10 schedule verification. No Phase status changes.
+- **Still open:** D061 below settles playing/venue planning intervals and buffers. D062 below settles adjustment/version/publication and regeneration policy. Snapshot/schema/API/concurrency contracts. No 90-minute duration, buffer, algorithm library or generation-time target is assumed.
+
+### D061 - Seasonal planning intervals and system-wide schedule conflict checks
+
+- **Status:** CONFIRMED by Team Leader on 2026-10-25 (Asia/Bangkok).
+- **Confirmation evidence:** In response to grouped Q61, the Team Leader selected option A: “Tôi chọn A.” (“I choose A.”), confirming the proposed interval/conflict package.
+- **Source:** O03/O07/O10/O12; QĐ2.4-QĐ2.6, UC13/UC14; D024/D044/D060.
+- **Parameters:** Require season-approved planned match duration, pre-match stadium preparation buffer and post-match release buffer, all in minutes. Duration is positive; buffers are nonnegative. Do not silently default to 90 minutes or any buffer. Lock all three from initial schedule approval in first-version scope.
+- **Intervals:** Club use is [scheduled start, scheduled start + planned duration). Venue occupancy is [scheduled start - preparation buffer, planned end + release buffer). Reject overlapping club or stadium intervals; exact adjacency is permitted.
+- **Scope:** Check the same club or stadium system-wide, including other seasons. Validate a draft against itself and approved schedules; drafts and pending requests do not reserve capacity.
+- **Approval/adjustment:** Recheck conflicts before successful approval, including concurrent requests. An adjustment replaces its own match's old allocation rather than conflicting with itself. Date/time/stadium changes still follow UC14.
+- **Operational boundary:** These intervals support planning; actual kickoff remains recorded under D047/D048 and does not automatically edit the approved schedule. First-version scope adds no minimum between-match rest or club travel-time constraint.
+- **Alternatives/basis:** Derive intervals from common seasonal parameters versus enter separate playing/occupancy intervals per match. The Team Leader chose less per-match data entry and consistent checks at SE104 scale, accepting reduced venue/match-specific flexibility.
+- **Record:** [ADR 0012](../../../docs/adr/0012-schedule-generation-scope-and-drafts.md#planning-intervals-and-conflict-checks); [glossary](../GLOSSARY.md#context-v2-additions).
+- **Affected Phases:** PHASE 2 regulation parameters, PHASE 4 scheduling/adjustments, PHASE 6 schedule lookup and PHASE 10 boundary/concurrency verification. No Phase status changes.
+- **Still open:** Concrete per-season minute values, snapshot/schema/API and technical concurrency contracts. D062 below settles adjustment/publication/regeneration policy. No interval may be treated as a factual actual match duration.
+
+### D062 - Schedule approval publishes immediately and adjustments are versioned
+
+- **Status:** CONFIRMED by Team Leader on 2026-10-25 (Asia/Bangkok).
+- **Confirmation evidence:** In response to grouped Q62, the Team Leader selected option A: “Tôi chọn A.” (“I choose A.”), confirming the lifecycle/publication package.
+- **Source:** O08/O09/O10/O12; UC13-UC15; D005/D019/D044/D060/D061.
+- **Initial lifecycle:** The Scheduling Officer drafts and submits a complete schedule; an authorized person other than its preparers/editors approves it. Successful approval publishes immediately, without a separate publication step.
+- **Pending versions:** Submitted content is immutable. Before a decision the preparer may withdraw it; the approver may return it for supplementation or reject it with reasons. Changes and resubmission create a new version with history.
+- **Regeneration:** Regenerate only while the initial schedule is still unapproved and in draft, with confirmation of replacement and traceability of the previous version. After publication, prohibit whole-schedule regeneration and changes to pairings, rounds or home/away roles.
+- **Adjustments:** Propose date/time or stadium changes with reasons and before/after values. One proposal may cover several matches in the same season; approve/apply the entire proposal or none. The old schedule remains public pending approval.
+- **Match eligibility:** Adjust only matches not yet started. If scheduled kickoff has passed, the approver must establish with supporting basis that the match has not taken place; elapsed scheduled time alone proves neither played nor unplayed status.
+- **Final checks/publication:** Recheck match state, authority, schedule version and D061 conflicts on adjustment approval. Changed underlying data requires review/resubmission. Successful approval updates the public schedule and preserves history. Retain D005/D019 authority and separation rules, including delegated adjustment approvers.
+- **Alternatives/basis:** Immediate publication on approval versus a separate approved-but-unpublished state and Season Manager publication action, with the same other workflow safeguards. The Team Leader chose fewer operations and no gap between approved and public versions, accepting that approvers must be ready for immediate publication.
+- **Record:** [ADR 0012](../../../docs/adr/0012-schedule-generation-scope-and-drafts.md#schedule-lifecycle-and-publication).
+- **Affected Phases:** PHASE 4 schedule workflow/adjustments, PHASE 6 publication/history and PHASE 10 workflow/concurrency verification. No Phase status changes.
+- **Still open:** Exact action/state codes, supporting-basis fields, match-state recording, snapshot/display details and transaction/API/concurrency contracts. No notification service or automatic publication scheduler is selected.
+
+### D063 - Separate match, report-version and official-result lifecycles
+
+- **Status:** CONFIRMED by Team Leader on 2026-10-25 (Asia/Bangkok).
+- **Confirmation evidence:** In response to grouped Q63, the Team Leader selected option A: “Tôi chọn A.” (“I choose A.”), confirming the lifecycle package.
+- **Source:** O08/O09/O12; UC16-UC20; D005/D047-D049/D062.
+- **State groups:** Match: Not started -> In progress -> Ended. Report version: Draft -> Pending confirmation -> Confirmed, with return for supplementation or withdrawal before a decision. Result: Unofficial -> Official, with correction proposals managed separately.
+- **Actual times:** The Results Officer records actual kickoff and actual end in the report. Require both before submission; end must be after start. Scheduled time or planned duration alone cannot establish completion. Both actual instants may be entered after the match; live operation at start/end is not required.
+- **Version control:** Keep one report case per match with historical versions, and at most one version pending confirmation or correction at a time. Submitted content is immutable; withdrawal/return and a new submitted version are required for changes.
+- **Initial confirmation:** UC18 requires an ended match and a complete validated report, with previously confirmed authority/separation rules. Saving the report or entering a score does not make it official.
+- **Corrections/consistency:** The current official result remains public and feeds statistics pending UC19 approval. Return/rejection/withdrawal of a correction does not invalidate it. Successful confirmation/correction consistently updates result, statistics and history under UC18-UC20; failure must not leave partial official/statistical updates.
+- **Alternatives/basis:** Separate linked business states versus one combined match/result state chain. The Team Leader chose accurate representation of completion, pending versions and still-effective official results, accepting checks between multiple state groups.
+- **Record:** [ADR 0013](../../../docs/adr/0013-match-report-and-official-result-lifecycles.md); [glossary](../GLOSSARY.md#context-v2-additions).
+- **Affected Phases:** PHASE 5 report/result workflow, PHASE 4 match-state adjustment checks, PHASE 6/PHASE 7 official outputs and PHASE 10 lifecycle/concurrency verification. No Phase status changes.
+- **Still open:** Appearance/event validation, actual-time precision, detailed transitions/errors and supporting fields, snapshots and transaction/API contracts. These internal business states do not select or approve the deferred Live Score design.
+
+### D064 - Kickoff-based appearance eligibility and report-defined goalkeepers
+
+- **Status:** CONFIRMED by Team Leader on 2026-10-25 (Asia/Bangkok).
+- **Confirmation evidence:** In response to grouped Q64, the Team Leader selected option A: “Tôi chọn A.” (“I choose A.”), confirming the appearance/goalkeeper package.
+- **Source:** O02/O06/O09/O12; QĐ3.2/QĐ5.7, BM3, UC16/UC18/UC20; D047/D048/D056.
+- **Eligibility instant:** Each appearing player needs a validated registration for the correct club-season whose playing-effective interval contains actual kickoff. Late report entry does not substitute the player's current club for the historical basis.
+- **Appearance lists:** Each team has a nonempty list. A player appears at most once per match and belongs to one of its two teams. First-version scope adds no mandatory eleven-player count, tactical formation or substitution management.
+- **Shirt/position:** Take shirt number from the applicable registration at the assessment instant. Record match position separately; it may differ from profile position.
+- **Goalkeeper validation:** Before submission/confirmation, each team's report list must identify exactly one goalkeeper by match position. Missing or multiple goalkeepers block submission/confirmation until corrected; do not automatically choose one or skip statistics.
+- **Clean sheets:** For official results, a team conceding no goals credits one clean sheet to its report-defined goalkeeper. Goalkeeper substitutions remain outside source scope.
+- **History:** At confirmation preserve registration basis, name, shirt number and match position. Subsequent transfer/master updates do not automatically change the report; official corrections still follow UC19.
+- **Alternatives/basis:** Match-position goalkeeper designation versus deriving goalkeeper from registered profile position with the same exact-one validation. The Team Leader chose actual match roles and consistent late-entry history, accepting staff entry and resolution of incomplete/conflicting lists.
+- **Record:** [ADR 0013](../../../docs/adr/0013-match-report-and-official-result-lifecycles.md#appearance-eligibility-and-goalkeeper-basis).
+- **Affected Phases:** PHASE 3 registration-history integration, PHASE 5 reports/clean sheets, PHASE 6/PHASE 7 historical outputs and PHASE 10 temporal/goalkeeper verification. No Phase status changes.
+- **Still open:** D065 below settles goal/card/time/referee policy. Golden Glove ties, detailed appearance/snapshot schema and correction/concurrency contracts. No disciplinary or substitution subsystem is selected.
+
+### D065 - Structured event minutes, score checks and referee-signature references
+
+- **Status:** CONFIRMED by Team Leader on 2026-10-25 (Asia/Bangkok).
+- **Confirmation evidence:** In response to grouped Q65, the Team Leader selected option A: “tôi chọn A.” (“I choose A.”), confirming the event/referee package.
+- **Source:** O09/O12; BM3, QĐ3.3-QĐ3.5, UC16-UC19; D046-D049/D063/D064.
+- **Event minutes:** Store integer main minute 1-90 and nonnegative integer added time; positive added time is allowed only with main minute 45 or 90. Display 45+2 or 90+5 without converting 45+2 to minute 47. First-half added time sorts before minute 46.
+- **Scope:** This is the first-version report convention, without extra-time or penalty-shootout events. D061 planning duration remains separate.
+- **Event validity:** Require an appearing player, the player's correct club, a valid type from the match's applicable catalog and a valid event time. Retain source default types; add no types implicitly.
+- **Score:** Derive scores from valid goals; own goals benefit the opposing team and do not count toward personal goals. The entered final score must match; mismatch blocks submission/confirmation.
+- **Cards:** Record yellow/red cards from the report, without automatic suspensions, forfeitures or a disciplinary subsystem.
+- **Referee basis:** Before submission require referee full name, original-report identifier/reference and the inputter's confirmation of cross-checking the signature on the original. Retain verifier/time; the approver reviews this basis with the report.
+- **History/attachments:** Preserve events and referee basis in the confirmed version; corrections use UC19. First version requires no signature image, scanned attachment or digital-signature implementation. This specifies v2 representation of BM3's signature basis, not deletion of the source field.
+- **Alternatives/basis:** Original-report reference and recorded signature cross-check versus mandatory scanned signed-report attachment with the same event/score rules. The Team Leader chose traceability without file/signature infrastructure, accepting reliance on staff verification and access to the original.
+- **Record:** [ADR 0013](../../../docs/adr/0013-match-report-and-official-result-lifecycles.md#event-minutes-scores-and-referee-basis); [glossary](../GLOSSARY.md#context-v2-additions).
+- **Affected Phases:** PHASE 5 report validation, PHASE 6/PHASE 7 official output/history and PHASE 10 boundary/evidence verification. No Phase status changes.
+- **Still open:** Exact event/referee schema/lengths, source-reference format, duplicate-event feedback, detailed snapshot/display/API and concurrency contracts. No upload or digital-signature technology is selected.
+
+### D066 - Shared standings ranks and shared individual awards
+
+- **Status:** CONFIRMED by Team Leader on 2026-10-25 (Asia/Bangkok).
+- **Confirmation evidence:** In response to grouped Q66, the Team Leader selected option A: “Tôi chọn A.” (“I choose A.”).
+- **Source:** O05/O06/O12; QĐ5.3-QĐ5.5/QĐ5.7, BM5.1-BM5.3; D045/D064.
+- **In-season ranks:** Clubs equal on all applicable main ranking criteria share competition ranks, e.g. 1, 2, 2, 4. Do not use head-to-head criteria reserved for end-of-season resolution during the season. Use stable club-code order within a tied group only for presentation, without a sporting advantage or distinct rank.
+- **Season-end stakes:** Mark unresolved tied groups affecting championship, qualification or relegation for the source's additional-criteria/playoff process. Do not resolve sporting outcomes by club name/code. The detailed resolution workflow remains open.
+- **Individual awards:** Retain shared top-scorer awards under the source, without implicit assists/appearances/minutes tiebreakers. Goalkeepers tied for the highest clean-sheet total share the Golden Glove, without extra ratios, appearances or goals-conceded tiebreakers.
+- **Positive achievement:** Identify top-scorer recipients only with at least one valid personal goal, and Golden Glove recipients only with at least one clean sheet. Otherwise show no recipient yet, not a shared award for all zero totals.
+- **Recalculation/finalization:** Valid official-result corrections update tied groups and award leaders. Final awards are confirmed through season summary.
+- **Alternatives/basis:** Shared Golden Glove versus fewer appearances as an additional tiebreaker, then a shared award if still tied. Both retained the proposed club-ranking/top-scorer policies. The Team Leader chose transparent equal-achievement treatment without extra unsupported criteria, accepting multiple Golden Glove recipients and nonunique in-season ranks.
+- **Record:** [ADR 0014](../../../docs/adr/0014-shared-ranks-and-individual-awards.md); [glossary](../GLOSSARY.md#context-v2-additions).
+- **Affected Phases:** PHASE 5 standings/statistics, PHASE 6 public lookup, PHASE 7 reports/summary and PHASE 10 tie/award verification. No Phase status changes.
+- **Still open:** Exact head-to-head/multi-club calculations, qualification/relegation parameters, playoff recording, summary approval and technical contracts. D066 does not settle those remaining season-end choices.
+
 ## Pending v2 extensions
 
 See the [pending decision queue](pending-decisions.md). V2-EXT-01 records the Team Leader's requested Live Match Tracking / Live Score improvement and explicit reference-data boundaries. Its design interview is deferred until the existing foundation decision groups are complete, and must be raised proactively before the v2 summary and package-approval proposal. It is not D037, not a resolved Oxx and not approved implementation design.
 
 ## Decision coverage
 
-All 16 source issues remain **OPEN** until their constituent decisions are confirmed. O12 has partial confirmed coverage through D001, D002, D007, D011, D022, D024, D030, D031 and D034-D036. O03 has partial confirmed coverage through D024's time-zone policy; match/stadium intervals and boundary rules remain open. O04 has partial confirmed coverage through D032-D034, including the explicit player-birth-date exception and responsibility-based internal viewing; detailed field/file/log scopes remain open. O08 has partial confirmed coverage through D003-D023, D025-D031 and D033-D034. O07 has partial confirmed coverage through D005's separation rule for regulation approval and D013-D023 and D025-D030's delegation model/responsibilities/authority limits/recipient matrix/termination/revocation/session/time/duration policies; regulation effectivity and in-season change policies remain open. O09 has partial confirmed coverage through D036's general correction policy; required fields, identifiers and detailed correction rules remain open. None is RESOLVED. O01-O02, O05-O06, O10-O11 and O13-O16 have no confirmed resolutions in v2 yet. The new Live Score request is separately queued as V2-EXT-01, not counted as a resolved v1 issue. The [v1 register](../open-decisions.md) is retained as the source baseline; this supplement records subsequent confirmations.
+All 16 source issues remain **OPEN** until their constituent decisions are confirmed. O12 has partial confirmed coverage through D001, D002, D007, D011, D022, D024, D030, D031, D034-D036 and D042-D066. O03 has confirmed policy coverage through D024's time zone and D061's planned club/venue intervals, buffers, boundaries and global conflict scope; concrete seasonal values and technical enforcement remain open. O04 has partial confirmed coverage through D032-D034 and D059's seasonal lookup basis, including the explicit player-birth-date exception and responsibility-based internal viewing; detailed field/file/log scopes remain open. O08 has partial confirmed coverage through D003-D023, D025-D031, D033-D034, D037-D041 and D051/D053/D055-D057 and D062-D063. O07 has partial confirmed coverage through D005's separation rule for regulation approval and D013-D023 and D025-D030's delegation model/responsibilities/authority limits/recipient matrix/termination/revocation/session/time/duration policies; D042 settles immutable approved regulation versions and D043 permits immediate/future effectivity without backdating; D044 freezes competition structure after initial schedule approval and D045 freezes points/ranking priority after the first official result; D046 preserves referenced goal/card type codes and meanings and D047 binds their applicability to recorded actual kickoff; D050 limits each season to one approved future version and D051 governs controlled cancellation/replacement and activation checks; D052 permits compatible registration-rule changes and revalidates pending records; D053 establishes calendars, receipt deadlines and individual exceptions; detailed effectivity and remaining group policies stay open. O09 has partial confirmed coverage through D036's general correction policy and D046-D049's event-type preservation/applicability and actual-kickoff recording/correction workflow, plus D054's eligibility-evidence policy and D057's validated-registration correction/impact review; D058 settles business-code identity, duplicate warnings and temporal shirt-number rules; D059 settles master/registration required fields and snapshot milestones; D063 establishes report/match states and required actual start/end; D064 settles appearance eligibility and goalkeeper basis; D065 settles event-minute/score checks and referee-signature basis; detailed correction/technical contracts and schema/display details remain open. None is RESOLVED. O10 has partial coverage through D044's structural freeze and D060's pairing automation, supported configurations, incomplete drafts and whole-schedule submission; D062 adds regeneration safeguards, versioned adjustments and immediate publication; exact lifecycle/action and technical contracts remain open. O01 has partial coverage through D052's change/impact policy and D054's U21 comparison/configuration and staff homegrown-verification policy; D059 settles required evidence fields; concrete seasonal values and detailed validation/format contracts remain open. O02 additionally has D053's windows/deadline/exception policy and D055's versioned club/player workflows; D056 adds playing intervals and consistent transfers; D057 adds independent historical-registration correction; concrete calendar dates, detailed exception/action transitions, closure effects and detailed action/correction contracts remain open. O06 has partial coverage through D064's report-position goalkeeper basis and missing/multiple-goalkeeper gate; D066 adds shared Golden Glove and positive-achievement thresholds. O05 has partial coverage through D066's shared-rank presentation and unresolved-stakes policy; detailed head-to-head/playoff/summary decisions remain open. O11 and O13-O16 have no confirmed resolutions in v2 yet. The new Live Score request is separately queued as V2-EXT-01, not counted as a resolved v1 issue. The [v1 register](../open-decisions.md) is retained as the source baseline; this supplement records subsequent confirmations.
 
 ## Interview order
+
+Interview guidance updated by the Team Leader after Q50: ask only material decisions requiring approval, group related policy choices where they can be assessed together, and do not repeat confirmed decisions. Preserve completeness, consistency and implementability. Distinguish proposed technical elaborations from confirmed decisions; seek confirmation for new material trade-offs rather than every mechanical consequence. Do not use question-count reduction to conceal unresolved requirements.
 
 1. Architecture, technology constraints, stack/database and baseline environment - O12, part of O13.
 2. Authority, scope, lifecycle, data visibility and regulation effectivity - O08, O04, O07.
@@ -538,4 +962,4 @@ This work is limited to Context/design documentation. No code, feature Specifica
 
 ## Resume checkpoint
 
-Q1-Q36 are confirmed as D001-D036; the package as a whole remains DRAFT. The Team Leader requested a break before Q37. Resume the existing foundation interview at Q37, one detailed question at a time, recomputing prerequisites from unresolved decisions. Do not start V2-EXT-01 at Q37 merely because it was queued; interview it after the foundation groups and before summary/approval. No Q37 question or answer has yet been recorded. A commit message was requested as a suggestion only; no commit/push is authorized.
+Q1-Q66 are confirmed as D001-D066; the package as a whole remains DRAFT. Q66 establishes shared ranks, shared individual awards and positive-achievement thresholds. The Team Leader requested a break before Q67; no Q67 question or answer is recorded. Resume with grouped head-to-head/playoff and season-summary decisions, recomputing dependencies before asking. The updated working estimate is 30-45 further question turns, including foreseeable follow-ups, technical design, operations, Live Score and final consistency/approval; it is not a fixed cap. Ask only material decisions, grouping related policies and avoiding repeated confirmations. Interview V2-EXT-01 after the foundation groups and before summary/approval. A commit message is requested as a suggestion only; no commit/push is authorized.

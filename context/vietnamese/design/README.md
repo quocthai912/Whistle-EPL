@@ -482,7 +482,7 @@ Nhóm trưởng xác nhận ngày 2026-10-25: tài liệu thiết kế được 
 - **Phương án/cơ sở:** Cấp riêng quyền dùng chung so với tự suy ra từ vai trò tương ứng trong bất kỳ mùa nào. Nhóm trưởng chọn ranh giới phân công dữ liệu dùng chung rõ ràng, chấp nhận thêm cấu hình quyền.
 - **Bản ghi:** [ADR 0003](../../../docs/adr/0003-season-scoped-business-permissions.md#separately-assigned-shared-master-management-permissions).
 - **Phase chịu ảnh hưởng:** UC03/phân quyền PHASE 1, CLB/sân PHASE 2, hồ sơ cầu thủ PHASE 3 và kiểm chứng truy cập/lịch sử PHASE 10. Không đổi trạng thái Phase.
-- **Còn mở:** Biểu diễn quyền và vòng đời vai trò đủ điều kiện, quy tắc tự cấp/thay đổi phiên đối với quyền dùng chung này, truy cập theo trường, chi tiết bản chụp theo D035 và ràng buộc ghi chi tiết. D034 không phê duyệt xóa phá vỡ dữ liệu hoặc thao tác mới ngoài UC và quy tắc toàn vẹn áp dụng.
+- **Còn mở:** Biểu diễn quyền, vòng đời vai trò đủ điều kiện được chốt tại D038 bên dưới, quy tắc thay đổi phiên đối với quyền dùng chung này (D037 chốt việc tự cấp), truy cập theo trường, chi tiết bản chụp theo D035 và ràng buộc ghi chi tiết. D034 không phê duyệt xóa phá vỡ dữ liệu hoặc thao tác mới ngoài UC và quy tắc toàn vẹn áp dụng.
 
 ### D035 - Định danh gốc ổn định và bản chụp chọn lọc thông tin nghiệp vụ chính thức
 
@@ -510,15 +510,439 @@ Nhóm trưởng xác nhận ngày 2026-10-25: tài liệu thiết kế được 
 - **Phase chịu ảnh hưởng:** Hồ sơ gốc/quy định PHASE 2, hồ sơ/đăng ký PHASE 3, lịch PHASE 4, kết quả chính thức PHASE 5, tra cứu/báo cáo PHASE 6/PHASE 7 và kiểm chứng tích hợp/toàn vẹn PHASE 10. Không đổi trạng thái Phase.
 - **Còn mở:** Ánh xạ trường/hồ sơ bị ảnh hưởng, định dạng căn cứ, người phụ trách/trạng thái rà soát, xử lý đăng ký không còn đủ điều kiện, quy tắc hiệu chỉnh lịch sử/hiển thị công khai, chi tiết bản chụp và hợp đồng giao dịch/đồng thời. Chưa chọn cơ chế tải tệp, xử lý kỷ luật tự động hoặc mã trạng thái luồng mới.
 
+### D037 - Cấm Quản trị viên tự cấp quyền quản lý hồ sơ gốc dùng chung
+
+- **Trạng thái:** CONFIRMED bởi Nhóm trưởng ngày 2026-10-25 (Asia/Bangkok).
+- **Bằng chứng xác nhận:** Khi trả lời Q37, Nhóm trưởng chọn phương án A: “Tôi chọn A.”.
+- **Nguồn:** O08/O12; UC03 và D010/D034. Mở rộng nguyên tắc cấm tự cấp đã chốt sang quyền quản lý hồ sơ gốc dùng chung được cấp riêng.
+- **Quyết định:** Quản trị viên hệ thống không được tự cấp hoặc mở rộng quyền quản lý hồ sơ gốc CLB, sân hoặc cầu thủ cho chính mình. Quản trị viên khác phải thực hiện việc cấp qua UC03. Có vai trò nghiệp vụ tương ứng không cho phép tự cấp quyền.
+- **Ranh giới quản trị:** Quản trị viên duy nhất vẫn được cấp các quyền này cho nhân sự khác đủ điều kiện. Muốn nhận thêm quyền quản lý dùng chung cho chính mình cần Quản trị viên thứ hai. Kiểm tra hạn chế tại backend và lưu lịch sử cấp quyền.
+- **Phương án/cơ sở:** Cấm tự cấp so với cho phép tự cấp khi Quản trị viên có trách nhiệm nghiệp vụ tương ứng, kèm nhật ký. Nhóm trưởng chọn nhất quán với D010 và tách người cấp khỏi người nhận, chấp nhận phối hợp với Quản trị viên khác.
+- **Bản ghi:** [ADR 0003](../../../docs/adr/0003-season-scoped-business-permissions.md#administrator-self-granting-of-shared-master-management-permissions).
+- **Phase chịu ảnh hưởng:** Quản trị tài khoản/quyền PHASE 1, hồ sơ gốc CLB/sân PHASE 2, hồ sơ gốc cầu thủ PHASE 3 và kiểm chứng phân quyền PHASE 10. Không đổi trạng thái Phase.
+- **Còn mở:** Biểu diễn quyền cụ thể; D040 bên dưới chốt tự giảm/thu hồi quyền. D038 bên dưới chốt vòng đời vai trò đủ điều kiện; D039 chốt xử lý thay đổi phiên. D037 không chốt các nội dung này hoặc thêm luồng phê duyệt cấp quyền riêng.
+
+### D038 - Chấm dứt quyền quản lý hồ sơ gốc dùng chung khi mất phân công vai trò tương ứng cuối cùng
+
+- **Trạng thái:** CONFIRMED bởi Nhóm trưởng ngày 2026-10-25 (Asia/Bangkok).
+- **Bằng chứng xác nhận:** Khi trả lời Q38, Nhóm trưởng chọn phương án A: “Tôi chọn A.”.
+- **Nguồn:** O08/O12; UC03 và D034/D037.
+- **Quyết định:** Quyền quản lý hồ sơ gốc CLB yêu cầu phân công vai trò Người quản lý mùa giải ở ít nhất một mùa; quản lý sân yêu cầu vai trò Nhân viên lịch thi đấu ở ít nhất một mùa; quản lý cầu thủ yêu cầu vai trò Nhân viên đăng ký ở ít nhất một mùa. Vai trò tương ứng tiếp tục là điều kiện sau khi quyền dùng chung được cấp riêng.
+- **Chấm dứt và cấp lại:** Thu hồi phân công vai trò tương ứng cuối cùng của người đó làm chấm dứt quyền quản lý dùng chung liên quan và lưu lịch sử. Phân công lại vai trò tương ứng không khôi phục quyền này; cần cấp riêng lần mới theo D034/D037. Còn phân công tương ứng ở mùa khác thì không chấm dứt theo điều kiện này.
+- **Ranh giới:** Mất vai trò là bị thu hồi phân công, không chỉ là mùa đã đến ngày kết thúc. Chính sách đóng/lưu trữ mùa vẫn chưa chốt. Quyết định này không mở quyền truy cập hồ sơ nội bộ của các mùa khác.
+- **Phương án/cơ sở:** Tiếp tục phụ thuộc vai trò so với chỉ kiểm tra vai trò lúc cấp rồi giữ quyền tới khi thu hồi riêng. Nhóm trưởng chọn quyền đi cùng trách nhiệm và tránh sót quyền, chấp nhận phối hợp thứ tự điều chuyển và có thể cần cấp lại.
+- **Bản ghi:** [ADR 0003](../../../docs/adr/0003-season-scoped-business-permissions.md#shared-master-management-permission-depends-on-a-corresponding-role).
+- **Phase chịu ảnh hưởng:** Vòng đời vai trò/quyền PHASE 1, hồ sơ gốc CLB/sân PHASE 2, hồ sơ gốc cầu thủ PHASE 3 và kiểm chứng phân quyền PHASE 10. Không đổi trạng thái Phase.
+- **Còn mở:** Xử lý thay đổi phiên được chốt tại D039. Tự giảm/thu hồi quyền được chốt tại D040. Tác động của khóa tài khoản được chốt tại D041. Quy tắc đóng/lưu trữ mùa và cơ chế nhất quán/đồng thời kỹ thuật. Chưa chọn cấu trúc lưu quyền hoặc cơ chế lập lịch tự động.
+
+### D039 - Vô hiệu hóa phiên khi thay đổi quyền quản lý hồ sơ gốc dùng chung
+
+- **Trạng thái:** CONFIRMED bởi Nhóm trưởng ngày 2026-10-25 (Asia/Bangkok).
+- **Bằng chứng xác nhận:** Khi trả lời Q39, Nhóm trưởng chọn phương án A: “Tôi chọn A.”.
+- **Nguồn:** O08/O12; UC03 và D007/D022/D030/D034/D038.
+- **Quyết định:** Cấp thêm, mở rộng, thu hồi hoặc chấm dứt thành công quyền quản lý hồ sơ gốc dùng chung làm vô hiệu hóa toàn bộ phiên hiện có của người nhận bị ảnh hưởng, gồm chấm dứt theo D038. Yêu cầu nội bộ tiếp theo dùng phiên cũ bị từ chối; người dùng phải đăng nhập lại với quyền hiện tại.
+- **Thông báo:** Hiển thị thông báo D007: “Phiên đăng nhập không còn hiệu lực do tài khoản hoặc quyền truy cập đã thay đổi. Vui lòng đăng nhập lại.” Không yêu cầu hạ tầng thông báo thời gian thực.
+- **Thao tác ghi đang xử lý:** D030 vẫn yêu cầu kiểm tra lại quyền/phiên tại điểm quyết định cuối trong giao dịch nghiệp vụ. Thay đổi quyền/phiên và thao tác ghi đồng thời phải có thứ tự nhất quán; không hoàn tác thao tác đã hoàn tất hợp lệ trước đó.
+- **Phương án/cơ sở:** Vô hiệu hóa toàn bộ phiên người nhận so với giữ phiên và kiểm tra quyền hiện tại trên từng yêu cầu, kèm cập nhật giao diện. Nhóm trưởng chọn nhất quán với D007/D022 và ranh giới thay đổi quyền rõ cho người dùng, chấp nhận gián đoạn đăng nhập cả khi cấp thêm.
+- **Bản ghi:** [ADR 0003](../../../docs/adr/0003-season-scoped-business-permissions.md#session-invalidation-for-shared-master-management-permissions).
+- **Phase chịu ảnh hưởng:** Phân quyền/phiên PHASE 1, hồ sơ gốc CLB/sân PHASE 2, hồ sơ gốc cầu thủ PHASE 3 và kiểm chứng truy cập/đồng thời PHASE 10. Không đổi trạng thái Phase.
+- **Còn mở:** Công nghệ/lưu trữ phiên, hợp đồng lỗi, dữ liệu nhập chưa lưu và cơ chế thực thi/đồng thời kỹ thuật. D040 chốt tự giảm/thu hồi quyền. Chưa chọn công nghệ hỗ trợ mới.
+
+### D040 - Cho phép Quản trị viên tự giảm quyền nghiệp vụ
+
+- **Trạng thái:** CONFIRMED bởi Nhóm trưởng ngày 2026-10-25 (Asia/Bangkok).
+- **Bằng chứng xác nhận:** Khi trả lời Q40, Nhóm trưởng chọn phương án A: “Tôi chọn A.”.
+- **Nguồn:** O08/O12; UC03 và D007/D009/D010/D037-D039.
+- **Quyết định:** Qua UC03, Quản trị viên hệ thống được tự bỏ vai trò nghiệp vụ theo mùa, thu hẹp phạm vi mùa hoặc thu hồi quyền quản lý hồ sơ gốc dùng chung của chính mình. Thao tác chỉ được giảm quyền, không kèm cấp mới hoặc mở rộng quyền cho bản thân.
+- **Hệ quả:** Lưu lịch sử thay đổi. Mất phân công vai trò tương ứng cuối cùng thì chấm dứt quyền dùng chung liên quan theo D038. Áp dụng vô hiệu hóa phiên theo D007/D039 và kiểm tra quyền cuối theo D030. Cấp lại sau đó cần Quản trị viên khác theo D010/D037. Giữ lịch sử và trách nhiệm đối với thao tác trước đó.
+- **Ranh giới quản trị:** D009 vẫn cấm tự khóa tài khoản và tự thu hồi vai trò Quản trị viên hệ thống. D040 chỉ cho phép giảm quyền nghiệp vụ.
+- **Phương án/cơ sở:** Cho phép tự giảm so với yêu cầu Quản trị viên khác thực hiện mọi thay đổi quyền nghiệp vụ của bản thân. Nhóm trưởng chọn bỏ kịp quyền không cần và phối hợp nhân sự đơn giản hơn, chấp nhận có thể bỏ nhầm quyền đang cần và phụ thuộc Quản trị viên khác để cấp lại.
+- **Bản ghi:** [ADR 0003](../../../docs/adr/0003-season-scoped-business-permissions.md#administrator-self-reduction-of-business-permissions).
+- **Phase chịu ảnh hưởng:** UC03/phân quyền PHASE 1, truy cập nghiệp vụ PHASE 2-PHASE 9 và kiểm chứng PHASE 10. Không đổi trạng thái Phase.
+- **Còn mở:** Hợp đồng giao diện/lỗi chi tiết, bàn giao việc đang chờ và cơ chế nhất quán/đồng thời kỹ thuật. D041 chốt tác động của khóa tài khoản tới quyền dùng chung. Chưa chọn công nghệ mới hoặc luồng bàn giao tự động.
+
+### D041 - Giữ phân công quyền quản lý hồ sơ gốc dùng chung khi tài khoản bị khóa
+
+- **Trạng thái:** CONFIRMED bởi Nhóm trưởng ngày 2026-10-25 (Asia/Bangkok).
+- **Bằng chứng xác nhận:** Khi trả lời Q41, Nhóm trưởng chọn phương án A: “Tôi chọn A.”.
+- **Nguồn:** O08/O12; UC03 và D007/D020/D034/D038-D040.
+- **Quyết định:** Khóa tài khoản ngăn đăng nhập và mọi việc sử dụng quyền, đồng thời vô hiệu hóa toàn bộ phiên theo D007. Chỉ riêng việc khóa không xóa phân công vai trò hoặc chấm dứt quyền quản lý hồ sơ gốc dùng chung được cấp riêng.
+- **Mở khóa:** Yêu cầu đăng nhập mới; phiên cũ không được khôi phục. Người dùng chỉ được sử dụng quyền vẫn hợp lệ tại thời điểm đó. Thu hồi phân công vai trò tương ứng cuối cùng trong lúc khóa vẫn làm chấm dứt quyền dùng chung theo D038; mở khóa không khôi phục quyền đó.
+- **Ranh giới ủy quyền:** Ủy quyền nghiệp vụ vẫn theo D020: ủy quyền đã chấm dứt do khóa tài khoản không tự phục hồi khi mở khóa. Giữ phân công quyền dùng chung không thay đổi chính sách này.
+- **Phương án/cơ sở:** Giữ phân công nhưng chặn truy cập tài khoản so với chấm dứt quyền dùng chung khi khóa và yêu cầu cấp lại sau mở khóa. Nhóm trưởng chọn phân biệt khóa tài khoản với thu hồi trách nhiệm và vận hành khóa tạm thời đơn giản hơn, chấp nhận rà soát quyền còn giữ khi mở khóa và cách xử lý vòng đời khác với ủy quyền.
+- **Bản ghi:** [ADR 0003](../../../docs/adr/0003-season-scoped-business-permissions.md#account-locking-and-shared-master-management-assignments).
+- **Phase chịu ảnh hưởng:** Vòng đời tài khoản/truy cập PHASE 1, hồ sơ gốc CLB/sân PHASE 2, hồ sơ gốc cầu thủ PHASE 3 và kiểm chứng PHASE 10. Không đổi trạng thái Phase.
+- **Còn mở:** Hợp đồng giao diện/lỗi, ngừng sử dụng tài khoản vĩnh viễn, đóng/lưu trữ mùa và cơ chế thực thi/đồng thời kỹ thuật. Chưa chọn công nghệ mới hoặc luồng rà soát quyền tự động.
+
+### D042 - Phiên bản quy định mùa giải đã duyệt có nội dung bất biến
+
+- **Trạng thái:** CONFIRMED bởi Nhóm trưởng ngày 2026-10-25 (Asia/Bangkok).
+- **Bằng chứng xác nhận:** Khi trả lời Q42, Nhóm trưởng chọn phương án A: “Tôi chọn A.”.
+- **Nguồn:** O07/O12; QĐ6, PDF tr.11; UC06 tr.79-82; D005/D035.
+- **Quyết định:** Mỗi lần phê duyệt xác lập một phiên bản quy định riêng, chứa đầy đủ bộ cấu hình quy định cho mùa đó. Nội dung đã duyệt là bất biến; thay đổi cần đề xuất mới và phê duyệt phiên bản mới. Giữ phiên bản cũ để tra cứu và làm căn cứ cho hồ sơ nghiệp vụ liên quan.
+- **Ranh giới đề xuất:** Đề xuất được chỉnh sửa trong quá trình soạn thảo. Bản nháp hoặc chờ duyệt không thay quy định đang có hiệu lực. Người duyệt vẫn phải khác người chuẩn bị/chỉnh sửa nội dung trình duyệt theo D005.
+- **Phương án/cơ sở:** Các phiên bản đầy đủ đã duyệt bất biến so với một cấu hình hiện tại được cập nhật và tái dựng từ lịch sử. Nhóm trưởng chọn bộ căn cứ đã duyệt rõ ràng và truy vết lịch sử, chấp nhận lặp cấu hình và quản lý phiên bản/phê duyệt/hiệu lực.
+- **Bản ghi:** [ADR 0010](../../../docs/adr/0010-immutable-approved-season-regulation-versions.md); [glossary](../GLOSSARY.md#bổ-sung-context-v2).
+- **Phase chịu ảnh hưởng:** Quy định PHASE 2, đăng ký PHASE 3, lịch PHASE 4, kết quả PHASE 5, thống kê/báo cáo PHASE 6/PHASE 7 và kiểm chứng PHASE 10. Không đổi trạng thái Phase.
+- **Còn mở:** D043 bên dưới chốt quy tắc thời điểm hiệu lực cơ bản. Chi tiết hiệu lực, giới hạn thay đổi trong mùa, xử lý hồ sơ chờ/đã duyệt, tham chiếu phiên bản/mốc ghi nhận cụ thể, vòng đời đề xuất và hợp đồng schema/API/đồng thời. D042 không phê duyệt tự động kiểm tra lại hồi tố hoặc tính lại dữ liệu.
+
+### D043 - Hiệu lực quy định ngay hoặc trong tương lai và không lùi về quá khứ
+
+- **Trạng thái:** CONFIRMED bởi Nhóm trưởng ngày 2026-10-25 (Asia/Bangkok).
+- **Bằng chứng xác nhận:** Khi trả lời Q43, Nhóm trưởng chọn phương án A: “Tôi chọn A.”.
+- **Nguồn:** O07/O12; QĐ6.6, PDF tr.11; UC06 tr.79-82; D024/D042.
+- **Quyết định:** Đề xuất quy định chỉ rõ áp dụng ngay hoặc thời điểm hiệu lực tương lai để người duyệt xem xét. Áp dụng ngay bắt đầu khi hệ thống ghi nhận phê duyệt thành công. Phiên bản được duyệt cho tương lai không thay quy định hiện hành trước mốc đã duyệt. Không cho hiệu lực lùi về quá khứ.
+- **Duyệt muộn:** Từ chối phê duyệt nếu thời điểm tương lai trong đề xuất đã trôi qua; không tự chuyển sang áp dụng ngay. Sửa đề xuất cần trình duyệt lại.
+- **Quy ước thời gian:** Áp dụng D024: lưu/so sánh thời điểm UTC và nhập/hiển thị theo Asia/Ho_Chi_Minh.
+- **Phương án/cơ sở:** Hiệu lực ngay hoặc tương lai so với chỉ hiệu lực ngay khi duyệt. Nhóm trưởng chọn chuẩn bị trước và ranh giới thời gian rõ, chấp nhận quản lý bản đã duyệt nhưng chưa có hiệu lực và trình lại nếu duyệt muộn.
+- **Bản ghi:** [ADR 0010](../../../docs/adr/0010-immutable-approved-season-regulation-versions.md#effective-time-policy).
+- **Phase chịu ảnh hưởng:** Quy định PHASE 2, nghiệp vụ phụ thuộc PHASE 3-PHASE 7 và kiểm chứng biên thời gian PHASE 10. Không đổi trạng thái Phase.
+- **Còn mở:** Biên bằng nhau/độ chính xác và ranh giới giao dịch, các bản tương lai chồng lấn, thay thế/hủy, giới hạn thay đổi trong mùa, kiểm tra điều kiện khi bắt đầu hiệu lực và xử lý hồ sơ chờ/đã duyệt. D043 không cho phép mọi loại thay đổi giữa mùa hoặc tự tính lại dữ liệu trước đó. Chưa chọn bộ lập lịch kích hoạt, kiểu SQL hoặc thư viện.
+
+### D044 - Khóa cấu trúc thi đấu sau khi phê duyệt lịch ban đầu
+
+- **Trạng thái:** CONFIRMED bởi Nhóm trưởng ngày 2026-10-25 (Asia/Bangkok).
+- **Bằng chứng xác nhận:** Khi trả lời Q44, Nhóm trưởng chọn phương án A: “Tôi chọn A.”.
+- **Nguồn:** O07/O10/O12; QĐ6.3, PDF tr.11; QĐ2; UC13/UC14; D042/D043.
+- **Quyết định:** Từ lần đầu phê duyệt lịch ban đầu của mùa, khóa số CLB theo cấu hình, thể thức và số lượt cho mùa đó. Phiên bản quy định sau phải giữ nguyên các thông số cấu trúc này, kể cả khi chưa có trận bắt đầu.
+- **Phạm vi:** Phạm vi đồ án hiện tại không có quy trình mở khóa hoặc hủy toàn bộ lịch để thay đổi cấu trúc thi đấu. Điều chỉnh ngày/giờ hoặc sân của trận chưa diễn ra vẫn theo UC14 và các điều kiện riêng.
+- **Phương án/cơ sở:** Khóa từ lúc duyệt lịch ban đầu so với cho đổi cấu trúc trước trận đầu qua rà soát tác động, thay lịch và phê duyệt lại. Nhóm trưởng chọn nhất quán giữa quy định và lịch đã duyệt, giảm phức tạp triển khai/kiểm thử, chấp nhận giảm linh hoạt trước khi thi đấu.
+- **Bản ghi:** [ADR 0010](../../../docs/adr/0010-immutable-approved-season-regulation-versions.md#competition-structure-freeze).
+- **Phase chịu ảnh hưởng:** Quy định PHASE 2, lập lịch PHASE 4 và kiểm chứng toàn vẹn PHASE 10. Không đổi trạng thái Phase.
+- **Còn mở:** CLB rút lui/thay thế, nhóm quy định khác, làm mất hiệu lực bản lịch nháp trước duyệt, kiểm tra khi bản tương lai bắt đầu hiệu lực và hợp đồng giao dịch/đồng thời. D044 không chọn các thể thức được hỗ trợ hoặc cho phép thay đổi ngoài điều kiện phê duyệt/toàn vẹn hiện có.
+
+### D045 - Khóa điểm số và thứ tự tiêu chí xếp hạng sau kết quả chính thức đầu tiên
+
+- **Trạng thái:** CONFIRMED bởi Nhóm trưởng ngày 2026-10-25 (Asia/Bangkok).
+- **Bằng chứng xác nhận:** Khi trả lời Q45, Nhóm trưởng chọn phương án A: “Tôi chọn A.”.
+- **Nguồn:** O07/O12; QĐ5.2/QĐ5.3 và QĐ6.5, PDF tr.10-11; UC18-UC20; D042-D044.
+- **Quyết định:** Từ kết quả được xác nhận chính thức đầu tiên của mùa, khóa điểm thắng/hòa/thua và thứ tự ưu tiên tiêu chí xếp hạng cho mùa đó. Phiên bản quy định sau phải giữ nguyên các thông số này. Trước mốc đó, thay đổi vẫn cần phiên bản quy định và phê duyệt theo D042/D043.
+- **Hiệu chỉnh và phạm vi:** Sửa kết quả chính thức theo UC19 và tính lại theo UC20 vẫn được thực hiện theo điều kiện áp dụng, dùng quy tắc điểm/xếp hạng đã khóa. Phạm vi đồ án hiện tại không có quy trình mở khóa các thông số này.
+- **Phương án/cơ sở:** Khóa sau kết quả chính thức đầu tiên so với cho đổi giữa mùa qua phê duyệt riêng và tính lại toàn mùa. Nhóm trưởng chọn căn cứ tính thống nhất trong mùa và giảm phức tạp xử lý/kiểm thử, chấp nhận không đổi các luật này giữa mùa dù có căn cứ của Ban tổ chức.
+- **Bản ghi:** [ADR 0010](../../../docs/adr/0010-immutable-approved-season-regulation-versions.md#points-and-ranking-priority-freeze).
+- **Phase chịu ảnh hưởng:** Quy định PHASE 2, kết quả/thống kê PHASE 5, tra cứu PHASE 6, báo cáo PHASE 7 và kiểm chứng hồi quy PHASE 10. Không đổi trạng thái Phase.
+- **Còn mở:** Tiêu chí xếp hạng hỗ trợ, đồng hạng, playoff/xuống hạng, kiểm tra khi bản tương lai bắt đầu hiệu lực và hợp đồng giao dịch/đồng thời. D045 chốt mốc khóa cấu hình, không chốt các chính sách xếp hạng O05 còn lại.
+
+### D046 - Giữ mã và ý nghĩa loại bàn thắng hoặc thẻ đã được tham chiếu
+
+- **Trạng thái:** CONFIRMED bởi Nhóm trưởng ngày 2026-10-25 (Asia/Bangkok).
+- **Bằng chứng xác nhận:** Khi trả lời Q46, Nhóm trưởng chọn phương án A: “Tôi chọn A.”.
+- **Nguồn:** O07/O09/O12; QĐ3.3-QĐ3.5 và QĐ6.4; D042/D043.
+- **Quyết định:** Khi loại bàn thắng/thẻ đã được dùng, gồm trong biên bản nháp, giữ mã và ý nghĩa nghiệp vụ; không xóa khi đang được tham chiếu. Không đổi cách hiểu loại đã dùng, gồm cách tính tỷ số/thống kê, hoặc tái sử dụng mã cho nghĩa khác.
+- **Thay đổi:** Ý nghĩa khác cần đề xuất loại mới qua phiên bản quy định và phê duyệt. Có thể đề xuất ngừng cho chọn khi nhập mới nhưng giữ loại cũ để đọc và giải thích lịch sử. Thêm loại không tự cho phép công thức tính mới hoặc nghiệp vụ chưa được duyệt.
+- **Phương án/cơ sở:** Mã/ý nghĩa được tham chiếu ổn định so với cho cùng mã có định nghĩa khác theo phiên bản quy định, mỗi sự kiện gắn định nghĩa tương ứng. Nhóm trưởng chọn tham chiếu ổn định và bảo vệ lịch sử đơn giản hơn, chấp nhận giữ loại không còn dùng và không sửa trực tiếp định nghĩa đã dùng sai.
+- **Bản ghi:** [ADR 0010](../../../docs/adr/0010-immutable-approved-season-regulation-versions.md#preserve-referenced-goal-and-card-type-meanings).
+- **Phase chịu ảnh hưởng:** Danh mục quy định PHASE 2, sự kiện/kết quả trận PHASE 5, tra cứu/báo cáo lịch sử PHASE 6/PHASE 7 và kiểm chứng toàn vẹn PHASE 10. Không đổi trạng thái Phase.
+- **Còn mở:** Sửa lỗi tên hiển thị, luồng ngừng cho chọn chi tiết, hiệu chỉnh sự kiện cũ, trường danh mục và ràng buộc kỹ thuật. D047 bên dưới chốt danh mục áp dụng theo thời điểm trận. Chưa chọn loại bàn thắng/thẻ hoặc cách tính mới.
+
+### D047 - Gắn danh mục sự kiện trận với giờ bắt đầu thực tế được ghi nhận
+
+- **Trạng thái:** CONFIRMED bởi Nhóm trưởng ngày 2026-10-25 (Asia/Bangkok).
+- **Bằng chứng xác nhận:** Khi trả lời Q47, Nhóm trưởng chọn phương án A: “Tôi chọn A.”.
+- **Nguồn:** O07/O09/O12; QĐ6.4, UC16/UC19; D042/D043/D046.
+- **Quyết định:** Dùng danh mục bàn thắng/thẻ có hiệu lực tại giờ bắt đầu thực tế được ghi nhận của trận, thay vì thời điểm nhập hoặc hiệu chỉnh. Ghi nhận thời điểm bắt đầu thực tế và căn cứ phiên bản quy định áp dụng. Nhập muộn hoặc hiệu chỉnh không tự chuyển trận sang danh mục mới.
+- **Ranh giới ngừng chọn:** Loại bị ngừng cho chọn trong phiên bản quy định sau vẫn dùng được cho trận có danh mục áp dụng chứa loại đó. Việc ngừng chọn ảnh hưởng trận bắt đầu khi phiên bản mới có hiệu lực, đồng thời giữ cách hiểu sự kiện lịch sử.
+- **Hiệu chỉnh chính thức:** Sửa kết quả chính thức vẫn cần quy trình phê duyệt có thẩm quyền đã chốt; không cho phép tự sửa dữ liệu lịch sử.
+- **Phương án/cơ sở:** Danh mục theo thời điểm trận so với danh mục hiện hành lúc nhập/sửa nhưng giữ loại đã lưu. Nhóm trưởng chọn quy định đi cùng trận đã diễn ra và nhất quán nhập muộn/lịch sử, chấp nhận ghi giờ bắt đầu thực tế, tham chiếu phiên bản và hiển thị danh mục lịch sử.
+- **Bản ghi:** [ADR 0010](../../../docs/adr/0010-immutable-approved-season-regulation-versions.md#match-event-catalog-applicability-at-actual-kickoff); [glossary](../GLOSSARY.md#bổ-sung-context-v2).
+- **Phase chịu ảnh hưởng:** Quy định PHASE 2, biên bản/kết quả/hiệu chỉnh PHASE 5, lịch sử/báo cáo PHASE 6/PHASE 7 và kiểm chứng thời gian PHASE 10. Không đổi trạng thái Phase.
+- **Còn mở:** D048 bên dưới chốt ghi nhận/xác nhận giờ thực tế qua luồng biên bản/kết quả. Tác động hiệu chỉnh giờ chi tiết, thiếu hoặc không xác định duy nhất phiên bản hiệu lực, bản nháp khi chưa biết giờ bắt đầu, luồng ngừng chọn danh mục và hợp đồng kỹ thuật. D047 chỉ áp dụng cho danh mục bàn thắng/thẻ, không phải điều kiện đăng ký cầu thủ hoặc mọi nhóm quy định. Chưa chọn API ngoài hoặc thiết kế Live Score.
+
+### D048 - Ghi giờ bắt đầu thực tế trong biên bản và xác nhận cùng kết quả chính thức
+
+- **Trạng thái:** CONFIRMED bởi Nhóm trưởng ngày 2026-10-25 (Asia/Bangkok).
+- **Bằng chứng xác nhận:** Khi trả lời Q48, Nhóm trưởng chọn phương án A: “Tôi chọn A.”.
+- **Nguồn:** O07/O09/O12; UC16-UC19; D005/D047.
+- **Quyết định:** Nhân viên kết quả nhập giờ bắt đầu thực tế theo căn cứ nghiệp vụ của trận trong UC16/UC17. Giao diện phân biệt giờ theo lịch và giờ thực tế; không tự coi giờ theo lịch là giờ thực tế đã xác nhận. Bắt buộc có giờ thực tế trước khi trình xác nhận kết quả chính thức.
+- **Xác nhận/hiệu chỉnh:** Người xác nhận có thẩm quyền kiểm tra thời điểm này cùng biên bản theo UC18 và quy tắc tách người của D005. Sau xác nhận chính thức, sửa giờ thực tế phải qua quy trình hiệu chỉnh UC19 đã chốt. Không có luồng phê duyệt giờ bắt đầu thực tế riêng.
+- **Phạm vi vận hành:** Có thể nhập sau trận; không yêu cầu nhân sự thao tác ngay lúc bắt đầu. Cần kiểm tra lại danh mục/sự kiện khi sửa giờ thực tế trong nháp; xử lý chi tiết khi đổi qua ranh giới phiên bản vẫn mở.
+- **Phương án/cơ sở:** Ghi/kiểm tra trong luồng biên bản/kết quả hiện có so với luồng trình/duyệt giờ thực tế riêng. Nhóm trưởng chọn dùng lại trách nhiệm hiện có và hỗ trợ nhập sau trận, chấp nhận không xác nhận độc lập giờ bắt đầu từ trước và cần kiểm tra lại khi sửa giờ trong nháp.
+- **Bản ghi:** [ADR 0010](../../../docs/adr/0010-immutable-approved-season-regulation-versions.md#recording-and-confirming-actual-kickoff).
+- **Phase chịu ảnh hưởng:** Luồng biên bản/kết quả/hiệu chỉnh PHASE 5 và kiểm chứng PHASE 10; tích hợp xác định quy định áp dụng PHASE 2. Không đổi trạng thái Phase.
+- **Còn mở:** Định dạng căn cứ, độ chính xác/kiểm tra trường, bản nháp trước giờ bắt đầu, hợp đồng kỹ thuật. D049 bên dưới chốt hiệu chỉnh qua phiên bản danh mục. Chưa chọn tích hợp Live Score hoặc nguồn thời gian ngoài làm căn cứ chính thức.
+
+### D049 - Kiểm tra lại sự kiện khi sửa giờ bắt đầu làm đổi danh mục áp dụng
+
+- **Trạng thái:** CONFIRMED bởi Nhóm trưởng ngày 2026-10-25 (Asia/Bangkok).
+- **Bằng chứng xác nhận:** Khi trả lời Q49, Nhóm trưởng chọn phương án A: “Tôi chọn A.”.
+- **Nguồn:** O07/O09/O12; UC16-UC20; D005/D036/D047/D048.
+- **Quyết định:** Cho phép sửa giờ bắt đầu thực tế qua ranh giới phiên bản danh mục. Xác định danh mục theo giờ bắt đầu thực tế mới được đề xuất và kiểm tra lại toàn bộ sự kiện trong bản biên bản đề xuất. Chỉ rõ sự kiện không phù hợp; người lập phải sửa theo căn cứ nghiệp vụ. Không tự đổi loại hoặc xóa sự kiện.
+- **Điều kiện kiểm tra:** Chặn trình hoặc phê duyệt cho tới khi giải quyết hết các lỗi này.
+- **Ranh giới chính thức:** Với kết quả đã chính thức, giữ mọi thay đổi trong đề xuất hiệu chỉnh UC19. Giờ bắt đầu, danh mục và kết quả chính thức hiện có không đổi trong lúc chờ duyệt. Sau khi đề xuất hợp lệ được người khác có thẩm quyền duyệt, áp dụng nhất quán toàn bộ thay đổi liên quan, tính lại thống kê nếu cần và giữ lịch sử.
+- **Phương án/cơ sở:** Cho sửa kèm kiểm tra lại toàn bộ bản biên bản đề xuất so với cấm sửa giờ qua phiên bản khi đã có sự kiện và để ngoại lệ ngoài chức năng hiện tại. Nhóm trưởng chọn sửa thông tin sai có kiểm soát, chấp nhận hiển thị lỗi theo sự kiện và có thể phải rà soát nhiều nội dung biên bản.
+- **Bản ghi:** [ADR 0010](../../../docs/adr/0010-immutable-approved-season-regulation-versions.md#kickoff-correction-across-catalog-versions).
+- **Phase chịu ảnh hưởng:** Xác định quy định áp dụng PHASE 2, biên bản/kết quả/hiệu chỉnh PHASE 5, đầu ra phụ thuộc PHASE 6/PHASE 7 và kiểm chứng toàn vẹn/hồi quy PHASE 10. Không đổi trạng thái Phase.
+- **Còn mở:** Lưu nháp/biểu diễn lỗi, định dạng căn cứ, thiếu hoặc không xác định duy nhất phiên bản áp dụng và hợp đồng giao dịch/đồng thời. Chưa chọn chuyển đổi sự kiện tự động hoặc thẩm quyền hiệu chỉnh mới.
+
+### D050 - Mỗi mùa tối đa một phiên bản quy định đã duyệt chờ hiệu lực tương lai
+
+- **Trạng thái:** CONFIRMED bởi Nhóm trưởng ngày 2026-10-25 (Asia/Bangkok).
+- **Bằng chứng xác nhận:** Khi trả lời Q50, Nhóm trưởng chọn phương án A: “Tôi chọn A”.
+- **Nguồn:** O07/O12; D042/D043.
+- **Quyết định:** Mỗi mùa có tối đa một phiên bản quy định đã duyệt đang chờ thời điểm hiệu lực tương lai. Khi còn phiên bản đó, chặn phê duyệt phiên bản khác, kể cả phiên bản áp dụng ngay.
+- **Chuẩn bị:** Vẫn được soạn đề xuất tiếp theo nhưng phải kiểm tra lại với quy định đang có hiệu lực trước khi duyệt. Thay thế hoặc hủy phiên bản đã duyệt đang chờ cần quy trình riêng chưa chốt; không sửa trực tiếp nội dung đã duyệt.
+- **Phương án/cơ sở:** Một bản đã duyệt đang chờ so với nhiều bản tương lai có kiểm tra lịch/phụ thuộc và có thể phải duyệt lại các bản sau. Nhóm trưởng chọn quản lý phiên bản đầy đủ đơn giản và giảm xung đột cấu hình, chấp nhận không duyệt sẵn một chuỗi và phải xử lý bản đang chờ trước khi duyệt khẩn cấp.
+- **Bản ghi:** [ADR 0010](../../../docs/adr/0010-immutable-approved-season-regulation-versions.md#one-approved-future-version-per-season).
+- **Phase chịu ảnh hưởng:** Luồng quy định PHASE 2 và kiểm chứng điều kiện/đồng thời PHASE 10. Không đổi trạng thái Phase.
+- **Còn mở:** D051 bên dưới chốt thẩm quyền/luồng hủy và thay thế, ngoại lệ thay thế có kiểm soát và kiểm tra không phù hợp nghiệp vụ khi tới hạn. Kiểm tra căn cứ/xung đột, lỗi kỹ thuật/thử lại và thực thi đồng thời vẫn mở. Chưa chọn giới hạn số đề xuất mới hoặc cơ chế triển khai.
+
+### D051 - Hủy, thay thế và kiểm soát hiệu lực quy định đang chờ
+
+- **Trạng thái:** CONFIRMED bởi Nhóm trưởng ngày 2026-10-25 (Asia/Bangkok).
+- **Bằng chứng xác nhận:** Khi trả lời Q51 đã gộp, Nhóm trưởng chọn phương án A: “Tôi chọn A.”, xác nhận toàn bộ gói chính sách được đề xuất.
+- **Nguồn:** O07/O08/O12; UC06; D005/D042-D045/D050.
+- **Hủy:** Trước thời điểm hiệu lực đã duyệt, Người quản lý mùa giải có thẩm quyền lập đề nghị hủy kèm lý do và một Người quản lý mùa giải khác có thẩm quyền duyệt. Giữ nội dung đã duyệt và lịch sử; ghi nhận quyết định hủy riêng.
+- **Thay thế:** Một đề xuất có thể yêu cầu đồng thời hủy bản đang chờ và duyệt bản thay thế. Chỉ ghi nhận cả hai sau khi toàn bộ đề xuất hợp lệ được duyệt; thất bại thì giữ bản đang chờ. Đây là ngoại lệ có kiểm soát đối với việc chặn duyệt thêm bản khi còn bản chờ tại D050, không cho phép hai bản tương lai đã duyệt.
+- **Biên thời gian:** Đề nghị hủy/thay thế đang chờ không hoãn hiệu lực. Khi đã tới thời điểm hiệu lực, không còn dùng quy trình hủy bản tương lai; thay đổi tiếp cần phiên bản quy định mới.
+- **Điều kiện áp dụng:** Tại thời điểm hiệu lực, kiểm tra lại ràng buộc phát sinh từ lúc duyệt, gồm mốc khóa D044/D045. Nếu bản không còn phù hợp thì không áp dụng: giữ quy định đang có hiệu lực, ghi nguyên nhân và yêu cầu đề xuất mới để xử lý. Không tự sửa nội dung đã duyệt hoặc dời thời điểm hiệu lực.
+- **Phương án/cơ sở:** Hủy qua đề xuất/người khác duyệt so với Người quản lý mùa giải có thẩm quyền hủy trực tiếp kèm lý do/lịch sử; cả hai phương án đều gồm thay thế nhất quán và kiểm tra khi tới hạn. Nhóm trưởng chọn kiểm soát trách nhiệm độc lập, chấp nhận cần hai người có thẩm quyền và xử lý đề nghị chưa duyệt khi tới hạn hoặc bản bị chặn áp dụng.
+- **Bản ghi:** [ADR 0010](../../../docs/adr/0010-immutable-approved-season-regulation-versions.md#controlled-cancellation-replacement-and-activation).
+- **Phase chịu ảnh hưởng:** Vòng đời quy định PHASE 2, nghiệp vụ phụ thuộc PHASE 3-PHASE 7 và kiểm chứng biên/đồng thời PHASE 10. Không đổi trạng thái Phase.
+- **Còn mở:** Mã vòng đời/lỗi chi tiết, lỗi kỹ thuật/thử lại, thiếu bản hiệu lực ban đầu, kiểm tra căn cứ/xung đột, chính sách tác động nhóm quy định khác và cơ chế đồng thời. D051 không chọn bộ lập lịch, biểu diễn lưu trữ hoặc công nghệ thông báo.
+
+### D052 - Thay đổi quy định đăng ký tương thích và kiểm tra lại hồ sơ đang chờ
+
+- **Trạng thái:** CONFIRMED bởi Nhóm trưởng ngày 2026-10-25 (Asia/Bangkok).
+- **Bằng chứng xác nhận:** Khi trả lời Q52 đã gộp, Nhóm trưởng chọn phương án A: “Tôi chọn A.”, xác nhận gói chính sách được đề xuất.
+- **Nguồn:** O01/O02/O07/O12; QĐ6.2, UC06/UC10/UC11; D036/D042/D043/D051.
+- **Quyết định:** Cho thay đổi có kiểm soát giữa mùa đối với hạn mức danh sách, điều kiện homegrown và U21 chỉ khi không làm mất tính hợp lệ của đăng ký/danh sách đã duyệt đang có hiệu lực. Kiểm tra tác động khi duyệt và khi bắt đầu hiệu lực; chặn thay đổi không tương thích.
+- **Quyết định hiện có:** Không tự hủy đăng ký, loại cầu thủ hoặc sửa quyết định đã duyệt để ép phù hợp luật mới. Giữ căn cứ phiên bản quy định gốc của quyết định lịch sử.
+- **Hồ sơ đang chờ:** Kiểm tra lại hồ sơ nháp/chờ theo quy định có hiệu lực tại thời điểm quyết định. Nộp trước không bảo đảm được xét theo điều kiện/hạn mức cũ. Lưu phiên bản quy định làm căn cứ cho từng quyết định.
+- **Ranh giới sửa sai:** Sai dữ liệu gốc hoặc quyết định trước đó đi qua quy trình hiệu chỉnh tương ứng; đổi quy định không thay thế hiệu chỉnh.
+- **Phương án/cơ sở:** Thay đổi tương thích có kiểm soát so với khóa các điều kiện từ đăng ký được duyệt đầu tiên. Nhóm trưởng chọn hỗ trợ điều chỉnh theo QĐ6.2 mà không cần thu hồi hàng loạt hoặc giữ ngoại lệ đăng ký hiện hành không phù hợp, chấp nhận kiểm tra tác động và có thể bổ sung/sửa hồ sơ đang chờ.
+- **Bản ghi:** [ADR 0010](../../../docs/adr/0010-immutable-approved-season-regulation-versions.md#registration-rule-changes-and-affected-records).
+- **Phase chịu ảnh hưởng:** Quy định PHASE 2, đăng ký PHASE 3, kiểm tra tham gia PHASE 5 và kiểm chứng hồi quy PHASE 10. Không đổi trạng thái Phase.
+- **Còn mở:** Tiêu chí/giá trị homegrown/U21 cụ thể, đợt đăng ký/ngoại lệ hạn nộp, vòng đời hồ sơ chi tiết và hợp đồng schema/đồng thời. Quyết định này áp dụng điều kiện cầu thủ và hạn mức, không chốt mốc xét hạn nộp; không thêm người phê duyệt vào UC10.
+
+### D053 - Đợt đăng ký, hạn tiếp nhận và ngoại lệ từng hồ sơ
+
+- **Trạng thái:** CONFIRMED bởi Nhóm trưởng ngày 2026-10-25 (Asia/Bangkok).
+- **Bằng chứng xác nhận:** Khi trả lời Q53 đã gộp, Nhóm trưởng chọn phương án A: “Tôi chọn A.”, xác nhận gói chính sách được đề xuất.
+- **Nguồn:** O02/O07/O08/O12; QĐ1.6/QĐ6.2, UC06/UC08/UC10/UC11; D024/D052.
+- **Lịch:** Cấu hình lịch tiếp nhận theo mùa riêng cho hồ sơ tham gia CLB và đăng ký/thay đổi danh sách cầu thủ. Mỗi nhóm có thể có nhiều đợt, không chồng lấn trong cùng nhóm, được quản lý qua quy định mùa giải. Dùng thời điểm mở/đóng cụ thể và khoảng nửa kín [mở, đóng), theo D024. Không tự nhập lịch chuyển nhượng EPL ngoài nguồn.
+- **Căn cứ hạn nộp:** Dùng thời điểm server ghi nhận thành công việc tiếp nhận phiên bản hồ sơ được đưa ra xét, không phải lúc tạo nháp hoặc thời gian người dùng tự khai. Bản tiếp nhận đúng hạn có thể được xử lý sau khi đóng đợt. Điều kiện cầu thủ/hạn mức vẫn xét tại thời điểm quyết định theo D052.
+- **Bổ sung:** Bổ sung hoặc thay đổi nội dung xét tạo phiên bản tiếp nhận mới và phải xét hạn lại.
+- **Ngoại lệ cá biệt:** Nhân viên đăng ký đề nghị cho hồ sơ/phiên bản cụ thể kèm lý do và căn cứ; Người quản lý mùa giải có thẩm quyền phê duyệt riêng. Ngoại lệ chỉ miễn hạn tiếp nhận cho bản đó, không miễn điều kiện cầu thủ, hạn mức hoặc xung đột đăng ký. Duyệt ngoại lệ không thay quyết định xử lý đăng ký.
+- **Truy vết:** Giữ thời điểm tiếp nhận, lịch làm căn cứ và quyết định ngoại lệ. Không sửa lịch hoặc lùi thời gian để hợp thức hóa tiếp nhận trước đó.
+- **Phương án/cơ sở:** Ngoại lệ từng hồ sơ được duyệt so với yêu cầu chờ đợt sau hoặc đợt bổ sung được duyệt chung. Nhóm trưởng chọn linh hoạt cá biệt có giới hạn theo QĐ1.6, chấp nhận thêm bước duyệt ngoại lệ và có thể cần ngoại lệ khi bổ sung sau hạn.
+- **Bản ghi:** [ADR 0011](../../../docs/adr/0011-registration-windows-and-receipt-exceptions.md); [glossary](../GLOSSARY.md#bổ-sung-context-v2).
+- **Phase chịu ảnh hưởng:** Lịch quy định PHASE 2, tiếp nhận/đăng ký PHASE 3 và kiểm chứng thời gian/quyền PHASE 10. Không đổi trạng thái Phase.
+- **Còn mở:** Ngày cụ thể từng mùa, vòng đời hồ sơ/ngoại lệ và trường bắt buộc, chi tiết điều kiện, hợp đồng schema/API/lỗi/đồng thời. Chưa chọn cổng nộp công khai, cơ chế tải tệp hoặc thêm bước duyệt chung vào UC10.
+
+### D054 - Tự xét U21 và kiểm tra homegrown bằng căn cứ do nhân sự xác minh
+
+- **Trạng thái:** CONFIRMED bởi Nhóm trưởng ngày 2026-10-25 (Asia/Bangkok).
+- **Bằng chứng xác nhận:** Khi trả lời Q54 đã gộp, Nhóm trưởng chọn phương án A: “Tôi chọn A.”, xác nhận gói chính sách được đề xuất.
+- **Nguồn:** O01/O07/O09/O12; QĐ1.2-QĐ1.4/QĐ6.2, UC10/UC11; D024/D033/D052.
+- **Tham số mùa:** Bắt buộc có ngày sinh giới hạn U21 và khoảng tuổi đào tạo đủ điều kiện homegrown trong quy định trình duyệt. Không điền phần thiếu từ luật EPL ngoài nguồn. Giữ ngưỡng nguồn ít nhất ba mùa hoặc 36 tháng làm mặc định; thay đổi theo D052. Giá trị thực tế từng mùa phải nhập và duyệt trong cấu hình, không tự ngầm định.
+- **U21:** Tự xác định đủ điều kiện khi ngày sinh bằng hoặc sau ngày giới hạn của mùa. So sánh ngày lịch thay vì tuổi hiện tại; thiếu ngày sinh thì chưa đủ căn cứ kết luận.
+- **Homegrown:** Nhân viên đăng ký kiểm tra tài liệu và ghi nhận căn cứ theo số mùa hoặc số tháng đạt điều kiện, kết luận, người kiểm tra, thời điểm và phiên bản quy định. Căn cứ phải chứng minh đáp ứng khoảng tuổi và yêu cầu liên đoàn Anh/Wales; không dùng quốc tịch thay thế.
+- **Thiếu căn cứ:** Không đánh dấu đạt homegrown. Người lập có thể chọn xử lý theo nhóm không đạt homegrown nếu đáp ứng hạn mức và mọi điều kiện khác; thiếu căn cứ homegrown không tự từ chối mọi đăng ký.
+- **Thuộc tính độc lập và phạm vi:** U21 và homegrown độc lập, không suy từ quốc tịch hoặc suy ra lẫn nhau. Phiên bản đầu không tự cộng toàn bộ lịch sử đào tạo qua nhiều CLB, xử lý trùng thời gian hoặc quy đổi mùa/tháng. Căn cứ vẫn nội bộ theo quyền xem đã chốt.
+- **Phương án/cơ sở:** Tự xét U21 và nhân sự xác minh homegrown so với tự tính homegrown từ lịch sử đào tạo chi tiết. Nhóm trưởng chọn kiểm tra có truy vết phù hợp SE104, chấp nhận phụ thuộc chất lượng kiểm tra và không tự chứng minh toàn bộ lịch sử đào tạo.
+- **Bản ghi:** [ADR 0011](../../../docs/adr/0011-registration-windows-and-receipt-exceptions.md#u21-assessment-and-homegrown-verification); [glossary](../GLOSSARY.md#bổ-sung-context-v2).
+- **Phase chịu ảnh hưởng:** Cấu hình quy định PHASE 2, điều kiện đăng ký PHASE 3, kiểm tra tham gia PHASE 5 và kiểm chứng biên/căn cứ PHASE 10. Không đổi trạng thái Phase.
+- **Còn mở:** Giá trị tham số mùa cụ thể, trường/định dạng căn cứ bắt buộc, kiểm tra trường, vòng đời và hợp đồng kỹ thuật. Chưa chọn công nghệ tải tệp, dịch vụ kiểm tra ngoài hoặc vai trò duyệt bổ sung.
+
+### D055 - Luồng hồ sơ CLB và đăng ký cầu thủ theo phiên bản
+
+- **Trạng thái:** CONFIRMED bởi Nhóm trưởng ngày 2026-10-25 (Asia/Bangkok).
+- **Bằng chứng xác nhận:** Khi trả lời Q55 đã gộp, Nhóm trưởng chọn phương án A: “tôi chọn A.”, xác nhận gói chính sách được đề xuất.
+- **Luồng CLB:** Nháp -> Đã tiếp nhận -> Chờ phê duyệt -> Đã duyệt hoặc Từ chối. Nhân viên đăng ký chuẩn bị/rà soát; Người quản lý mùa giải có thẩm quyền duyệt theo UC08/D005.
+- **Nguồn:** O02/O08/O09/O12; UC08/UC10/UC11; D005/D052-D054.
+- **Luồng cầu thủ:** Nháp -> Đã tiếp nhận -> Hợp lệ. Nhân viên đăng ký xác nhận hợp lệ sau kiểm tra UC11 theo UC10; không thêm bước Người quản lý mùa giải duyệt.
+- **Bổ sung/phiên bản:** Hồ sơ đã tiếp nhận hoặc hồ sơ CLB chờ duyệt có thể được trả về Cần bổ sung kèm lý do. Bổ sung tạo phiên bản mới để tiếp nhận/kiểm tra lại theo D053. Nội dung CLB đã trình duyệt là bất biến; muốn sửa phải rút về hoặc được trả bổ sung, rồi trình bản mới.
+- **Hủy/nộp lại:** Cho hủy trước khi CLB được duyệt hoặc đăng ký cầu thủ được xác nhận hợp lệ, giữ lý do/lịch sử. Bản từ chối/hủy không được sửa thành đã duyệt; lượt xử lý mới liên kết lịch sử. Giữ một hồ sơ CLB-mùa chứa các phiên bản/lượt, không nhiều hồ sơ tham gia độc lập cho cùng CLB-mùa.
+- **Phụ thuộc:** Được chuẩn bị/kiểm tra danh sách cầu thủ trong lúc chờ duyệt CLB, nhưng chỉ xác nhận đăng ký cầu thủ hợp lệ sau khi hồ sơ tham gia CLB được duyệt. Duyệt CLB không tự làm mọi đăng ký cầu thủ hợp lệ; UC10 vẫn phải kiểm tra/xác nhận.
+- **Ranh giới thời gian:** Xác nhận hợp lệ khác với hiệu lực thi đấu, kết thúc đăng ký và chuyển CLB, các nội dung này còn cần chốt.
+- **Phương án/cơ sở:** Lưu việc đăng ký cầu thủ chưa hoàn chỉnh bằng trạng thái/phiên bản so với chỉ lưu đăng ký đạt kiểm tra, để nội dung chưa đạt trên màn hình. Nhóm trưởng chọn bổ sung/phối hợp có truy vết, chấp nhận thêm quản lý vòng đời/phiên bản. Cả hai phương án giữ luồng CLB và khác biệt thẩm quyền UC08/UC10.
+- **Bản ghi:** [ADR 0011](../../../docs/adr/0011-registration-windows-and-receipt-exceptions.md#club-and-player-registration-workflows); [glossary](../GLOSSARY.md#bổ-sung-context-v2).
+- **Phase chịu ảnh hưởng:** Luồng hồ sơ/đăng ký PHASE 3, tích hợp CLB hợp lệ khi lập lịch PHASE 4, kiểm tra tham gia PHASE 5 và kiểm chứng luồng PHASE 10. Không đổi trạng thái Phase.
+- **Còn mở:** D056 bên dưới chốt quy tắc cơ bản về hiệu lực thi đấu/kết thúc/chuyển CLB. Chi tiết thao tác hủy/rút, trường bắt buộc, hợp đồng enum/API/lỗi và đồng thời. Tên trạng thái nghiệp vụ chưa chọn mã enum kỹ thuật.
+
+### D056 - Khoảng hiệu lực thi đấu và chuyển CLB nhất quán
+
+- **Trạng thái:** CONFIRMED bởi Nhóm trưởng ngày 2026-10-25 (Asia/Bangkok).
+- **Bằng chứng xác nhận:** Khi trả lời Q56 đã gộp, Nhóm trưởng chọn phương án A: “Tôi chọn A.”, xác nhận gói chính sách được đề xuất.
+- **Nguồn:** O02/O08/O09/O12; QĐ1.5, UC10/UC11; D024/D053-D055.
+- **Khoảng hiệu lực:** Đăng ký hợp lệ có mốc bắt đầu hiệu lực thi đấu và khoảng nửa kín [bắt đầu, kết thúc). Có thể chưa xác định mốc kết thúc cho tới khi được kết thúc hợp lệ. Thao tác bắt đầu/kết thúc thông thường có hiệu lực khi ghi nhận thành công hoặc ở tương lai, không trước lúc ghi nhận; sai lịch sử cần quy trình hiệu chỉnh riêng.
+- **Độc quyền:** Từ chối khoảng đăng ký đã xác nhận chồng lấn cho cùng cầu thủ và giải, gồm đăng ký bắt đầu trong tương lai và khác mùa. Cho phép hai khoảng nối tiếp tại cùng mốc kết thúc/bắt đầu.
+- **Chuyển CLB:** Trong UC10, kết thúc đăng ký CLB cũ và bắt đầu đăng ký CLB mới tại cùng mốc bằng một thao tác nhất quán. Chỉ ghi nhận cả hai khi đăng ký mới đạt mọi kiểm tra; thất bại giữ nguyên đăng ký cũ.
+- **Thẩm quyền/kiểm tra:** Nhân viên đăng ký phải có quyền đối với đăng ký/mùa bị ảnh hưởng, kèm lý do và lịch sử. Chuyển CLB vẫn đáp ứng hạn/ngoại lệ D053, điều kiện D054, hạn mức và mọi kiểm tra khác; không có quyền bỏ qua.
+- **Lịch sử:** Kết thúc hoặc chuyển CLB không tự xóa lần ra sân, bàn thắng hoặc thống kê trước đó.
+- **Phương án/cơ sở:** Chuyển đăng ký theo cặp nhất quán so với kết thúc cũ và tạo mới độc lập. Cả hai phương án dùng hiệu lực theo khoảng. Nhóm trưởng chọn tránh mất đăng ký cũ ngoài ý muốn khi bản mới thất bại, chấp nhận phối hợp và kiểm tra khoảng tương lai.
+- **Bản ghi:** [ADR 0011](../../../docs/adr/0011-registration-windows-and-receipt-exceptions.md#playing-effectivity-and-club-transfers); [glossary](../GLOSSARY.md#bổ-sung-context-v2).
+- **Phase chịu ảnh hưởng:** Đăng ký/chuyển CLB PHASE 3, điều kiện ra sân PHASE 5, lịch sử PHASE 6/PHASE 7 và kiểm chứng chồng lấn/đồng thời PHASE 10. Không đổi trạng thái Phase.
+- **Còn mở:** D057 bên dưới chốt chính sách hiệu chỉnh đăng ký lịch sử. Tác động đóng mùa, độ chính xác trường/thời gian, sửa/hủy kế hoạch tương lai, xét hạn mức qua các khoảng đã lên kế hoạch và hợp đồng kỹ thuật. Chưa chọn phân hệ chuyển nhượng tài chính, dịch vụ ngoài hoặc cơ chế CSDL.
+
+### D057 - Hiệu chỉnh đăng ký đã hợp lệ qua phê duyệt độc lập
+
+- **Trạng thái:** CONFIRMED bởi Nhóm trưởng ngày 2026-10-25 (Asia/Bangkok).
+- **Bằng chứng xác nhận:** Khi trả lời Q57 đã gộp, Nhóm trưởng chọn phương án A: “Tôi chọn A.”, phê duyệt rõ phần bổ sung v2 này cho UC10.
+- **Nguồn:** O02/O08/O09/O12; UC10/UC11/UC19; D036/D055/D056.
+- **Phạm vi:** Sửa sai nội dung/căn cứ đã xác nhận, kết luận phân loại hoặc khoảng hiệu lực ghi nhận sai, gồm hiệu chỉnh lịch sử, cần đề xuất và phê duyệt độc lập. Không thêm bước duyệt cho xác nhận hợp lệ ban đầu theo UC10 hoặc kết thúc/chuyển CLB thông thường.
+- **Trách nhiệm:** Nhân viên đăng ký rà soát/lập đề xuất kèm lý do, căn cứ, giá trị trước/sau và ảnh hưởng liên quan. Người quản lý mùa giải có thẩm quyền khác người chuẩn bị/chỉnh sửa đề xuất phê duyệt, trả bổ sung hoặc từ chối.
+- **Chờ rà soát:** Giữ quyết định chính thức hiện có và ghi nhận việc cần rà soát. Nghiệp vụ mới vẫn kiểm tra theo dữ liệu gốc đã sửa theo D036, không dùng kết quả lỗi thời.
+- **Kiểm tra:** Kiểm tra lại điều kiện, hạn mức và chồng lấn cho khoảng bị ảnh hưởng theo quy định tương ứng. Hiệu chỉnh không miễn kiểm tra hoặc hợp thức hóa vi phạm.
+- **Quyết định cũ sai:** Nếu không thể giữ đăng ký hợp lệ, đề xuất phải nêu cách xử lý, chẳng hạn kết thúc hiệu lực hoặc ghi nhận quyết định trước đó là sai. Không xóa dấu vết đăng ký từng tồn tại.
+- **Ảnh hưởng trận:** Xác định biên bản/kết quả cần rà soát riêng. Duyệt hiệu chỉnh đăng ký không tự sửa kết quả, xử thua hoặc đổi thống kê; sửa kết quả chính thức vẫn qua UC19.
+- **Phương án/cơ sở:** Người quản lý mùa giải duyệt độc lập so với Nhân viên đăng ký tự áp dụng, cùng yêu cầu căn cứ/kiểm tra tác động/lịch sử. Nhóm trưởng chọn kiểm soát độc lập dữ liệu đã dùng làm căn cứ thi đấu, chấp nhận thêm luồng hiệu chỉnh và phối hợp sửa kết quả.
+- **Bổ sung so với nguồn:** Giữ nguyên văn bản UC10 v1. Chính sách v2 được xác nhận này thêm phê duyệt riêng cho hiệu chỉnh đăng ký đã hợp lệ, không khẳng định v1 đã yêu cầu.
+- **Bản ghi:** [ADR 0011](../../../docs/adr/0011-registration-windows-and-receipt-exceptions.md#correction-of-validated-registrations); [glossary](../GLOSSARY.md#bổ-sung-context-v2).
+- **Phase chịu ảnh hưởng:** Hiệu chỉnh đăng ký PHASE 3, rà soát tác động trận PHASE 5, đầu ra lịch sử PHASE 6/PHASE 7 và kiểm chứng toàn vẹn PHASE 10. Không đổi trạng thái Phase.
+- **Còn mở:** Trường hiệu chỉnh/tác động chi tiết, biểu diễn quyết định cũ sai, hiển thị lịch sử công khai, hợp đồng vòng đời/lỗi và giao dịch/đồng thời. Chưa chọn kỷ luật tự động, xử thua hoặc UC mới.
+
+### D058 - Mã nghiệp vụ ổn định, rà soát hồ sơ trùng và số áo duy nhất theo thời gian
+
+- **Trạng thái:** CONFIRMED bởi Nhóm trưởng ngày 2026-10-25 (Asia/Bangkok).
+- **Bằng chứng xác nhận:** Khi trả lời Q58 đã gộp, Nhóm trưởng chọn phương án A: “Tôi chọn A.”, xác nhận gói chính sách được đề xuất.
+- **Nguồn:** O09/O12; UC05/UC07/UC09/UC10/UC12, BM1; D035/D055-D057.
+- **Định danh:** Mùa, CLB, sân và cầu thủ có mã nghiệp vụ duy nhất, ổn định, không tái sử dụng trong từng nhóm đối tượng. Tên, tên viết tắt và ngày sinh không thay mã định danh. Từ chối mã trùng.
+- **Cầu thủ nghi trùng:** Trùng họ tên đã chuẩn hóa, ngày sinh và quốc tịch tạo cảnh báo để nhân sự kiểm tra, không tự gộp hoặc dùng làm ràng buộc duy nhất cứng. Dùng hồ sơ cũ nếu cùng người; người khác nhau được có hồ sơ riêng sau xác nhận kèm lý do được ghi nhận.
+- **CLB/sân:** Tên trùng tạo cảnh báo; cùng tên không tự xác định cùng đối tượng.
+- **Số áo:** Bắt buộc là số nguyên 1-99 khi xác nhận đăng ký hợp lệ. Trong cùng CLB-mùa, các đăng ký đã xác nhận có khoảng hiệu lực thi đấu chồng lấn không được trùng số, gồm U21 và đăng ký tương lai. Cho tái sử dụng sau khi khoảng cũ kết thúc. Khoảng 1-99 là lựa chọn v2 rõ ràng, không phải luật PDF.
+- **Lịch sử/phạm vi:** Đổi tên/số hiện tại không tự viết lại lịch sử đã ghi nhận. Không tự gộp hồ sơ nghi trùng hoặc chuyển tham chiếu. Công cụ tự gộp hồ sơ nằm ngoài phạm vi phiên bản đầu.
+- **Phương án/cơ sở:** Mã ổn định và cảnh báo trùng được rà soát so với chặn cứng bộ tên/ngày sinh/quốc tịch cầu thủ trùng; cả hai dùng cùng quy tắc mã/số áo. Nhóm trưởng chọn hỗ trợ người khác nhau trùng thuộc tính mà không thu thêm giấy tờ chỉ để xử lý trùng, chấp nhận xác minh của nhân sự và rủi ro tạo trùng còn lại.
+- **Bản ghi:** [ADR 0009](../../../docs/adr/0009-stable-identities-and-selective-business-snapshots.md#business-codes-and-suspected-duplicates); [ADR 0011](../../../docs/adr/0011-registration-windows-and-receipt-exceptions.md#shirt-number-constraints).
+- **Phase chịu ảnh hưởng:** Định danh/hồ sơ gốc PHASE 2, đăng ký PHASE 3, tích hợp ra sân/lịch sử PHASE 5 và kiểm chứng trùng/đồng thời PHASE 10. Không đổi trạng thái Phase.
+- **Còn mở:** Cách sinh/định dạng mã và kiểu khóa CSDL, chuẩn hóa, trường chi tiết và giao diện rà soát trùng, hợp đồng bản chụp lịch sử và thực thi đồng thời kỹ thuật.
+
+### D059 - Dữ liệu đăng ký bắt buộc và mốc chụp thông tin chính thức
+
+- **Trạng thái:** CONFIRMED bởi Nhóm trưởng ngày 2026-10-25 (Asia/Bangkok).
+- **Bằng chứng xác nhận:** Khi trả lời Q59 đã gộp, Nhóm trưởng chọn phương án A: “Tôi chọn phương án A.”, xác nhận gói trường và bản chụp.
+- **Nguồn:** O04/O09/O12; BM1/BM4, UC05/UC07-UC12; D032-D036/D054-D058.
+- **Trường bắt buộc:** Mùa: mã, tên, ngày bắt đầu/kết thúc, quy định quản lý riêng. Hồ sơ gốc CLB: mã, tên, tên viết tắt. Hồ sơ sân: mã, tên. Hồ sơ cầu thủ: mã, họ tên, ngày sinh, quốc tịch, vị trí.
+- **Trình hồ sơ CLB:** Cần CLB, mùa, huấn luyện viên, sân nhà, tên/điện thoại/địa chỉ liên hệ đại diện và ít nhất một cầu thủ đề nghị được kiểm tra ở mức chuẩn bị. Không yêu cầu đăng ký đang có hiệu lực thi đấu trước khi duyệt CLB.
+- **Xác nhận cầu thủ:** Cần cầu thủ, CLB, mùa, số áo, kết quả phân loại U21/homegrown, mốc bắt đầu hiệu lực và căn cứ kiểm tra tương ứng. Nháp có thể thiếu trường nghiệp vụ; chặn chuyển bước tại mốc cần hoàn chỉnh.
+- **Căn cứ homegrown:** Kết luận đạt cần nhánh số mùa/tháng, giá trị đạt điều kiện, tóm tắt và tham chiếu căn cứ. Hệ thống giữ người kiểm tra/thời điểm/phiên bản quy định. Không bắt buộc tải tệp. Ghi chú tùy chọn; không thêm giấy tờ định danh cá nhân.
+- **Bản chụp CLB:** Khi duyệt hồ sơ CLB giữ tên/tên viết tắt CLB, huấn luyện viên, sân nhà, thông tin đại diện và danh sách đề nghị của phiên bản được duyệt.
+- **Bản chụp cầu thủ:** Khi xác nhận hợp lệ giữ tên, ngày sinh, quốc tịch, vị trí, số áo, phân loại và căn cứ quy định/xác minh. Hiệu chỉnh được duyệt tạo bản kế tiếp, giữ bản cũ.
+- **Tra cứu mùa:** Dùng thông tin đã ghi nhận cho mùa, gồm hiệu chỉnh được duyệt, không tự lấy mọi giá trị gốc mới nhất. Ranh giới công khai/nội bộ D032/D033 vẫn áp dụng.
+- **Phương án/cơ sở:** Hoàn chỉnh theo mốc và chụp thông tin mô tả so với cùng trường bắt buộc nhưng chỉ chụp tham chiếu/kết luận, tra cứu mô tả hiện tại. Nhóm trưởng chọn tái hiện hồ sơ đã duyệt và tra cứu mùa ổn định, chấp nhận lặp chọn lọc và tách thông tin hiện tại khỏi thông tin theo mùa.
+- **Bản ghi:** [ADR 0009](../../../docs/adr/0009-stable-identities-and-selective-business-snapshots.md#registration-snapshot-fields-and-seasonal-lookup); [ADR 0011](../../../docs/adr/0011-registration-windows-and-receipt-exceptions.md#required-fields-at-registration-milestones).
+- **Phase chịu ảnh hưởng:** Trường hồ sơ gốc/mùa PHASE 2, tiếp nhận/bản chụp PHASE 3, tra cứu mùa PHASE 6 và kiểm chứng dữ liệu/lịch sử PHASE 10. Không đổi trạng thái Phase.
+- **Còn mở:** Kiểu/độ dài/định dạng và chuẩn hóa chi tiết, biểu diễn vị trí/quốc tịch, schema/tham chiếu bản chụp cụ thể, hợp đồng bản chụp lịch/biên bản và đồng thời triển khai. Chưa chọn công nghệ tải tệp hoặc thu giấy tờ định danh.
+
+### D060 - Tự sinh cặp đấu và hoàn thiện lịch nháp bằng nhập liệu
+
+- **Trạng thái:** CONFIRMED bởi Nhóm trưởng ngày 2026-10-25 (Asia/Bangkok).
+- **Bằng chứng xác nhận:** Khi trả lời Q60 đã gộp, Nhóm trưởng chọn phương án A: “Tôi chọn A.”.
+- **Nguồn:** O10/O12; QĐ2, UC13, TH-02; D005/D044.
+- **Phạm vi hỗ trợ:** Phiên bản đầu vòng tròn hai lượt với số CLB chẵn từ 4 đến 20, mặc định 20. Khoảng 4-20 là lựa chọn phạm vi v2 đã chốt. Báo rõ số lẻ, một lượt và thể thức khác chưa hỗ trợ thay vì sinh lịch sai.
+- **Đầu vào/sinh lịch:** Nhân viên lịch thi đấu chọn đúng số CLB theo cấu hình, tất cả có hồ sơ tham gia đã duyệt. Tự sinh đầy đủ vòng/cặp đấu, đảo sân nhà/sân khách giữa hai lượt: 2*(N-1) vòng và N*(N-1) trận; mặc định tạo 38 vòng, 380 trận.
+- **Hoàn thiện:** Nhân sự nhập ngày giờ; gợi ý sân nhà đã đăng ký. Thay sân vẫn chịu điều kiện phê duyệt của nguồn. Không yêu cầu tự động tối ưu toàn bộ lịch ngày giờ/phân sân.
+- **Nháp/phê duyệt:** Lưu nháp chưa hoàn chỉnh kèm chỉ rõ thiếu trường/xung đột; không công khai nháp. Chỉ trình toàn bộ lịch ban đầu khi đủ dữ liệu, đúng cấu trúc và đạt kiểm tra CLB/sân. Công bố cần phê duyệt theo D005; không duyệt riêng từng phần lịch ban đầu.
+- **Phương án/cơ sở:** Tự sinh cặp/vòng/sân nhà-khách và hoàn thiện thủ công so với tự phân cả ngày giờ/sân. Nhóm trưởng chọn tự động hóa hữu ích phù hợp SE104, chấp nhận nhân sự bố trí/xử lý xung đột thay vì dữ liệu khả dụng và bộ tối ưu.
+- **Bản ghi:** [ADR 0012](../../../docs/adr/0012-schedule-generation-scope-and-drafts.md).
+- **Phase chịu ảnh hưởng:** Cấu hình quy định hỗ trợ PHASE 2, sinh/nháp/duyệt lịch PHASE 4, tra cứu công bố PHASE 6 và kiểm chứng lịch PHASE 10. Không đổi trạng thái Phase.
+- **Còn mở:** D061 bên dưới chốt khoảng thi đấu/chiếm dụng sân dự kiến và đệm. D062 bên dưới chốt chính sách điều chỉnh/phiên bản/công bố và sinh lại. Hợp đồng bản chụp/schema/API/đồng thời. Không ngầm định 90 phút, thời gian đệm, thư viện thuật toán hoặc chỉ tiêu thời gian sinh lịch.
+
+### D061 - Khoảng kế hoạch theo mùa và kiểm tra xung đột lịch toàn hệ thống
+
+- **Trạng thái:** CONFIRMED bởi Nhóm trưởng ngày 2026-10-25 (Asia/Bangkok).
+- **Bằng chứng xác nhận:** Khi trả lời Q61 đã gộp, Nhóm trưởng chọn phương án A: “Tôi chọn A.”, xác nhận gói khoảng thời gian/xung đột.
+- **Nguồn:** O03/O07/O10/O12; QĐ2.4-QĐ2.6, UC13/UC14; D024/D044/D060.
+- **Tham số:** Bắt buộc có thời lượng trận dự kiến, đệm chuẩn bị sân trước trận và đệm giải phóng sân sau trận được duyệt theo mùa, đơn vị phút. Thời lượng dương; đệm không âm. Không ngầm định 90 phút hoặc giá trị đệm. Khóa cả ba từ khi duyệt lịch ban đầu trong phạm vi phiên bản đầu.
+- **Khoảng:** CLB dùng [giờ theo lịch, giờ theo lịch + thời lượng dự kiến). Sân chiếm dụng [giờ theo lịch - đệm chuẩn bị, giờ kết thúc dự kiến + đệm giải phóng). Từ chối khoảng CLB hoặc sân chồng lấn; cho nối tiếp đúng biên.
+- **Phạm vi:** Kiểm tra cùng CLB/sân trên toàn hệ thống, gồm khác mùa. Kiểm tra nháp với chính nó và lịch đã duyệt; nháp hoặc đề nghị chờ không giữ chỗ.
+- **Phê duyệt/điều chỉnh:** Kiểm tra lại xung đột trước khi duyệt thành công, gồm yêu cầu đồng thời. Điều chỉnh thay phân bổ cũ của chính trận, không xung đột với bản thân. Đổi ngày giờ/sân vẫn theo UC14.
+- **Ranh giới vận hành:** Khoảng phục vụ kế hoạch; giờ bắt đầu thực tế vẫn theo D047/D048 và không tự sửa lịch đã duyệt. Phiên bản đầu không thêm ràng buộc nghỉ tối thiểu giữa trận hoặc thời gian di chuyển CLB.
+- **Phương án/cơ sở:** Tính khoảng từ tham số chung theo mùa so với nhập khoảng thi đấu/chiếm dụng riêng từng trận. Nhóm trưởng chọn giảm nhập liệu và kiểm tra nhất quán ở quy mô SE104, chấp nhận giảm linh hoạt theo sân/trận.
+- **Bản ghi:** [ADR 0012](../../../docs/adr/0012-schedule-generation-scope-and-drafts.md#planning-intervals-and-conflict-checks); [glossary](../GLOSSARY.md#bổ-sung-context-v2).
+- **Phase chịu ảnh hưởng:** Tham số quy định PHASE 2, lập/điều chỉnh lịch PHASE 4, tra cứu lịch PHASE 6 và kiểm chứng biên/đồng thời PHASE 10. Không đổi trạng thái Phase.
+- **Còn mở:** Giá trị phút cụ thể từng mùa, hợp đồng bản chụp/schema/API và đồng thời kỹ thuật. D062 bên dưới chốt chính sách điều chỉnh/công bố/sinh lại. Không coi khoảng kế hoạch là thời lượng thực tế của trận.
+
+### D062 - Duyệt lịch đồng thời công bố và điều chỉnh theo phiên bản
+
+- **Trạng thái:** CONFIRMED bởi Nhóm trưởng ngày 2026-10-25 (Asia/Bangkok).
+- **Bằng chứng xác nhận:** Khi trả lời Q62 đã gộp, Nhóm trưởng chọn phương án A: “Tôi chọn A.”, xác nhận gói vòng đời/công bố.
+- **Nguồn:** O08/O09/O10/O12; UC13-UC15; D005/D019/D044/D060/D061.
+- **Vòng đời ban đầu:** Nhân viên lịch thi đấu soạn và trình lịch đầy đủ; người có thẩm quyền khác người chuẩn bị/chỉnh sửa duyệt. Duyệt thành công công bố ngay, không thêm bước công bố riêng.
+- **Bản đang chờ:** Nội dung đã trình là bất biến. Người lập được rút trước quyết định; người duyệt được trả bổ sung hoặc từ chối kèm lý do. Sửa/trình lại tạo phiên bản mới và giữ lịch sử.
+- **Sinh lại:** Chỉ sinh lại khi lịch ban đầu chưa duyệt và đang nháp, có xác nhận thay thế và dấu vết bản trước. Sau công bố không sinh lại toàn bộ hoặc đổi cặp đấu, vòng, vai trò sân nhà/sân khách.
+- **Điều chỉnh:** Đề xuất đổi ngày giờ hoặc sân kèm lý do và giá trị trước/sau. Một đề xuất có thể chứa nhiều trận cùng mùa; duyệt/áp dụng toàn bộ hoặc không phần nào. Lịch cũ vẫn công khai khi chờ duyệt.
+- **Điều kiện trận:** Chỉ điều chỉnh trận chưa bắt đầu. Nếu quá giờ theo lịch, người duyệt phải có căn cứ xác nhận trận chưa diễn ra; chỉ riêng quá giờ theo lịch không chứng minh đã hoặc chưa thi đấu.
+- **Kiểm tra cuối/công bố:** Khi duyệt điều chỉnh kiểm tra lại trạng thái trận, quyền, phiên bản lịch và xung đột D061. Dữ liệu nền đã đổi thì yêu cầu rà soát/trình lại. Duyệt thành công cập nhật lịch công khai và giữ lịch sử. Giữ thẩm quyền/tách người theo D005/D019, gồm người duyệt điều chỉnh được ủy quyền.
+- **Phương án/cơ sở:** Duyệt công bố ngay so với trạng thái đã duyệt chưa công bố và thao tác công bố riêng của Người quản lý mùa giải, cùng các bảo vệ luồng khác. Nhóm trưởng chọn ít thao tác và không lệch giữa bản đã duyệt/công khai, chấp nhận người duyệt phải sẵn sàng công bố ngay.
+- **Bản ghi:** [ADR 0012](../../../docs/adr/0012-schedule-generation-scope-and-drafts.md#schedule-lifecycle-and-publication).
+- **Phase chịu ảnh hưởng:** Luồng lịch/điều chỉnh PHASE 4, công bố/lịch sử PHASE 6 và kiểm chứng luồng/đồng thời PHASE 10. Không đổi trạng thái Phase.
+- **Còn mở:** Mã thao tác/trạng thái cụ thể, trường căn cứ, ghi nhận trạng thái trận, chi tiết bản chụp/hiển thị và hợp đồng giao dịch/API/đồng thời. Chưa chọn dịch vụ thông báo hoặc bộ lập lịch công bố tự động.
+
+### D063 - Tách vòng đời trận, phiên bản biên bản và kết quả chính thức
+
+- **Trạng thái:** CONFIRMED bởi Nhóm trưởng ngày 2026-10-25 (Asia/Bangkok).
+- **Bằng chứng xác nhận:** Khi trả lời Q63 đã gộp, Nhóm trưởng chọn phương án A: “Tôi chọn A.”, xác nhận gói vòng đời.
+- **Nguồn:** O08/O09/O12; UC16-UC20; D005/D047-D049/D062.
+- **Nhóm trạng thái:** Trận: Chưa bắt đầu -> Đang diễn ra -> Đã kết thúc. Phiên bản biên bản: Nháp -> Chờ xác nhận -> Đã xác nhận, có trả bổ sung hoặc rút trước quyết định. Kết quả: Chưa chính thức -> Chính thức, đề xuất hiệu chỉnh quản lý riêng.
+- **Giờ thực tế:** Nhân viên kết quả ghi giờ bắt đầu/kết thúc thực tế trong biên bản. Bắt buộc có cả hai trước khi trình; kết thúc phải sau bắt đầu. Giờ theo lịch hoặc thời lượng dự kiến không tự xác lập việc kết thúc. Có thể nhập cả hai sau trận, không yêu cầu thao tác trực tiếp lúc bắt đầu/kết thúc.
+- **Quản lý phiên bản:** Mỗi trận một hồ sơ biên bản với nhiều phiên bản lịch sử, tối đa một bản chờ xác nhận hoặc hiệu chỉnh tại một thời điểm. Nội dung đã trình là bất biến; muốn sửa phải rút/được trả và trình bản mới.
+- **Xác nhận ban đầu:** UC18 cần trận đã kết thúc và biên bản đầy đủ đạt kiểm tra, theo thẩm quyền/tách người đã chốt. Lưu biên bản hoặc nhập tỷ số không làm kết quả chính thức.
+- **Hiệu chỉnh/nhất quán:** Kết quả chính thức hiện hành vẫn công khai và dùng tính thống kê khi UC19 chờ duyệt. Trả/từ chối/rút đề xuất không làm mất hiệu lực kết quả đó. Xác nhận/hiệu chỉnh thành công cập nhật nhất quán kết quả, thống kê và lịch sử theo UC18-UC20; thất bại không để cập nhật chính thức/thống kê dở.
+- **Phương án/cơ sở:** Các trạng thái nghiệp vụ liên kết riêng so với chuỗi trạng thái chung cho trận/kết quả. Nhóm trưởng chọn biểu diễn đúng kết thúc, bản đang chờ và kết quả chính thức vẫn hiệu lực, chấp nhận kiểm tra quan hệ giữa nhiều nhóm trạng thái.
+- **Bản ghi:** [ADR 0013](../../../docs/adr/0013-match-report-and-official-result-lifecycles.md); [glossary](../GLOSSARY.md#bổ-sung-context-v2).
+- **Phase chịu ảnh hưởng:** Luồng biên bản/kết quả PHASE 5, kiểm tra trạng thái trận khi điều chỉnh PHASE 4, đầu ra chính thức PHASE 6/PHASE 7 và kiểm chứng vòng đời/đồng thời PHASE 10. Không đổi trạng thái Phase.
+- **Còn mở:** Kiểm tra ra sân/sự kiện, độ chính xác giờ thực tế, chuyển trạng thái/lỗi và trường căn cứ chi tiết, bản chụp và hợp đồng giao dịch/API. Trạng thái nghiệp vụ nội bộ này không chọn hoặc phê duyệt thiết kế Live Score được hoãn.
+
+### D064 - Xét ra sân tại giờ bắt đầu và xác định thủ môn theo biên bản
+
+- **Trạng thái:** CONFIRMED bởi Nhóm trưởng ngày 2026-10-25 (Asia/Bangkok).
+- **Bằng chứng xác nhận:** Khi trả lời Q64 đã gộp, Nhóm trưởng chọn phương án A: “Tôi chọn A.”, xác nhận gói ra sân/thủ môn.
+- **Nguồn:** O02/O06/O09/O12; QĐ3.2/QĐ5.7, BM3, UC16/UC18/UC20; D047/D048/D056.
+- **Mốc xét:** Mỗi cầu thủ ra sân cần đăng ký đã xác nhận hợp lệ đúng CLB-mùa, có khoảng hiệu lực thi đấu chứa giờ bắt đầu thực tế. Nhập biên bản muộn không lấy CLB hiện tại thay căn cứ lịch sử.
+- **Danh sách:** Mỗi đội có danh sách không rỗng. Cầu thủ xuất hiện tối đa một lần trong trận và thuộc một trong hai đội. Phiên bản đầu không thêm bắt buộc đủ mười một người, sơ đồ chiến thuật hoặc quản lý thay người.
+- **Số áo/vị trí:** Lấy số áo từ đăng ký áp dụng tại mốc xét. Ghi vị trí trong trận riêng, được khác vị trí hồ sơ.
+- **Kiểm tra thủ môn:** Trước trình/xác nhận, danh sách mỗi đội phải có đúng một thủ môn theo vị trí trong trận. Thiếu/nhiều thủ môn chặn trình/xác nhận tới khi sửa; không tự chọn một người hoặc bỏ qua thống kê.
+- **Giữ sạch lưới:** Với kết quả chính thức, đội không thủng lưới thì thủ môn được xác định theo biên bản nhận một trận giữ sạch lưới. Thay thủ môn vẫn ngoài phạm vi nguồn.
+- **Lịch sử:** Khi xác nhận giữ căn cứ đăng ký, tên, số áo và vị trí trong trận. Chuyển CLB/sửa hồ sơ sau đó không tự đổi biên bản; hiệu chỉnh chính thức vẫn qua UC19.
+- **Phương án/cơ sở:** Chỉ định thủ môn bằng vị trí trong trận so với suy từ vị trí hồ sơ đăng ký, cùng kiểm tra đúng một người. Nhóm trưởng chọn vai trò thực tế và lịch sử nhập muộn nhất quán, chấp nhận nhân sự nhập và giải quyết danh sách thiếu/mâu thuẫn.
+- **Bản ghi:** [ADR 0013](../../../docs/adr/0013-match-report-and-official-result-lifecycles.md#appearance-eligibility-and-goalkeeper-basis).
+- **Phase chịu ảnh hưởng:** Tích hợp lịch sử đăng ký PHASE 3, biên bản/giữ sạch lưới PHASE 5, đầu ra lịch sử PHASE 6/PHASE 7 và kiểm chứng thời gian/thủ môn PHASE 10. Không đổi trạng thái Phase.
+- **Còn mở:** D065 bên dưới chốt chính sách bàn thắng/thẻ/phút/trọng tài. Đồng giải Găng tay vàng, schema ra sân/bản chụp chi tiết và hợp đồng hiệu chỉnh/đồng thời. Chưa chọn phân hệ kỷ luật hoặc thay người.
+
+### D065 - Phút sự kiện có cấu trúc, kiểm tra tỷ số và tham chiếu chữ ký trọng tài
+
+- **Trạng thái:** CONFIRMED bởi Nhóm trưởng ngày 2026-10-25 (Asia/Bangkok).
+- **Bằng chứng xác nhận:** Khi trả lời Q65 đã gộp, Nhóm trưởng chọn phương án A: “tôi chọn A.”, xác nhận gói sự kiện/trọng tài.
+- **Nguồn:** O09/O12; BM3, QĐ3.3-QĐ3.5, UC16-UC19; D046-D049/D063/D064.
+- **Phút sự kiện:** Lưu phút chính nguyên 1-90 và phút bù giờ nguyên không âm; bù giờ dương chỉ đi với mốc 45 hoặc 90. Hiển thị 45+2 hoặc 90+5, không đổi 45+2 thành phút 47. Bù giờ hiệp một xếp trước phút 46.
+- **Phạm vi:** Đây là quy ước biên bản phiên bản đầu, không có sự kiện hiệp phụ/loạt luân lưu. Thời lượng kế hoạch D061 vẫn riêng.
+- **Sự kiện hợp lệ:** Cần cầu thủ thuộc danh sách ra sân, CLB đúng với cầu thủ, loại hợp lệ từ danh mục áp dụng cho trận và phút hợp lệ. Giữ loại mặc định nguồn, không tự thêm loại.
+- **Tỷ số:** Tính từ bàn thắng hợp lệ; phản lưới nhà cộng cho đội đối phương, không cộng bàn cá nhân. Tỷ số cuối được nhập phải khớp; không khớp chặn trình/xác nhận.
+- **Thẻ:** Ghi vàng/đỏ theo biên bản, không tự tạo treo giò, xử thua hoặc phân hệ kỷ luật.
+- **Căn cứ trọng tài:** Trước trình cần họ tên trọng tài, mã/tham chiếu biên bản gốc và xác nhận của người nhập đã đối chiếu chữ ký trên bản gốc. Giữ người xác nhận/thời điểm; người duyệt kiểm tra cùng biên bản.
+- **Lịch sử/tệp:** Giữ sự kiện/căn cứ trọng tài trong bản xác nhận; hiệu chỉnh qua UC19. Phiên bản đầu không yêu cầu ảnh chữ ký, tệp quét đính kèm hoặc chữ ký số. Đây là cách biểu diễn căn cứ chữ ký BM3 trong v2, không bỏ trường nguồn.
+- **Phương án/cơ sở:** Tham chiếu bản gốc và ghi nhận đối chiếu chữ ký so với bắt buộc đính kèm bản quét có chữ ký, cùng quy tắc sự kiện/tỷ số. Nhóm trưởng chọn truy vết không cần hạ tầng tệp/chữ ký, chấp nhận phụ thuộc nhân sự kiểm tra và khả năng truy xuất bản gốc.
+- **Bản ghi:** [ADR 0013](../../../docs/adr/0013-match-report-and-official-result-lifecycles.md#event-minutes-scores-and-referee-basis); [glossary](../GLOSSARY.md#bổ-sung-context-v2).
+- **Phase chịu ảnh hưởng:** Kiểm tra biên bản PHASE 5, đầu ra chính thức/lịch sử PHASE 6/PHASE 7 và kiểm chứng biên/căn cứ PHASE 10. Không đổi trạng thái Phase.
+- **Còn mở:** Schema/độ dài sự kiện/trọng tài cụ thể, định dạng tham chiếu nguồn, phản hồi sự kiện nghi trùng, hợp đồng bản chụp/hiển thị/API và đồng thời chi tiết. Chưa chọn công nghệ tải tệp hoặc chữ ký số.
+
+### D066 - Đồng hạng trên bảng xếp hạng và đồng giải cá nhân
+
+- **Trạng thái:** CONFIRMED bởi Nhóm trưởng ngày 2026-10-25 (Asia/Bangkok).
+- **Bằng chứng xác nhận:** Khi trả lời Q66 đã gộp, Nhóm trưởng chọn phương án A: “Tôi chọn A.”.
+- **Nguồn:** O05/O06/O12; QĐ5.3-QĐ5.5/QĐ5.7, BM5.1-BM5.3; D045/D064.
+- **Hạng trong mùa:** CLB bằng toàn bộ tiêu chí chính đang áp dụng cùng hạng theo kiểu 1, 2, 2, 4. Không dùng tiêu chí đối đầu dành cho phân định cuối mùa trong mùa. Sắp theo mã CLB ổn định trong nhóm hòa chỉ để hiển thị, không tạo lợi thế hoặc hạng thể thao riêng.
+- **Vị trí quan trọng cuối mùa:** Đánh dấu nhóm hòa ảnh hưởng chức vô địch, suất dự giải hoặc xuống hạng cần phân định bằng tiêu chí phụ/playoff của nguồn. Không phân định kết quả thể thao bằng tên/mã CLB. Luồng phân định chi tiết vẫn mở.
+- **Giải cá nhân:** Giữ đồng Vua phá lưới theo nguồn, không tự thêm kiến tạo/số trận/phút thi đấu. Thủ môn cùng số trận giữ sạch lưới cao nhất đồng Găng tay vàng, không thêm tỷ lệ, số trận ra sân hoặc bàn thua làm tiêu chí phụ.
+- **Thành tích dương:** Chỉ xác định người nhận Vua phá lưới khi có ít nhất một bàn cá nhân hợp lệ, Găng tay vàng khi có ít nhất một trận giữ sạch lưới. Nếu chưa có thì hiển thị chưa có người đạt, không trao đồng giải toàn bộ người có số 0.
+- **Tính lại/chốt:** Hiệu chỉnh kết quả chính thức hợp lệ cập nhật nhóm đồng hạng và dẫn đầu giải cá nhân. Danh hiệu cuối cùng được xác nhận qua tổng kết mùa.
+- **Phương án/cơ sở:** Đồng Găng tay vàng so với thêm tiêu chí ít trận ra sân hơn rồi đồng giải nếu vẫn hòa. Cả hai giữ chính sách CLB/Vua phá lưới đã đề xuất. Nhóm trưởng chọn công bằng thành tích bằng nhau, rõ ràng và không thêm tiêu chí ngoài nguồn, chấp nhận nhiều người nhận Găng tay vàng và hạng trong mùa không riêng từng CLB.
+- **Bản ghi:** [ADR 0014](../../../docs/adr/0014-shared-ranks-and-individual-awards.md); [glossary](../GLOSSARY.md#bổ-sung-context-v2).
+- **Phase chịu ảnh hưởng:** Xếp hạng/thống kê PHASE 5, tra cứu công khai PHASE 6, báo cáo/tổng kết PHASE 7 và kiểm chứng hòa/giải thưởng PHASE 10. Không đổi trạng thái Phase.
+- **Còn mở:** Tính đối đầu/nhóm nhiều CLB cụ thể, tham số suất dự giải/xuống hạng, ghi nhận playoff, duyệt tổng kết và hợp đồng kỹ thuật. D066 không chốt các lựa chọn kết thúc mùa còn lại.
+
 ## Cải tiến v2 chờ quyết định
 
 Xem [danh sách quyết định chờ xử lý](pending-decisions.md). V2-EXT-01 ghi nhận cải tiến Live Match Tracking / Live Score do Nhóm trưởng yêu cầu và ranh giới dữ liệu tham khảo đã chỉ định. Hoãn phỏng vấn thiết kế tới khi xong các nhóm quyết định nền tảng hiện tại, và phải chủ động đưa ra trước tổng kết/đề xuất phê duyệt gói v2. Đây không phải D037, không phải Oxx đã giải quyết và chưa phải thiết kế triển khai được duyệt.
 
 ## Độ bao phủ quyết định
 
-Cả 16 vấn đề nguồn vẫn **OPEN** cho đến khi các quyết định thành phần được xác nhận. O12 được chốt một phần qua D001, D002, D007, D011, D022, D024, D030, D031 và D034-D036. O03 được chốt một phần qua chính sách múi giờ D024; khoảng thời gian trận/sân và quy tắc biên vẫn còn mở. O04 được chốt một phần qua D032-D034, gồm ngoại lệ rõ cho ngày sinh cầu thủ và xem nội bộ theo trách nhiệm; phạm vi trường/tệp/nhật ký chi tiết vẫn còn mở. O08 được chốt một phần qua D003-D023, D025-D031 và D033-D034. O07 được chốt một phần qua quy tắc tách người duyệt quy định tại D005 và mô hình/trách nhiệm/giới hạn thẩm quyền/ma trận người nhận/chính sách chấm dứt/thu hồi/phiên/thời gian ủy quyền D013-D023 và D025-D030; hiệu lực quy định và chính sách thay đổi trong mùa vẫn còn mở. O09 được chốt một phần qua chính sách sửa sai chung D036; trường bắt buộc, định danh và quy tắc hiệu chỉnh chi tiết vẫn mở. Chưa vấn đề nào RESOLVED. O01-O02, O05-O06, O10-O11 và O13-O16 chưa có nội dung giải quyết được xác nhận trong v2. Yêu cầu Live Score mới được ghi chờ riêng tại V2-EXT-01, không tính là giải quyết vấn đề v1. [Sổ v1](../open-decisions.md) được giữ làm mốc nguồn; phần bổ sung này ghi các xác nhận phát sinh sau đó.
+Cả 16 vấn đề nguồn vẫn **OPEN** cho đến khi các quyết định thành phần được xác nhận. O12 được chốt một phần qua D001, D002, D007, D011, D022, D024, D030, D031, D034-D036 và D042-D066. O03 đã có chính sách xác nhận qua múi giờ D024 và khoảng CLB/sân, đệm, biên, phạm vi xung đột toàn hệ thống D061; giá trị mùa và thực thi kỹ thuật vẫn mở. O04 được chốt một phần qua D032-D034 và căn cứ tra cứu mùa D059, gồm ngoại lệ rõ cho ngày sinh cầu thủ và xem nội bộ theo trách nhiệm; phạm vi trường/tệp/nhật ký chi tiết vẫn còn mở. O08 được chốt một phần qua D003-D023, D025-D031, D033-D034, D037-D041 và D051/D053/D055-D057 và D062-D063. O07 được chốt một phần qua quy tắc tách người duyệt quy định tại D005 và mô hình/trách nhiệm/giới hạn thẩm quyền/ma trận người nhận/chính sách chấm dứt/thu hồi/phiên/thời gian ủy quyền D013-D023 và D025-D030; D042 chốt phiên bản quy định đã duyệt bất biến và D043 cho hiệu lực ngay/tương lai không lùi quá khứ; D044 khóa cấu trúc thi đấu sau duyệt lịch ban đầu và D045 khóa điểm/thứ tự xếp hạng sau kết quả chính thức đầu tiên; D046 giữ mã và ý nghĩa loại bàn thắng/thẻ được tham chiếu và D047 gắn danh mục áp dụng với giờ bắt đầu thực tế được ghi nhận; D050 giới hạn mỗi mùa một bản tương lai đã duyệt và D051 chốt hủy/thay thế có kiểm soát cùng kiểm tra khi tới hạn; D052 cho thay đổi quy định đăng ký tương thích và kiểm tra lại hồ sơ chờ; D053 chốt lịch, hạn tiếp nhận và ngoại lệ cá biệt; chi tiết hiệu lực và chính sách nhóm còn lại vẫn mở. O09 được chốt một phần qua chính sách sửa sai chung D036 và giữ loại sự kiện/danh mục áp dụng theo D046-D049, gồm luồng ghi nhận/hiệu chỉnh giờ bắt đầu thực tế, thêm chính sách căn cứ điều kiện D054 và hiệu chỉnh/rà soát tác động đăng ký hợp lệ D057; D058 chốt định danh bằng mã, cảnh báo trùng và số áo theo thời gian; D059 chốt trường bắt buộc hồ sơ gốc/đăng ký và mốc chụp; D063 chốt trạng thái biên bản/trận và bắt buộc giờ bắt đầu/kết thúc thực tế; D064 chốt điều kiện ra sân và căn cứ thủ môn; D065 chốt phút/kiểm tra tỷ số và căn cứ chữ ký trọng tài; hợp đồng hiệu chỉnh/kỹ thuật và schema/hiển thị chi tiết vẫn mở. Chưa vấn đề nào RESOLVED. O10 được chốt một phần qua khóa cấu trúc D044 và tự sinh cặp đấu, cấu hình hỗ trợ, nháp chưa hoàn chỉnh, trình toàn bộ lịch D060; D062 bổ sung bảo vệ sinh lại, điều chỉnh theo phiên bản và công bố ngay; hợp đồng vòng đời/thao tác và kỹ thuật cụ thể vẫn mở. O01 được chốt một phần qua chính sách thay đổi/tác động D052 và cấu hình/so sánh U21, nhân sự xác minh homegrown theo D054; D059 chốt trường căn cứ bắt buộc; giá trị mùa và hợp đồng kiểm tra/định dạng chi tiết vẫn mở. O02 có thêm chính sách đợt/hạn/ngoại lệ D053 và luồng CLB/cầu thủ theo phiên bản D055; D056 bổ sung khoảng hiệu lực và chuyển CLB nhất quán; D057 bổ sung hiệu chỉnh đăng ký lịch sử độc lập; ngày cụ thể, chuyển trạng thái ngoại lệ/thao tác chi tiết, tác động đóng mùa và hợp đồng thao tác/hiệu chỉnh chi tiết vẫn mở. O06 được chốt một phần qua căn cứ vị trí thủ môn trong biên bản và chặn thiếu/nhiều thủ môn D064; D066 bổ sung đồng Găng tay vàng và ngưỡng thành tích dương. O05 được chốt một phần qua hiển thị đồng hạng và đánh dấu vị trí cần phân định D066; đối đầu/playoff/tổng kết chi tiết vẫn mở. O11 và O13-O16 chưa có nội dung giải quyết được xác nhận trong v2. Yêu cầu Live Score mới được ghi chờ riêng tại V2-EXT-01, không tính là giải quyết vấn đề v1. [Sổ v1](../open-decisions.md) được giữ làm mốc nguồn; phần bổ sung này ghi các xác nhận phát sinh sau đó.
 
 ## Thứ tự phỏng vấn
+
+Hướng dẫn phỏng vấn được Nhóm trưởng cập nhật sau Q50: chỉ hỏi quyết định đáng kể cần phê duyệt, gộp lựa chọn chính sách liên quan khi có thể đánh giá cùng nhau và không hỏi lại quyết định đã chốt. Giữ tính đầy đủ, nhất quán và khả năng triển khai. Phân biệt chi tiết kỹ thuật được đề xuất với quyết định đã xác nhận; xin xác nhận đánh đổi mới đáng kể thay vì từng hệ quả thuần túy. Không dùng giảm số câu để che giấu yêu cầu chưa giải quyết.
 
 1. Kiến trúc, ràng buộc công nghệ, stack/CSDL và môi trường nền - O12, một phần O13.
 2. Thẩm quyền, phạm vi, vòng đời, khả năng xem dữ liệu và hiệu lực quy định - O08, O04, O07.
@@ -538,4 +962,4 @@ Công việc này giới hạn ở tài liệu Context/thiết kế. Cuộc ph�
 
 ## Mốc tiếp tục
 
-Q1-Q36 đã được xác nhận thành D001-D036; toàn bộ gói vẫn DRAFT. Nhóm trưởng yêu cầu nghỉ trước Q37. Tiếp tục phỏng vấn nền tảng hiện tại từ Q37, mỗi lượt một câu chi tiết, xác định lại điều kiện tiên quyết từ các quyết định chưa chốt. Không bắt đầu V2-EXT-01 ở Q37 chỉ vì vừa được đưa vào danh sách; phỏng vấn nhóm này sau các nhóm nền tảng và trước tổng kết/phê duyệt. Chưa ghi câu hỏi hoặc câu trả lời Q37. Chỉ được yêu cầu đề xuất commit message; chưa cho phép commit/push.
+Q1-Q66 đã được xác nhận thành D001-D066; toàn bộ gói vẫn DRAFT. Q66 chốt đồng hạng, đồng giải cá nhân và ngưỡng thành tích dương. Nhóm trưởng yêu cầu nghỉ trước Q67; chưa ghi câu hỏi hoặc câu trả lời Q67. Tiếp tục nhóm đối đầu/playoff và tổng kết mùa, xác định lại phụ thuộc trước khi hỏi. Ước lượng cập nhật còn 30-45 lượt câu hỏi, gồm câu phụ dự kiến, thiết kế kỹ thuật, vận hành, Live Score và rà soát/phê duyệt cuối; không phải trần cố định. Chỉ hỏi quyết định đáng kể, gộp chính sách liên quan và tránh xác nhận lặp. Phỏng vấn V2-EXT-01 sau các nhóm nền tảng và trước tổng kết/phê duyệt. Commit message chỉ được yêu cầu ở mức đề xuất; không cho phép commit/push.
