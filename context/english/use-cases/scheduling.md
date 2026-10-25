@@ -57,7 +57,7 @@ Current rules: [D060](scheduling.md#d060---automatic-fixture-pairing-with-manual
 
 Source: §2.4.1.13, pp.100-103 (description, specification table, and analysis figures). See [PDF cross-check guidance](../sources.md#pdf).
 
-**Business context:** Allows authorized users to build the season schedule. It must satisfy the base format of 20 clubs, 38 rounds, and 380 matches, with each club pair meeting twice at home and away. The system must check club and stadium schedule conflicts.
+**Business context:** Allows authorized users to build the season schedule. It supports a configurable even club count from 4 through 20 under D060, with defaults of 20 clubs, 38 rounds and 380 matches, and each club pair meeting twice at home and away. The system must check club and stadium schedule conflicts.
 
 **Description:**
 
@@ -248,7 +248,7 @@ The rules below are the authoritative current policy for this domain. The UC flo
 
 - **Initial lifecycle:** The Scheduling Officer drafts and submits a complete schedule; an authorized person other than its preparers/editors approves it. Successful approval publishes immediately, without a separate publication step.
 
-- **Pending versions:** Submitted content is immutable. Before a decision the preparer may withdraw it; the approver may return it for supplementation or reject it with reasons. Changes and resubmission create a new version with history.
+- **Pending versions:** Submitted content is immutable. Before a decision the preparer may withdraw the submitted version; the approver may return it for supplementation or reject it with reasons. Changes and resubmission create a new version with history.
 
 - **Regeneration:** Regenerate only while the initial schedule is still unapproved and in draft, with confirmation of replacement and traceability of the previous version. After publication, prohibit whole-schedule regeneration and changes to pairings, rounds or home/away roles.
 

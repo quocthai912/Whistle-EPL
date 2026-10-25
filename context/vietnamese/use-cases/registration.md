@@ -425,7 +425,7 @@ Các quy tắc dưới đây là chính sách hiện hành chính thức của m
 
 - **Quyết định:** Mỗi mùa có tối đa một phiên bản quy định đã duyệt đang chờ thời điểm hiệu lực tương lai. Khi còn phiên bản đó, chặn phê duyệt phiên bản khác, kể cả phiên bản áp dụng ngay.
 
-- **Chuẩn bị:** Vẫn được soạn đề xuất tiếp theo nhưng phải kiểm tra lại với quy định đang có hiệu lực trước khi duyệt. Thay thế hoặc hủy phiên bản đã duyệt đang chờ cần quy trình riêng chưa chốt; không sửa trực tiếp nội dung đã duyệt.
+- **Chuẩn bị:** Vẫn được soạn đề xuất tiếp theo nhưng phải kiểm tra lại với quy định đang có hiệu lực trước khi duyệt. Thay thế hoặc hủy phiên bản đã duyệt đang chờ theo [D051](#d051---hủy-thay-thế-và-kiểm-soát-hiệu-lực-quy-định-đang-chờ); không sửa trực tiếp nội dung đã duyệt.
 
 ### D051 - Hủy, thay thế và kiểm soát hiệu lực quy định đang chờ
 
@@ -439,7 +439,7 @@ Các quy tắc dưới đây là chính sách hiện hành chính thức của m
 
 - **Biên thời gian:** Đề nghị hủy/thay thế đang chờ không hoãn hiệu lực. Khi đã tới thời điểm hiệu lực, không còn dùng quy trình hủy bản tương lai; thay đổi tiếp cần phiên bản quy định mới.
 
-- **Điều kiện áp dụng:** Tại thời điểm hiệu lực, kiểm tra lại ràng buộc phát sinh từ lúc duyệt, gồm mốc khóa [D044](registration.md#d044---khóa-cấu-trúc-thi-đấu-sau-khi-phê-duyệt-lịch-ban-đầu)/[D045](registration.md#d045---khóa-điểm-số-và-thứ-tự-tiêu-chí-xếp-hạng-sau-kết-quả-chính-thức-đầu-tiên). Nếu bản không còn phù hợp thì không áp dụng: giữ quy định đang có hiệu lực, ghi nguyên nhân và yêu cầu đề xuất mới để xử lý. Không tự sửa nội dung đã duyệt hoặc dời thời điểm hiệu lực.
+- **Điều kiện áp dụng:** Tại thời điểm hiệu lực, kiểm tra lại ràng buộc phát sinh từ lúc duyệt, gồm mốc khóa [D044](registration.md#d044---khóa-cấu-trúc-thi-đấu-sau-khi-phê-duyệt-lịch-ban-đầu)/[D045](registration.md#d045---khóa-điểm-số-và-thứ-tự-tiêu-chí-xếp-hạng-sau-kết-quả-chính-thức-đầu-tiên). Nếu bản không còn phù hợp thì không áp dụng: giữ quy định đang có hiệu lực, ghi nguyên nhân và kết thúc bản đã duyệt đó ở trạng thái nghiệp vụ cuối Bị chặn áp dụng. Bản này không còn chiếm vị trí bản tương lai đã duyệt đang chờ theo D050; xử lý điểm không phù hợp cần đề xuất mới và phê duyệt theo quy định/ràng buộc hiện hành. Không kích hoạt lại bản bị chặn, tự sửa nội dung đã duyệt hoặc dời thời điểm hiệu lực. Kết quả không phù hợp nghiệp vụ này không quy định cơ chế thử lại khi lỗi kỹ thuật.
 
 ### D052 - Thay đổi quy định đăng ký tương thích và kiểm tra lại hồ sơ đang chờ
 
@@ -497,13 +497,13 @@ Các quy tắc dưới đây là chính sách hiện hành chính thức của m
 
 - **Luồng cầu thủ:** Nháp -> Đã tiếp nhận -> Hợp lệ. Nhân viên đăng ký xác nhận hợp lệ sau kiểm tra UC11 theo UC10; không thêm bước Người quản lý mùa giải duyệt.
 
-- **Bổ sung/phiên bản:** Hồ sơ đã tiếp nhận hoặc hồ sơ CLB chờ duyệt có thể được trả về Cần bổ sung kèm lý do. Bổ sung tạo phiên bản mới để tiếp nhận/kiểm tra lại theo [D053](registration.md#d053---đợt-đăng-ký-hạn-tiếp-nhận-và-ngoại-lệ-từng-hồ-sơ). Nội dung CLB đã trình duyệt là bất biến; muốn sửa phải rút về hoặc được trả bổ sung, rồi trình bản mới.
+- **Bổ sung/phiên bản:** Cần bổ sung là trạng thái thay thế rõ ràng: Đã tiếp nhận -> Cần bổ sung cho hồ sơ CLB/cầu thủ, và Chờ phê duyệt -> Cần bổ sung cho hồ sơ CLB, kèm lý do. Nộp lại theo Cần bổ sung -> Đã tiếp nhận dưới dạng phiên bản mới, rồi đi tiếp luồng rà soát/phê duyệt tương ứng phía trên. Bổ sung tạo phiên bản mới để tiếp nhận/kiểm tra lại theo [D053](registration.md#d053---đợt-đăng-ký-hạn-tiếp-nhận-và-ngoại-lệ-từng-hồ-sơ). Nội dung CLB đã trình duyệt là bất biến; muốn sửa phải rút về hoặc được trả bổ sung, rồi trình bản mới.
 
 - **Hủy/nộp lại:** Cho hủy trước khi CLB được duyệt hoặc đăng ký cầu thủ được xác nhận hợp lệ, giữ lý do/lịch sử. Bản từ chối/hủy không được sửa thành đã duyệt; lượt xử lý mới liên kết lịch sử. Giữ một hồ sơ CLB-mùa chứa các phiên bản/lượt, không nhiều hồ sơ tham gia độc lập cho cùng CLB-mùa.
 
 - **Phụ thuộc:** Được chuẩn bị/kiểm tra danh sách cầu thủ trong lúc chờ duyệt CLB, nhưng chỉ xác nhận đăng ký cầu thủ hợp lệ sau khi hồ sơ tham gia CLB được duyệt. Duyệt CLB không tự làm mọi đăng ký cầu thủ hợp lệ; UC10 vẫn phải kiểm tra/xác nhận.
 
-- **Ranh giới thời gian:** Xác nhận hợp lệ khác với hiệu lực thi đấu, kết thúc đăng ký và chuyển CLB, các nội dung này còn cần chốt.
+- **Ranh giới thời gian:** Xác nhận hợp lệ vẫn khác với hiệu lực thi đấu, kết thúc đăng ký và chuyển CLB; các nội dung này tuân theo [D056](#d056---khoảng-hiệu-lực-thi-đấu-và-chuyển-clb-nhất-quán).
 
 ### D056 - Khoảng hiệu lực thi đấu và chuyển CLB nhất quán
 

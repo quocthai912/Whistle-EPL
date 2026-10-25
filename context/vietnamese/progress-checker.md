@@ -53,7 +53,7 @@ Song song dự kiến: sau PHASE 2, PHASE 3 và PHASE 8 có thể phát triển 
 
 ## PHASE 1 - Nền tảng vận hành và quản trị truy cập
 
-**Phạm vi media/API đã chốt:** Dùng quyền/phiên ghi media hiện có và phân phối ảnh có kiểm soát; không cần nhà cung cấp API. Xem [chính sách media](design/media.md) và [INT-01](design/integrations.md). Bổ sung phạm vi/bằng chứng, không xác lập tiến độ.
+**Phạm vi media/API đã chốt:** Dùng cơ chế phân quyền ghi media và kiểm tra tính hợp lệ của phiên hiện có, cùng phân phối ảnh có kiểm soát; không cần nhà cung cấp API. Xem [chính sách media](design/media.md) và [INT-01](design/integrations.md). Bổ sung phạm vi/bằng chứng, không xác lập tiến độ.
 
 **Implementation Status:** `NOT_STARTED`.
 

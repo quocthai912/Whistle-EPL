@@ -285,7 +285,7 @@ Các quy tắc dưới đây là chính sách hiện hành chính thức của m
 
 - **Nguồn:** O08/O12; UC03, PDF tr.72-74; BM-02/BM-03/BM-06, tr.23-24; [D007](administration.md#d007---vô-hiệu-hóa-phiên-khi-đổi-quyền-hoặc-khóa-tài-khoản)-[D010](administration.md#d010---cấm-quản-trị-viên-tự-cấp-quyền-nghiệp-vụ-theo-mùa). Đây là nội dung vận hành được phê duyệt rõ trong v2, không phải tác nhân hoặc UC bổ sung.
 
-- **Quyết định:** Cung cấp CLI khôi phục khẩn cấp riêng trên server cho người vận hành có quyền truy cập server. Lệnh được đặt lại mật khẩu và/hoặc mở khóa tài khoản đã tồn tại và đã có vai trò Quản trị viên hệ thống. Không được tạo tài khoản, cấp vai trò Quản trị viên hệ thống hoặc thay đổi quyền nghiệp vụ theo mùa. Không cung cấp API hoặc trang web công khai cho luồng khôi phục khẩn cấp này.
+- **Quyết định:** Cung cấp CLI khôi phục khẩn cấp riêng trên server cho người vận hành có quyền truy cập server. Lệnh cho phép đặt lại mật khẩu và/hoặc mở khóa tài khoản đã tồn tại và đã có vai trò Quản trị viên hệ thống. Không được tạo tài khoản, cấp vai trò Quản trị viên hệ thống hoặc thay đổi quyền nghiệp vụ theo mùa. Không cung cấp API hoặc trang web công khai cho luồng khôi phục khẩn cấp này.
 
 - **Bảo vệ mật khẩu/phiên:** Nhập mật khẩu thay thế an toàn, không qua command-line arguments, logs hoặc repository, và băm trước khi lưu. Khôi phục thành công vô hiệu hóa toàn bộ phiên hiện có của tài khoản đích.
 

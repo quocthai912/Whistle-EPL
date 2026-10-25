@@ -295,7 +295,7 @@ The rules below are the authoritative current policy for this domain. The UC flo
 
 - **Confirmation/correction:** The authorized confirmer reviews this instant together with the report under UC18 and [D005](administration.md#d005---separate-preparation-and-approval-responsibilities)'s separation rule. After official confirmation, changing actual kickoff must use the approved UC19 correction process. There is no separate actual-kickoff approval workflow.
 
-- **Operational scope:** Entry may occur after the match; staff are not required to operate the system at kickoff. The report's catalog/events require rechecking if draft actual kickoff changes; detailed handling of a version-boundary crossing remains open.
+- **Operational scope:** Entry may occur after the match; staff are not required to operate the system at kickoff. If actual kickoff changes across a catalog-version boundary, revalidate all events against the corrected instant's catalog and block submission or approval until incompatible events are corrected under [D049](#d049---revalidate-events-when-corrected-kickoff-changes-the-applicable-catalog).
 
 ### D049 - Revalidate events when corrected kickoff changes the applicable catalog
 

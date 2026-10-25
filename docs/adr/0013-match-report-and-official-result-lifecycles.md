@@ -26,6 +26,8 @@ Require exactly one report-position goalkeeper per team before submission/confir
 
 Deriving goalkeepers from registered profile position was considered with the same exact-one gate. The Team Leader chose actual match roles and consistent historical entry, accepting staff position entry and resolution of incomplete/conflicting lists. Goal/card/time/referee validation, Golden Glove ties and detailed schema/correction/concurrency contracts remain open. See [Context v2 D064](../../context/english/use-cases/results.md#d064---kickoff-based-appearance-eligibility-and-report-defined-goalkeepers).
 
+## Match, report and official-result lifecycles
+
 **Status:** accepted. **Approver:** Team Leader. **Date:** 2026-10-25 (Asia/Bangkok). **Interview:** grouped Q63, option A; Context decision [D063](../../context/english/use-cases/results.md#d063---separate-match-report-version-and-official-result-lifecycles).
 
 Separate match states (Not started -> In progress -> Ended), report-version states (Draft -> Pending confirmation -> Confirmed, with return/withdrawal before decision) and result status (Unofficial -> Official). Manage official-result correction proposals separately. The Results Officer records actual start/end; require both before submission with end after start, rather than inferring completion from scheduled time or planned duration. After-match entry of both is permitted.

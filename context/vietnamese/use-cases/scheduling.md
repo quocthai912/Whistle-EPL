@@ -57,7 +57,7 @@ Quy tắc hiện hành: [D060](scheduling.md#d060---tự-sinh-cặp-đấu-và-h
 
 Nguồn: §2.4.1.13, tr.100-103 (mô tả, bảng đặc tả và hình phân tích). Xem [cách đối chiếu PDF](../sources.md#pdf).
 
-**Bối cảnh nghiệp vụ:** Cho phép người có thẩm quyền xây dựng lịch thi đấu cho mùa giải. Lịch phải đáp ứng thể thức cơ sở gồm 20 câu lạc bộ, 38 vòng và 380 trận, bảo đảm mỗi cặp câu lạc bộ gặp nhau hai lượt theo hình thức sân nhà và sân khách. Hệ thống phải kiểm tra xung đột lịch giữa câu lạc bộ và sân vận động.
+**Bối cảnh nghiệp vụ:** Cho phép người có thẩm quyền xây dựng lịch thi đấu cho mùa giải. Lịch hỗ trợ số câu lạc bộ chẵn cấu hình từ 4 đến 20 theo D060, mặc định 20 câu lạc bộ, 38 vòng và 380 trận, bảo đảm mỗi cặp câu lạc bộ gặp nhau hai lượt theo hình thức sân nhà và sân khách. Hệ thống phải kiểm tra xung đột lịch giữa câu lạc bộ và sân vận động.
 
 **Mô tả:**
 
@@ -248,7 +248,7 @@ Các quy tắc dưới đây là chính sách hiện hành chính thức của m
 
 - **Vòng đời ban đầu:** Nhân viên lịch thi đấu soạn và trình lịch đầy đủ; người có thẩm quyền khác người chuẩn bị/chỉnh sửa duyệt. Duyệt thành công công bố ngay, không thêm bước công bố riêng.
 
-- **Bản đang chờ:** Nội dung đã trình là bất biến. Người lập được rút trước quyết định; người duyệt được trả bổ sung hoặc từ chối kèm lý do. Sửa/trình lại tạo phiên bản mới và giữ lịch sử.
+- **Bản đang chờ:** Nội dung đã trình là bất biến. Người lập được rút phiên bản đã trình trước khi có quyết định; người duyệt được trả bổ sung hoặc từ chối kèm lý do. Sửa/trình lại tạo phiên bản mới và giữ lịch sử.
 
 - **Sinh lại:** Chỉ sinh lại khi lịch ban đầu chưa duyệt và đang nháp, có xác nhận thay thế và dấu vết bản trước. Sau công bố không sinh lại toàn bộ hoặc đổi cặp đấu, vòng, vai trò sân nhà/sân khách.
 

@@ -15,7 +15,7 @@ Một package phát triển liên tục có hai bản ngôn ngữ tương đươ
 | Quy tắc, biểu mẫu nguồn, định danh/trường dùng chung | [Nghiệp vụ](business.md) |
 | Tài khoản, vai trò và quyền dùng chung | [UC01-UC04](use-cases/administration.md) |
 | Quy định, hồ sơ CLB/cầu thủ và đăng ký | [UC05-UC11](use-cases/registration.md) |
-| Sân, sinh và điều chỉnh lịch | [UC12-UC15](use-cases/scheduling.md) |
+| Sân vận động, sinh lịch và điều chỉnh lịch | [UC12-UC15](use-cases/scheduling.md) |
 | Biên bản, ra sân, sự kiện và kết quả chính thức | [UC16-UC20](use-cases/results.md) |
 | Tra cứu công khai/nội bộ, hạng, báo cáo, tin tức | [UC21-UC25](use-cases/publication.md) |
 | Thiết kế/kỹ thuật hoặc [D001](design/architecture.md#d001---backend-nguyên-khối-chia-module-nghiệp-vụ-có-phân-lớp)-[D068](use-cases/publication.md#d068---dashboard-tổng-quan-mùa-giải-công-khai) | [Điều hướng/chỉ mục thiết kế](design/README.md) |

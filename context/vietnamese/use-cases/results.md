@@ -295,7 +295,7 @@ Các quy tắc dưới đây là chính sách hiện hành chính thức của m
 
 - **Xác nhận/hiệu chỉnh:** Người xác nhận có thẩm quyền kiểm tra thời điểm này cùng biên bản theo UC18 và quy tắc tách người của [D005](administration.md#d005---tách-biệt-trách-nhiệm-lập-và-phê-duyệt). Sau xác nhận chính thức, sửa giờ thực tế phải qua quy trình hiệu chỉnh UC19 đã chốt. Không có luồng phê duyệt giờ bắt đầu thực tế riêng.
 
-- **Phạm vi vận hành:** Có thể nhập sau trận; không yêu cầu nhân sự thao tác ngay lúc bắt đầu. Cần kiểm tra lại danh mục/sự kiện khi sửa giờ thực tế trong nháp; xử lý chi tiết khi đổi qua ranh giới phiên bản vẫn mở.
+- **Phạm vi vận hành:** Có thể nhập sau trận; không yêu cầu nhân sự thao tác ngay lúc bắt đầu. Nếu sửa giờ bắt đầu thực tế qua ranh giới phiên bản danh mục, kiểm tra lại toàn bộ sự kiện theo danh mục tại thời điểm đã sửa và chặn trình/phê duyệt cho tới khi sửa hết sự kiện không phù hợp theo [D049](#d049---kiểm-tra-lại-sự-kiện-khi-sửa-giờ-bắt-đầu-làm-đổi-danh-mục-áp-dụng).
 
 ### D049 - Kiểm tra lại sự kiện khi sửa giờ bắt đầu làm đổi danh mục áp dụng
 

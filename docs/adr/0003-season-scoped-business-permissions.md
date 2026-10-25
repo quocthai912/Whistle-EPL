@@ -336,7 +336,7 @@ Current policy owner: [D038](../../context/english/use-cases/administration.md#d
 
 - **Affected Phases:** PHASE 1 role/permission lifecycle, PHASE 2 club/stadium masters, PHASE 3 player masters and PHASE 10 authorization verification. No Phase status changes.
 
-- **Still open:** Session-change handling is settled by [D039](../../context/english/use-cases/administration.md#d039---invalidate-sessions-after-shared-master-management-permission-changes). Self-reduction/revocation is settled by [D040](../../context/english/use-cases/administration.md#d040---allow-administrator-self-reduction-of-business-permissions). Account-lock effects are settled by [D041](../../context/english/use-cases/administration.md#d041---retain-shared-master-management-assignments-while-an-account-is-locked). Season closure/archive rules and technical consistency/concurrency mechanisms. No permission storage structure or automatic scheduling mechanism is selected.
+- **Still open:** Season closure/archive rules, technical consistency/concurrency mechanisms, permission storage structure and automatic scheduling.
 
 ### D039 english evidence
 

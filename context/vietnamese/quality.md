@@ -84,6 +84,6 @@ Dùng [chính sách media](design/media.md) chính thức cho ảnh được qu�
 
 ## Kiểm chứng hoãn trận và dashboard
 
-Kiểm chứng [POSTPONE-01](use-cases/scheduling.md#postpone-01---quản-lý-hoãn-trận-phiên-bản-đầu) và [DASHBOARD-01](use-cases/publication.md#dashboard-01---dashboard-tổng-quan-mùa-giải) theo hợp đồng sẽ chốt: đổi trạng thái đúng quyền/có nhật ký, hiển thị hoãn không có giờ thay chưa duyệt, không tác động thống kê, dữ liệu dashboard thật/đúng quyền, thống kê chỉ chính thức, media responsive và Loading/Empty/Error rõ. Giữ ngưỡng nguồn, không chọn thư viện UI mới.
+Kiểm chứng [POSTPONE-01](use-cases/scheduling.md#postpone-01---quản-lý-hoãn-trận-phiên-bản-đầu) và [DASHBOARD-01](use-cases/publication.md#dashboard-01---dashboard-tổng-quan-mùa-giải) theo hợp đồng đã chốt: đổi trạng thái đúng quyền/có nhật ký, hiển thị hoãn không có giờ thay chưa duyệt, không tác động thống kê, dữ liệu dashboard thật/đúng quyền, thống kê chỉ chính thức, media responsive và Loading/Empty/Error rõ. Giữ ngưỡng nguồn, không chọn thư viện UI mới.
 
 [LS-01](design/integrations.md#v2-ext-01---live-match-tracking--live-score) loại triển khai/thiết kế Live Score khỏi nghiệm thu phiên bản đầu. Media được quản lý và vận hành độc lập vẫn bắt buộc; chọn nhà cung cấp vẫn sau nghiệm thu cốt lõi.

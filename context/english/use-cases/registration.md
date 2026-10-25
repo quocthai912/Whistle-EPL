@@ -425,7 +425,7 @@ The rules below are the authoritative current policy for this domain. The UC flo
 
 - **Decision:** Each season may have at most one approved regulation version awaiting its future effective instant. While it exists, block approval of another version, including an immediately effective version.
 
-- **Preparation:** Further proposals may be drafted, but must be rechecked against the regulations currently in effect before approval. Replacing or cancelling an approved waiting version requires a separate process still to be decided; do not edit approved content directly.
+- **Preparation:** Further proposals may be drafted, but must be rechecked against the regulations currently in effect before approval. Replacing or cancelling an approved waiting version follows [D051](#d051---controlled-cancellation-replacement-and-activation-of-waiting-regulations); do not edit approved content directly.
 
 ### D051 - Controlled cancellation, replacement and activation of waiting regulations
 
@@ -439,7 +439,7 @@ The rules below are the authoritative current policy for this domain. The UC flo
 
 - **Time boundary:** A pending cancellation/replacement request does not postpone effectivity. Once the effective instant is reached, the future-version cancellation process is unavailable; further changes require a new regulation version.
 
-- **Activation eligibility:** At the effective instant, recheck constraints arising since approval, including [D044](registration.md#d044---freeze-competition-structure-after-initial-schedule-approval)/[D045](registration.md#d045---freeze-points-and-ranking-priority-after-the-first-official-result) freeze milestones. If the version has become incompatible, do not apply it: retain the currently effective regulations, record the reason and require a new proposal for resolution. Do not silently edit approved content or move its effective time.
+- **Activation eligibility:** At the effective instant, recheck constraints arising since approval, including [D044](registration.md#d044---freeze-competition-structure-after-initial-schedule-approval)/[D045](registration.md#d045---freeze-points-and-ranking-priority-after-the-first-official-result) freeze milestones. If the version has become incompatible, do not apply it: retain the currently effective regulations, record the reason and end that approved version in the terminal business state Activation blocked. It no longer occupies D050's approved future waiting-version slot; resolving the incompatibility requires a new proposal and approval under the current regulations and constraints. Do not reactivate the blocked version, silently edit approved content or move its effective time. This business-incompatibility outcome does not define technical-failure retry handling.
 
 ### D052 - Compatible registration-rule changes and revalidation of pending records
 
@@ -497,13 +497,13 @@ The rules below are the authoritative current policy for this domain. The UC flo
 
 - **Player workflow:** Draft -> Received -> Valid. The Registration Officer confirms validity after UC11 checks under UC10; no additional manager approval is introduced.
 
-- **Supplementation/versioning:** Received records, or club applications pending approval, may be returned to Needs supplementation with a reason. Supplementation creates a new version for receipt and rechecking under [D053](registration.md#d053---registration-windows-receipt-deadlines-and-individual-exceptions). Submitted club content is immutable; editing requires withdrawal or return for supplementation, then a new submitted version.
+- **Supplementation/versioning:** Needs supplementation is an explicit alternate state: Received -> Needs supplementation for club/player records, and Pending approval -> Needs supplementation for club applications, with a reason. Resubmission follows Needs supplementation -> Received as a new version, then the relevant review/approval path above. Supplementation creates a new version for receipt and rechecking under [D053](registration.md#d053---registration-windows-receipt-deadlines-and-individual-exceptions). Submitted club content is immutable; editing requires withdrawal or return for supplementation, then a new submitted version.
 
 - **Cancellation/resubmission:** Permit cancellation before club approval or player-validity confirmation, retaining reason/history. Rejected/cancelled versions cannot be edited into approved ones; a new processing round links to the history. Keep one club-season application case containing its versions/rounds, not multiple independent participation applications for the same club-season.
 
 - **Dependency:** Prepare and check player lists while club approval is pending, but confirm a player's registration as valid only after the club participation application is approved. Club approval does not automatically validate every player registration; UC10 must still check and confirm.
 
-- **Temporal boundary:** Validity confirmation is distinct from playing effectivity, termination and club transfer, which remain to be settled.
+- **Temporal boundary:** Validity confirmation remains distinct from playing effectivity, termination and club transfer, which are governed by [D056](#d056---playing-effective-intervals-and-consistent-club-transfers).
 
 ### D056 - Playing-effective intervals and consistent club transfers
 
