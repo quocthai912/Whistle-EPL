@@ -8,11 +8,10 @@ English documents relevant to the selected Phase or Use Case. Use its source hie
 PDF traceability, and open-decision register; keep unresolved decisions open.
 For Phase selection and evidence-based completion, use
 [context/english/progress-checker.md](context/english/progress-checker.md).
-Read Vietnamese context only when requested by the user or when resolving
-a translation issue or business ambiguity against the source; do not load
-both language sets automatically. Project Phase IDs use `PHASE 1`, etc.;
+English Context is the sole current Context Package for humans and agents.
+Project Phase IDs use `PHASE 1`, etc.;
 these are distinct from the internal phases of Spec Kit `tasks.md`.
-The current Context Package is v2 under development, with individually confirmed decisions and whole-package approval pending. Versions are milestones of one evolving package; update owning current documents in both languages and preserve approval history in Git. Context Package `v1` was `APPROVED` by Team Leader on `2026-10-24`.
+The current Context Package is v2 under development, with individually confirmed decisions and whole-package approval pending. Versions are milestones of one evolving package; update the owning English documents and preserve approval history in Git. Context Package `v1` was `APPROVED` by Team Leader on `2026-10-24`.
 Reviewed Commit: `adad61f2a0625d62538aa10ce0ec8b6a91defa53`;
 Branch: `docs/build-agent-context`. Approval covers the business-requirements foundation,
 document structure, traceability, and Phase decomposition only. It satisfies
@@ -21,15 +20,15 @@ dependencies remain required. It does not approve Context v2, authorize
 unsettled technical choices, resolve Open Decisions, or establish software
 implementation or acceptance. Preserve Phase statuses and checkboxes.
 
-### Human Documentation and bilingual maintenance
+### Documentation maintenance
 
-[context/vietnamese/README.md](context/vietnamese/README.md) is the human
-entry point. Keep both language sets semantically equivalent in the same
-change, including Phase checklist items, evidence, and status. They are two
-language views of one Phase ledger, not independent progress sources.
-The approved Vietnamese PDF remains authoritative for business requirements.
-Report unresolved translation or business conflicts rather than choosing
-a version without evidence. Consult the glossary in the selected language.
+Maintain the current Context Package only in [context/english/](context/english/README.md),
+following its source hierarchy, Progressive Disclosure and Single Source of Truth.
+Preserve Phase checklist items, evidence and statuses. The original approved
+Vietnamese PDF remains authoritative for source business requirements; Git
+preserves earlier Context milestones and approval evidence. Report unresolved
+source/business conflicts rather than choosing without evidence. Consult the
+[English glossary](context/english/GLOSSARY.md).
 
 ### Issue tracker
 

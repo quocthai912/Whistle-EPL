@@ -2,18 +2,16 @@
 
 ## Layout
 
-Single business context, with equivalent language views:
+Single business context, documented only in English:
 
-- Default agent glossary: [context/english/GLOSSARY.md](../../context/english/GLOSSARY.md).
-- Human glossary: [context/vietnamese/GLOSSARY.md](../../context/vietnamese/GLOSSARY.md).
+- Project glossary: [context/english/GLOSSARY.md](../../context/english/GLOSSARY.md).
 - Architecture decision records in docs/adr/.
 
 ## Before exploring
 
-Read the English glossary and ADRs relevant to the area being explored.
-Use the Vietnamese glossary only when requested or when checking a
-translation or business ambiguity; do not load both languages by default.
-Keep the two glossary versions semantically equivalent in the same change.
+Read only the English Context documents, glossary and ADRs relevant to the
+area being explored. The [English Context](../../context/english/README.md)
+is the sole current package; follow Progressive Disclosure and Single Source of Truth.
 If they do not exist, proceed silently. The domain-modeling skill
 creates them when terms or decisions are resolved.
 

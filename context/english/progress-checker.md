@@ -22,12 +22,12 @@ Each Phase below lists **required evidence**, not existing implementation/test e
 
 Creating Context/Specification/Plan/Tasks does not complete functionality. Closing all Issues is also insufficient. Set `COMPLETED` only after functionality and all criteria are verified with suitable evidence; do not invent test results or automatically complete successor Phases. If changes invalidate previous evidence, reassess and record observed status (or `UNKNOWN` when evidence is insufficient).
 
-## Checklist and bilingual updates
+## Checklist and evidence updates
 
 - `[ ]` means completion has not been verified for that item; missing evidence does not prove the work was never performed.
 - Use `[x]` only when identifiable evidence demonstrates that specific item is complete. Record its link/result in Verification Evidence; a checked preparation item does not prove implementation.
 - Keep the five status meanings above. Preparation documents may be complete while implementation remains `NOT_STARTED`; do not derive status or a completion percentage from checkbox counts. A completed Phase requires all mandatory checklist items, all acceptance criteria, and valid evidence.
-- The [English](progress-checker.md) and [Vietnamese](../vietnamese/progress-checker.md) documents are synchronized language views of one Phase ledger. Update item meaning/order/state, evidence, and Phase status together in the same change. Resolve discrepancies against actual evidence or report them; do not maintain independent progress.
+- This English document is the sole current Phase ledger. Keep item meaning/order/state, verification evidence and Phase status consistent when updating it. Resolve discrepancies against actual evidence or report them; the [package maintenance policy](README.md#current-package-maintenance) governs documentation.
 - All items introduced in this migration remain unchecked because suitable completion evidence is absent. Existing Phase statuses are preserved; no software implementation progress is claimed. Project Phases are distinct from internal phases in Spec Kit `tasks.md`; this checklist does not duplicate the Task ledger.
 
 ## Phase selection and ordering

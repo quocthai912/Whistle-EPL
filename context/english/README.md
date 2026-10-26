@@ -4,7 +4,7 @@
 
 **Approved v1 milestone:** Team Leader, 2026-10-24; reviewed commit `adad61f2a0625d62538aa10ce0ec8b6a91defa53`, branch `docs/build-agent-context`. Retrieve with `git show adad61f2a0625d62538aa10ce0ec8b6a91defa53:context/english/README.md`.
 
-One evolving package has equivalent English/Vietnamese views. Individual decisions are approved as recorded; unresolved design and whole-v2 approval remain pending. Documentation is not software implementation or acceptance.
+One evolving, English-only Context Package is maintained in this directory for humans and agents. Individual decisions are approved as recorded; unresolved design and whole-v2 approval remain pending. Documentation is not software implementation or acceptance.
 
 ## Load by task
 
@@ -34,4 +34,4 @@ After the required decisions are approved: Phase -> Specification -> Plan -> Tas
 
 DOCS-01, approved by the Team Leader on 2026-10-26 (Asia/Bangkok): versions are milestones of this one package, preserved in Git, not parallel document sets. Each rule has one owner. README files route readers and hold the existing decision index; GLOSSARY defines terms; English ADRs record decisions, rationale and approval/source evidence; open-decisions contains unresolved work only. Update the owner and all affected links/UC/Phase references together; do not maintain duplicate current policy.
 
-Keep English/Vietnamese structures and meanings equivalent. Default agent entry is English; read Vietnamese when requested or resolving translation/business ambiguity. Preserve the PDF and Git history, including the v1 approval; never imply whole-v2 approval or software completion from individual confirmations. The latest reorganization authorization supersedes earlier instructions to freeze v1 working files.
+The Team Leader approved English-only documentation on 2026-10-26 (Asia/Bangkok). This directory is the sole current Context Package; load only the English documents needed for the task, following Progressive Disclosure and Single Source of Truth. Earlier translations remain in Git history, without a parallel current copy or synchronization requirement. This organization change preserves all approved business/design decisions, source traceability and Phase evidence/statuses. Preserve the original Vietnamese PDF and Git history, including the v1 approval; never imply whole-v2 approval or software completion from individual confirmations. The latest documentation policy supersedes earlier translation-maintenance requirements; the reorganization authorization permits current owner documents to evolve beyond the v1 Git milestone.
