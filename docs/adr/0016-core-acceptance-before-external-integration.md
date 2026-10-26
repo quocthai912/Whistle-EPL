@@ -1,8 +1,10 @@
 # ADR 0016 - Accept independent core functionality before external integration
 
+Current package approval: [Q98 approved v2](../../context/README.md#q98---whole-package-approval). Earlier pending/open statements below are historical interview evidence; current rules remain in their linked owners.
+
 **Scope supersession, 2026-10-26:** [LS-01 / ADR 0017](0017-live-score-excluded-from-first-version.md) excludes Live Score from the first version and cancels its interview/design/acceptance work. Earlier mentions below are historical, not an active backlog or future implementation commitment. The independent-core acceptance gate remains for media APIs only.
 
-This ADR records decisions and rationale; authoritative current rules are owned by [integration policy](../../context/english/design/integrations.md). Historical open-point notes do not reopen subsequently confirmed policy.
+This ADR records decisions and rationale; authoritative current rules are owned by [integration policy](../../context/design/integrations.md). Historical open-point notes do not reopen subsequently confirmed policy.
 
 **Status:** accepted. **Approver:** Team Leader. **Date:** 2026-10-25 (Asia/Bangkok). **Decision:** INT-01, explicit instruction after LOGO-01 approval.
 
@@ -12,4 +14,8 @@ External live scores/status/events are reference information: they do not automa
 
 The Team Leader chose independent core acceptance before provider research/integration rather than coupling first-version business acceptance to an external service. A pre-v2-approval integration interview may settle requirements and gates; it does not waive the post-core-acceptance provider-research gate. Detailed mapping, provider/API, contracts, licensing/provenance, refresh, failure and acceptance policies remain open. No provider library, adapter implementation or new mandatory Phase is selected.
 
-See [integration register](../../context/english/design/integrations.md), [media policy](../../context/english/design/media.md) and [ADR 0015](0015-managed-club-logos-in-first-version.md).
+See [integration register](../../context/design/integrations.md), [media policy](../../context/design/media.md) and [ADR 0015](0015-managed-club-logos-in-first-version.md).
+
+## Q87 - Storage infrastructure clarification
+
+[D087](../../context/design/architecture.md#d087---docker-compose-reference-deployment) subsequently permits optional Supabase Storage for Internet media files. This is a storage-location amendment recorded in [ADR 0015](0015-managed-club-logos-in-first-version.md#q87---environment-specific-media-storage-amendment), separate from this ADR's football/media-data acquisition gate. Core/media acceptance remains independent in the local profile; selected remote storage has its own authorization, failure/fallback and recovery verification. No football/media-data provider is approved or integrated by this amendment, and LS-01 remains unchanged.
