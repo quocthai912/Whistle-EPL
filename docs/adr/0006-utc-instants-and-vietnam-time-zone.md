@@ -10,7 +10,7 @@ O03/O12 leave time-zone handling open, with cross-cutting effects on scheduling,
 
 Europe/London and per-device display were considered. A single Vietnam display/input time zone was chosen for straightforward local operation, demonstrations and verification, accepting a difference from local stadium time in England. This is a v2 design decision, not a PDF time-zone default. Database types, API serialization, precision, libraries, activation/expiry/session mechanisms and concrete seasonal dates remain open. [D023](../../context/design/access-control.md#d023---explicit-delegation-startend-instants-with-an-exclusive-end)'s interval rule continues to apply to delegation and is not automatically imposed on other business intervals. See [Context v2 D024](../../context/design/architecture.md#d024---utc-instants-and-a-single-vietnam-displayinput-time-zone).
 
-### D024 english evidence
+## D024 english evidence
 
 Current policy owner: [D024](../../context/design/architecture.md#d024---utc-instants-and-a-single-vietnam-displayinput-time-zone). Historical interview metadata follows; earlier open-point notes are evidence of that interview round, not the current unresolved-work register.
 

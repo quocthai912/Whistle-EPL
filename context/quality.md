@@ -78,6 +78,7 @@ These remain source constraints, not software-completion evidence. Current selec
 | AT-02 | Update related data consistently with conflict detection/handling. Simulated result-update failures leave no partial data/statistics; two users editing one record must not silently overwrite the earlier saved change, and must be notified to resolve the conflict | High |
 | AT-03 | Schedule/official-result/regulation corrections respect status, conditions, authority, and season scope. Invalid changes are rejected with data preserved; valid changes leave results and statistics consistent | High |
 | AT-04 | Preserve season-club-player-match-result relationships. Block deletion/changes that break historical references; support discontinuation/archiving. Discontinuing a club or adding a season must not distort previous applications/schedules/results/reports; history remains accurately searchable | High |
+
 ## Confirmed media and external-dependency constraints
 
 Use the authoritative [media policy](design/media.md) for managed images and [integration gates](design/integrations.md) for external dependencies. Verification belongs to the [Progress Checker](progress-checker.md); source quality thresholds remain unchanged. This page does not repeat those policies.

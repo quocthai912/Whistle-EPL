@@ -12,7 +12,7 @@ Failure rolls back that business transaction without partial business data, stat
 
 Exact enforcement/serialization point, transaction/isolation/locking mechanism, authoritative permission/time reads, error contracts, retries and pending work remain open. This is a behavioral decision, not a selection of isolation level or locking technology. See [Context v2 D030](../../context/design/architecture.md#d030---recheck-current-session-and-authority-at-the-final-decision-point-of-writes).
 
-### D030 english evidence
+## D030 english evidence
 
 Current policy owner: [D030](../../context/design/architecture.md#d030---recheck-current-session-and-authority-at-the-final-decision-point-of-writes). Historical interview metadata follows; earlier open-point notes are evidence of that interview round, not the current unresolved-work register.
 

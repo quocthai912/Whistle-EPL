@@ -308,7 +308,7 @@ Choose independent proposal/approval by two authorized Season Managers rather th
 
 ## Q76 follow-up - Initial effective-regulation prerequisite
 
-[D076](../../context/use-cases/registration.md#d076---separate-season-creation-authority-and-initial-regulation-gate) settles absence of an effective first version: allow staffing/preparation/drafts, block dependent business steps, and use no implicit template or prior-season baseline. First-version approval/effectivity still follows D005/D042/D043; an initial version that cannot validly activate leaves the gate closed. Approval evidence is in [ADR 0003](0003-season-scoped-business-permissions.md#q76---separate-season-creation-authority); technical activation/retry mechanisms remain open.
+[D076](../../context/use-cases/registration.md#d076---separate-season-creation-authority-and-initial-regulation-gate) settles absence of an effective first version: allow staffing/preparation/drafts, block dependent business steps, and use no implicit template or prior-season baseline. First-version approval/effectivity still follows D005/D042/D043; an initial version that cannot validly activate leaves the gate closed. Approval evidence is in [ADR 0003](0003-season-scoped-business-permissions.md#q76---separate-season-creation-authority); D089 governs technical activation and recovery. Only exact field, lock and error mappings remain implementation elaboration.
 
 ## Q89 - Technical activation recovery follow-up
 
