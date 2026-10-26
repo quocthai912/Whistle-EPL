@@ -288,7 +288,7 @@ Expected parallel work: after PHASE 2, PHASE 3 and PHASE 8 can be developed inde
 
 **References:** §1.2.4.2 pp.17; TT-03/04 pp.19; BM-02/04/05; AT-01/02/04; BM/QĐ references for the data approved under O11.
 
-**Dependencies:** PHASE 1/PHASE 2/PHASE 3/PHASE 4 for access/configuration, club/player masters and stadium masters; O04/O09/O11/O12 technical contracts remain required before Specification.
+**Dependencies:** PHASE 1/PHASE 2/PHASE 3/PHASE 4 for access/configuration, club/player masters and stadium masters; O09/O11/O12 technical contracts remain required before Specification.
 
 **Deliverables:** Approved formats/templates, import/export, error feedback, and data comparisons.
 
