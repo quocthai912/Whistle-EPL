@@ -1,6 +1,6 @@
 # Design navigation and decision index
 
-Package metadata/approval: [current Context](../README.md). Rules have one owner; this page only routes readers. D001-D066 remain confirmed with original approval/source/options/rationale in their English ADR evidence; no new business choice is made by reorganization.
+Package metadata/approval: [current Context](../README.md). D001-D097 are confirmed under [Q98 whole-package approval](../README.md#q98---whole-package-approval). Rules have one owner; this page only routes readers. D001-D066 retain their original approval/source/options/rationale in their English ADR evidence; no new business choice is made by reorganization.
 
 ## Read by topic
 
