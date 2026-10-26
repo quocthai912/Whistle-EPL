@@ -7,13 +7,15 @@ Package metadata/approval: [current Context](../README.md). Rules have one owner
 | Topic | Owner |
 |---|---|
 | Architecture, stack, time, final authorization | [Architecture](architecture.md) |
+| Shared API security, command execution and lock/error contract | [D096](architecture.md#d096---api-execution-synchronized-csrf-and-transaction-contracts) |
+| Shared fields, code formats and controlled catalogs | [D092](../business.md#d092---shared-field-validation-identifiers-and-reference-catalogs) |
 | XLSX templates, file limits and preview lifetime | [D091](../business.md#d091---fixed-xlsx-templates-and-bounded-data-exchange) |
 | Acceptance dataset and seasonal test configuration | [D090](../quality.md#d090---reproducible-acceptance-datasets-and-season-fixtures) |
 | Periodic jobs, missed runs and activation recovery | [D089](architecture.md#d089---periodic-jobs-and-overdue-regulation-activation) |
 | Coordinated backup and controlled restore | [D088](architecture.md#d088---coordinated-backup-sets-and-controlled-restore) |
 | Deployment, HTTPS and persistent storage | [D087](architecture.md#d087---docker-compose-reference-deployment); [media storage](media.md#environment-specific-media-storage) |
 | Frontend tooling and screen navigation | [D086 and screen map](architecture.md#derived-frontend-screen-map) |
-| Relational foundations and initial entity map | [D082 and derived model](architecture.md#derived-relational-model-map) |
+| Relational model, typed dictionary and ERDs | [D082 initial map](architecture.md#derived-relational-model-map); [D095 dictionary](architecture.md#detailed-relational-dictionary) |
 | Accounts, roles and shared-master permissions | [UC01-UC04](../use-cases/administration.md) |
 | Action/season/time delegation | [Business delegation](access-control.md) |
 | Master identity, corrections, required fields and snapshots | [Business rules](../business.md) |
@@ -119,6 +121,11 @@ Package metadata/approval: [current Context](../README.md). Rules have one owner
 | D089 | [Periodic jobs and overdue activation](architecture.md#d089---periodic-jobs-and-overdue-regulation-activation) | [0001](../../../docs/adr/0001-modular-layered-backend.md#q89---periodic-jobs-and-overdue-activation); [0010 follow-up](../../../docs/adr/0010-immutable-approved-season-regulation-versions.md#q89---technical-activation-recovery-follow-up) |
 | D090 | [Reproducible acceptance datasets](../quality.md#d090---reproducible-acceptance-datasets-and-season-fixtures) | [0015](../../../docs/adr/0015-managed-club-logos-in-first-version.md#q90---acceptance-dataset-and-demonstration-boundary) |
 | D091 | [Fixed XLSX templates and bounded exchange](../business.md#d091---fixed-xlsx-templates-and-bounded-data-exchange) | [0018](../../../docs/adr/0018-xlsx-create-only-data-exchange.md#q91---fixed-templates-and-bounded-processing) |
+| D092 | [Shared fields, identifiers and reference catalogs](../business.md#d092---shared-field-validation-identifiers-and-reference-catalogs) | [0009](../../../docs/adr/0009-stable-identities-and-selective-business-snapshots.md#q92---shared-fields-and-reference-catalogs) |
+| D093 | [Deterministic generation and stable Match identity](../use-cases/scheduling.md#d093---deterministic-fixture-generation-and-stable-published-match-identity) | [0012](../../../docs/adr/0012-schedule-generation-scope-and-drafts.md#q93---deterministic-generation-and-draft-replacement) |
+| D094 | [Controlled media delivery/cleanup](media.md#d094---backend-mediated-media-delivery-and-safe-cleanup); [audit access/retention](../use-cases/administration.md#audit-access-and-retention---d094) | [0015](../../../docs/adr/0015-managed-club-logos-in-first-version.md#q94---controlled-delivery-cleanup-and-audit-boundaries) |
+| D095 | [Domain-specific relational design](architecture.md#d095---domain-specific-relational-tables-and-exact-version-references); [dictionary/ERDs](architecture.md#detailed-relational-dictionary) | [0021](../../../docs/adr/0021-relational-identifiers-and-snapshots.md#q95---domain-specific-tables-and-detailed-dictionary) |
+| D096 | [API execution/security/lock contracts](architecture.md#d096---api-execution-synchronized-csrf-and-transaction-contracts); per-UC execution matrices in owning UC files | [0023](../../../docs/adr/0023-shared-rest-contract.md#q96---execution-security-and-concurrency-contracts) |
 
 ## Other confirmed instructions
 
@@ -133,4 +140,4 @@ Package metadata/approval: [current Context](../README.md). Rules have one owner
 
 ## Resume checkpoint
 
-Q91 option A and the full proposed package are confirmed as D091. The proposed remaining interview route is seven grouped rounds Q92-Q98: shared fields/catalogs/identity; schedule generation and regeneration; media delivery/cleanup and audit retention; detailed ERD/data dictionary; per-UC authority/API/transaction/security contracts; toolchain/environment and concrete acceptance configuration; final consistency review and whole-package approval. This route assumes acceptance of the recommendations without new scope or newly discovered policy conflicts; it does not pre-approve any future answer. No Q92 answer is recorded. D087-D090 remain unchanged. Detailed schema/toolchain, activation mappings, backup configuration and acceptance contracts remain open. Maintain only the English Context. LS-01 cancels Live Score interview/design/acceptance work; media API research/selection remains after independent core acceptance. Whole-v2 approval is pending; no code, Specs, Tasks, Issues, API integration, commit or push is authorized.
+Q96 option A and its entire contract package are confirmed as D096. The detailed typed dictionary/supporting ERDs are elaborated in architecture; the concrete nationality reference-data candidate is explicitly marked for whole-package review. D092 retains the Team Leader's 13-position amendment. The proposed remaining interview route is two grouped rounds Q97-Q98: toolchain/environment and concrete acceptance configuration; final consistency review and whole-package approval. This route assumes acceptance of the recommendations without new scope or newly discovered policy conflicts; it does not pre-approve any future answer. Q97 next addresses toolchain/environment and concrete acceptance configuration; no Q97 answer is recorded. D087-D090 remain unchanged. D096 now completes security support, the shared command/error/lock contract and 25 UC execution matrices. Toolchain, exact runtime/backup settings and concrete acceptance configuration remain open; do not treat the dictionary as an implemented schema. Maintain only the English Context. LS-01 cancels Live Score interview/design/acceptance work; media API research/selection remains after independent core acceptance. Whole-v2 approval is pending; no code, Specs, Tasks, Issues, API integration, commit or push is authorized.

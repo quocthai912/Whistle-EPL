@@ -18,7 +18,7 @@ One evolving, English-only Context Package is maintained in this directory for h
 | Stadiums, generation and adjustments | [UC12-UC15](use-cases/scheduling.md) |
 | Reports, appearances, events and official results | [UC16-UC20](use-cases/results.md) |
 | Public/internal lookup, ranks, reports and news | [UC21-UC25](use-cases/publication.md) |
-| Technical/design topics or [D001](design/architecture.md#d001---modular-layered-monolithic-backend)-[D091](business.md#d091---fixed-xlsx-templates-and-bounded-data-exchange) | [Design navigation and index](design/README.md) |
+| Technical/design topics or [D001](design/architecture.md#d001---modular-layered-monolithic-backend)-[D096](design/architecture.md#d096---api-execution-synchronized-csrf-and-transaction-contracts) | [Design navigation and index](design/README.md) |
 | Media or future external APIs | [Media](design/media.md), [integration](design/integrations.md) |
 | Quality, acceptance or Phase selection | [Quality](quality.md), [Progress Checker](progress-checker.md) |
 | Unresolved work | [Open decisions](open-decisions.md) |

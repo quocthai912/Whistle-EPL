@@ -339,7 +339,7 @@ The rules below are the authoritative current policy for this domain. The UC flo
 
 - **Appearance lists:** Each team has a nonempty list. A player appears at most once per match and belongs to one of its two teams. First-version scope adds no mandatory eleven-player count, tactical formation or substitution management.
 
-- **Shirt/position:** Take shirt number from the applicable registration at the assessment instant. Record match position separately; it may differ from profile position.
+- **Shirt/position:** Take shirt number from the applicable registration at the assessment instant. Record match position separately; it may differ from profile position. Both use the [D092 controlled position catalog](../business.md#d092---shared-field-validation-identifiers-and-reference-catalogs).
 
 - **Goalkeeper validation:** Before submission/confirmation, each team's report list must identify exactly one goalkeeper by match position. Missing or multiple goalkeepers block submission/confirmation until corrected; do not automatically choose one or skip statistics.
 
@@ -394,3 +394,15 @@ This table derives routes/input groups from approved D001-D085 and this document
 | UC20 | Internal transaction operation called by UC18/UC19; no public statistics-edit endpoint | Consume current official report references and seasonal rules; regenerate the affected season's approved projections. | D083/D084; lock/recalculate/commit with the initiating business operation. |
 
 All mutations validate their operation-specific allowlist; editable aggregates use expectedRevision, approval targets identify submittedVersionId as appropriate, and critical commands carry Idempotency-Key under D084. JSON replies follow D085; file bytes are the documented exception. requestId identifies an HTTP attempt, not a business command. These names elaborate the approved contract without adding business permissions or exposing CLI bootstrap/recovery over HTTP.
+
+## D096 execution authority and transaction matrix
+
+Read this with the existing route/DTO map and [shared D096 contract](../design/architecture.md#d096---api-execution-synchronized-csrf-and-transaction-contracts). The rows derive existing rights, not new grants. Each handler binds its exact action/version/revision, field allowlist and safe response to these gates. R denotes a critical D084 receipt-bearing command; ordinary draft edits still use expectedRevision. System Administrator is not implicit business authority; Season Manager means the assigned-season role.
+
+| UC | Authority and permitted action family | Final state/scope checks and atomic effects |
+|---|---|---|
+| UC16 | Assigned Results Officer prepares unofficial match report/appearances under D012 | Version/revision/season/match-state checks; D064 kickoff-based registration and separate report position. D095 same-version child relationships; no implicit official score/statistics write. |
+| UC17 | Assigned Results Officer records report goal/card events | D065 actual catalog/minute/appearance/own-goal/score checks; event IDs/revision avoid replay without content-based merging. Submitted versions are immutable. |
+| UC18 | Independent assigned Season Manager confirms initial Official Result | R. Exact submitted complete ended-match report; exclude all preparers/editors. Final authority/version/eligibility/score/referee checks; official pointer, full-season projections/revisions, review markers and audit commit together. |
+| UC19 | Assigned Season Manager or valid D019 delegated Results Officer prepares correction; independent assigned Season Manager approves | R for correction approval. D019 delegation only prepares/edits, never approves. Preserve old current Official Result while pending; validate corrected kickoff/catalog/events and unchanged basis; apply D083/D071/D073/audit effects atomically. |
+| UC20 | Internal Statistics & Reporting operation invoked by UC18/UC19 orchestration | No public/manual statistics-edit endpoint or independent user permission. Use caller transaction/season lock and only current official sources; update both projections with sourceRevision, preserving history and own-goal/clean-sheet attribution. |

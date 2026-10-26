@@ -220,7 +220,7 @@ The rules below are the authoritative current policy for this domain. The UC flo
 
 - **Supported scope:** First-version double round-robin with an even club count from 4 through 20, default 20. The 4-20 range is a confirmed v2 scope choice. Report odd counts, single-leg and other unsupported formats explicitly rather than generate an invalid schedule.
 
-- **Input/generation:** The Scheduling Officer selects exactly the configured number of clubs, all with approved participation applications. Generate all rounds and pairings automatically, reversing home/away roles between legs: 2*(N-1) rounds and N*(N-1) matches; the default produces 38 rounds and 380 matches.
+- **Input/generation:** The Scheduling Officer selects exactly the configured number of clubs, all with approved participation applications. Generate all rounds and pairings automatically under [D093](#d093---deterministic-fixture-generation-and-stable-published-match-identity), reversing home/away roles between legs: 2*(N-1) rounds and N*(N-1) matches; the default produces 38 rounds and 380 matches.
 
 - **Completion:** Staff enter dates/times; suggest the registered home ground. Stadium substitutions remain subject to source approval conditions. No automatic complete calendar/venue optimization is required.
 
@@ -252,7 +252,7 @@ The rules below are the authoritative current policy for this domain. The UC flo
 
 - **Pending versions:** Submitted content is immutable. Before a decision the preparer may withdraw the submitted version; the approver may return it for supplementation or reject it with reasons. Changes and resubmission create a new version with history.
 
-- **Regeneration:** Regenerate only while the initial schedule is still unapproved and in draft, with confirmation of replacement and traceability of the previous version. After publication, prohibit whole-schedule regeneration and changes to pairings, rounds or home/away roles.
+- **Regeneration:** Regenerate only while the initial schedule is still unapproved and in draft, with confirmation of replacement and traceability of the previous version; [D093](#d093---deterministic-fixture-generation-and-stable-published-match-identity) defines clearing manual values, version replacement and Match creation at approval. After publication, prohibit whole-schedule regeneration and changes to pairings, rounds or home/away roles.
 
 - **Adjustments:** Propose date/time or stadium changes with reasons and before/after values. One proposal may cover several matches in the same season; approve/apply the entire proposal or none. The old schedule remains public pending approval.
 
@@ -295,3 +295,27 @@ This table derives routes/input groups from approved D001-D085 and this document
 | UC15 | GET /public/seasons/{seasonId}/schedule | Allowlisted round/club/time filters, stable pagination and public match identifiers/status/time/stadium/media references. | Published records only; postponed historical times cannot masquerade as a replacement schedule. |
 
 All mutations validate their operation-specific allowlist; editable aggregates use expectedRevision, approval targets identify submittedVersionId as appropriate, and critical commands carry Idempotency-Key under D084. JSON replies follow D085; file bytes are the documented exception. requestId identifies an HTTP attempt, not a business command. These names elaborate the approved contract without adding business permissions or exposing CLI bootstrap/recovery over HTTP.
+
+### D093 - Deterministic fixture generation and stable published match identity
+
+**Status:** CONFIRMED by the Team Leader, Q93 option A and the entire proposed package ("Tôi chọn A."). [Approval and rationale](../../../docs/adr/0012-schedule-generation-scope-and-drafts.md#q93---deterministic-generation-and-draft-replacement). D060-D062 retain supported scope, approval and adjustment ownership; this decision owns the generation/replacement/identity contract.
+
+- **Deterministic pairing:** Sort the approved selected clubs by normalized business code to establish the input order. Use circle rotation: fix one club, rotate the others and pair opposite ends for each first-leg round. Assign home/away through a fixed round/pair-index rule; the second leg repeats corresponding round order with home/away reversed. Store input order and algorithm version with the generated version; do not use randomness or current time for pairings.
+- **Derived algorithm v1:** For zero-based rounds r = 0..N-2 and pairs i = 0..N/2-1, pair array[i] with array[N-1-i], choosing the former as home when (r+i) is even and the latter otherwise. After each round keep array[0] fixed and move the last element to array[1], shifting the others right. Append the reversed-home/away copy as rounds N..2*(N-1). This spells out the approved fixed circle/index rules for implementation review, without adding first-leg streak/fairness constraints or calendar optimization.
+- **Structural verification:** Require 2*(N-1) rounds, N/2 matches per round and one appearance per club in each round. Every unordered club pair meets twice with reversed roles; every club has N-1 home and N-1 away matches over the season. Reject self-matches and duplicate directed pairs. A generation failure must not persist an incomplete/invalid replacement. Verify every supported even N from 4 through 20, including 38 rounds/380 matches for N=20.
+- **Regeneration:** Only regenerate a Draft of the still-unapproved initial schedule under D062. Explicit confirmation warns that pairings/rounds and entered dates/times/stadiums will be replaced. On confirmation create a new draft version, retain its predecessor read-only and record actor/time/reason. Clear dates/times and only suggest the registered home ground anew; do not transfer manually entered values. Failure preserves the complete current draft rather than replacing it partially.
+- **Draft versus Match identity:** Before initial approval, version-owned draft items have their own identifiers for editing/history, distinct from published Match records. Successful initial approval atomically creates stable UUID Match records and links them to the approved items. Enforce one directed (season, home club, away club) Match. Draft regeneration must not create official Match/report/result records or reuse draft row positions as Match identity.
+- **After publication:** UC14 adjustments, postponements, reports and results retain the same Match UUID. Date/time/stadium changes do not create another Match. Prohibit whole-schedule regeneration and changes to pairings, rounds or home/away roles under D062. Retain complete initial approval, independent authority, D061 final conflict checks and all approved history/transaction rules. No broadcast/travel/rest optimization, actual-EPL schedule matching or new performance threshold is added.
+
+Technical reference: [FIDE Berger round-robin tables](https://old.fide.com/fide/handbook.html?id=184&view=article) illustrate round-robin pairing; D093 defines the project's football algorithm rather than importing chess rules. This is approved Context design, not code, Phase completion or whole-v2 approval.
+
+## D096 execution authority and transaction matrix
+
+Read this with the existing route/DTO map and [shared D096 contract](../design/architecture.md#d096---api-execution-synchronized-csrf-and-transaction-contracts). The rows derive existing rights, not new grants. Each handler binds its exact action/version/revision, field allowlist and safe response to these gates. R denotes a critical D084 receipt-bearing command; ordinary draft edits still use expectedRevision. System Administrator is not implicit business authority; Season Manager means the assigned-season role.
+
+| UC | Authority and permitted action family | Final state/scope checks and atomic effects |
+|---|---|---|
+| UC12 | Separately granted shared Stadium master-management authority | D034/D036/D058/D059/D092; preserve historical references. Dates/occupancy remain UC13/UC14 scope. |
+| UC13 | Assigned Scheduling Officer prepares/submits; independent assigned Season Manager approves initial schedule | R for initial approval. D093 Draft-only regeneration/whole replacement, D060 structure and D061 cross-season conflict checks. Create stable Match records/initial revisions, publish complete schedule and audit in one transaction; no delegated initial approval. |
+| UC14 | Assigned Scheduling Officer prepares adjustment/postponement/return; independent assigned Season Manager or valid D019 delegated Scheduling Officer approves | R for approval/application. Exact proposal/current schedule revision, all-preparer/editor exclusion, not-started basis, D061 allocations and D067 return rules; apply entire affected set or none and retain Match UUIDs. |
+| UC15 | Public Viewer for published schedule/results; internal draft work uses its owning authorized UC13/UC14 routes | GET projections only. D032/D067 field/status/timing boundaries; unapproved proposals and unofficial scores never become public; no write endpoint or occupancy reservation. |

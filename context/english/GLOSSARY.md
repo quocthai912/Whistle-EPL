@@ -173,3 +173,9 @@ One business context and one glossary per language. Definitions describe domain 
 **Season test configuration**: Explicit seasonal parameter values attached to a controlled acceptance dataset, distinct from operational regulations approved for a real season ([D090](quality.md#d090---reproducible-acceptance-datasets-and-season-fixtures)).
 
 **Import preview**: An account-bound, temporary assessment of one uploaded master-data file before explicit confirmation, without reserving authority or guaranteeing that a later commit remains valid ([D091](business.md#d091---fixed-xlsx-templates-and-bounded-data-exchange)).
+
+**Internal personnel code**: A unique stable identifier assigned to a verified internal person for their personal account, distinct from the login username ([D092](business.md#d092---shared-field-validation-identifiers-and-reference-catalogs)).
+
+**Schedule draft item**: A version-owned proposed fixture used before initial schedule approval, distinct from the stable Match created when that schedule is approved ([D093](use-cases/scheduling.md#d093---deterministic-fixture-generation-and-stable-published-match-identity)).
+
+**Business audit record**: Protected traceability evidence of an important business operation and its required changes, distinct from ordinary operational diagnostic logs ([audit policy](use-cases/administration.md#audit-access-and-retention---d094)).

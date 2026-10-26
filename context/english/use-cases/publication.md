@@ -285,7 +285,7 @@ The rules below are the authoritative current policy for this domain. The UC flo
 
 - **Multiple roles and delegation:** A person holding multiple roles may view according to the roles actually assigned in the season. Delegation adds only the data needed for its operation. A function needing eligibility checks may receive the result and necessary reasons without automatically receiving the whole underlying source record.
 
-- **Administration and history:** System Administrators do not automatically gain every business-profile screen; business work requires the corresponding role. Object-specific history is viewed within the object's access scope; system-wide log search remains UC04. Exact log fields and export permissions remain open, so UC04 is not an implicit grant to every business screen or unrestricted log payload.
+- **Administration and history:** System Administrators do not automatically gain every business-profile screen; business work requires the corresponding role. Object-specific history is viewed within the object's access scope; system-wide log search remains UC04. [D094 audit policy](administration.md#audit-access-and-retention---d094) defines filtered traceability access, protected business history and no first-version audit export; UC04 is not an implicit grant to every business screen or unrestricted log payload.
 
 ### D066 - Shared standings ranks and shared individual awards
 
@@ -350,7 +350,7 @@ The rules below are the authoritative current policy for this domain. The UC flo
 - **Withdrawal/republication:** Require a withdrawal reason and log. Republishing requires an explicit action on the chosen version, with no automatic restoration. Do not hard-delete previously published versions/history.
 - **Visibility/order:** Public lists, details and D068 show only the current permitted published version, never drafts/withdrawn content. Public fields are title, body, season and the current version's publication time. Staff-account details, logs and withdrawal reasons remain internal. Order newest current-version publication first; D068's five-item preview follows this order.
 - **Closed seasons:** Appropriately authorized managers may still publish/revise/withdraw seasonal news when the season is Closed. This exception does not reopen the season or change official regulations/results/statistics/summaries. D074 continues to gate those other writes.
-- **Remaining contracts:** Exact field lengths, identifiers, version/storage/API/error/concurrency and audit payload contracts remain to be elaborated without changing this approved policy.
+- **Remaining contracts:** Title/body/reason length and text normalization follow [D092](../business.md#d092---shared-field-validation-identifiers-and-reference-catalogs); identifier/version/storage/API/error/concurrency and audit payload mappings remain technical elaboration without changing this policy.
 
 ## DASHBOARD-01 - Season Overview Dashboard
 
@@ -383,3 +383,15 @@ This table derives routes/input groups from approved D001-D085 and this document
 | UC25 | GET /public/seasons/{seasonId}/news; GET /public/news/{newsId} | Current permitted published version only: title/bodyText/season/publishedAt; newest current publication first. | D077; drafts, withdrawn history, staff-account details and internal reasons remain restricted. |
 
 All mutations validate their operation-specific allowlist; editable aggregates use expectedRevision, approval targets identify submittedVersionId as appropriate, and critical commands carry Idempotency-Key under D084. JSON replies follow D085; file bytes are the documented exception. requestId identifies an HTTP attempt, not a business command. These names elaborate the approved contract without adding business permissions or exposing CLI bootstrap/recovery over HTTP.
+
+## D096 execution authority and transaction matrix
+
+Read this with the existing route/DTO map and [shared D096 contract](../design/architecture.md#d096---api-execution-synchronized-csrf-and-transaction-contracts). The rows derive existing rights, not new grants. Each handler binds its exact action/version/revision, field allowlist and safe response to these gates. R denotes a critical D084 receipt-bearing command; ordinary draft edits still use expectedRevision. System Administrator is not implicit business authority; Season Manager means the assigned-season role.
+
+| UC | Authority and permitted action family | Final state/scope checks and atomic effects |
+|---|---|---|
+| UC21 | Public Viewer for published match/result lookup; internal report data uses owning results permissions | GET safe field projection. Explicit published match state and current Official Result only; no pending score/correction/reference leak. |
+| UC22 | Assigned Season Manager for report/export and ranking/summary preparation; independent assigned Season Manager for ranking-resolution/summary approval | R for resolution approval/summary confirmation. Exact source revision and tied-group/official-result readiness, D070-D073 editor exclusion and nondelegability. BM5 XLSX under D078/D091; public lookup grants no internal bulk export. |
+| UC23 | Public Viewer for permitted club/player/standings/statistical lookup; internal profile/history reads follow D033/D034 | GET field projection and D094 current media scope; D068 Dashboard reuses permitted official data and explicit Loading/Empty/Error. Date of birth remains the approved public exception, not full registration/evidence access. |
+| UC24 | Assigned Season Manager prepares/publishes/revises/withdraws seasonal news | R for publication/withdrawal. D077 explicitly allows self-publication and Closed-season news work; no independent approver or delegation is added. Exact version/current-publication/audit updates remain atomic. |
+| UC25 | Public Viewer reads current published news | GET current published version/title/body/season/publication time only. Draft/withdrawn/internal actor/reason/history content is excluded. |

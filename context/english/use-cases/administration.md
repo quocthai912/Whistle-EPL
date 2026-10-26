@@ -321,7 +321,7 @@ The rules below are the authoritative current policy for this domain. The UC flo
 
 - **Decision:** Each person has one personal internal account across the system; shared accounts/credentials are not permitted. Combined or changed responsibilities use role assignments on that account, rather than separate accounts for the same person.
 
-- **Identity and separation:** The administrator verifies identity during account creation and prevents another account for an existing person. Separation-of-person checks rely on the person's individual account under this one-to-one policy. Identity fields and duplicate-detection details remain to be designed; a unique username alone does not establish person uniqueness.
+- **Identity and separation:** The administrator verifies identity during account creation and prevents another account for an existing person. Separation-of-person checks rely on the person's individual account under this one-to-one policy. [D092](../business.md#d092---shared-field-validation-identifiers-and-reference-catalogs) defines personnel code/full name and username rules with administrator identity verification; a unique username alone does not establish person uniqueness.
 
 ### D034 - Separately assigned shared master-record management permissions
 
@@ -409,7 +409,7 @@ The rules below are the authoritative current policy for this domain. The UC flo
 - **Lock separation:** Reset does not itself unlock the account. Reset/unlock are separately authorized and audited; D011 recovery still targets only existing System Administrator accounts.
 - **Login throttling:** Temporarily block login attempts for 15 minutes after five consecutive failures within a 15-minute window for the supplied username, and after 20 failures from an IP within 15 minutes. These temporary limits do not change the administrator-managed Locked account state.
 - **Feedback/history:** Login failures do not disclose whether a username exists. Log security events without passwords. Do not hard-delete accounts referenced by business history; discontinue use through account locking under existing safeguards.
-- **Remaining contracts:** Unicode length/representation, local blocklist source, exact credential handoff procedure, throttling-counter semantics/storage, hash migration/rehash and endpoint/error/concurrency contracts remain technical elaboration. This decision selects neither a new public registration/reset service nor a specific library.
+- **Remaining contracts:** D096 now specifies password code-point/UTF-8 handling, Argon2id baseline, persistent rolling counters and shared endpoint/error/concurrency rules. The reviewed local blocklist contents/license, hashing library and exact environment/handoff runbook remain Q97/implementation-planning work. This decision selects neither a new public registration/reset service nor a specific library.
 
 ## Derived REST and DTO contract map
 
@@ -423,3 +423,25 @@ This table derives routes/input groups from approved D001-D085 and this document
 | UC04 | GET /audit-logs | Allowlisted actor/time/action/object filters and pagination; return only the permitted audit view. | System Administrator; redact credential/session secrets and restricted payload fields. |
 
 All mutations validate their operation-specific allowlist; editable aggregates use expectedRevision, approval targets identify submittedVersionId as appropriate, and critical commands carry Idempotency-Key under D084. JSON replies follow D085; file bytes are the documented exception. requestId identifies an HTTP attempt, not a business command. These names elaborate the approved contract without adding business permissions or exposing CLI bootstrap/recovery over HTTP.
+
+## Audit access and retention - D094
+
+**Status:** CONFIRMED with the entire Q94 option A package. [Decision navigation](../design/README.md#confirmed-decisions) and [ADR 0015](../../../docs/adr/0015-managed-club-logos-in-first-version.md#q94---controlled-delivery-cleanup-and-audit-boundaries) retain approval/rationale. This section owns audit payload/access/retention; [D094 media rules](../design/media.md#d094---backend-mediated-media-delivery-and-safe-cleanup) own image delivery/cleanup.
+
+- **Business audit:** Record actor, timestamp, action, object, applicable season, outcome, required reason and necessary before/after changes. Important successful business changes and their audit record commit consistently in the same transaction. Preserve the original BM-06 traceability requirements without dumping the entire request into audit.
+- **Secret exclusion:** Never log passwords/password hashes, session tokens, CSRF tokens, storage credentials or whole request bodies. Do not treat diagnostic logging as permission to copy restricted business content.
+- **UC04 view:** System Administrators may search traceability metadata; UC04 does not by itself authorize access to restricted contact values, homegrown evidence or internal profile content embedded in change payloads. Show sensitive detail only in object-specific history where the viewer has the corresponding current access. Keep general system-wide lookup separate from business-profile authorization; no first-version audit export is added.
+- **Business retention:** Retain business audit and version history with the business data, with no first-version automatic deletion or application-UI edit/delete operation. Audit/history must remain searchable and protected under the existing quality requirements.
+- **Diagnostic retention:** Ordinary operational diagnostic logs rotate with 30-day retention and restricted access; they do not substitute for business audit. XLSX temporary uploads, command receipts and backup sets retain their distinct D091/D084/D088 policies. No automatic deletion period is introduced for profiles, evidence or seasons.
+- **Verification:** Check transaction rollback if required business audit cannot be recorded, credential/payload redaction, cross-role/object history access, denied audit export, retained business history and diagnostic rotation. Detailed per-action fields/routes/storage indexes and log rotation settings remain technical mappings, without changing Phase status or whole-package approval.
+
+## D096 execution authority and transaction matrix
+
+Read this with the existing route/DTO map and [shared D096 contract](../design/architecture.md#d096---api-execution-synchronized-csrf-and-transaction-contracts). The rows derive existing rights, not new grants. Each handler binds its exact action/version/revision, field allowlist and safe response to these gates. R denotes a critical D084 receipt-bearing command; ordinary draft edits still use expectedRevision. System Administrator is not implicit business authority; Season Manager means the assigned-season role.
+
+| UC | Authority and permitted action family | Final state/scope checks and atomic effects |
+|---|---|---|
+| UC01 | Prelogin context for login; valid restricted/full session for self password change | CSRF/origin plus D081 rolling throttling and generic failures. Login creates a fresh D080 session; password change revokes all sessions. No receipt persists credential inputs. |
+| UC02 | Current authenticated session logout | CSRF/origin; revoke current session and clear matching cookie. Invalid/expired session follows shared 401 feedback, not a replayed business write. |
+| UC03 | System Administrator for account/system/season-role/shared-grant/Create-Season-grant administration; D014 delegation processing only under its approved matrix | R for critical grant/revoke/lock/unlock/delegation processing. Check self-grant/last-admin/person separation and affected-account coordination; authority changes/session invalidation/audit commit together. Credential reset retains D081 revision/secure-input/no-secret-receipt safeguards. Bootstrap/recovery remain server CLI, not public operations. |
+| UC04 | System Administrator for system-wide traceability search | GET only, allowlisted actor/time/action/object filters and safe pagination. D094 metadata/redaction, object-read boundary and no first-version audit export. |
