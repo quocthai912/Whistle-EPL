@@ -221,6 +221,8 @@ Organizing Committee / Season Manager; Results Officer (if authorized).
 
 ## UC20
 
+Current storage/recalculation policy: [D083](#d083---stored-official-statistics-with-full-season-recalculation).
+
 Current rules: [D064](results.md#d064---kickoff-based-appearance-eligibility-and-report-defined-goalkeepers), [D066](publication.md#d066---shared-standings-ranks-and-shared-individual-awards).
 
 **Update standings and statistics**
@@ -259,7 +261,7 @@ Standings and player statistics accurately reflect the related official results.
 
 **Alternative flow:**
 
-No standings-affecting change: unaffected data need not be recalculated.
+A pending, returned or rejected correction leaves the current Official Result and statistics unchanged; a successful confirmation/correction follows D083's full-season recalculation.
 
 **Exceptions:**
 
@@ -325,7 +327,7 @@ The rules below are the authoritative current policy for this domain. The UC flo
 
 - **Initial confirmation:** UC18 requires an ended match and a complete validated report, with previously confirmed authority/separation rules. Saving the report or entering a score does not make it official.
 
-- **Corrections/consistency:** The current official result remains public and feeds statistics pending UC19 approval. Return/rejection/withdrawal of a correction does not invalidate it. Successful confirmation/correction consistently updates result, statistics and history under UC18-UC20; failure must not leave partial official/statistical updates.
+- **Corrections/consistency:** The current official result remains public and feeds statistics pending UC19 approval. Return/rejection/withdrawal of a correction does not invalidate it. Successful confirmation/correction consistently updates result, statistics and history under UC18-UC20 and [D083](#d083---stored-official-statistics-with-full-season-recalculation); failure must not leave partial official/statistical updates.
 
 ### D064 - Kickoff-based appearance eligibility and report-defined goalkeepers
 
@@ -364,3 +366,31 @@ The rules below are the authoritative current policy for this domain. The UC flo
 - **Referee basis:** Before submission require referee full name, original-report identifier/reference and the inputter's confirmation of cross-checking the signature on the original. Retain verifier/time; the approver reviews this basis with the report.
 
 - **History/attachments:** Preserve events and referee basis in the confirmed version; corrections use UC19. First version requires no signature image, scanned attachment or digital-signature implementation. This specifies v2 representation of BM3's signature basis, not deletion of the source field.
+
+### D083 - Stored official statistics with full-season recalculation
+
+**Status:** CONFIRMED by the Team Leader, Q83 option A and its full common package. [Approval and rationale](../../../docs/adr/0013-match-report-and-official-result-lifecycles.md#q83---stored-statistics-and-full-season-recalculation).
+
+- **Authoritative input:** Calculate from the currently referenced confirmed report/Official Result version of each match. Drafts, pending confirmations and unapproved corrections are excluded.
+- **Derived storage:** Persist ClubSeasonStats by season/club and PlayerSeasonStats by season/player as regenerable derived data, not manually editable sporting outcomes.
+- **Transaction synchronization:** Season-scoped locking and retry/idempotency follow [D084](../design/architecture.md#d084---revision-checks-idempotent-commands-and-targeted-transaction-locks).
+- **Recalculation strategy:** After each successful result confirmation/correction, aggregate the complete affected season from its current Official Results and update its derived statistics in the same transaction. Do not use incremental subtraction/addition as the selected first-version strategy.
+- **Atomic effects:** Coordinate the official result reference, statistics, history and required D071/D073 review/reconfirmation markings in one transaction under D030/D063/D079. Failure rolls back the complete operation.
+- **Historical basis:** Use match reports, appearances and their registration basis for player/club attribution. A later club transfer does not move historical goals to the new club.
+- **One interpretation:** Statistics & Reporting owns formulas, ties and awards; Dashboard, lookup and XLSX use that common data/interpretation. Multiple historical versions cannot double-count a match.
+- **Verification:** Preserve HQ-02 update and HQ-04 reporting thresholds and verify them on representative datasets; selecting full-season recalculation is not evidence of performance acceptance.
+- **Remaining contracts:** Exact aggregate columns, source/revision markers, indexes, concurrency and recovery/rebuild mechanics remain technical elaboration. Official reports and version snapshots remain authoritative; projections do not replace them.
+
+## Derived REST and DTO contract map
+
+This table derives routes/input groups from approved D001-D085 and this document's owning UCs; it is a technical design draft, not controller/DTO code or a generated feature Specification. Routes are relative to /api/v1. Braced segments are path parameters, not unrestricted operations: every action is explicitly allowlisted. Unspecified field lengths, enum spellings and detailed per-role/error mappings remain in the open register.
+
+| UC | Route/operation family | Input/output contract | Binding checks |
+|---|---|---|---|
+| UC16 | GET /matches/{matchId}/report; POST /matches/{matchId}/report-versions | Match identity and new draft basis; return the authorized case/version view. | D063 one report case per match; scheduling alone does not create an Official Result. |
+| UC17 | PATCH /match-report-versions/{versionId}; POST /match-report-versions/{versionId}/submit | Actual start/end, appearance entries, goal/card events, score and referee/original-signature basis; expectedRevision. Nested entries use identifiers and typed mainMinute/addedMinute values. | D047-D049/D063-D065; submitted content immutable; appearances/catalog/score gates required. |
+| UC18 | POST /match-report-versions/{versionId}/confirm | Exact submitted version, expected aggregate revision and D084 command key; source/permission/state validation is server-side. | D005/D063/D083; ended match and independent confirmation; result/statistics/history commit together. |
+| UC19 | POST /matches/{matchId}/result-corrections; POST /result-corrections/{requestId}/{action} | Current official-version basis, proposed corrected report version, reason and explicit submit/approve/return/reject/withdraw commands. | D005/D049/D063/D083; previous official result remains effective while pending. |
+| UC20 | Internal transaction operation called by UC18/UC19; no public statistics-edit endpoint | Consume current official report references and seasonal rules; regenerate the affected season's approved projections. | D083/D084; lock/recalculate/commit with the initiating business operation. |
+
+All mutations validate their operation-specific allowlist; editable aggregates use expectedRevision, approval targets identify submittedVersionId as appropriate, and critical commands carry Idempotency-Key under D084. JSON replies follow D085; file bytes are the documented exception. requestId identifies an HTTP attempt, not a business command. These names elaborate the approved contract without adding business permissions or exposing CLI bootstrap/recovery over HTTP.

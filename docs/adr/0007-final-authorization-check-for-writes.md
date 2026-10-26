@@ -27,3 +27,7 @@ Current policy owner: [D030](../../context/english/design/architecture.md#d030--
 - **Affected Phases:** PHASE 1 shared session/authorization foundation, PHASE 2-PHASE 9 internal writes and PHASE 10 failure/concurrency verification. No Phase status changes.
 
 - **Still open:** Exact enforcement/serialization point, transaction/isolation/locking mechanism, authoritative time/permission reads, error contracts, retries and pending-work behavior. [D030](../../context/english/design/architecture.md#d030---recheck-current-session-and-authority-at-the-final-decision-point-of-writes) selects the behavioral policy, not database isolation, lock types or other implementation technology.
+
+## Q84 follow-up - Concrete synchronization strategy
+
+[D084](../../context/english/design/architecture.md#d084---revision-checks-idempotent-commands-and-targeted-transaction-locks) selects Read Committed with targeted synchronization, technical revisions, command receipts and bounded known-rollback retries. Its rationale is in [ADR 0022](0022-targeted-locks-and-idempotent-commands.md). D030 final current-session/authority/time checks remain mandatory after waiting; a receipt never bypasses current access.

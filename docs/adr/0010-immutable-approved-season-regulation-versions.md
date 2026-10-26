@@ -293,3 +293,21 @@ Current policy owner: [D052](../../context/english/use-cases/registration.md#d05
 - **Affected Phases:** PHASE 2 regulations, PHASE 3 registration, PHASE 5 participation checks and PHASE 10 regression verification. No Phase status changes.
 
 - **Still open:** Concrete homegrown/U21 criteria and values, registration windows/deadline exceptions, detailed record lifecycle and schema/concurrency contracts. This decision concerns player conditions and squad limits, not the deadline time basis; it does not introduce an additional approver into UC10.
+
+## Q72 follow-up - Ranking-position parameter freeze
+
+[D072](../../context/english/use-cases/registration.md#d072---seasonal-qualification-and-relegation-counts) explicitly extends D045's first-Official-Result freeze milestone to seasonal qualification/relegation counts Q/R. Approval evidence and the configuration trade-off are recorded in [ADR 0014](0014-shared-ranks-and-individual-awards.md#q72---seasonal-qualification-and-relegation-counts); existing approved-version/cancellation/activation rules remain unchanged.
+
+## Q74 - Season closure and reopening
+
+**Status:** accepted. **Decision:** D074. The Team Leader selected Q74 option A ("Tôi chọn A."), approving the full common package. Current policy is owned by [D074](../../context/english/use-cases/registration.md#d074---independently-approved-season-closure-and-reopening).
+
+Choose independent proposal/approval by two authorized Season Managers rather than direct one-manager closure/reopening. This adds coordination for a season-wide write gate. Open/Closed transitions are explicit, independent of dates or summary confirmation, and nondelegable. Closure requires a valid confirmed summary, resolved seasonal pending/future work and ended playing-registration intervals; it does not silently cancel registrations. Closed seasons preserve authorized lookup/export and independent shared-media management. Reopening permits existing correction workflows without unlocking frozen regulations or restoring permissions. Existing summary validity changes only when its official basis changes; final writes check both lifecycle and current session/authority. Technical workflow/error/concurrency details remain open; no implementation or whole-v2 approval is established.
+
+## Q76 follow-up - Initial effective-regulation prerequisite
+
+[D076](../../context/english/use-cases/registration.md#d076---separate-season-creation-authority-and-initial-regulation-gate) settles absence of an effective first version: allow staffing/preparation/drafts, block dependent business steps, and use no implicit template or prior-season baseline. First-version approval/effectivity still follows D005/D042/D043; an initial version that cannot validly activate leaves the gate closed. Approval evidence is in [ADR 0003](0003-season-scoped-business-permissions.md#q76---separate-season-creation-authority); technical activation/retry mechanisms remain open.
+
+## Q89 - Technical activation recovery follow-up
+
+**Status:** accepted. **Decision:** D089. The Team Leader confirmed Q89 option A and its whole package. [D089](../../context/english/design/architecture.md#d089---periodic-jobs-and-overdue-regulation-activation) settles the technical discovery/recovery questions left open in earlier rounds; [ADR 0001](0001-modular-layered-backend.md#q89---periodic-jobs-and-overdue-activation) records the execution-model trade-off. D051's business-incompatible Activation blocked outcome remains distinct from a rolled-back technical failure. Delayed processing preserves the approved time and history, and unresolved technical activation cannot silently allow dependent operations on stale regulations. Exact field/lock/error mappings remain open; no approved regulation content, approval responsibility or whole-package status is changed.

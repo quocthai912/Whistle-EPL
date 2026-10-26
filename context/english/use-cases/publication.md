@@ -51,6 +51,8 @@ No detailed conditions: display data within the default scope.
 
 ## UC22
 
+Current ranking-resolution and summary rules: [D070](#d070---fixed-group-season-end-head-to-head-calculation), [D071](#d071---approved-playoff-based-ranking-resolutions-within-uc22), [D073](#d073---versioned-season-summary-confirmation-and-reconfirmation).
+
 Current rules: [D066](publication.md#d066---shared-standings-ranks-and-shared-individual-awards).
 
 **Generate and export competition reports**
@@ -85,7 +87,7 @@ Aggregate reports from valid sources, with preview and file export in supported 
 4. The system checks permissions and source-data completeness.
 5. The system aggregates data using the relevant rules.
 6. The system displays a preview.
-7. The user confirms export in a supported format.
+7. The user confirms XLSX export under [D078](../business.md#d078---xlsx-create-only-import-and-controlled-export).
 8. The system creates the report file and provides it for download.
 
 **Alternative flow:**
@@ -147,6 +149,8 @@ No detailed filters: display statistics within the default scope.
 
 ## UC24
 
+Current news policy: [D077](#d077---season-scoped-versioned-news-publication).
+
 **Manage competition news and announcements**
 
 Source: §2.4.1.24, pp.134-136 (description, specification table, and analysis figures). See [PDF cross-check guidance](../sources.md#pdf).
@@ -173,7 +177,7 @@ Save content in an appropriate status; only published content is publicly visibl
 
 1. The user opens competition news/announcement management.
 2. The system displays existing announcements.
-3. The user creates or updates content.
+3. The user creates or updates content for the assigned season; editing published content prepares a successor draft under D077.
 4. The system checks management permission and required information.
 5. The user confirms saving.
 6. The system saves content and reports the result.
@@ -190,6 +194,8 @@ Save content in an appropriate status; only published content is publicly visibl
 3. No publication permission: reject publication and preserve content status.
 
 ## UC25
+
+Current public version/visibility rules: [D077](#d077---season-scoped-versioned-news-publication).
 
 **View competition news and announcements**
 
@@ -218,7 +224,7 @@ The user can view content permitted for publication.
 1. The user opens competition news and announcements.
 2. The system displays published news and announcements.
 3. The user selects an item to view.
-4. The system checks publication status.
+4. The system checks that the requested content is the current permitted published version under D077.
 5. The system displays the content.
 
 **Alternative flow:**
@@ -289,13 +295,62 @@ The rules below are the authoritative current policy for this domain. The UC flo
 
 - **In-season ranks:** Clubs equal on all applicable main ranking criteria share competition ranks, e.g. 1, 2, 2, 4. Do not use head-to-head criteria reserved for end-of-season resolution during the season. Use stable club-code order within a tied group only for presentation, without a sporting advantage or distinct rank.
 
-- **Season-end stakes:** Mark unresolved tied groups affecting championship, qualification or relegation for the source's additional-criteria/playoff process. Do not resolve sporting outcomes by club name/code. The detailed resolution workflow remains open.
+- **Season-end stakes:** Mark unresolved tied groups affecting championship, qualification or relegation for the source's additional-criteria/playoff process. Do not resolve sporting outcomes by club name/code. Head-to-head calculation follows [D070](#d070---fixed-group-season-end-head-to-head-calculation); playoff-based resolution follows [D071](#d071---approved-playoff-based-ranking-resolutions-within-uc22). Qualification/relegation parameters follow [D072](registration.md#d072---seasonal-qualification-and-relegation-counts); season-summary lifecycle follows [D073](#d073---versioned-season-summary-confirmation-and-reconfirmation).
 
 - **Individual awards:** Retain shared top-scorer awards under the source, without implicit assists/appearances/minutes tiebreakers. Goalkeepers tied for the highest clean-sheet total share the Golden Glove, without extra ratios, appearances or goals-conceded tiebreakers.
 
 - **Positive achievement:** Identify top-scorer recipients only with at least one valid personal goal, and Golden Glove recipients only with at least one clean sheet. Otherwise show no recipient yet, not a shared award for all zero totals.
 
 - **Recalculation/finalization:** Valid official-result corrections update tied groups and award leaders. Final awards are confirmed through season summary.
+
+### D070 - Fixed-group season-end head-to-head calculation
+
+**Status:** CONFIRMED by the Team Leader, Q70 option A and the common package. [Approval and rationale](../../../docs/adr/0014-shared-ranks-and-individual-awards.md#q70---fixed-group-season-end-head-to-head).
+
+- **Source and scope:** QĐ5.3/QĐ5.5, O05; D045/D066. Retain points, overall goal difference and overall goals scored as the main ranking criteria. Apply the additional head-to-head criteria only at season end where a remaining tie affects the championship, qualification or relegation. In-season shared ranks remain governed by D066.
+- **Readiness and input:** Automatically calculate from the current season's Official Results only. Apply season-end resolution only after every fixture in the season schedule has an Official Result; an Ended or Postponed match without one does not satisfy readiness.
+- **Fixed group:** Form the tied group after the three main criteria. For two or more clubs, use all official matches between members of that original group to calculate head-to-head points and head-to-head away goals. Keep that original group as the basis for both criteria even if some clubs separate after the first criterion; do not recursively recalculate for the remaining subgroup.
+- **Order and values:** Compare head-to-head points first, using the approved seasonal win/draw/loss points, then goals scored while the club was the away team in those group matches. Do not add head-to-head goal difference, head-to-head total goals, fair play or name/code order as sporting criteria.
+- **Unresolved stakes:** If the automatic criteria leave a consequential tie unresolved, mark it Pending ranking resolution/playoff and block finalization of the affected conclusion. Playoff recording, authority and application follow [D071](#d071---approved-playoff-based-ranking-resolutions-within-uc22). Qualification/relegation configuration follows [D072](registration.md#d072---seasonal-qualification-and-relegation-counts); season-summary lifecycle follows [D073](#d073---versioned-season-summary-confirmation-and-reconfirmation).
+- **Interpretation:** Fixed-group handling explicitly fills the source's unspecified multi-club calculation detail; it does not claim that the original report defined this algorithm.
+
+### D071 - Approved playoff-based ranking resolutions within UC22
+
+**Status:** CONFIRMED by the Team Leader, Q71 option A and its full package. [Approval and rationale](../../../docs/adr/0014-shared-ranks-and-individual-awards.md#q71---playoff-based-ranking-resolution-records).
+
+- **Eligibility:** Open a ranking-resolution case only for a group still tied after D070 where important positions require resolution. This is not an arbitrary standings editor. The playoff takes place in reality; UC22 records its evidenced ranking outcome.
+- **Record:** Retain season, affected club group and positions, resulting order, playoff-result summary, date played and original report/decision reference. A scanned attachment is not mandatory.
+- **Authority:** One authorized Season Manager prepares/submits the proposal; a different authorized Season Manager approves it. The approver must not have prepared/edited that version. This approval is not delegable in the first version.
+- **Validation:** The proposed order must cover exactly the group requiring resolution, with no duplicate/missing clubs or changes to established positions outside the group. Recheck authority and source-data validity at approval.
+- **Effect:** Only an approved version resolves ranking and supports season summary. Keep regular-season points, goal difference, goals and player statistics unchanged; playoff outcomes are not added to those aggregates.
+- **Versions/corrections:** Submitted content is immutable. Withdrawal/return and a new submitted version support changes. Correcting an approved resolution also requires independent preparation/approval and preserved history.
+- **Changed basis:** If an official regular-season result correction changes the tied group or resolution basis, mark the resolution Needs review, stop applying it to finalize the affected conclusions and block season-summary confirmation until resolved. Retain history rather than silently treating the old resolution as current.
+- **First-version boundary:** Reuse UC22 without a new UC. No detailed playoff scheduling, lineup or event management is required. D063/D065 remain the regular match/report scope; a resolution record does not create another regular-season fixture/result. Qualification/relegation configuration follows [D072](registration.md#d072---seasonal-qualification-and-relegation-counts); season-summary lifecycle follows [D073](#d073---versioned-season-summary-confirmation-and-reconfirmation).
+
+### D073 - Versioned season-summary confirmation and reconfirmation
+
+**Status:** CONFIRMED by the Team Leader, Q73 option A and its full common package. [Approval and rationale](../../../docs/adr/0014-shared-ranks-and-individual-awards.md#q73---versioned-season-summary-confirmation).
+
+- **Case and workflow:** One summary case per season contains historical versions, with Draft -> Pending confirmation -> Confirmed and at most one pending version. Submitted content is immutable; withdraw/return it before preparing and submitting a new version.
+- **Authority:** One authorized Season Manager prepares/submits; a different authorized Season Manager confirms. A preparer/editor cannot confirm that version. Confirmation and reconfirmation are nondelegable in the first version.
+- **Readiness:** Every regular-season scheduled match has an Official Result, consequential rankings are resolved under D070-D072, and no official-result or ranking-resolution correction proposal remains pending in the season. Recheck these conditions, current rights and source versions at confirmation.
+- **Source snapshot:** Derive and retain BM5.3's rank/leading-club information, champion, R relegated clubs, shared top-scorer/Golden Glove recipients and total goals from system records, with regulation/result/resolution basis. No manual aggregate override is allowed. D066's positive-achievement rules still apply.
+- **Shared podium ranks:** Present runner-up/third according to established ranks, including multiple clubs sharing a rank. A skipped rank, e.g. no rank 3 in 1, 2, 2, 4, is stated explicitly rather than forcing three distinct club names or adding a playoff solely for podium presentation.
+- **Preservation/revision:** Do not directly edit/delete a confirmed version. Revising a summary creates a successor with a reason and history, under the same independent confirmation rules. A pending proposal does not replace an existing still-valid confirmed summary.
+- **Changed official basis:** If a valid official source change alters summary content or basis, mark the current summary Needs reconfirmation. Preserve its snapshot for history and clearly label it outdated, rather than presenting it as the current confirmed summary. Reaggregate into a new version for preparation and confirmation; do not silently rewrite the confirmed snapshot.
+- **Season boundary:** Confirming a summary does not itself close the season or prohibit UC19. Season closure/reopening follows [D074](registration.md#d074---independently-approved-season-closure-and-reopening), consistent with approved correction workflows.
+
+### D077 - Season-scoped versioned news publication
+
+**Status:** CONFIRMED by the Team Leader, Q77 option A and its full common package. [Approval and rationale](../../../docs/adr/0008-public-information-and-player-birth-dates.md#q77---season-scoped-news-and-announcements).
+
+- **Scope/content:** Every news/announcement item belongs to exactly one season. Require title and plain-text body with line breaks; retain creator/editor and timestamps. The first version requires no rich-text editor or attachments and introduces no season-independent news permission.
+- **Lifecycle and authority:** Draft -> Published -> Withdrawn. The authorized Season Manager in the assigned season may prepare/edit drafts, publish and withdraw, including publishing their own preparation without an independent approval step. Publication/withdrawal remains nondelegable under D019. Apply current session/authority checks and audit.
+- **Published revisions:** Editing public content prepares a successor draft rather than overwriting the published version. The existing published version stays visible until explicit publication of a replacement or withdrawal of the item. Preserve version history.
+- **Withdrawal/republication:** Require a withdrawal reason and log. Republishing requires an explicit action on the chosen version, with no automatic restoration. Do not hard-delete previously published versions/history.
+- **Visibility/order:** Public lists, details and D068 show only the current permitted published version, never drafts/withdrawn content. Public fields are title, body, season and the current version's publication time. Staff-account details, logs and withdrawal reasons remain internal. Order newest current-version publication first; D068's five-item preview follows this order.
+- **Closed seasons:** Appropriately authorized managers may still publish/revise/withdraw seasonal news when the season is Closed. This exception does not reopen the season or change official regulations/results/statistics/summaries. D074 continues to gate those other writes.
+- **Remaining contracts:** Exact field lengths, identifiers, version/storage/API/error/concurrency and audit payload contracts remain to be elaborated without changing this approved policy.
 
 ## DASHBOARD-01 - Season Overview Dashboard
 
@@ -314,3 +369,17 @@ The confirmed component/metric/layout contract is owned by [D068](#d068---public
 - **Profiles/news:** Clearly link to club/player lists with search/filter there; do not load hundreds of profiles onto the dashboard. Show up to five latest published news/announcements, newest first. Unpublished drafts stay internal.
 - **Layout:** Start with the season overview, then upcoming fixtures/recent results, standings/achievements, and profile navigation/news. Use a single column on mobile. This establishes the baseline arrangement; visual details remain for UI design without selecting a new framework/library.
 - **Freshness/failure:** Load on page opening, season selection changes or an explicit refresh action; continuous updates are not required. Show successful-load time. Each block provides Loading, Empty, Error and retry independently; a failed block does not remove successful blocks or turn an error into zero/mock data. Preserve official-only statistics and external-API independence.
+
+## Derived REST and DTO contract map
+
+This table derives routes/input groups from approved D001-D085 and this document's owning UCs; it is a technical design draft, not controller/DTO code or a generated feature Specification. Routes are relative to /api/v1. Braced segments are path parameters, not unrestricted operations: every action is explicitly allowlisted. Unspecified field lengths, enum spellings and detailed per-role/error mappings remain in the open register.
+
+| UC | Route/operation family | Input/output contract | Binding checks |
+|---|---|---|---|
+| UC21 | GET /public/seasons/{seasonId}/matches; GET /public/matches/{matchId} | Allowlisted season/round/club filters and public match fields; internal report views stay in the results module. | D032/D063; unofficial score/report data is not exposed. |
+| UC22 | GET /seasons/{seasonId}/reports/{reportType}; GET /seasons/{seasonId}/reports/{reportType}/export; POST /seasons/{seasonId}/ranking-resolutions; POST /seasons/{seasonId}/summary-versions | reportType allowlists BM5.1-BM5.3. Ranking/summary cases use explicit version-scoped submit/approve/confirm/return/withdraw commands; resolution input covers exact affected clubs/order/playoff basis, summary values are server-derived. | D070-D073/D078; authorized XLSX output is binary; no aggregate override payload. |
+| UC23 | GET /public/seasons/{seasonId}/clubs; GET /public/seasons/{seasonId}/players; GET /public/seasons/{seasonId}/standings; GET /public/seasons/{seasonId}/player-statistics; GET /public/seasons/{seasonId}/dashboard | Permitted filters/pagination and seasonal profile/statistical views; dashboard DTO has D068 counters, preview blocks and successful-load metadata. | D032/D066/D068/D069/D083; exact detail-route names can be elaborated without changing access/snapshot rules. |
+| UC24 | GET/POST /seasons/{seasonId}/news; POST /news/{newsId}/versions; PATCH /news-versions/{versionId}; POST /news/{newsId}/{action} | title/bodyText, season, draft revision and chosen content version; explicit publish/withdraw actions, with required withdrawal reason. | D077; managers can self-publish within assigned season, including Closed seasons; no season-independent news. |
+| UC25 | GET /public/seasons/{seasonId}/news; GET /public/news/{newsId} | Current permitted published version only: title/bodyText/season/publishedAt; newest current publication first. | D077; drafts, withdrawn history, staff-account details and internal reasons remain restricted. |
+
+All mutations validate their operation-specific allowlist; editable aggregates use expectedRevision, approval targets identify submittedVersionId as appropriate, and critical commands carry Idempotency-Key under D084. JSON replies follow D085; file bytes are the documented exception. requestId identifies an HTTP attempt, not a business command. These names elaborate the approved contract without adding business permissions or exposing CLI bootstrap/recovery over HTTP.

@@ -159,3 +159,13 @@ Current policy owner: [D057](../../context/english/use-cases/registration.md#d05
 - **Affected Phases:** PHASE 3 registration corrections, PHASE 5 match-impact review, PHASE 6/PHASE 7 historical outputs and PHASE 10 integrity verification. No Phase status changes.
 
 - **Still open:** Detailed correction/impact fields, representation of an erroneous prior decision, historical public display, exact lifecycle/error and transaction/concurrency contracts. No automatic disciplinary action, match forfeiture or new UC is selected.
+
+## Q74 follow-up - Closure prerequisites for playing registrations
+
+[D074](../../context/english/use-cases/registration.md#d074---independently-approved-season-closure-and-reopening) requires playing intervals to end no later than closure and future registration plans to be resolved through UC10, without automatic cancellation by closing. Its approval and rationale are in [ADR 0010](0010-immutable-approved-season-regulation-versions.md#q74---season-closure-and-reopening). D056/D057 interval, authority, correction and historical-preservation rules remain binding; prospective plan-change/cancellation and quota policy are subsequently settled by D075 below; technical contracts remain open.
+
+## Q75 - Prospective registration-plan changes
+
+**Status:** accepted. **Decision:** D075. The Team Leader selected Q75 option A ("Tôi chọn A."), approving the full common package. Current policy is owned by [D075](../../context/english/use-cases/registration.md#d075---prospective-registration-plan-changes-and-interval-quota-checks).
+
+Choose ordinary Registration Officer processing for prospective plan changes/cancellation rather than introducing manager approval for every such operation. D057 independent approval still applies to corrections of confirmed errors, including future-effective errors. Successor versions/history, explicit cancellation before effectivity and consistent paired transfer updates prevent accidental loss of the old registration. Restoring the old end on cancellation is conditional on validation, with conflicts/dependencies rejected instead of automatic cascading changes. Include confirmed future intervals in quota and shirt-number checks; retain current processing-time regulation/deadline, authority and Open-season gates. This supports D074 closure preparation without silently cancelling registrations or selecting technical storage/concurrency mechanisms.

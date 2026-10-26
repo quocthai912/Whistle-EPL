@@ -6,6 +6,8 @@ Current UC flows retain source codes/pages and incorporate explicitly approved r
 
 ## UC12
 
+Create-only XLSX import and authorized stadium-list export follow [D078](../business.md#d078---xlsx-create-only-import-and-controlled-export).
+
 **Manage stadiums**
 
 Source: §2.4.1.12, pp.97-99 (description, specification table, and analysis figures). See [PDF cross-check guidance](../sources.md#pdf).
@@ -280,3 +282,16 @@ Authority, transitions and allocation follow [D067](#d067---approved-postponemen
 - **Allocation:** Effective postponement releases the old club-use and stadium-occupancy intervals from D061 conflict checking while retaining history. Until approval the old allocation remains effective. An unapproved replacement proposal reserves no capacity.
 - **Approved return:** Only an approved UC14 date/time/stadium adjustment returns Postponed to Not started, after D061/D062 authority, state, version and conflict checks. Retain match identity, round, pairing and home/away roles. Postponed does not directly progress to In progress without this approved return.
 - **Mistaken postponement:** Restoration also follows UC14 approval and conflict checks; no undo bypasses approval. Postponement or rescheduling creates no Official Result and changes no standings/statistics. Forfeits, permanent cancellation and interruption of an already-started match remain outside this addition.
+
+## Derived REST and DTO contract map
+
+This table derives routes/input groups from approved D001-D085 and this document's owning UCs; it is a technical design draft, not controller/DTO code or a generated feature Specification. Routes are relative to /api/v1. Braced segments are path parameters, not unrestricted operations: every action is explicitly allowlisted. Unspecified field lengths, enum spellings and detailed per-role/error mappings remain in the open register.
+
+| UC | Route/operation family | Input/output contract | Binding checks |
+|---|---|---|---|
+| UC12 | GET/POST /stadiums; GET/PATCH /stadiums/{stadiumId} | Master code/name/location and allowed status fields as defined by the source; expectedRevision/basis for changes. | D034/D036/D058/D059/D078; exact source field dictionary remains to be completed. |
+| UC13 | GET/POST /seasons/{seasonId}/schedule-versions; POST /schedule-versions/{versionId}/{action} | Selected approved clubs, draft schedule entries, revision and explicit generate/submit/approve/withdraw/return/reject commands. | D060-D062; whole initial schedule approval; dates/stadiums may be missing only in draft. |
+| UC14 | POST /seasons/{seasonId}/schedule-adjustment-requests; GET /schedule-adjustment-requests/{requestId}; POST /schedule-adjustment-requests/{requestId}/{action} | Affected match identifiers, proposed date/time/stadium or postponement operation, reason, source versions and expected revisions; separate submit/approve/return/reject/withdraw actions. | D061/D062/D067; one same-season all-or-none request, approved resumption and cross-season resource checks. |
+| UC15 | GET /public/seasons/{seasonId}/schedule | Allowlisted round/club/time filters, stable pagination and public match identifiers/status/time/stadium/media references. | Published records only; postponed historical times cannot masquerade as a replacement schedule. |
+
+All mutations validate their operation-specific allowlist; editable aggregates use expectedRevision, approval targets identify submittedVersionId as appropriate, and critical commands carry Idempotency-Key under D084. JSON replies follow D085; file bytes are the documented exception. requestId identifies an HTTP attempt, not a business command. These names elaborate the approved contract without adding business permissions or exposing CLI bootstrap/recovery over HTTP.

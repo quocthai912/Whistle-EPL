@@ -1,0 +1,7 @@
+# ADR 0022 - Targeted locks and idempotent commands
+
+**Status:** accepted. **Decision:** D084. The Team Leader selected Q84 option A ("Tôi chọn A."), confirming the full common package. Authoritative policy is owned by [D084](../../context/english/design/architecture.md#d084---revision-checks-idempotent-commands-and-targeted-transaction-locks).
+
+Choose Read Committed with explicit domain-resource/season/authorization synchronization rather than blanket Serializable writes. This makes the intended contention points explicit, accepting responsibility for a complete guard/lock-order design and concurrent tests. Technical revisions reject stale edits independently of immutable business versions. PostgreSQL command receipts commit atomically with critical operations; matching retries recover outcomes for 24 hours under current access checks, and changed content with the same key is rejected. Retry at most three total attempts only after known rollback; unknown commit outcomes require receipt lookup.
+
+The trade-off was checked against PostgreSQL documentation on [explicit locks](https://www.postgresql.org/docs/current/explicit-locking.html) and [isolation](https://www.postgresql.org/docs/current/transaction-iso.html). Existing authorization expiry, bootstrap/last-administrator protection, cross-season conflicts and full-season statistics remain binding. Exact guards, receipt representation, timeout/error mapping and indexes remain open; no distributed infrastructure or implementation is selected.

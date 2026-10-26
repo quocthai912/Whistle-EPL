@@ -46,7 +46,7 @@ After G0, select a Phase with satisfied dependencies → Specification against a
 | PHASE 6 - Competition information lookup | BM4.1-4.4, schedules, matches, clubs/players, public standings/statistics | PHASE 2, PHASE 3, PHASE 4, PHASE 5 | `NOT_STARTED` |
 | PHASE 7 - Reports and season summary | Preview/generate/export BM5.1-5.3 | PHASE 1, PHASE 2, PHASE 5 | `NOT_STARTED` |
 | PHASE 8 - News and announcements | Manage/publish/view news | PHASE 1, PHASE 2; season association under O15 | `NOT_STARTED` |
-| PHASE 9 - Data exchange import and export | Approved-format data import/export, without replacing UC22 | PHASE 1, PHASE 2 and the Phases owning data selected in O11 | `NOT_STARTED` |
+| PHASE 9 - Data exchange import and export | Approved-format data import/export, without replacing UC22 | PHASE 1, PHASE 2, PHASE 3, PHASE 4 | `NOT_STARTED` |
 | PHASE 10 - Integration, regression, and system acceptance | Integration, backup/recovery, quality, operations, handover | PHASE 1-PHASE 9 `COMPLETED` | `NOT_STARTED` |
 
 Expected parallel work: after PHASE 2, PHASE 3 and PHASE 8 can be developed independently; PHASE 9 may handle data with approved contracts but is accepted only when all selected sources are available. After PHASE 5, PHASE 6 and PHASE 7 can run in parallel using official statistics owned by PHASE 5. PHASE 6's read-only functions may be prepared as individual sources become available, but the entire Phase cannot finish before PHASE 5. These are data/scope relationships, not service, API, repository, or member-assignment decisions. Parallel work still follows the approved Spec→Tasks workflow.
@@ -111,7 +111,7 @@ Expected parallel work: after PHASE 2, PHASE 3 and PHASE 8 can be developed inde
 
 ## PHASE 3 - Profiles and player registration
 
-**Confirmed media/API scope:** UC09 owns managed portraits for hundreds of player profiles; club/shirt associations remain seasonal. Portrait-specific limits/history remain open. See [media policy](design/media.md) and [INT-01](design/integrations.md). This adds scope/evidence requirements, not progress.
+**Confirmed media/API scope:** UC09 owns managed portraits for hundreds of player profiles; club/shirt associations remain seasonal. Verify portrait validation, authorized changes, failure preservation and current-image history behavior under [D069](design/media.md#d069---managed-player-portraits-with-current-image-display). See [media policy](design/media.md) and [INT-01](design/integrations.md). This adds scope/evidence requirements, not progress.
 
 **Implementation Status:** `NOT_STARTED`.
 
@@ -227,11 +227,11 @@ Expected parallel work: after PHASE 2, PHASE 3 and PHASE 8 can be developed inde
 
 ## PHASE 7 - Reports and season summary
 
-**Confirmed media/API scope:** Consume media in appropriate previews; exported-image requirements remain subject to the export contract. See [media policy](design/media.md) and [INT-01](design/integrations.md). This adds scope/evidence requirements, not progress.
+**Confirmed media/API scope:** Consume media in appropriate previews; structured XLSX exports exclude embedded images under [D078](business.md#d078---xlsx-create-only-import-and-controlled-export). See [media policy](design/media.md) and [INT-01](design/integrations.md). This adds scope/evidence requirements, not progress.
 
 **Implementation Status:** `NOT_STARTED`.
 
-**Scope:** UC22: generate, preview, and export BM5.1-BM5.3; check season-summary readiness. PHASE 5 owns source calculations; PHASE 9 owns general data exchange.
+**Scope:** UC22: generate, preview, and export BM5.1-BM5.3 as XLSX under D078; check season-summary readiness. PHASE 5 owns source calculations; PHASE 9 owns general data exchange.
 
 **References:** QĐ5.1-5.7, BM5.1-5.3 pp.9-11; §2.4.1.22 pp.127-130; HQ-04, TH-03/05/06, TT-04, BM-02/05/06, AT-03/04. [UC22](use-cases/publication.md).
 
@@ -284,11 +284,11 @@ Expected parallel work: after PHASE 2, PHASE 3 and PHASE 8 can be developed inde
 
 **Implementation Status:** `NOT_STARTED`.
 
-**Scope:** TT-03, TT-04: file exchange for data types selected by the team leader; validation/normalization and business-data preservation, separate from UC22's three report exports. Do not invent UC codes for requirements without a separate UC.
+**Scope:** TT-03, TT-04: XLSX create-only import and authorized export of club/stadium/player masters under [D078](business.md#d078---xlsx-create-only-import-and-controlled-export), with preview, complete-file atomicity and business-data preservation, separate from UC22's three XLSX report exports. Do not invent UC codes for requirements without a separate UC.
 
 **References:** §1.2.4.2 pp.17; TT-03/04 pp.19; BM-02/04/05; AT-01/02/04; BM/QĐ references for the data approved under O11.
 
-**Dependencies:** PHASE 1/PHASE 2 and the Phase owning selected data (PHASE 3, PHASE 4, or PHASE 5 when relevant); O04/O09/O11/O12. After O11, specify concrete dependencies before Specification.
+**Dependencies:** PHASE 1/PHASE 2/PHASE 3/PHASE 4 for access/configuration, club/player masters and stadium masters; O04/O09/O11/O12 technical contracts remain required before Specification.
 
 **Deliverables:** Approved formats/templates, import/export, error feedback, and data comparisons.
 
@@ -302,13 +302,13 @@ Expected parallel work: after PHASE 2, PHASE 3 and PHASE 8 can be developed inde
 - [ ] Vietnamese text, date/time, scores, identifiers, relationships, and history are preserved.
 - [ ] Functional, data-source integration, and regression tests pass; input/output files and evidence are complete.
 
-**Acceptance Criteria:** For each selected format (CSV or XLSX), process all of at least 100 valid records and preserve 100% of compared fields, including Vietnamese text/date/time/scores/identifiers. Detect invalid structure, missing fields, invalid types/values, and business violations; do not introduce invalid data, leak information, or bypass approval/confirmation. Handle duplicates/partial errors according to the approved decision, preserving valid data, relationships, and seasonal history. Do not automatically add external API integration.
+**Acceptance Criteria:** For XLSX under D078, process all of at least 100 valid records and preserve 100% of compared fields, including Vietnamese text/date/time/scores/identifiers. Detect invalid structure, missing fields, invalid types/values, and business violations; do not introduce invalid data, leak information, or bypass approval/confirmation. Handle duplicates/partial errors according to the approved decision, preserving valid data, relationships, and seasonal history. Do not automatically add external API integration.
 
 **Verification Evidence:** Actual input/output files for each selected format, ≥100-record datasets, field-by-field comparisons; invalid files and before/after data, permission, constraint, and corresponding workflow checks.
 
 ## PHASE 10 - Integration, regression, and system acceptance
 
-**Confirmed media/API scope:** Acceptance covers 20 clubs each with an actual logo and hundreds of player profiles, portrait management/fallback, unauthorized/invalid uploads, replacement failures and metadata-plus-file restore. Verify core operation without APIs before provider research/selection. Exact player dataset count remains open. See [media policy](design/media.md) and [INT-01](design/integrations.md). This adds scope/evidence requirements, not progress.
+**Confirmed media/API scope:** Acceptance covers 20 clubs each with an actual logo and hundreds of player profiles, portrait management/fallback, unauthorized/invalid uploads, replacement failures and metadata-plus-file restore. Verify core operation without APIs before provider research/selection. D090 fixes the full-season baseline at at least 600 Player Profiles; concrete fixture contents and authorized assets remain to be prepared. See [media policy](design/media.md) and [INT-01](design/integrations.md). This adds scope/evidence requirements, not progress.
 
 **Implementation Status:** `NOT_STARTED`.
 
@@ -340,8 +340,52 @@ Declare **the entire system complete** only when PHASE 1-PHASE 10 are all `COMPL
 
 ## Confirmed scope additions and acceptance boundaries
 
+- PHASE 1 establishes [D086](design/architecture.md#d086---react-spa-tooling-and-shared-ui-approach) Vite/React Router/Ant Design/CSS Modules and shared Fetch/state foundation; each UI-owning Phase and PHASE 10 verify Vietnamese interactions, route/access scopes, conflict/session-loss handling, responsive media and existing TT/TD targets.
+
+- PHASE 1 and each API-owning Phase verify [D085](design/architecture.md#d085---shared-rest-transport-and-response-contract) route/value/envelope/status/validation/pagination/access contracts. PHASE 9 verifies row/column file feedback and file responses; PHASE 10 checks cross-module consistency and absence of sensitive diagnostics.
+
+- PHASE 1/PHASE 10 verify [D084](design/architecture.md#d084---revision-checks-idempotent-commands-and-targeted-transaction-locks) revision conflicts, command receipts, current-access checks and bounded rollback-only retries. Owning Phases verify season/resource/authorization/bootstrap guards and consistent lock ordering under concurrent operations without changing the existing quality thresholds.
+
+- PHASE 5 verifies [D083](use-cases/results.md#d083---stored-official-statistics-with-full-season-recalculation) stored projections, full-season recalculation and atomic source/statistics/history/review effects. PHASE 6/PHASE 7/PHASE 10 verify shared read/export interpretation, transfer-safe historical attribution and HQ-02/HQ-04 thresholds.
+
+- PHASE 1/PHASE 2 establish [D082](design/architecture.md#d082---relational-identity-version-and-snapshot-foundations) UUID identity, normalized relationships, exact-version references, temporal types and selective JSONB foundations; each owner and PHASE 10 verify historical-reference preservation under its approved workflows.
+
+- PHASE 1/PHASE 10 verify [D081](use-cases/administration.md#d081---password-hashing-and-managed-credential-lifecycle) Argon2id/strength rules, temporary credential expiry and restricted first login, self-change/reset session invalidation, separate account unlocking, temporary login throttling and preserved account history under the existing BM-01/BM-03 thresholds.
+
+- PHASE 1/PHASE 10 verify [D080](design/architecture.md#d080---postgresql-server-side-sessions-with-protected-cookies) cookie/session storage, HTTPS same-origin operation, CSRF including login/logout, idle/absolute expiry, concurrent sessions, revocation and final write checks. No Phase completion is implied.
+
+- PHASE 1 verifies the [D079](design/architecture.md#d079---backend-module-ownership-and-synchronous-coordination) module/layer foundation; each owning Phase verifies its listed UC responsibilities, while PHASE 5/PHASE 7/PHASE 10 verify synchronous cross-module transaction and read consistency.
+
+- PHASE 9 verifies [D078](business.md#d078---xlsx-create-only-import-and-controlled-export) XLSX templates, preview/final revalidation, complete-file failure preservation, duplicate/error/warning handling and authorized master exports. PHASE 7 verifies XLSX BM5.1-BM5.3 reports without embedded images; PHASE 10 retains TT-03/TT-04/HQ-04 thresholds.
+
+- PHASE 8 verifies [D077](use-cases/publication.md#d077---season-scoped-versioned-news-publication) season-scoped authority, plain-text content, current published-version visibility, draft revisions, withdrawal/republication history and closed-season news handling. PHASE 6/PHASE 10 verify the D068 preview and direct-access checks.
+
+- PHASE 1/PHASE 2 verify [D076](use-cases/registration.md#d076---separate-season-creation-authority-and-initial-regulation-gate) create-only permission administration, no administrator self-grant, first-season creation and separate seasonal role assignment. PHASE 2-PHASE 5/PHASE 10 verify regulation-dependent work remains blocked without an approved effective initial version.
+
+- PHASE 3 verifies [D075](use-cases/registration.md#d075---prospective-registration-plan-changes-and-interval-quota-checks) prospective change/cancellation, paired-transfer restoration, dependent-plan conflicts and future interval quotas, retaining D057 correction approval and D074 closure prerequisites. PHASE 10 verifies failure/concurrency consistency.
+
+- PHASE 2 verifies [D074](use-cases/registration.md#d074---independently-approved-season-closure-and-reopening) Open/Closed transitions, independent nondelegable approval and frozen-milestone preservation. PHASE 3 verifies registration interval prerequisites; PHASE 4-PHASE 7/PHASE 10 verify closed-season write gates, retained read/export access and correction/reconfirmation integration.
+
+- PHASE 7 verifies [D073](use-cases/publication.md#d073---versioned-season-summary-confirmation-and-reconfirmation) readiness, independent nondelegable confirmation, immutable source snapshots, shared podium ranks and reconfirmation after source changes; PHASE 5/PHASE 10 verify correction integration. This does not mark season closure or Phase completion.
+
+- PHASE 2 verifies [D072](use-cases/registration.md#d072---seasonal-qualification-and-relegation-counts) configuration/approval and freeze checks; PHASE 5/PHASE 7 verify consequential rank-boundary ties and report classification against the same approved Q/R values.
+
+- PHASE 7 verifies the [D071](use-cases/publication.md#d071---approved-playoff-based-ranking-resolutions-within-uc22) UC22 resolution workflow, source references, independent approval, group/order validation, historical corrections and changed-basis blocking; PHASE 5/PHASE 10 verify regular-season aggregates remain unaffected by playoff records.
+
+- PHASE 5/PHASE 7 verify [D070](use-cases/publication.md#d070---fixed-group-season-end-head-to-head-calculation) on two-club and multi-club ties, official-result completeness and unresolved consequential ties, preserving D066 in-season behavior.
+
 - PHASE 4 owns POSTPONE-01 under UC14, including authorized history and D061/D062 rescheduling checks under confirmed [D067](use-cases/scheduling.md#d067---approved-postponement-and-return-through-uc14).
 - PHASE 5 preserves D063 and verifies postponement cannot create official results or statistical changes; interruption/forfeit/permanent-cancellation handling is not added.
 - PHASE 6 owns DASHBOARD-01 within existing lookup UCs: real access-scoped data, official statistics, responsive media and Loading/Empty/Error behavior under [D068](use-cases/publication.md#d068---public-season-overview-dashboard). PHASE 8 supplies only published news.
 - PHASE 10 verifies these additions with core/media functionality independent of external APIs. LS-01 removes Live Score implementation, detailed design and mandatory acceptance; no first-version completion depends on it.
 - Existing Phase statuses and checkboxes are unchanged. These are scope/verification obligations, not evidence of implementation. Postponement and dashboard packages are confirmed in D067/D068; remaining technical contracts stay in the unresolved register.
+
+- PHASE 1/PHASE 10 verify [D087](design/architecture.md#d087---docker-compose-reference-deployment) Compose/Caddy startup, same-origin HTTPS, trusted local acceptance certificates, environment/secret separation and persistent data across container replacement. PHASE 3/PHASE 6 verify [selected media storage](design/media.md#environment-specific-media-storage) authorization, validation, delivery and failure/fallback; PHASE 10 verifies provider-appropriate metadata-plus-content backup/restore. Existing external-API independence criteria concern football/media-data acquisition, with local media acceptance independent and optional remote storage tested for the selected deployment profile. This adds no Phase, status change or checkbox completion.
+
+- PHASE 1/PHASE 10 verify [D088](design/architecture.md#d088---coordinated-backup-sets-and-controlled-restore) backup/restore operations and drills under unchanged BM-07 thresholds; PHASE 3/PHASE 6 verify media-reference recovery and retained-set-safe cleanup. Include blocked/drained business/media/background writes, incomplete-set rejection, failure feedback, off-host Internet backup and fresh login after restore. This does not change Phase statuses, dependencies or checkboxes.
+
+- PHASE 1/PHASE 2/PHASE 10 verify [D089](design/architecture.md#d089---periodic-jobs-and-overdue-regulation-activation) scheduling, overdue regulation catch-up and request-time correctness, business-incompatible versus technical-failure outcomes, safe concurrent retry and D088 maintenance coordination. PHASE 1/PHASE 10 verify expiry before cleanup and host backup timer failure/missed-run handling; other owning Phases verify their regulation-dependent operations cannot commit on a stale basis. Phase statuses, dependencies and checkboxes remain unchanged.
+
+- PHASE 3/PHASE 6/PHASE 10 verify [D090](quality.md#d090---reproducible-acceptance-datasets-and-season-fixtures) full-season scale, controlled fixture versus demonstration separation and real backend/database/media rendering. PHASE 5/PHASE 7 verify expected official statistics/reports; PHASE 9 verifies at-least-100-record template fixtures. PHASE 10 records the 10-season/3,800-match dataset, declared seasonal parameters, reset/reproduction procedure and actual environment measurements. This preserves all Phase statuses, dependencies and checkboxes.
+
+- PHASE 9/PHASE 10 verify [D091](business.md#d091---fixed-xlsx-templates-and-bounded-data-exchange) fixed templates, bounded file parsing, date/code/catalog rules, workbook safety, preview expiration/access and final atomic revalidation. PHASE 7/PHASE 9 verify full authorized export/report coverage without applying the import row cap. Preserve the existing Phase ledger/statuses/dependencies/checkboxes.

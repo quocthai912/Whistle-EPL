@@ -170,4 +170,35 @@ The rules below are the authoritative current policy for this domain. The UC flo
 
 - **Seasonal lookup:** Use season-recorded information, including approved corrections, rather than automatically reading all latest master values. [D032](use-cases/publication.md#d032---public-information-boundary-including-player-dates-of-birth)/[D033](use-cases/publication.md#d033---internal-viewing-follows-business-responsibility) public/internal boundaries still apply.
 
-- **Media exception:** [LOGO-01](design/media.md#logo-01---approved-logo-design) owns the approved logo-only exception to seasonal descriptive lookup. Portrait history remains unresolved.
+- **Media exceptions:** [LOGO-01](design/media.md#logo-01---approved-logo-design) owns the current-logo exception; [D069](design/media.md#d069---managed-player-portraits-with-current-image-display) owns the separately approved current-portrait exception to seasonal descriptive lookup. Other snapshot rules remain unchanged.
+
+### D078 - XLSX create-only import and controlled export
+
+**Status:** CONFIRMED by the Team Leader, Q78 option A and its full common package. [Approval and rationale](../../docs/adr/0018-xlsx-create-only-data-exchange.md).
+
+- **Format:** XLSX is the selected first-version format for master-data import/export and UC22 BM5.1-BM5.3 report exports. CSV/PDF support and a spreadsheet library are not selected by this decision.
+- **Import scope:** Create new club, stadium and player masters from a separate template for each group, under its existing shared-management authority. Do not automatically create playing registrations or approve club participation.
+- **Duplicates/updates:** Duplicate business codes within the file or already present in the system are errors; existing records are updated through their corresponding UCs, not overwritten by import. D058 suspected-person duplicates remain reviewable warnings, not automatic merges/new hard uniqueness rules; continuation requires confirmation and reason.
+- **Preview/commit:** Parse/validate before writing and present data/errors by row and column. Explicit confirmation rechecks current permission/session and data; preview reserves no capacity and guarantees no later commit.
+- **Atomicity:** Commit the complete valid file or none. Errors or final conflicts create no partial records; correct the file and retry. Retain required warning acknowledgements and history.
+- **Export/access:** Export master lists under corresponding management authority and the three reports through UC22. Enforce permitted fields on the server; public-page access does not automatically grant bulk internal export.
+- **Media boundary:** Exchange structured values, without embedded club/player images or image paths that trigger external downloads. Managed media remains UC07/UC09 scope; this does not add an external API integration.
+- **Business/quality preservation:** Do not import permissions, approved regulations, Official Results, statistics or summaries to bypass existing workflows. Preserve Vietnamese text, dates/times and business codes. Retain TT-03's at-least-100-valid-record and 100%-field-preservation criteria and HQ-04's report-generation/export threshold. Template/file/value/preview-lifetime contracts follow D091 below; exact library/API/error/concurrency mappings and remaining report layout remain technical elaboration.
+
+### D091 - Fixed XLSX templates and bounded data exchange
+
+**Status:** CONFIRMED by the Team Leader, Q91 option A and the entire proposed package ("Tôi chọn A."). [Approval and rationale](../../docs/adr/0018-xlsx-create-only-data-exchange.md#q91---fixed-templates-and-bounded-processing). D078 retains ownership of create-only scope, access, warning handling, preview/final revalidation and complete-file atomicity; this decision owns template/file/value/preview-lifetime details.
+
+| Import template | Required data columns |
+|---|---|
+| Clubs | code, name, abbreviation |
+| Stadiums | code, name |
+| Players | code, fullName, birthDate, nationality, position |
+
+- **Template contract:** Publish three versioned templates with Vietnamese instructions and one designated data sheet per template. Validate the exact column-name set, independently of column order; missing, extra or duplicated columns are errors. These columns reuse D059 master requirements, not seasonal club membership, shirt number, U21/homegrown findings, permissions or images. Exact template-version metadata representation is derived implementation detail.
+- **Input limits:** Accept .xlsx only, at most 5 MiB (5,242,880 bytes) and 1,000 data rows excluding the header. Ignore wholly empty rows; reject a file with no data. Check actual workbook structure rather than trusting extension/MIME. Bound total decompressed content at 50 MiB (52,428,800 bytes), stopping when exceeded. These limits are explicitly approved project choices, not original PDF thresholds. Process bounded imports synchronously; larger inputs must be split.
+- **Value contract:** Treat business codes as strings preserving leading zeros and enforce D058 duplicate rules. birthDate is an unambiguous YYYY-MM-DD text value, without inferred day/month order or timezone conversion. Nationality and position must match system-published catalogs described with the template; do not create catalog entries from typos. Apply the same validation/normalization as manual entry and preserve Vietnamese diacritics. Catalog values and remaining shared field constraints are not silently chosen here.
+- **Workbook safety:** Reject formulas in data cells, macros, external data links and unsupported embedded content. Do not evaluate workbook content, fetch URLs or download images. Export user-originated values as appropriate literal cell types rather than executable formulas. This selects no XLSX library; implementation must demonstrably enforce the approved limits and safety contract.
+- **Preview lifetime:** Bind preview to its creating account, dataset and specific uploaded content for 30 minutes. Show errors by row/column and required D078 suspected-duplicate warnings/acknowledgements. Expiry or a changed file requires a new preview. Commit rechecks current session, permission, values and conflicts; preview grants no capacity or authorization reservation. Do not retain source uploads as long-lived business documents; clean temporary files after processing/expiry while retaining required operation traceability.
+- **Export:** Export the complete authorized filtered dataset, not only the visible page. Master exports include a create-template-compatible column subset; reimport of existing codes remains an error under D078. BM5 reports use their separately approved fields/layout. The 1,000-row limit applies only to master import and must not silently truncate reports or exports.
+- **Verification:** Cover exact/wrong template versions/columns, reordered columns, empty/oversized/decompression-limit inputs, unsafe workbook content, leading-zero codes, date/catalog errors, expired/other-account previews, changed permissions/concurrent duplicates and whole-file rollback. Preserve D090 minimum-100-record fixtures, original TT-03/HQ-04 thresholds and all Phase/whole-package statuses. No import/export implementation is authorized by this documentation approval.

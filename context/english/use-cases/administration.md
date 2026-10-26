@@ -6,6 +6,10 @@ Current UC flows retain source codes/pages and incorporate explicitly approved r
 
 ## UC01
 
+Password validation, restricted first-login change and login throttling follow [D081](#d081---password-hashing-and-managed-credential-lifecycle).
+
+Session transport, storage, expiration and browser protections follow [D080](../design/architecture.md#d080---postgresql-server-side-sessions-with-protected-cookies).
+
 Current rules: [D007](administration.md#d007---invalidate-sessions-after-permission-changes-or-account-locking).
 
 **Log in**
@@ -56,6 +60,8 @@ System Administrator, Competition Manager, and business staff issued accounts.
 
 ## UC02
 
+Current-session revocation and cookie removal follow [D080](../design/architecture.md#d080---postgresql-server-side-sessions-with-protected-cookies).
+
 **Log out**
 
 Source: §2.4.1.2, pp.69-71 (description, specification table, and analysis figures). See [PDF cross-check guidance](../sources.md#pdf).
@@ -98,6 +104,10 @@ Session-processing failure: report the error and do not allow further internal o
 
 ## UC03
 
+Provisioning/reset, self-service password change safeguards and historical account preservation follow [D081](#d081---password-hashing-and-managed-credential-lifecycle).
+
+Season-creation permission administration follows [D076](registration.md#d076---separate-season-creation-authority-and-initial-regulation-gate), separately from seasonal role assignment and shared-master permissions.
+
 Current rules: [D003](administration.md#d003---season-scoped-business-permissions), [D004](administration.md#d004---multiple-business-roles-in-the-same-season), [D006](administration.md#d006---system-administrator-manages-seasonal-role-assignments), [D009](administration.md#d009---protect-administrator-access-and-prohibit-self-locking), [D010](administration.md#d010---prohibit-administrator-self-granting-of-seasonal-business-permissions), [D031](administration.md#d031---one-personal-internal-account-per-person), [D034](administration.md#d034---separately-assigned-shared-master-record-management-permissions), [D037](administration.md#d037---prohibit-administrator-self-granting-of-shared-master-management-permissions), [D038](administration.md#d038---end-shared-master-management-permission-after-loss-of-the-last-corresponding-role-assignment), [D039](administration.md#d039---invalidate-sessions-after-shared-master-management-permission-changes), [D040](administration.md#d040---allow-administrator-self-reduction-of-business-permissions), [D041](administration.md#d041---retain-shared-master-management-assignments-while-an-account-is-locked).
 
 **Manage accounts and roles**
@@ -128,7 +138,7 @@ System Administrator.
 
 1. The administrator opens account management.
 2. The system displays the account list.
-3. The administrator selects create, edit, lock, unlock, or assign roles.
+3. The administrator selects create, edit, lock, unlock, reset password, or assign roles.
 4. The system validates data and permission to act.
 5. The administrator confirms the change.
 6. The system saves the data.
@@ -201,7 +211,7 @@ The rules below are the authoritative current policy for this domain. The UC flo
 
 - **Decision:** Business roles are granted for assigned seasons. Holding a business role in one season does not grant internal business access to another season. System account administration is system-wide and does not automatically grant business approval authority. Public Viewers may access published public information without an account.
 
-- **Consequences:** Internal requests must be checked against the operator's applicable role and season scope, as well as the operation's business conditions. UI visibility alone is insufficient. Detailed permissions and schemas remain to be designed.
+- **Consequences:** Internal requests must be checked against the operator's applicable role and season scope, as well as the operation's business conditions. [D076](registration.md#d076---separate-season-creation-authority-and-initial-regulation-gate) explicitly defines a separate create-only system-level permission for a season that does not yet exist; it grants no seasonal role or internal cross-season access. UI visibility alone is insufficient. Detailed permissions and schemas remain to be designed.
 
 ### D004 - Multiple business roles in the same season
 
@@ -255,7 +265,7 @@ The rules below are the authoritative current policy for this domain. The UC flo
 
 - **Decision:** Initialize the first System Administrator using a CLI run on the server. Initialization is allowed only when no System Administrator account exists, including locked accounts. Concurrent executions must not bypass that condition: at most one bootstrap administrator can be created, without partial initialization.
 
-- **Credential safeguards:** The installer supplies the username and password; there are no default credentials. Password entry must be secure, with no password in command-line arguments, logs or the repository. Hash the password before storing it; the hashing algorithm remains undecided.
+- **Credential safeguards:** The installer supplies the username and password; there are no default credentials. Password entry must be secure, with no password in command-line arguments, logs or the repository. Hash the password under [D081](#d081---password-hashing-and-managed-credential-lifecycle), including its first-login change requirement.
 
 - **Access boundary:** Do not expose a public bootstrap API or web page. The initial account receives system administration authority; seasonal business roles are managed separately. After initialization, ordinary account management uses UC03.
 
@@ -287,7 +297,7 @@ The rules below are the authoritative current policy for this domain. The UC flo
 
 - **Decision:** Provide a separate emergency recovery CLI on the server for an operator with server access. It may reset the password and/or unlock an existing account that already has the System Administrator role. It must not create accounts, grant the System Administrator role or change seasonal business permissions. Do not expose a public API or web page for this emergency recovery flow.
 
-- **Credential/session safeguards:** Enter the replacement password securely, never through command-line arguments, logs or the repository, and hash it before storage. Successful recovery invalidates all existing sessions for the target account.
+- **Credential/session safeguards:** Enter the replacement password securely, never through command-line arguments, logs or the repository, and hash it before storage. Successful recovery invalidates all existing sessions for the target account. A password reset also requires first-login change under [D081](#d081---password-hashing-and-managed-credential-lifecycle).
 
 - **Audit:** Require the recovery reason and record the operator's identity, time, target account and operation type; never record passwords.
 
@@ -386,3 +396,30 @@ The rules below are the authoritative current policy for this domain. The UC flo
 - **Unlocking:** Require a new login; old sessions never revive. The person may use only permissions still valid at that time. Removal of the last corresponding role assignment during the lock still ends the shared permission under [D038](administration.md#d038---end-shared-master-management-permission-after-loss-of-the-last-corresponding-role-assignment), and unlocking does not restore it.
 
 - **Delegation boundary:** Business delegations remain governed by [D020](../design/access-control.md#d020---terminate-delegation-permanently-when-required-eligibility-is-lost): delegation terminated because of account locking does not automatically revive on unlocking. Retention of shared assignments does not change that policy.
+
+### D081 - Password hashing and managed credential lifecycle
+
+**Status:** CONFIRMED by the Team Leader, Q81 option A and its full proposed package. [Approval and rationale](../../../docs/adr/0020-password-and-account-lifecycle.md).
+
+- **Hashing:** Use Argon2id with a unique salt per password and initial parameters m=19456 KiB, t=2, p=1. Verify cost against BM-01 load before acceptance. No hashing library is selected.
+- **Password rules:** Require 15-128 characters, allowing Unicode and whitespace without mandatory upper-case/digit/special-character composition. Do not silently truncate or strip whitespace. Reject common passwords using a local blocklist, without an external API.
+- **Provision/reset:** A System Administrator securely enters a temporary password through UC03, without default credentials. Persist only its hash; do not return the password through API responses or logs. The team hands credentials to the correct person through a managed direct channel; no email service is required.
+- **Temporary credentials:** A temporary password expires after 24 hours. Require change at first login; before successful change permit only the necessary password-change/logout steps, not business operations. Expiry requires administrator reissue. First login after D008 bootstrap or D011 CLI reset also requires password change, preserving their secure-input safeguards.
+- **Self-service change:** An authenticated user supplies current and new passwords. Success invalidates all sessions including the current one, then requires a new login. There is no arbitrary periodic rotation absent an incident or reset requirement.
+- **Lock separation:** Reset does not itself unlock the account. Reset/unlock are separately authorized and audited; D011 recovery still targets only existing System Administrator accounts.
+- **Login throttling:** Temporarily block login attempts for 15 minutes after five consecutive failures within a 15-minute window for the supplied username, and after 20 failures from an IP within 15 minutes. These temporary limits do not change the administrator-managed Locked account state.
+- **Feedback/history:** Login failures do not disclose whether a username exists. Log security events without passwords. Do not hard-delete accounts referenced by business history; discontinue use through account locking under existing safeguards.
+- **Remaining contracts:** Unicode length/representation, local blocklist source, exact credential handoff procedure, throttling-counter semantics/storage, hash migration/rehash and endpoint/error/concurrency contracts remain technical elaboration. This decision selects neither a new public registration/reset service nor a specific library.
+
+## Derived REST and DTO contract map
+
+This table derives routes/input groups from approved D001-D085 and this document's owning UCs; it is a technical design draft, not controller/DTO code or a generated feature Specification. Routes are relative to /api/v1. Braced segments are path parameters, not unrestricted operations: every action is explicitly allowlisted. Unspecified field lengths, enum spellings and detailed per-role/error mappings remain in the open register.
+
+| UC | Route/operation family | Input/output contract | Binding checks |
+|---|---|---|---|
+| UC01 | POST /auth/login; GET /auth/session; GET /auth/csrf; POST /auth/password/change | username/password; currentPassword/newPassword for self-change. Return permitted account/season-access metadata and restricted-change state, never credential hashes/session tokens in JSON. CSRF bootstrap covers prelogin protection without business-data disclosure. | D007/D080/D081; no business access before required password change. |
+| UC02 | POST /auth/logout | Current cookie session and required CSRF protection; return acknowledgement after revocation. | D080 current-session scope; expired-session feedback follows UC02. |
+| UC03 | GET/POST /accounts; PATCH /accounts/{accountId}; POST /accounts/{accountId}/{action}; POST /accounts/{accountId}/role-assignments; POST /accounts/{accountId}/permission-grants | Operation-specific account fields or target grant identifiers; expectedRevision for edits. Explicit actions include lock, unlock, reset-password and grant revocation; grant DTOs separate seasonal roles, shared-master rights and Create Season authority. | D006/D009/D010/D031/D034-D041/D076/D081; final action names/field allowlists cannot become unrestricted status/permission editing. |
+| UC04 | GET /audit-logs | Allowlisted actor/time/action/object filters and pagination; return only the permitted audit view. | System Administrator; redact credential/session secrets and restricted payload fields. |
+
+All mutations validate their operation-specific allowlist; editable aggregates use expectedRevision, approval targets identify submittedVersionId as appropriate, and critical commands carry Idempotency-Key under D084. JSON replies follow D085; file bytes are the documented exception. requestId identifies an HTTP attempt, not a business command. These names elaborate the approved contract without adding business permissions or exposing CLI bootstrap/recovery over HTTP.

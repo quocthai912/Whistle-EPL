@@ -1,0 +1,7 @@
+# ADR 0021 - Relational identifiers, versions and snapshots
+
+**Status:** accepted. **Decision:** D082. The Team Leader selected Q82 option A ("Tôi chọn A."), confirming the full common package. Authoritative policy is owned by [D082](../../context/english/design/architecture.md#d082---relational-identity-version-and-snapshot-foundations).
+
+Choose backend-generated UUID v4 technical keys, PostgreSQL uuid storage and string API identifiers instead of BIGINT identities with string conversion. Keep immutable business codes separate. This gives consistent identity handling across layers, accepting longer identifiers for manual inspection. Normalize core business relationships and versioned content, retaining exact approval-version references; use validated selective JSONB snapshots/audit payloads rather than whole-profile/report JSON storage or indiscriminate snapshots. Temporal types implement D024 and deletion rules preserve used history.
+
+Technical type capabilities were checked against PostgreSQL documentation for [UUID](https://www.postgresql.org/docs/current/datatype-uuid.html), [JSON](https://www.postgresql.org/docs/current/datatype-json.html) and [date/time](https://www.postgresql.org/docs/current/datatype-datetime.html). This selects no PostgreSQL version, extension, migration or complete physical schema. The derived entity map is design elaboration from approved rules, with remaining choices kept open.

@@ -93,3 +93,9 @@ Current policy owner: [D065](../../context/english/use-cases/results.md#d065---s
 - **Affected Phases:** PHASE 5 report validation, PHASE 6/PHASE 7 official output/history and PHASE 10 boundary/evidence verification. No Phase status changes.
 
 - **Still open:** Exact event/referee schema/lengths, source-reference format, duplicate-event feedback, detailed snapshot/display/API and concurrency contracts. No upload or digital-signature technology is selected.
+
+## Q83 - Stored statistics and full-season recalculation
+
+**Status:** accepted. **Decision:** D083. The Team Leader selected Q83 option A ("Tôi chọn A."), approving the full common package. Current policy is owned by [D083](../../context/english/use-cases/results.md#d083---stored-official-statistics-with-full-season-recalculation).
+
+Choose full recalculation of the affected season after each official confirmation/correction instead of incrementally subtracting the old contribution and adding the new one. Persist season/club and season/player projections while keeping current confirmed report versions authoritative. Full recalculation simplifies manual comparison and correction testing, accepting the need to measure the complete transaction against HQ-02 and reporting against HQ-04. Official references, projections, audit and required ranking/summary review flags change atomically; draft/pending versions do not affect them. Historical registration/appearance attribution and shared formula ownership remain binding. No new infrastructure, manual statistics editor or performance acceptance is implied.

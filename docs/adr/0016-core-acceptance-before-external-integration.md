@@ -13,3 +13,7 @@ External live scores/status/events are reference information: they do not automa
 The Team Leader chose independent core acceptance before provider research/integration rather than coupling first-version business acceptance to an external service. A pre-v2-approval integration interview may settle requirements and gates; it does not waive the post-core-acceptance provider-research gate. Detailed mapping, provider/API, contracts, licensing/provenance, refresh, failure and acceptance policies remain open. No provider library, adapter implementation or new mandatory Phase is selected.
 
 See [integration register](../../context/english/design/integrations.md), [media policy](../../context/english/design/media.md) and [ADR 0015](0015-managed-club-logos-in-first-version.md).
+
+## Q87 - Storage infrastructure clarification
+
+[D087](../../context/english/design/architecture.md#d087---docker-compose-reference-deployment) subsequently permits optional Supabase Storage for Internet media files. This is a storage-location amendment recorded in [ADR 0015](0015-managed-club-logos-in-first-version.md#q87---environment-specific-media-storage-amendment), separate from this ADR's football/media-data acquisition gate. Core/media acceptance remains independent in the local profile; selected remote storage has its own authorization, failure/fallback and recovery verification. No football/media-data provider is approved or integrated by this amendment, and LS-01 remains unchanged.

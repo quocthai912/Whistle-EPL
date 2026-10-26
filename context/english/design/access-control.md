@@ -78,6 +78,13 @@ Owns action-scoped delegation under the existing UC03/UC06 responsibilities. Acc
 
 UC14 scope clarification: postponement approval uses the existing schedule-adjustment delegation operation under [D067](../use-cases/scheduling.md#d067---approved-postponement-and-return-through-uc14).
 
+
+UC22 playoff-based ranking-resolution approval remains nondelegable under [D071](../use-cases/publication.md#d071---approved-playoff-based-ranking-resolutions-within-uc22); summary confirmation/reconfirmation is independently controlled and nondelegable under [D073](../use-cases/publication.md#d073---versioned-season-summary-confirmation-and-reconfirmation).
+
+UC24 news publication/withdrawal remains nondelegable under [D077](../use-cases/publication.md#d077---season-scoped-versioned-news-publication).
+
+UC05 season closure/reopening approval is nondelegable under [D074](../use-cases/registration.md#d074---independently-approved-season-closure-and-reopening).
+
 ### D020 - Terminate delegation permanently when required eligibility is lost
 
 **Confirmed policy.** [Approval, source and rationale](../../../docs/adr/0005-action-scoped-business-delegation.md#d020-english-evidence).

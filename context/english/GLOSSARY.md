@@ -114,10 +114,62 @@ One business context and one glossary per language. Definitions describe domain 
 
 **Club logo**: The current visual identity managed with the shared club master, displayed consistently even in old-season views with fallback when unavailable; other historical club facts remain independently preserved ([LOGO-01](design/media.md#logo-01---approved-logo-design)).
 
-**Player profile image / Portrait**: A managed image associated with a player profile, displayed alongside the applicable seasonal registration information with fallback; portrait-specific validation/history policy remains open ([media scope](design/media.md#player-image-scope-and-remaining-decisions)).
+**Player profile image / Portrait**: The current managed image associated with a player master, displayed even in old-season views alongside the applicable seasonal registration information, with fallback when unavailable ([D069](design/media.md#d069---managed-player-portraits-with-current-image-display)).
 
 ## Season presentation
 
 **Postponed match**: A not-yet-started match recorded as unable to proceed under its published schedule, distinct from a started/interrupted or permanently cancelled match ([POSTPONE-01](use-cases/scheduling.md#postpone-01---first-version-match-postponement)).
 
 **Season Overview Dashboard**: A shared public overview of a selected season, its official competition statistics and related navigation ([DASHBOARD-01](use-cases/publication.md#dashboard-01---season-overview-dashboard)).
+
+**Head-to-head tied group**: Clubs equal after the main ranking criteria whose mutual match results provide the basis for additional season-end ranking comparisons ([D070](use-cases/publication.md#d070---fixed-group-season-end-head-to-head-calculation)).
+
+**Playoff-based ranking resolution**: An evidenced, approved ordering of a club group still tied at consequential season-end positions, based on a real playoff outcome and distinct from regular-season match statistics ([D071](use-cases/publication.md#d071---approved-playoff-based-ranking-resolutions-within-uc22)).
+
+**Qualification place**: A position within a season's configured leading group qualifying by league rank; it does not establish eligibility under external cup, licensing or competition rules ([D072](use-cases/registration.md#d072---seasonal-qualification-and-relegation-counts)).
+
+**Relegation place**: A position within a season's configured bottom group designated for relegation ([D072](use-cases/registration.md#d072---seasonal-qualification-and-relegation-counts)).
+
+**Confirmed season summary**: An independently confirmed, versioned snapshot of a season's final competition outcomes and supporting official sources ([D073](use-cases/publication.md#d073---versioned-season-summary-confirmation-and-reconfirmation)).
+
+**Summary needing reconfirmation**: A previously confirmed summary whose content or official basis has changed, retained as outdated history pending confirmation of a newly aggregated version ([D073](use-cases/publication.md#d073---versioned-season-summary-confirmation-and-reconfirmation)).
+
+**Open season**: A season whose seasonal business operations are available subject to their existing permissions, milestones and validation rules; this state does not imply a match is in progress ([D074](use-cases/registration.md#d074---independently-approved-season-closure-and-reopening)).
+
+**Closed season**: A season explicitly closed after its completion prerequisites, preserving authorized reading/export and history while gating seasonal business writes until approved reopening ([D074](use-cases/registration.md#d074---independently-approved-season-closure-and-reopening)).
+
+**Prospective registration plan**: A confirmed registration or linked transfer whose playing-effective start is still in the future ([D075](use-cases/registration.md#d075---prospective-registration-plan-changes-and-interval-quota-checks)).
+
+**Cancelled before effectivity**: A prospective registration plan whose playing effect was cancelled before its start, with the prior validation decision and history retained ([D075](use-cases/registration.md#d075---prospective-registration-plan-changes-and-interval-quota-checks)).
+
+**Create Season permission**: A separately granted authority to create a season that does not yet exist, without automatically receiving seasonal management roles or access to other seasons ([D076](use-cases/registration.md#d076---separate-season-creation-authority-and-initial-regulation-gate)).
+
+**Seasonal news/announcement**: A season-associated item with versioned text content whose current published version is publicly viewable ([D077](use-cases/publication.md#d077---season-scoped-versioned-news-publication)).
+
+**Withdrawn news**: Previously published news removed from current public viewing through an explicit withdrawal, with its content/history retained internally ([D077](use-cases/publication.md#d077---season-scoped-versioned-news-publication)).
+
+**Create-only data import**: A confirmed batch operation creating new master records from a validated file, without overwriting existing records or replacing seasonal approval workflows ([D078](business.md#d078---xlsx-create-only-import-and-controlled-export)).
+
+**Server-side session**: A login session whose current state and validity are held by the server, identified by an opaque browser token rather than client-held business authority ([D080](design/architecture.md#d080---postgresql-server-side-sessions-with-protected-cookies)).
+
+**Temporary password**: A time-limited initial/reset credential requiring a personal password change before business access ([D081](use-cases/administration.md#d081---password-hashing-and-managed-credential-lifecycle)).
+
+**Login throttling**: A temporary restriction on authentication attempts after repeated failures, distinct from administrator-managed account locking ([D081](use-cases/administration.md#d081---password-hashing-and-managed-credential-lifecycle)).
+
+**Official statistical projection**: Regenerable season/club or season/player aggregates derived from current Official Results, serving statistics, lookup and reporting without becoming a manually editable sporting source ([D083](use-cases/results.md#d083---stored-official-statistics-with-full-season-recalculation)).
+
+**Technical revision**: A record/aggregate change marker used to detect stale edits, distinct from an immutable business content-version number ([D084](design/architecture.md#d084---revision-checks-idempotent-commands-and-targeted-transaction-locks)).
+
+**Command receipt**: A recorded outcome associated with an account, operation and request key, allowing a repeated matching request to recover its outcome without executing the business operation twice ([D084](design/architecture.md#d084---revision-checks-idempotent-commands-and-targeted-transaction-locks)).
+
+**Request trace identifier / requestId**: An identifier for one HTTP attempt used to correlate processing and feedback, distinct from a business command's idempotency key ([D085](design/architecture.md#d085---shared-rest-transport-and-response-contract)).
+
+**Media storage provider**: The environment-selected location retaining the image content associated with managed club logos and player portraits ([media storage](design/media.md#environment-specific-media-storage)).
+
+**Coordinated backup set**: A complete recovery unit representing one consistent point of Whistle-EPL database state and its referenced media, identified by an accompanying inventory ([D088](design/architecture.md#d088---coordinated-backup-sets-and-controlled-restore)).
+
+**Actual activation processing time**: The instant when the system processes a due approved regulation version, distinct from that version's approved effective instant ([D089](design/architecture.md#d089---periodic-jobs-and-overdue-regulation-activation)).
+
+**Season test configuration**: Explicit seasonal parameter values attached to a controlled acceptance dataset, distinct from operational regulations approved for a real season ([D090](quality.md#d090---reproducible-acceptance-datasets-and-season-fixtures)).
+
+**Import preview**: An account-bound, temporary assessment of one uploaded master-data file before explicit confirmation, without reserving authority or guaranteeing that a later commit remains valid ([D091](business.md#d091---fixed-xlsx-templates-and-bounded-data-exchange)).

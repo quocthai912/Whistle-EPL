@@ -391,3 +391,9 @@ Current policy owner: [D041](../../context/english/use-cases/administration.md#d
 - **Affected Phases:** PHASE 1 account/access lifecycle, PHASE 2 club/stadium masters, PHASE 3 player masters and PHASE 10 verification. No Phase status changes.
 
 - **Still open:** UI/error contracts, permanent account retirement, season closure/archive behavior and technical enforcement/concurrency mechanisms. No new technology or automatic permission-review workflow is selected.
+
+## Q76 - Separate season-creation authority
+
+**Status:** accepted. **Decision:** D076. The Team Leader selected Q76 option A ("Tôi chọn A."), approving the full common package. Current policy is owned by [D076](../../context/english/use-cases/registration.md#d076---separate-season-creation-authority-and-initial-regulation-gate).
+
+Choose a separately granted system-level Create Season permission for designated personnel rather than assigning season-shell creation to the System Administrator. This resolves first-season bootstrapping while retaining account/business responsibility separation, accepting an additional permission and separate seasonal staffing after creation. No pre-existing season role is required, no administrator self-grant is allowed, and no seasonal role or cross-season internal access follows automatically. The first regulations still need independent UC06 approval and actual effectivity; without an effective version, dependent operations remain blocked and no template/previous-season rules become an implicit official baseline. Existing audit/session/final authorization controls apply. This is an explicit create-only refinement of D003, not a new actor, UC, automatic business grant or technical integration.

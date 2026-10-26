@@ -7,6 +7,13 @@ Package metadata/approval: [current Context](../README.md). Rules have one owner
 | Topic | Owner |
 |---|---|
 | Architecture, stack, time, final authorization | [Architecture](architecture.md) |
+| XLSX templates, file limits and preview lifetime | [D091](../business.md#d091---fixed-xlsx-templates-and-bounded-data-exchange) |
+| Acceptance dataset and seasonal test configuration | [D090](../quality.md#d090---reproducible-acceptance-datasets-and-season-fixtures) |
+| Periodic jobs, missed runs and activation recovery | [D089](architecture.md#d089---periodic-jobs-and-overdue-regulation-activation) |
+| Coordinated backup and controlled restore | [D088](architecture.md#d088---coordinated-backup-sets-and-controlled-restore) |
+| Deployment, HTTPS and persistent storage | [D087](architecture.md#d087---docker-compose-reference-deployment); [media storage](media.md#environment-specific-media-storage) |
+| Frontend tooling and screen navigation | [D086 and screen map](architecture.md#derived-frontend-screen-map) |
+| Relational foundations and initial entity map | [D082 and derived model](architecture.md#derived-relational-model-map) |
 | Accounts, roles and shared-master permissions | [UC01-UC04](../use-cases/administration.md) |
 | Action/season/time delegation | [Business delegation](access-control.md) |
 | Master identity, corrections, required fields and snapshots | [Business rules](../business.md) |
@@ -89,6 +96,29 @@ Package metadata/approval: [current Context](../README.md). Rules have one owner
 | D066 | [Shared standings ranks and shared individual awards](../use-cases/publication.md#d066---shared-standings-ranks-and-shared-individual-awards) | [0014](../../../docs/adr/0014-shared-ranks-and-individual-awards.md#d066-english-evidence) |
 | D067 | [Postponement approval and return](../use-cases/scheduling.md#d067---approved-postponement-and-return-through-uc14) | [0012](../../../docs/adr/0012-schedule-generation-scope-and-drafts.md#q67---postponement-approval-and-allocation) |
 | D068 | [Public season overview dashboard](../use-cases/publication.md#d068---public-season-overview-dashboard) | [0008](../../../docs/adr/0008-public-information-and-player-birth-dates.md#q68---shared-public-season-dashboard) |
+| D069 | [Managed player portraits](media.md#d069---managed-player-portraits-with-current-image-display) | [0015](../../../docs/adr/0015-managed-club-logos-in-first-version.md#q69---managed-player-portraits) |
+| D070 | [Fixed-group season-end head-to-head](../use-cases/publication.md#d070---fixed-group-season-end-head-to-head-calculation) | [0014](../../../docs/adr/0014-shared-ranks-and-individual-awards.md#q70---fixed-group-season-end-head-to-head) |
+| D071 | [Playoff-based ranking-resolution records](../use-cases/publication.md#d071---approved-playoff-based-ranking-resolutions-within-uc22) | [0014](../../../docs/adr/0014-shared-ranks-and-individual-awards.md#q71---playoff-based-ranking-resolution-records) |
+| D072 | [Seasonal qualification/relegation counts](../use-cases/registration.md#d072---seasonal-qualification-and-relegation-counts) | [0014](../../../docs/adr/0014-shared-ranks-and-individual-awards.md#q72---seasonal-qualification-and-relegation-counts) |
+| D073 | [Versioned season-summary confirmation](../use-cases/publication.md#d073---versioned-season-summary-confirmation-and-reconfirmation) | [0014](../../../docs/adr/0014-shared-ranks-and-individual-awards.md#q73---versioned-season-summary-confirmation) |
+| D074 | [Season closure and reopening](../use-cases/registration.md#d074---independently-approved-season-closure-and-reopening) | [0010](../../../docs/adr/0010-immutable-approved-season-regulation-versions.md#q74---season-closure-and-reopening) |
+| D075 | [Prospective registration plans and quotas](../use-cases/registration.md#d075---prospective-registration-plan-changes-and-interval-quota-checks) | [0011](../../../docs/adr/0011-registration-windows-and-receipt-exceptions.md#q75---prospective-registration-plan-changes) |
+| D076 | [Season creation and initial regulation gate](../use-cases/registration.md#d076---separate-season-creation-authority-and-initial-regulation-gate) | [0003](../../../docs/adr/0003-season-scoped-business-permissions.md#q76---separate-season-creation-authority) |
+| D077 | [Season-scoped news and announcements](../use-cases/publication.md#d077---season-scoped-versioned-news-publication) | [0008](../../../docs/adr/0008-public-information-and-player-birth-dates.md#q77---season-scoped-news-and-announcements) |
+| D078 | [XLSX create-only import and controlled export](../business.md#d078---xlsx-create-only-import-and-controlled-export) | [0018](../../../docs/adr/0018-xlsx-create-only-data-exchange.md) |
+| D079 | [Backend module ownership and coordination](architecture.md#d079---backend-module-ownership-and-synchronous-coordination) | [0001](../../../docs/adr/0001-modular-layered-backend.md#q79---module-ownership-and-coordination) |
+| D080 | [PostgreSQL cookie sessions](architecture.md#d080---postgresql-server-side-sessions-with-protected-cookies) | [0019](../../../docs/adr/0019-postgresql-cookie-sessions.md) |
+| D081 | [Password and credential lifecycle](../use-cases/administration.md#d081---password-hashing-and-managed-credential-lifecycle) | [0020](../../../docs/adr/0020-password-and-account-lifecycle.md) |
+| D082 | [Relational identity and snapshot foundations](architecture.md#d082---relational-identity-version-and-snapshot-foundations) | [0021](../../../docs/adr/0021-relational-identifiers-and-snapshots.md) |
+| D083 | [Stored statistics and full-season recalculation](../use-cases/results.md#d083---stored-official-statistics-with-full-season-recalculation) | [0013](../../../docs/adr/0013-match-report-and-official-result-lifecycles.md#q83---stored-statistics-and-full-season-recalculation) |
+| D084 | [Concurrency, command receipts and targeted locks](architecture.md#d084---revision-checks-idempotent-commands-and-targeted-transaction-locks) | [0022](../../../docs/adr/0022-targeted-locks-and-idempotent-commands.md) |
+| D085 | [Shared REST transport and response contract](architecture.md#d085---shared-rest-transport-and-response-contract) | [0023](../../../docs/adr/0023-shared-rest-contract.md) |
+| D086 | [Frontend tooling and shared UI](architecture.md#d086---react-spa-tooling-and-shared-ui-approach) | [0024](../../../docs/adr/0024-react-frontend-tooling-and-ui.md) |
+| D087 | [Docker Compose reference deployment](architecture.md#d087---docker-compose-reference-deployment) | [0001](../../../docs/adr/0001-modular-layered-backend.md#q87---docker-compose-reference-deployment); [0015 storage amendment](../../../docs/adr/0015-managed-club-logos-in-first-version.md#q87---environment-specific-media-storage-amendment) |
+| D088 | [Coordinated backup and controlled restore](architecture.md#d088---coordinated-backup-sets-and-controlled-restore) | [0001](../../../docs/adr/0001-modular-layered-backend.md#q88---coordinated-backup-and-restore) |
+| D089 | [Periodic jobs and overdue activation](architecture.md#d089---periodic-jobs-and-overdue-regulation-activation) | [0001](../../../docs/adr/0001-modular-layered-backend.md#q89---periodic-jobs-and-overdue-activation); [0010 follow-up](../../../docs/adr/0010-immutable-approved-season-regulation-versions.md#q89---technical-activation-recovery-follow-up) |
+| D090 | [Reproducible acceptance datasets](../quality.md#d090---reproducible-acceptance-datasets-and-season-fixtures) | [0015](../../../docs/adr/0015-managed-club-logos-in-first-version.md#q90---acceptance-dataset-and-demonstration-boundary) |
+| D091 | [Fixed XLSX templates and bounded exchange](../business.md#d091---fixed-xlsx-templates-and-bounded-data-exchange) | [0018](../../../docs/adr/0018-xlsx-create-only-data-exchange.md#q91---fixed-templates-and-bounded-processing) |
 
 ## Other confirmed instructions
 
@@ -103,4 +133,4 @@ Package metadata/approval: [current Context](../README.md). Rules have one owner
 
 ## Resume checkpoint
 
-Q67 and Q68 are confirmed: D067 owns postponement; D068 owns the shared public dashboard. Pause after Q68 at the Team Leader request. Q69 is not asked or answered. On resumption, prioritize remaining first-version decisions by dependencies, including portrait policy and ranking/playoff/season-summary work. LS-01 cancels Live Score interview/design/acceptance work. Media API research/selection remains after independent core acceptance. Whole-v2 approval is pending; no code, Specs, Tasks, Issues, API integration, commit or push is authorized.
+Q91 option A and the full proposed package are confirmed as D091. The proposed remaining interview route is seven grouped rounds Q92-Q98: shared fields/catalogs/identity; schedule generation and regeneration; media delivery/cleanup and audit retention; detailed ERD/data dictionary; per-UC authority/API/transaction/security contracts; toolchain/environment and concrete acceptance configuration; final consistency review and whole-package approval. This route assumes acceptance of the recommendations without new scope or newly discovered policy conflicts; it does not pre-approve any future answer. No Q92 answer is recorded. D087-D090 remain unchanged. Detailed schema/toolchain, activation mappings, backup configuration and acceptance contracts remain open. Maintain only the English Context. LS-01 cancels Live Score interview/design/acceptance work; media API research/selection remains after independent core acceptance. Whole-v2 approval is pending; no code, Specs, Tasks, Issues, API integration, commit or push is authorized.

@@ -1,0 +1,7 @@
+# ADR 0023 - Shared REST transport and response contract
+
+**Status:** accepted. **Decision:** D085. The Team Leader selected Q85 option A ("Tôi chọn A."), approving the full common package. Authoritative policy is owned by [D085](../../context/english/design/architecture.md#d085---shared-rest-transport-and-response-contract); derived per-UC route/DTO tables live in the owning UC documents.
+
+Choose a project-wide JSON envelope for successes and errors rather than direct resource successes with RFC 9457 errors. This makes React-side handling uniform, accepting responsibility for maintaining the project convention. Use /api/v1, typed allowlisted requests, explicit business command routes, consistent UUID/date/UTC representations, stable pagination and meaningful HTTP statuses. requestId tracing remains distinct from command idempotency. Public/internal fields are server-controlled; downloads are binary exceptions and errors do not expose secrets or internal diagnostics.
+
+HTTP semantics were checked against [RFC 9110](https://www.rfc-editor.org/rfc/rfc9110.html); the alternative is [RFC 9457](https://www.rfc-editor.org/rfc/rfc9457.html). Exact endpoint dictionaries and per-role/validation/lock/error details are derived technical design, with genuine missing decisions retained in the open register. No client-generation library, code, Feature Specification or whole-v2 approval is established.

@@ -55,3 +55,7 @@ Current policy owner: [D011](../../context/english/use-cases/administration.md#d
 - **Affected Phases:** PHASE 1 account/session operations and PHASE 10 operational verification. No Phase status changes.
 
 - **Still open:** Exact command and server/operator authorization contract, operator identification, secure input implementation, hashing algorithm/parameters, atomic recovery/audit/session invalidation and concurrent recovery handling. Ordinary password changes/resets and self-reduction of business permissions are not decided by this emergency flow.
+
+## Q81 follow-up - Credential hashing and first-login change
+
+[D081](../../context/english/use-cases/administration.md#d081---password-hashing-and-managed-credential-lifecycle) selects Argon2id and requires first-login password change after bootstrap/reset. Existing CLI scope, secure input, no-default-password and session-invalidation safeguards remain binding. Full approval/rationale is in [ADR 0020](0020-password-and-account-lifecycle.md); this does not expose a public bootstrap/recovery service.
