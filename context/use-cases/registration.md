@@ -20,7 +20,7 @@ Create, update, and look up season information.
 
 **Actors:**
 
-Organizing Committee / Season Manager.
+Organizing Committee / Season Manager for authorized seasonal management; users separately granted the Create Season permission under D076 for creation, without requiring a role in an existing season.
 
 **Preconditions:**
 

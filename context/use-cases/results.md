@@ -261,7 +261,7 @@ Standings and player statistics accurately reflect the related official results.
 
 **Alternative flow:**
 
-A pending, returned or rejected correction leaves the current Official Result and statistics unchanged; a successful confirmation/correction follows D083's full-season recalculation.
+A pending, returned or rejected correction leaves the current Official Result and statistics unchanged, as does withdrawal before a decision; a successful confirmation/correction follows D083's full-season recalculation.
 
 **Exceptions:**
 
