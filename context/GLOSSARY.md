@@ -1,6 +1,6 @@
 # Whistle-EPL - Business glossary
 
-One business context and one glossary per language. Definitions describe domain meaning; normative rules and decision evidence are linked to their owners. [Sources](sources.md).
+One business context with a single English-only glossary in the sole current Context Package; maintain no parallel current-language documents. Definitions describe domain meaning; normative rules and decision evidence are linked to their owners. [Sources](sources.md).
 
 ## Competition and organization
 

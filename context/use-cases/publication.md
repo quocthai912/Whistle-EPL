@@ -77,7 +77,7 @@ Organizing Committee / Season Manager.
 
 **Postconditions:**
 
-Aggregate reports from valid sources, with preview and file export in supported formats.
+Aggregate reports from valid sources, with preview and XLSX export under [D078](../business.md#d078---xlsx-create-only-import-and-controlled-export).
 
 **Main flow:**
 

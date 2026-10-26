@@ -10,7 +10,7 @@ UC03 (PDF pp.72-74) requires an authorized administrator for ordinary account ma
 
 The installer supplies the username and password without default credentials. Password input must be secure: passwords must not appear in command-line arguments, logs or the repository, and must be hashed before storage. The initial account has system administration authority; seasonal business roles are managed separately. Subsequent ordinary account management uses UC03. This keeps bootstrap within server installation at the cost of requiring a server command.
 
-Exact command/input implementation, concurrency mechanism, password-hashing algorithm/parameters and bootstrap audit details remain open. [D011](../../context/use-cases/administration.md#d011---emergency-recovery-cli-for-existing-administrators) below settles the separate emergency recovery flow; the bootstrap flow must not reset, replace or add to existing administrator accounts. See [Context v2 D008](../../context/use-cases/administration.md#d008---first-system-administrator-bootstrap-through-a-server-cli).
+Password-hashing algorithm/parameters are settled by [D081/Q81](../../context/use-cases/administration.md#d081---password-hashing-and-managed-credential-lifecycle). Exact command/secure-input implementation, concurrency mechanism, bootstrap audit and runbook details remain implementation work. [D011](../../context/use-cases/administration.md#d011---emergency-recovery-cli-for-existing-administrators) below settles the separate emergency recovery flow; the bootstrap flow must not reset, replace or add to existing administrator accounts. See [Context v2 D008](../../context/use-cases/administration.md#d008---first-system-administrator-bootstrap-through-a-server-cli).
 
 ## Emergency recovery of existing administrators
 
@@ -20,7 +20,7 @@ An operator with server access may run a separate emergency recovery CLI to rese
 
 Replacement passwords require secure input, must not appear in command-line arguments, logs or the repository, and must be hashed before storage. Successful recovery invalidates every existing session for the target account. Require a recovery reason and record the operator's identity, time, target account and operation type without passwords. Compared with relying only on another administrator, the CLI allows recovery when no administrator can log in, at the cost of protecting execution and auditing recovery actions. It remains distinct from [D008](../../context/use-cases/administration.md#d008---first-system-administrator-bootstrap-through-a-server-cli) bootstrap.
 
-Exact command and server/operator authorization, operator identification, secure-input implementation, hashing algorithm/parameters, atomic recovery/audit/session invalidation and concurrent recovery handling remain open. Ordinary password operations and self-reduction of business permissions are not settled here. See [Context v2 D011](../../context/use-cases/administration.md#d011---emergency-recovery-cli-for-existing-administrators).
+Exact command and server/operator authorization, operator identification, secure-input implementation, atomic recovery/audit/session invalidation, concurrent recovery handling and runbook details remain implementation work; hashing follows D081/Q81. Ordinary password operations and self-reduction of business permissions are not settled here. See [Context v2 D011](../../context/use-cases/administration.md#d011---emergency-recovery-cli-for-existing-administrators).
 
 ### D008 english evidence
 
@@ -56,7 +56,7 @@ Current policy owner: [D011](../../context/use-cases/administration.md#d011---em
 
 - **Affected Phases:** PHASE 1 account/session operations and PHASE 10 operational verification. No Phase status changes.
 
-- **Still open:** Exact command and server/operator authorization contract, operator identification, secure input implementation, hashing algorithm/parameters, atomic recovery/audit/session invalidation and concurrent recovery handling. Ordinary password changes/resets and self-reduction of business permissions are not decided by this emergency flow.
+- **Still open:** Exact command and server/operator authorization contract, operator identification, secure input implementation, atomic recovery/audit/session invalidation, concurrent recovery handling and runbook details. Hashing follows D081/Q81. Ordinary password changes/resets and self-reduction of business permissions are not decided by this emergency flow.
 
 ## Q81 follow-up - Credential hashing and first-login change
 

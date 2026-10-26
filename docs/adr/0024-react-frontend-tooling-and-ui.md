@@ -6,7 +6,7 @@ Current package approval: [Q98 approved v2](../../context/README.md#q98---whole-
 
 Choose Vite/React Router with Ant Design standard components and CSS Modules customization instead of building the full component set from CSS Modules alone. This reduces repeated form/table/dialog work for SE104, accepting visual customization to establish the league identity. Use Vietnamese UI, permission-aware public/internal navigation, one Fetch API layer and built-in React state/hooks/context. Preserve the approved Dashboard, timezone, media, conflict and session-clearing behaviors; frontend checks do not replace server authority.
 
-Compatibility capabilities were checked in official documentation for [Ant Design with Vite](https://ant.design/docs/react/use-with-vite/), [React Router](https://reactrouter.com/start/declarative/installation) and [Vite CSS Modules](https://vite.dev/guide/features#css-modules). Versions remain subject to toolchain selection. No separate state/cache library, additional UC, implementation or whole-v2 approval is established.
+Compatibility capabilities were checked in official documentation for [Ant Design with Vite](https://ant.design/docs/react/use-with-vite/), [React Router](https://reactrouter.com/start/declarative/installation) and [Vite CSS Modules](https://vite.dev/guide/features#css-modules). D097 is the approved version/toolchain baseline and Q98 approves Context v2. Exact pins, compatibility checks and root-script implementation/verification remain PHASE 1 work. No separate state/cache library or additional UC is selected, and no software implementation or acceptance is established.
 
 ## Q97 - Versioned baseline and source-quality completion
 

@@ -401,7 +401,7 @@ The rules below are the authoritative current policy for this domain. The UC flo
 
 **Status:** CONFIRMED by the Team Leader, Q81 option A and its full proposed package. [Approval and rationale](../../docs/adr/0020-password-and-account-lifecycle.md).
 
-- **Hashing:** Use Argon2id with a unique salt per password and initial parameters m=19456 KiB, t=2, p=1. Verify cost against BM-01 load before acceptance. No hashing library is selected.
+- **Hashing:** Use Argon2id with a unique salt per password and initial parameters m=19456 KiB, t=2, p=1. Verify cost against BM-01 load before acceptance. [D097](../design/architecture.md#d097---pnpm-toolchain-development-quality-and-reference-operations) selects argon2; exact pins and runtime verification remain implementation work.
 - **Password rules:** Require 15-128 characters, allowing Unicode and whitespace without mandatory upper-case/digit/special-character composition. Do not silently truncate or strip whitespace. Reject common passwords using a local blocklist, without an external API.
 - **Provision/reset:** A System Administrator securely enters a temporary password through UC03, without default credentials. Persist only its hash; do not return the password through API responses or logs. The team hands credentials to the correct person through a managed direct channel; no email service is required.
 - **Temporary credentials:** A temporary password expires after 24 hours. Require change at first login; before successful change permit only the necessary password-change/logout steps, not business operations. Expiry requires administrator reissue. First login after D008 bootstrap or D011 CLI reset also requires password change, preserving their secure-input safeguards.
