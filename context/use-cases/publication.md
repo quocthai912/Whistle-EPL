@@ -245,7 +245,7 @@ The rules below are the authoritative current policy for this domain. The UC flo
 
 ### D032 - Public information boundary including player dates of birth
 
-**Confirmed policy.** [Approval, source and rationale](../../../docs/adr/0008-public-information-and-player-birth-dates.md#d032-english-evidence).
+**Confirmed policy.** [Approval, source and rationale](../../docs/adr/0008-public-information-and-player-birth-dates.md#d032-english-evidence).
 
 - **Source:** O04; BM4.1-BM4.4, PDF pp.8-9; QĐ4.1-QĐ4.6, p.9; BM-05 and §1.2.5.3, pp.21/23; UC15/UC21/UC23/UC25.
 
@@ -258,17 +258,17 @@ The rules below are the authoritative current policy for this domain. The UC flo
 | Player in the season | Full name, date of birth, nationality, position, club, shirt number, registration category |
 | Schedule/results | Published schedule: round, clubs, date/time and stadium; score only after official confirmation |
 | Statistics | Standings, goalscorers and clean-sheet statistics from official results |
-| News | Published content; detailed fields remain to be settled under O15 |
+| News | Current published title/body/season/publication time under D077 |
 
 - **Internal boundary:** Club representative information, contact details, training/homegrown evidence, application/review content, drafts, unconfirmed results, change reasons and system logs remain internal with appropriate access. Fields not approved for publication remain internal. Player date of birth is the explicit exception to Q32 A's original proposed internal list.
 
 - **Source-default change:** V1 BM-05 records dates of birth as requiring appropriate authority. The Team Leader explicitly changes that default for player birth dates in v2. Preserve the source PDF and v1 approval in Git; future specifications/acceptance must trace this approved exception rather than claim public birth dates were already the v1 default. This does not make contact information or other internal data public.
 
-- **Delivery boundary:** The backend must enforce the public scope consistently for public UI/API data and any files intended for public use. This does not itself authorize a public file-export feature. Internal viewing/export scopes remain to be designed.
+- **Delivery boundary:** The backend must enforce the public scope consistently for public UI/API data and any files intended for public use. This does not itself authorize a public file-export feature. D033/D094 own internal/history access and D078/D091/D096 own controlled export/execution; public viewing alone does not grant bulk export.
 
 ### D033 - Internal viewing follows business responsibility
 
-**Confirmed policy.** [Approval, source and rationale](../../../docs/adr/0008-public-information-and-player-birth-dates.md#d033-english-evidence).
+**Confirmed policy.** [Approval, source and rationale](../../docs/adr/0008-public-information-and-player-birth-dates.md#d033-english-evidence).
 
 - **Source:** O04/O08; BM-02/BM-05/BM-06, PDF pp.23-24; UC03/UC04, registration/scheduling/results UCs; [D003](administration.md#d003---season-scoped-business-permissions)/[D004](administration.md#d004---multiple-business-roles-in-the-same-season)/[D019](../design/access-control.md#d019---first-version-delegation-operation-and-recipient-role-matrix)/[D032](publication.md#d032---public-information-boundary-including-player-dates-of-birth).
 
@@ -289,7 +289,7 @@ The rules below are the authoritative current policy for this domain. The UC flo
 
 ### D066 - Shared standings ranks and shared individual awards
 
-**Confirmed policy.** [Approval, source and rationale](../../../docs/adr/0014-shared-ranks-and-individual-awards.md#d066-english-evidence).
+**Confirmed policy.** [Approval, source and rationale](../../docs/adr/0014-shared-ranks-and-individual-awards.md#d066-english-evidence).
 
 - **Source:** O05/O06/O12; QĐ5.3-QĐ5.5/QĐ5.7, BM5.1-BM5.3; [D045](registration.md#d045---freeze-points-and-ranking-priority-after-the-first-official-result)/[D064](results.md#d064---kickoff-based-appearance-eligibility-and-report-defined-goalkeepers).
 
@@ -305,7 +305,7 @@ The rules below are the authoritative current policy for this domain. The UC flo
 
 ### D070 - Fixed-group season-end head-to-head calculation
 
-**Status:** CONFIRMED by the Team Leader, Q70 option A and the common package. [Approval and rationale](../../../docs/adr/0014-shared-ranks-and-individual-awards.md#q70---fixed-group-season-end-head-to-head).
+**Status:** CONFIRMED by the Team Leader, Q70 option A and the common package. [Approval and rationale](../../docs/adr/0014-shared-ranks-and-individual-awards.md#q70---fixed-group-season-end-head-to-head).
 
 - **Source and scope:** QĐ5.3/QĐ5.5, O05; D045/D066. Retain points, overall goal difference and overall goals scored as the main ranking criteria. Apply the additional head-to-head criteria only at season end where a remaining tie affects the championship, qualification or relegation. In-season shared ranks remain governed by D066.
 - **Readiness and input:** Automatically calculate from the current season's Official Results only. Apply season-end resolution only after every fixture in the season schedule has an Official Result; an Ended or Postponed match without one does not satisfy readiness.
@@ -316,7 +316,7 @@ The rules below are the authoritative current policy for this domain. The UC flo
 
 ### D071 - Approved playoff-based ranking resolutions within UC22
 
-**Status:** CONFIRMED by the Team Leader, Q71 option A and its full package. [Approval and rationale](../../../docs/adr/0014-shared-ranks-and-individual-awards.md#q71---playoff-based-ranking-resolution-records).
+**Status:** CONFIRMED by the Team Leader, Q71 option A and its full package. [Approval and rationale](../../docs/adr/0014-shared-ranks-and-individual-awards.md#q71---playoff-based-ranking-resolution-records).
 
 - **Eligibility:** Open a ranking-resolution case only for a group still tied after D070 where important positions require resolution. This is not an arbitrary standings editor. The playoff takes place in reality; UC22 records its evidenced ranking outcome.
 - **Record:** Retain season, affected club group and positions, resulting order, playoff-result summary, date played and original report/decision reference. A scanned attachment is not mandatory.
@@ -329,7 +329,7 @@ The rules below are the authoritative current policy for this domain. The UC flo
 
 ### D073 - Versioned season-summary confirmation and reconfirmation
 
-**Status:** CONFIRMED by the Team Leader, Q73 option A and its full common package. [Approval and rationale](../../../docs/adr/0014-shared-ranks-and-individual-awards.md#q73---versioned-season-summary-confirmation).
+**Status:** CONFIRMED by the Team Leader, Q73 option A and its full common package. [Approval and rationale](../../docs/adr/0014-shared-ranks-and-individual-awards.md#q73---versioned-season-summary-confirmation).
 
 - **Case and workflow:** One summary case per season contains historical versions, with Draft -> Pending confirmation -> Confirmed and at most one pending version. Submitted content is immutable; withdraw/return it before preparing and submitting a new version.
 - **Authority:** One authorized Season Manager prepares/submits; a different authorized Season Manager confirms. A preparer/editor cannot confirm that version. Confirmation and reconfirmation are nondelegable in the first version.
@@ -342,7 +342,7 @@ The rules below are the authoritative current policy for this domain. The UC flo
 
 ### D077 - Season-scoped versioned news publication
 
-**Status:** CONFIRMED by the Team Leader, Q77 option A and its full common package. [Approval and rationale](../../../docs/adr/0008-public-information-and-player-birth-dates.md#q77---season-scoped-news-and-announcements).
+**Status:** CONFIRMED by the Team Leader, Q77 option A and its full common package. [Approval and rationale](../../docs/adr/0008-public-information-and-player-birth-dates.md#q77---season-scoped-news-and-announcements).
 
 - **Scope/content:** Every news/announcement item belongs to exactly one season. Require title and plain-text body with line breaks; retain creator/editor and timestamps. The first version requires no rich-text editor or attachments and introduces no season-independent news permission.
 - **Lifecycle and authority:** Draft -> Published -> Withdrawn. The authorized Season Manager in the assigned season may prepare/edit drafts, publish and withdraw, including publishing their own preparation without an independent approval step. Publication/withdrawal remains nondelegable under D019. Apply current session/authority checks and audit.
@@ -360,7 +360,7 @@ The confirmed component/metric/layout contract is owned by [D068](#d068---public
 
 ### D068 - Public season overview dashboard
 
-**Confirmed policy:** Q68 option A and the entire proposed package, explicitly approved by the Team Leader. [Approval and rationale](../../../docs/adr/0008-public-information-and-player-birth-dates.md#q68---shared-public-season-dashboard).
+**Confirmed policy:** Q68 option A and the entire proposed package, explicitly approved by the Team Leader. [Approval and rationale](../../docs/adr/0008-public-information-and-player-birth-dates.md#q68---shared-public-season-dashboard).
 
 - **Audience:** Guests and signed-in users share a dashboard for the selected season, containing only public information under D032. Internal users may follow links to functions their permissions allow; drafts, pending requests and sensitive data remain in business screens. No separate internal work-queue dashboard is required by this decision.
 - **Counters:** Show season name/status, approved participating club count, total fixtures in the published schedule, fixtures with Official Results and unplayed fixtures. Unplayed means Not started plus Postponed. Show the postponed count separately and explicitly as a subset of unplayed, not an additional disjoint total. Identify In progress and Ended without an Official Result separately; count neither as unplayed nor as an Official Result. Do not expose unconfirmed scores or internal approval details.

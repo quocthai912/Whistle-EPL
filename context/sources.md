@@ -152,8 +152,30 @@ The team leader accepted the residual local-path risk in Git History and explici
 
 ## Scope-change provenance - 2026-10-26
 
-The Team Leader explicitly added first-version match postponement and season dashboard after the original specification and communicated the group's decision LS-01 to exclude Live Score. These are direct approved scope instructions, not retroactive PDF requirements or independent verification of API plans. Source PDF/history remain unchanged. See [ADR 0017](../../docs/adr/0017-live-score-excluded-from-first-version.md) and the [current scope index](design/README.md).
+The Team Leader explicitly added first-version match postponement and season dashboard after the original specification and communicated the group's decision LS-01 to exclude Live Score. These are direct approved scope instructions, not retroactive PDF requirements or independent verification of API plans. Source PDF/history remain unchanged. See [ADR 0017](../docs/adr/0017-live-score-excluded-from-first-version.md) and the [current scope index](design/README.md).
 
 ## English-only documentation transition - 2026-10-26
 
 The Team Leader explicitly approved English-only organization of the current package, superseding prior translation-maintenance instructions; see [the owning policy](README.md#current-package-maintenance). Before removing the translation, the 18 corresponding files were compared: 1,290 paragraph pairs aligned, including decision/UC/source identifiers, numeric thresholds, workflow branches, media/postponement/dashboard rules and Phase evidence/statuses. No business rule or approval information unique to the translation was identified. The original source PDF and earlier approval/translation history remain unchanged in Git. This is a documentation organization change, not a new business/design decision, whole-v2 approval or implementation evidence.
+
+## Q98 - Approved v2 baseline and relocation authorization
+
+On 2026-10-26 (Asia/Bangkok), the Team Leader explicitly approved Q98 option A: the entire Context Package v2, D001-D097, all 25 Use Cases and the 253-key nationality catalog. The same instruction authorized relocation to context/ and three independent sub-agent reviews. [The root approval record](README.md#q98---whole-package-approval) owns current metadata. Earlier approval/open-point/translation notes on this page describe their historical milestones, not current pending package approval.
+
+The v1 reviewed commit and original PDF name/hash/page traceability above remain unchanged. This approval is a requirements/design baseline, not software acceptance or permission to mark Phase implementation complete; no code, Specs/Tasks/Issues or commit/push is performed.
+
+## Q98 - Post-relocation verification
+
+The main agent moved all 18 Context files to context/ without target collisions, verified file bytes during the move and rebased affected repository references before removing the empty old directory. Three actual, independent, read-only sub-agents then directly inspected the relocated documents:
+
+| Review | Agent task | Result |
+|---|---|---|
+| Business & Use Cases | q98_business_use_cases | PASS: approved decisions, 25 UCs, authority/lifecycles and Phase boundaries; no policy blocker |
+| Architecture & Data | q98_architecture_data | PASS: architecture/typed dictionary/ERDs, official sources, API/security/transaction/media/toolchain; no design blocker |
+| Documentation Integrity | q98_documentation_integrity | PASS: inventory, links/anchors, approval/source/ADR/glossary/quality/Phase integrity; no documentation blocker |
+
+Reported editorial issues were verified and corrected: stale pending package approval, stale nationality-review notes, ambiguous v1/v2 approval wording in AGENTS and an outdated pending media schedule note. Corrections point to approved owners; no new business policy was introduced.
+
+Final automated checks passed across 86 Markdown files and 2,034 local links/anchors. The preserved baseline contains D001-D097 and 97 index rows, 25 UC/execution-matrix entries, 34 quality codes, 37 business clauses, 24 ADRs, 253 nationality keys, 13 position codes and 62 base dictionary models. The original UC content, Phase statuses/dependencies and 79 checkboxes, unrelated files, Git HEAD/history and original PDF provenance were preserved. No obsolete Context path or duplicate language/version directory remains; git diff --check passed.
+
+Documentation outcome: Whistle-EPL Context Package v2 - APPROVED & COMPLETE. Software/Phase implementation and acceptance remain unverified; actual deployment inputs and executable checks remain downstream work under the approved process.

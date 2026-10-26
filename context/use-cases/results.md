@@ -277,7 +277,7 @@ The rules below are the authoritative current policy for this domain. The UC flo
 
 ### D047 - Bind match event catalogs to recorded actual kickoff
 
-**Confirmed policy.** [Approval, source and rationale](../../../docs/adr/0010-immutable-approved-season-regulation-versions.md#d047-english-evidence).
+**Confirmed policy.** [Approval, source and rationale](../../docs/adr/0010-immutable-approved-season-regulation-versions.md#d047-english-evidence).
 
 - **Source:** O07/O09/O12; QĐ6.4, UC16/UC19; [D042](registration.md#d042---immutable-approved-versions-of-seasonal-regulations)/[D043](registration.md#d043---immediate-or-future-regulation-effectivity-without-backdating)/[D046](registration.md#d046---preserve-codes-and-meanings-of-referenced-goal-and-card-types).
 
@@ -289,7 +289,7 @@ The rules below are the authoritative current policy for this domain. The UC flo
 
 ### D048 - Record actual kickoff in the report and confirm it with the official result
 
-**Confirmed policy.** [Approval, source and rationale](../../../docs/adr/0010-immutable-approved-season-regulation-versions.md#d048-english-evidence).
+**Confirmed policy.** [Approval, source and rationale](../../docs/adr/0010-immutable-approved-season-regulation-versions.md#d048-english-evidence).
 
 - **Source:** O07/O09/O12; UC16-UC19; [D005](administration.md#d005---separate-preparation-and-approval-responsibilities)/[D047](results.md#d047---bind-match-event-catalogs-to-recorded-actual-kickoff).
 
@@ -301,7 +301,7 @@ The rules below are the authoritative current policy for this domain. The UC flo
 
 ### D049 - Revalidate events when corrected kickoff changes the applicable catalog
 
-**Confirmed policy.** [Approval, source and rationale](../../../docs/adr/0010-immutable-approved-season-regulation-versions.md#d049-english-evidence).
+**Confirmed policy.** [Approval, source and rationale](../../docs/adr/0010-immutable-approved-season-regulation-versions.md#d049-english-evidence).
 
 - **Source:** O07/O09/O12; UC16-UC20; [D005](administration.md#d005---separate-preparation-and-approval-responsibilities)/[D036](../business.md#d036---correct-erroneous-master-data-with-separate-review-of-affected-business-records)/[D047](results.md#d047---bind-match-event-catalogs-to-recorded-actual-kickoff)/[D048](results.md#d048---record-actual-kickoff-in-the-report-and-confirm-it-with-the-official-result).
 
@@ -313,7 +313,7 @@ The rules below are the authoritative current policy for this domain. The UC flo
 
 ### D063 - Separate match, report-version and official-result lifecycles
 
-**Confirmed policy.** [Approval, source and rationale](../../../docs/adr/0013-match-report-and-official-result-lifecycles.md#d063-english-evidence).
+**Confirmed policy.** [Approval, source and rationale](../../docs/adr/0013-match-report-and-official-result-lifecycles.md#d063-english-evidence).
 
 - **Source:** O08/O09/O12; UC16-UC20; [D005](administration.md#d005---separate-preparation-and-approval-responsibilities)/[D047](results.md#d047---bind-match-event-catalogs-to-recorded-actual-kickoff)-[D049](results.md#d049---revalidate-events-when-corrected-kickoff-changes-the-applicable-catalog)/[D062](scheduling.md#d062---schedule-approval-publishes-immediately-and-adjustments-are-versioned).
 
@@ -331,7 +331,7 @@ The rules below are the authoritative current policy for this domain. The UC flo
 
 ### D064 - Kickoff-based appearance eligibility and report-defined goalkeepers
 
-**Confirmed policy.** [Approval, source and rationale](../../../docs/adr/0013-match-report-and-official-result-lifecycles.md#d064-english-evidence).
+**Confirmed policy.** [Approval, source and rationale](../../docs/adr/0013-match-report-and-official-result-lifecycles.md#d064-english-evidence).
 
 - **Source:** O02/O06/O09/O12; QĐ3.2/QĐ5.7, BM3, UC16/UC18/UC20; [D047](results.md#d047---bind-match-event-catalogs-to-recorded-actual-kickoff)/[D048](results.md#d048---record-actual-kickoff-in-the-report-and-confirm-it-with-the-official-result)/[D056](registration.md#d056---playing-effective-intervals-and-consistent-club-transfers).
 
@@ -349,7 +349,7 @@ The rules below are the authoritative current policy for this domain. The UC flo
 
 ### D065 - Structured event minutes, score checks and referee-signature references
 
-**Confirmed policy.** [Approval, source and rationale](../../../docs/adr/0013-match-report-and-official-result-lifecycles.md#d065-english-evidence).
+**Confirmed policy.** [Approval, source and rationale](../../docs/adr/0013-match-report-and-official-result-lifecycles.md#d065-english-evidence).
 
 - **Source:** O09/O12; BM3, QĐ3.3-QĐ3.5, UC16-UC19; [D046](registration.md#d046---preserve-codes-and-meanings-of-referenced-goal-and-card-types)-[D049](results.md#d049---revalidate-events-when-corrected-kickoff-changes-the-applicable-catalog)/[D063](results.md#d063---separate-match-report-version-and-official-result-lifecycles)/[D064](results.md#d064---kickoff-based-appearance-eligibility-and-report-defined-goalkeepers).
 
@@ -369,7 +369,7 @@ The rules below are the authoritative current policy for this domain. The UC flo
 
 ### D083 - Stored official statistics with full-season recalculation
 
-**Status:** CONFIRMED by the Team Leader, Q83 option A and its full common package. [Approval and rationale](../../../docs/adr/0013-match-report-and-official-result-lifecycles.md#q83---stored-statistics-and-full-season-recalculation).
+**Status:** CONFIRMED by the Team Leader, Q83 option A and its full common package. [Approval and rationale](../../docs/adr/0013-match-report-and-official-result-lifecycles.md#q83---stored-statistics-and-full-season-recalculation).
 
 - **Authoritative input:** Calculate from the currently referenced confirmed report/Official Result version of each match. Drafts, pending confirmations and unapproved corrections are excluded.
 - **Derived storage:** Persist ClubSeasonStats by season/club and PlayerSeasonStats by season/player as regenerable derived data, not manually editable sporting outcomes.

@@ -373,7 +373,7 @@ The rules below are the authoritative current policy for this domain. The UC flo
 
 ### D074 - Independently approved season closure and reopening
 
-**Status:** CONFIRMED by the Team Leader, Q74 option A and its full common package. [Approval and rationale](../../../docs/adr/0010-immutable-approved-season-regulation-versions.md#q74---season-closure-and-reopening).
+**Status:** CONFIRMED by the Team Leader, Q74 option A and its full common package. [Approval and rationale](../../docs/adr/0010-immutable-approved-season-regulation-versions.md#q74---season-closure-and-reopening).
 
 - **States:** Create a season Open; change it to Closed through an explicit business operation. Scheduled end dates and D073 summary confirmation do not automatically close it. Open is a management state, not proof that matches are currently in progress.
 - **Authority:** One authorized Season Manager proposes closing/reopening; a different authorized Season Manager approves. The approval is nondelegable in the first version. Record reason, operators, time and history. A pending proposal does not change the current season state.
@@ -386,7 +386,7 @@ The rules below are the authoritative current policy for this domain. The UC flo
 
 ### D076 - Separate season-creation authority and initial regulation gate
 
-**Status:** CONFIRMED by the Team Leader, Q76 option A and its full common package. [Approval and rationale](../../../docs/adr/0003-season-scoped-business-permissions.md#q76---separate-season-creation-authority).
+**Status:** CONFIRMED by the Team Leader, Q76 option A and its full common package. [Approval and rationale](../../docs/adr/0003-season-scoped-business-permissions.md#q76---separate-season-creation-authority).
 
 - **Create Season permission:** The System Administrator separately grants/revokes a system-level Create Season permission through UC03 for designated internal personnel. It authorizes only creating a new season through UC05 and requires no role assignment in a pre-existing season, so the first season can be created. It is not granted automatically by a seasonal role or system-administrator status.
 - **Separation:** Administrators cannot grant this permission to themselves. Creation does not assign the creator any seasonal role or confer management/approval/internal viewing across seasons. After creation, the System Administrator assigns personnel to the new season separately under D006.
@@ -398,7 +398,7 @@ The rules below are the authoritative current policy for this domain. The UC flo
 
 ### D042 - Immutable approved versions of seasonal regulations
 
-**Confirmed policy.** [Approval, source and rationale](../../../docs/adr/0010-immutable-approved-season-regulation-versions.md#d042-english-evidence).
+**Confirmed policy.** [Approval, source and rationale](../../docs/adr/0010-immutable-approved-season-regulation-versions.md#d042-english-evidence).
 
 - **Source:** O07/O12; QĐ6, PDF p.11; UC06 pp.79-82; [D005](administration.md#d005---separate-preparation-and-approval-responsibilities)/[D035](../business.md#d035---stable-master-identity-with-selective-snapshots-of-official-business-information).
 
@@ -408,7 +408,7 @@ The rules below are the authoritative current policy for this domain. The UC flo
 
 ### D043 - Immediate or future regulation effectivity without backdating
 
-**Confirmed policy.** [Approval, source and rationale](../../../docs/adr/0010-immutable-approved-season-regulation-versions.md#d043-english-evidence).
+**Confirmed policy.** [Approval, source and rationale](../../docs/adr/0010-immutable-approved-season-regulation-versions.md#d043-english-evidence).
 
 - **Source:** O07/O12; QĐ6.6, PDF p.11; UC06 pp.79-82; [D024](../design/architecture.md#d024---utc-instants-and-a-single-vietnam-displayinput-time-zone)/[D042](registration.md#d042---immutable-approved-versions-of-seasonal-regulations).
 
@@ -420,7 +420,7 @@ The rules below are the authoritative current policy for this domain. The UC flo
 
 ### D044 - Freeze competition structure after initial schedule approval
 
-**Confirmed policy.** [Approval, source and rationale](../../../docs/adr/0010-immutable-approved-season-regulation-versions.md#d044-english-evidence).
+**Confirmed policy.** [Approval, source and rationale](../../docs/adr/0010-immutable-approved-season-regulation-versions.md#d044-english-evidence).
 
 - **Source:** O07/O10/O12; QĐ6.3, PDF p.11; QĐ2; UC13/UC14; [D042](registration.md#d042---immutable-approved-versions-of-seasonal-regulations)/[D043](registration.md#d043---immediate-or-future-regulation-effectivity-without-backdating).
 
@@ -430,7 +430,7 @@ The rules below are the authoritative current policy for this domain. The UC flo
 
 ### D045 - Freeze points and ranking priority after the first official result
 
-**Confirmed policy.** [Approval, source and rationale](../../../docs/adr/0010-immutable-approved-season-regulation-versions.md#d045-english-evidence).
+**Confirmed policy.** [Approval, source and rationale](../../docs/adr/0010-immutable-approved-season-regulation-versions.md#d045-english-evidence).
 
 - **Source:** O07/O12; QĐ5.2/QĐ5.3 and QĐ6.5, PDF pp.10-11; UC18-UC20; [D042](registration.md#d042---immutable-approved-versions-of-seasonal-regulations)-[D044](registration.md#d044---freeze-competition-structure-after-initial-schedule-approval).
 
@@ -440,7 +440,7 @@ The rules below are the authoritative current policy for this domain. The UC flo
 
 ### D072 - Seasonal qualification and relegation counts
 
-**Status:** CONFIRMED by the Team Leader, Q72 option A and the full proposed package. [Approval and rationale](../../../docs/adr/0014-shared-ranks-and-individual-awards.md#q72---seasonal-qualification-and-relegation-counts).
+**Status:** CONFIRMED by the Team Leader, Q72 option A and the full proposed package. [Approval and rationale](../../docs/adr/0014-shared-ranks-and-individual-awards.md#q72---seasonal-qualification-and-relegation-counts).
 
 - **Champion:** Rank 1 identifies the champion. Resolve a consequential tie under D070/D071 before confirming the season summary.
 - **Qualification:** Configure a single generic count Q per season; ranks 1 through Q qualify by league position. Require an explicit value; Q = 0 explicitly disables this group for that season. Do not infer a default count from real EPL rules. The illustrative Q = 4 in the interview was not approved as a seasonal value.
@@ -452,7 +452,7 @@ The rules below are the authoritative current policy for this domain. The UC flo
 
 ### D046 - Preserve codes and meanings of referenced goal and card types
 
-**Confirmed policy.** [Approval, source and rationale](../../../docs/adr/0010-immutable-approved-season-regulation-versions.md#d046-english-evidence).
+**Confirmed policy.** [Approval, source and rationale](../../docs/adr/0010-immutable-approved-season-regulation-versions.md#d046-english-evidence).
 
 - **Source:** O07/O09/O12; QĐ3.3-QĐ3.5 and QĐ6.4; [D042](registration.md#d042---immutable-approved-versions-of-seasonal-regulations)/[D043](registration.md#d043---immediate-or-future-regulation-effectivity-without-backdating).
 
@@ -462,7 +462,7 @@ The rules below are the authoritative current policy for this domain. The UC flo
 
 ### D050 - At most one approved future regulation version per season
 
-**Confirmed policy.** [Approval, source and rationale](../../../docs/adr/0010-immutable-approved-season-regulation-versions.md#d050-english-evidence).
+**Confirmed policy.** [Approval, source and rationale](../../docs/adr/0010-immutable-approved-season-regulation-versions.md#d050-english-evidence).
 
 - **Source:** O07/O12; [D042](registration.md#d042---immutable-approved-versions-of-seasonal-regulations)/[D043](registration.md#d043---immediate-or-future-regulation-effectivity-without-backdating).
 
@@ -472,7 +472,7 @@ The rules below are the authoritative current policy for this domain. The UC flo
 
 ### D051 - Controlled cancellation, replacement and activation of waiting regulations
 
-**Confirmed policy.** [Approval, source and rationale](../../../docs/adr/0010-immutable-approved-season-regulation-versions.md#d051-english-evidence).
+**Confirmed policy.** [Approval, source and rationale](../../docs/adr/0010-immutable-approved-season-regulation-versions.md#d051-english-evidence).
 
 - **Source:** O07/O08/O12; UC06; [D005](administration.md#d005---separate-preparation-and-approval-responsibilities)/[D042](registration.md#d042---immutable-approved-versions-of-seasonal-regulations)-[D045](registration.md#d045---freeze-points-and-ranking-priority-after-the-first-official-result)/[D050](registration.md#d050---at-most-one-approved-future-regulation-version-per-season).
 
@@ -486,7 +486,7 @@ The rules below are the authoritative current policy for this domain. The UC flo
 
 ### D052 - Compatible registration-rule changes and revalidation of pending records
 
-**Confirmed policy.** [Approval, source and rationale](../../../docs/adr/0010-immutable-approved-season-regulation-versions.md#d052-english-evidence).
+**Confirmed policy.** [Approval, source and rationale](../../docs/adr/0010-immutable-approved-season-regulation-versions.md#d052-english-evidence).
 
 - **Source:** O01/O02/O07/O12; QĐ6.2, UC06/UC10/UC11; [D036](../business.md#d036---correct-erroneous-master-data-with-separate-review-of-affected-business-records)/[D042](registration.md#d042---immutable-approved-versions-of-seasonal-regulations)/[D043](registration.md#d043---immediate-or-future-regulation-effectivity-without-backdating)/[D051](registration.md#d051---controlled-cancellation-replacement-and-activation-of-waiting-regulations).
 
@@ -500,7 +500,7 @@ The rules below are the authoritative current policy for this domain. The UC flo
 
 ### D053 - Registration windows, receipt deadlines and individual exceptions
 
-**Confirmed policy.** [Approval, source and rationale](../../../docs/adr/0011-registration-windows-and-receipt-exceptions.md#d053-english-evidence).
+**Confirmed policy.** [Approval, source and rationale](../../docs/adr/0011-registration-windows-and-receipt-exceptions.md#d053-english-evidence).
 
 - **Source:** O02/O07/O08/O12; QĐ1.6/QĐ6.2, UC06/UC08/UC10/UC11; [D024](../design/architecture.md#d024---utc-instants-and-a-single-vietnam-displayinput-time-zone)/[D052](registration.md#d052---compatible-registration-rule-changes-and-revalidation-of-pending-records).
 
@@ -516,7 +516,7 @@ The rules below are the authoritative current policy for this domain. The UC flo
 
 ### D054 - Automatic U21 assessment and evidence-based staff verification of homegrown status
 
-**Confirmed policy.** [Approval, source and rationale](../../../docs/adr/0011-registration-windows-and-receipt-exceptions.md#d054-english-evidence).
+**Confirmed policy.** [Approval, source and rationale](../../docs/adr/0011-registration-windows-and-receipt-exceptions.md#d054-english-evidence).
 
 - **Source:** O01/O07/O09/O12; QĐ1.2-QĐ1.4/QĐ6.2, UC10/UC11; [D024](../design/architecture.md#d024---utc-instants-and-a-single-vietnam-displayinput-time-zone)/[D033](publication.md#d033---internal-viewing-follows-business-responsibility)/[D052](registration.md#d052---compatible-registration-rule-changes-and-revalidation-of-pending-records).
 
@@ -532,7 +532,7 @@ The rules below are the authoritative current policy for this domain. The UC flo
 
 ### D055 - Versioned club-application and player-registration workflows
 
-**Confirmed policy.** [Approval, source and rationale](../../../docs/adr/0011-registration-windows-and-receipt-exceptions.md#d055-english-evidence).
+**Confirmed policy.** [Approval, source and rationale](../../docs/adr/0011-registration-windows-and-receipt-exceptions.md#d055-english-evidence).
 
 - **Source:** O02/O08/O09/O12; UC08/UC10/UC11; [D005](administration.md#d005---separate-preparation-and-approval-responsibilities)/[D052](registration.md#d052---compatible-registration-rule-changes-and-revalidation-of-pending-records)-[D054](registration.md#d054---automatic-u21-assessment-and-evidence-based-staff-verification-of-homegrown-status).
 
@@ -550,7 +550,7 @@ The rules below are the authoritative current policy for this domain. The UC flo
 
 ### D056 - Playing-effective intervals and consistent club transfers
 
-**Confirmed policy.** [Approval, source and rationale](../../../docs/adr/0011-registration-windows-and-receipt-exceptions.md#d056-english-evidence).
+**Confirmed policy.** [Approval, source and rationale](../../docs/adr/0011-registration-windows-and-receipt-exceptions.md#d056-english-evidence).
 
 - **Source:** O02/O08/O09/O12; QĐ1.5, UC10/UC11; [D024](../design/architecture.md#d024---utc-instants-and-a-single-vietnam-displayinput-time-zone)/[D053](registration.md#d053---registration-windows-receipt-deadlines-and-individual-exceptions)-[D055](registration.md#d055---versioned-club-application-and-player-registration-workflows).
 
@@ -568,7 +568,7 @@ The rules below are the authoritative current policy for this domain. The UC flo
 
 ### D075 - Prospective registration-plan changes and interval quota checks
 
-**Status:** CONFIRMED by the Team Leader, Q75 option A and its full common package. [Approval and rationale](../../../docs/adr/0011-registration-windows-and-receipt-exceptions.md#q75---prospective-registration-plan-changes).
+**Status:** CONFIRMED by the Team Leader, Q75 option A and its full common package. [Approval and rationale](../../docs/adr/0011-registration-windows-and-receipt-exceptions.md#q75---prospective-registration-plan-changes).
 
 - **Scope and authority:** Before a confirmed plan's playing-effective start, an authorized Registration Officer may perform an ordinary prospective change/cancellation within UC10, with reason/history and without an additional manager approval. Changes produce successor versions; record cancellation explicitly as Cancelled before effectivity, preserving the prior validation decision and history.
 - **Correction boundary:** Once effectivity begins, ordinary termination/transfer follows D056. Correcting erroneous confirmed information or incorrectly recorded intervals, including errors on a not-yet-effective version, still requires independent approval under D057. Do not route an error correction through ordinary plan changes to bypass that approval.
@@ -580,7 +580,7 @@ The rules below are the authoritative current policy for this domain. The UC flo
 
 ### D057 - Independently approved correction of validated registrations
 
-**Confirmed policy.** [Approval, source and rationale](../../../docs/adr/0011-registration-windows-and-receipt-exceptions.md#d057-english-evidence).
+**Confirmed policy.** [Approval, source and rationale](../../docs/adr/0011-registration-windows-and-receipt-exceptions.md#d057-english-evidence).
 
 - **Source:** O02/O08/O09/O12; UC10/UC11/UC19; [D036](../business.md#d036---correct-erroneous-master-data-with-separate-review-of-affected-business-records)/[D055](registration.md#d055---versioned-club-application-and-player-registration-workflows)/[D056](registration.md#d056---playing-effective-intervals-and-consistent-club-transfers).
 

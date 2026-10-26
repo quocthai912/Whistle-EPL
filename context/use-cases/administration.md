@@ -205,7 +205,7 @@ The rules below are the authoritative current policy for this domain. The UC flo
 
 ### D003 - Season-scoped business permissions
 
-**Confirmed policy.** [Approval, source and rationale](../../../docs/adr/0003-season-scoped-business-permissions.md#d003-english-evidence).
+**Confirmed policy.** [Approval, source and rationale](../../docs/adr/0003-season-scoped-business-permissions.md#d003-english-evidence).
 
 - **Source:** O08; BM-02, PDF p.23; QĐ4.1, PDF p.9; responsibility scopes in §1.3.3 p.35 and §2.1 p.53.
 
@@ -215,7 +215,7 @@ The rules below are the authoritative current policy for this domain. The UC flo
 
 ### D004 - Multiple business roles in the same season
 
-**Confirmed policy.** [Approval, source and rationale](../../../docs/adr/0003-season-scoped-business-permissions.md#d004-english-evidence).
+**Confirmed policy.** [Approval, source and rationale](../../docs/adr/0003-season-scoped-business-permissions.md#d004-english-evidence).
 
 - **Source:** O08; BM-02, PDF p.23; six actors in §1.3.3 p.35 and §2.1 p.53; [D003](administration.md#d003---season-scoped-business-permissions).
 
@@ -225,7 +225,7 @@ The rules below are the authoritative current policy for this domain. The UC flo
 
 ### D005 - Separate preparation and approval responsibilities
 
-**Confirmed policy.** [Approval, source and rationale](../../../docs/adr/0003-season-scoped-business-permissions.md#d005-english-evidence).
+**Confirmed policy.** [Approval, source and rationale](../../docs/adr/0003-season-scoped-business-permissions.md#d005-english-evidence).
 
 - **Source:** O07/O08; QĐ6, PDF p.11; UC06 pp.79-82, UC08 pp.85-88, UC13-UC14 pp.100-106 and UC18-UC19 pp.115-121; [D003](administration.md#d003---season-scoped-business-permissions)/[D004](administration.md#d004---multiple-business-roles-in-the-same-season).
 
@@ -237,7 +237,7 @@ The rules below are the authoritative current policy for this domain. The UC flo
 
 ### D006 - System Administrator manages seasonal role assignments
 
-**Confirmed policy.** [Approval, source and rationale](../../../docs/adr/0003-season-scoped-business-permissions.md#d006-english-evidence).
+**Confirmed policy.** [Approval, source and rationale](../../docs/adr/0003-season-scoped-business-permissions.md#d006-english-evidence).
 
 - **Source:** O08; UC03, PDF pp.72-74; BM-02/BM-06, pp.23-24; [D003](administration.md#d003---season-scoped-business-permissions)-[D005](administration.md#d005---separate-preparation-and-approval-responsibilities).
 
@@ -247,7 +247,7 @@ The rules below are the authoritative current policy for this domain. The UC flo
 
 ### D007 - Invalidate sessions after permission changes or account locking
 
-**Confirmed policy.** [Approval, source and rationale](../../../docs/adr/0003-season-scoped-business-permissions.md#d007-english-evidence).
+**Confirmed policy.** [Approval, source and rationale](../../docs/adr/0003-season-scoped-business-permissions.md#d007-english-evidence).
 
 - **Source:** O08/O12; UC01-UC03, PDF pp.67-74; BM-01/BM-02, p.23; [D003](administration.md#d003---season-scoped-business-permissions)/[D006](administration.md#d006---system-administrator-manages-seasonal-role-assignments).
 
@@ -259,7 +259,7 @@ The rules below are the authoritative current policy for this domain. The UC flo
 
 ### D008 - First System Administrator bootstrap through a server CLI
 
-**Confirmed policy.** [Approval, source and rationale](../../../docs/adr/0004-first-administrator-cli-bootstrap.md#d008-english-evidence).
+**Confirmed policy.** [Approval, source and rationale](../../docs/adr/0004-first-administrator-cli-bootstrap.md#d008-english-evidence).
 
 - **Source:** O08; UC03, PDF pp.72-74; BM-03/BM-06, pp.23-24; CN-03, p.26; [D003](administration.md#d003---season-scoped-business-permissions)/[D006](administration.md#d006---system-administrator-manages-seasonal-role-assignments).
 
@@ -271,7 +271,7 @@ The rules below are the authoritative current policy for this domain. The UC flo
 
 ### D009 - Protect administrator access and prohibit self-locking
 
-**Confirmed policy.** [Approval, source and rationale](../../../docs/adr/0003-season-scoped-business-permissions.md#d009-english-evidence).
+**Confirmed policy.** [Approval, source and rationale](../../docs/adr/0003-season-scoped-business-permissions.md#d009-english-evidence).
 
 - **Source:** O08; UC03, PDF pp.72-74; BM-02/BM-06, pp.23-24; [D006](administration.md#d006---system-administrator-manages-seasonal-role-assignments)-[D008](administration.md#d008---first-system-administrator-bootstrap-through-a-server-cli).
 
@@ -281,7 +281,7 @@ The rules below are the authoritative current policy for this domain. The UC flo
 
 ### D010 - Prohibit administrator self-granting of seasonal business permissions
 
-**Confirmed policy.** [Approval, source and rationale](../../../docs/adr/0003-season-scoped-business-permissions.md#d010-english-evidence).
+**Confirmed policy.** [Approval, source and rationale](../../docs/adr/0003-season-scoped-business-permissions.md#d010-english-evidence).
 
 - **Source:** O08; UC03, PDF pp.72-74; BM-02/BM-06, pp.23-24; [D003](administration.md#d003---season-scoped-business-permissions)-[D006](administration.md#d006---system-administrator-manages-seasonal-role-assignments)/[D009](administration.md#d009---protect-administrator-access-and-prohibit-self-locking).
 
@@ -291,7 +291,7 @@ The rules below are the authoritative current policy for this domain. The UC flo
 
 ### D011 - Emergency recovery CLI for existing administrators
 
-**Confirmed policy.** [Approval, source and rationale](../../../docs/adr/0004-first-administrator-cli-bootstrap.md#d011-english-evidence).
+**Confirmed policy.** [Approval, source and rationale](../../docs/adr/0004-first-administrator-cli-bootstrap.md#d011-english-evidence).
 
 - **Source:** O08/O12; UC03, PDF pp.72-74; BM-02/BM-03/BM-06, pp.23-24; [D007](administration.md#d007---invalidate-sessions-after-permission-changes-or-account-locking)-[D010](administration.md#d010---prohibit-administrator-self-granting-of-seasonal-business-permissions). This is an explicitly approved v2 operational refinement, not an additional actor or UC.
 
@@ -303,7 +303,7 @@ The rules below are the authoritative current policy for this domain. The UC flo
 
 ### D012 - Season-wide Results Officer scope without per-match assignments
 
-**Confirmed policy.** [Approval, source and rationale](../../../docs/adr/0003-season-scoped-business-permissions.md#d012-english-evidence).
+**Confirmed policy.** [Approval, source and rationale](../../docs/adr/0003-season-scoped-business-permissions.md#d012-english-evidence).
 
 - **Source:** O08; UC16-UC17, PDF pp.109-114; BM-02/BM-06, pp.23-24; AT-02, p.32; [D003](administration.md#d003---season-scoped-business-permissions)/[D005](administration.md#d005---separate-preparation-and-approval-responsibilities).
 
@@ -315,7 +315,7 @@ The rules below are the authoritative current policy for this domain. The UC flo
 
 ### D031 - One personal internal account per person
 
-**Confirmed policy.** [Approval, source and rationale](../../../docs/adr/0003-season-scoped-business-permissions.md#d031-english-evidence).
+**Confirmed policy.** [Approval, source and rationale](../../docs/adr/0003-season-scoped-business-permissions.md#d031-english-evidence).
 
 - **Source:** O08/O12; UC03, PDF pp.72-74; BM-02/BM-06, pp.23-24; [D004](administration.md#d004---multiple-business-roles-in-the-same-season)/[D005](administration.md#d005---separate-preparation-and-approval-responsibilities)/[D017](../design/access-control.md#d017---three-different-people-for-a-delegation-grant).
 
@@ -325,7 +325,7 @@ The rules below are the authoritative current policy for this domain. The UC flo
 
 ### D034 - Separately assigned shared master-record management permissions
 
-**Confirmed policy.** [Approval, source and rationale](../../../docs/adr/0003-season-scoped-business-permissions.md#d034-english-evidence).
+**Confirmed policy.** [Approval, source and rationale](../../docs/adr/0003-season-scoped-business-permissions.md#d034-english-evidence).
 
 - **Source:** O04/O08/O12; UC03 pp.72-74, UC07 pp.82-84, UC09 pp.88-90 and UC12 pp.97-99; shared records in PDF §1.3.4.1 pp.37-38; [D003](administration.md#d003---season-scoped-business-permissions)/[D006](administration.md#d006---system-administrator-manages-seasonal-role-assignments)/[D033](publication.md#d033---internal-viewing-follows-business-responsibility).
 
@@ -341,7 +341,7 @@ The rules below are the authoritative current policy for this domain. The UC flo
 
 ### D037 - Prohibit administrator self-granting of shared master-management permissions
 
-**Confirmed policy.** [Approval, source and rationale](../../../docs/adr/0003-season-scoped-business-permissions.md#d037-english-evidence).
+**Confirmed policy.** [Approval, source and rationale](../../docs/adr/0003-season-scoped-business-permissions.md#d037-english-evidence).
 
 - **Source:** O08/O12; UC03 and [D010](administration.md#d010---prohibit-administrator-self-granting-of-seasonal-business-permissions)/[D034](administration.md#d034---separately-assigned-shared-master-record-management-permissions). This extends the confirmed self-grant safeguard to separately assigned shared master-management permissions.
 
@@ -351,7 +351,7 @@ The rules below are the authoritative current policy for this domain. The UC flo
 
 ### D038 - End shared master-management permission after loss of the last corresponding role assignment
 
-**Confirmed policy.** [Approval, source and rationale](../../../docs/adr/0003-season-scoped-business-permissions.md#d038-english-evidence).
+**Confirmed policy.** [Approval, source and rationale](../../docs/adr/0003-season-scoped-business-permissions.md#d038-english-evidence).
 
 - **Source:** O08/O12; UC03 and [D034](administration.md#d034---separately-assigned-shared-master-record-management-permissions)/[D037](administration.md#d037---prohibit-administrator-self-granting-of-shared-master-management-permissions).
 
@@ -359,11 +359,11 @@ The rules below are the authoritative current policy for this domain. The UC flo
 
 - **Termination and restoration:** Removing the person's last corresponding role assignment ends the related shared-management permission and preserves history. Assigning a corresponding role again does not revive that permission; a new separate grant under [D034](administration.md#d034---separately-assigned-shared-master-record-management-permissions)/[D037](administration.md#d037---prohibit-administrator-self-granting-of-shared-master-management-permissions) is required. Retaining a corresponding assignment in another season prevents this particular termination trigger.
 
-- **Boundary:** Loss means removal of the role assignment, not merely the season reaching its end date. Season closure/archive behavior remains undecided. This decision does not grant access to other seasons' internal records.
+- **Boundary:** Loss means removal of the role assignment, not merely the season reaching its end date. Season closure/reopening follows [D074](registration.md#d074---independently-approved-season-closure-and-reopening); dates/closure do not themselves erase an assignment, and no separate archive feature is selected here. This decision does not grant access to other seasons' internal records.
 
 ### D039 - Invalidate sessions after shared master-management permission changes
 
-**Confirmed policy.** [Approval, source and rationale](../../../docs/adr/0003-season-scoped-business-permissions.md#d039-english-evidence).
+**Confirmed policy.** [Approval, source and rationale](../../docs/adr/0003-season-scoped-business-permissions.md#d039-english-evidence).
 
 - **Source:** O08/O12; UC03 and [D007](administration.md#d007---invalidate-sessions-after-permission-changes-or-account-locking)/[D022](../design/access-control.md#d022---invalidate-recipient-sessions-when-delegation-starts-or-ends)/[D030](../design/architecture.md#d030---recheck-current-session-and-authority-at-the-final-decision-point-of-writes)/[D034](administration.md#d034---separately-assigned-shared-master-record-management-permissions)/[D038](administration.md#d038---end-shared-master-management-permission-after-loss-of-the-last-corresponding-role-assignment).
 
@@ -375,7 +375,7 @@ The rules below are the authoritative current policy for this domain. The UC flo
 
 ### D040 - Allow administrator self-reduction of business permissions
 
-**Confirmed policy.** [Approval, source and rationale](../../../docs/adr/0003-season-scoped-business-permissions.md#d040-english-evidence).
+**Confirmed policy.** [Approval, source and rationale](../../docs/adr/0003-season-scoped-business-permissions.md#d040-english-evidence).
 
 - **Source:** O08/O12; UC03 and [D007](administration.md#d007---invalidate-sessions-after-permission-changes-or-account-locking)/[D009](administration.md#d009---protect-administrator-access-and-prohibit-self-locking)/[D010](administration.md#d010---prohibit-administrator-self-granting-of-seasonal-business-permissions)/[D037](administration.md#d037---prohibit-administrator-self-granting-of-shared-master-management-permissions)-[D039](administration.md#d039---invalidate-sessions-after-shared-master-management-permission-changes).
 
@@ -387,7 +387,7 @@ The rules below are the authoritative current policy for this domain. The UC flo
 
 ### D041 - Retain shared master-management assignments while an account is locked
 
-**Confirmed policy.** [Approval, source and rationale](../../../docs/adr/0003-season-scoped-business-permissions.md#d041-english-evidence).
+**Confirmed policy.** [Approval, source and rationale](../../docs/adr/0003-season-scoped-business-permissions.md#d041-english-evidence).
 
 - **Source:** O08/O12; UC03 and [D007](administration.md#d007---invalidate-sessions-after-permission-changes-or-account-locking)/[D020](../design/access-control.md#d020---terminate-delegation-permanently-when-required-eligibility-is-lost)/[D034](administration.md#d034---separately-assigned-shared-master-record-management-permissions)/[D038](administration.md#d038---end-shared-master-management-permission-after-loss-of-the-last-corresponding-role-assignment)-[D040](administration.md#d040---allow-administrator-self-reduction-of-business-permissions).
 
@@ -399,7 +399,7 @@ The rules below are the authoritative current policy for this domain. The UC flo
 
 ### D081 - Password hashing and managed credential lifecycle
 
-**Status:** CONFIRMED by the Team Leader, Q81 option A and its full proposed package. [Approval and rationale](../../../docs/adr/0020-password-and-account-lifecycle.md).
+**Status:** CONFIRMED by the Team Leader, Q81 option A and its full proposed package. [Approval and rationale](../../docs/adr/0020-password-and-account-lifecycle.md).
 
 - **Hashing:** Use Argon2id with a unique salt per password and initial parameters m=19456 KiB, t=2, p=1. Verify cost against BM-01 load before acceptance. No hashing library is selected.
 - **Password rules:** Require 15-128 characters, allowing Unicode and whitespace without mandatory upper-case/digit/special-character composition. Do not silently truncate or strip whitespace. Reject common passwords using a local blocklist, without an external API.
@@ -409,7 +409,7 @@ The rules below are the authoritative current policy for this domain. The UC flo
 - **Lock separation:** Reset does not itself unlock the account. Reset/unlock are separately authorized and audited; D011 recovery still targets only existing System Administrator accounts.
 - **Login throttling:** Temporarily block login attempts for 15 minutes after five consecutive failures within a 15-minute window for the supplied username, and after 20 failures from an IP within 15 minutes. These temporary limits do not change the administrator-managed Locked account state.
 - **Feedback/history:** Login failures do not disclose whether a username exists. Log security events without passwords. Do not hard-delete accounts referenced by business history; discontinue use through account locking under existing safeguards.
-- **Remaining contracts:** D096 now specifies password code-point/UTF-8 handling, Argon2id baseline, persistent rolling counters and shared endpoint/error/concurrency rules. The reviewed local blocklist contents/license, hashing library and exact environment/handoff runbook remain Q97/implementation-planning work. This decision selects neither a new public registration/reset service nor a specific library.
+- **Remaining contracts:** D096 now specifies password code-point/UTF-8 handling, Argon2id baseline, persistent rolling counters and shared endpoint/error/concurrency rules. D097 now selects the blocklist source, hashing library and environment/handoff policy; exact pins and the executed runbook remain implementation work. No public registration/reset service is added.
 
 ## Derived REST and DTO contract map
 
@@ -426,7 +426,7 @@ All mutations validate their operation-specific allowlist; editable aggregates u
 
 ## Audit access and retention - D094
 
-**Status:** CONFIRMED with the entire Q94 option A package. [Decision navigation](../design/README.md#confirmed-decisions) and [ADR 0015](../../../docs/adr/0015-managed-club-logos-in-first-version.md#q94---controlled-delivery-cleanup-and-audit-boundaries) retain approval/rationale. This section owns audit payload/access/retention; [D094 media rules](../design/media.md#d094---backend-mediated-media-delivery-and-safe-cleanup) own image delivery/cleanup.
+**Status:** CONFIRMED with the entire Q94 option A package. [Decision navigation](../design/README.md#confirmed-decisions) and [ADR 0015](../../docs/adr/0015-managed-club-logos-in-first-version.md#q94---controlled-delivery-cleanup-and-audit-boundaries) retain approval/rationale. This section owns audit payload/access/retention; [D094 media rules](../design/media.md#d094---backend-mediated-media-delivery-and-safe-cleanup) own image delivery/cleanup.
 
 - **Business audit:** Record actor, timestamp, action, object, applicable season, outcome, required reason and necessary before/after changes. Important successful business changes and their audit record commit consistently in the same transaction. Preserve the original BM-06 traceability requirements without dumping the entire request into audit.
 - **Secret exclusion:** Never log passwords/password hashes, session tokens, CSRF tokens, storage credentials or whole request bodies. Do not treat diagnostic logging as permission to copy restricted business content.

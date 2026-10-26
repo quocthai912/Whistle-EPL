@@ -1,5 +1,7 @@
 # ADR 0017 - Exclude Live Score from the first version
 
+Current package approval: [Q98 approved v2](../../context/README.md#q98---whole-package-approval). Earlier pending/open statements below are historical interview evidence; current rules remain in their linked owners.
+
 **Status:** accepted. **Decision:** LS-01. **Authority:** Team Leader and members, communicated by the Team Leader on 2026-10-26 (Asia/Bangkok).
 
 The group explicitly excludes Live Match Tracking / Live Score from the first version and cancels its current Context v2 interview, detailed design, integration planning and mandatory acceptance. V2-EXT-01 is closed as excluded, not unresolved. Reconsideration requires a new group decision; no Future Enhancements commitment is created.
@@ -10,4 +12,4 @@ This supersedes the Live Score portions of INT-01/ADR 0016 and prior interview r
 
 Managed media, internal match postponement and an internal season overview dashboard remain first-version scope. Core functions operate without external football APIs. Existing report/result confirmation and statistical authority remain unchanged.
 
-The authoritative current scope and candidate/acceptance gate are in [integration policy](../../context/english/design/integrations.md); dashboard and postponement policies are owned by existing UC documents. No new actor, UC, library, API integration or implementation is approved here.
+The authoritative current scope and candidate/acceptance gate are in [integration policy](../../context/design/integrations.md); dashboard and postponement policies are owned by existing UC documents. No new actor, UC, library, API integration or implementation is approved here.

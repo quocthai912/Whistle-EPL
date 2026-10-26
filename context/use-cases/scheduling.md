@@ -214,7 +214,7 @@ The rules below are the authoritative current policy for this domain. The UC flo
 
 ### D060 - Automatic fixture pairing with manually completed schedule drafts
 
-**Confirmed policy.** [Approval, source and rationale](../../../docs/adr/0012-schedule-generation-scope-and-drafts.md#d060-english-evidence).
+**Confirmed policy.** [Approval, source and rationale](../../docs/adr/0012-schedule-generation-scope-and-drafts.md#d060-english-evidence).
 
 - **Source:** O10/O12; QĐ2, UC13, TH-02; [D005](administration.md#d005---separate-preparation-and-approval-responsibilities)/[D044](registration.md#d044---freeze-competition-structure-after-initial-schedule-approval).
 
@@ -228,7 +228,7 @@ The rules below are the authoritative current policy for this domain. The UC flo
 
 ### D061 - Seasonal planning intervals and system-wide schedule conflict checks
 
-**Confirmed policy.** [Approval, source and rationale](../../../docs/adr/0012-schedule-generation-scope-and-drafts.md#d061-english-evidence).
+**Confirmed policy.** [Approval, source and rationale](../../docs/adr/0012-schedule-generation-scope-and-drafts.md#d061-english-evidence).
 
 - **Source:** O03/O07/O10/O12; QĐ2.4-QĐ2.6, UC13/UC14; [D024](../design/architecture.md#d024---utc-instants-and-a-single-vietnam-displayinput-time-zone)/[D044](registration.md#d044---freeze-competition-structure-after-initial-schedule-approval)/[D060](scheduling.md#d060---automatic-fixture-pairing-with-manually-completed-schedule-drafts).
 
@@ -244,7 +244,7 @@ The rules below are the authoritative current policy for this domain. The UC flo
 
 ### D062 - Schedule approval publishes immediately and adjustments are versioned
 
-**Confirmed policy.** [Approval, source and rationale](../../../docs/adr/0012-schedule-generation-scope-and-drafts.md#d062-english-evidence).
+**Confirmed policy.** [Approval, source and rationale](../../docs/adr/0012-schedule-generation-scope-and-drafts.md#d062-english-evidence).
 
 - **Source:** O08/O09/O10/O12; UC13-UC15; [D005](administration.md#d005---separate-preparation-and-approval-responsibilities)/[D019](../design/access-control.md#d019---first-version-delegation-operation-and-recipient-role-matrix)/[D044](registration.md#d044---freeze-competition-structure-after-initial-schedule-approval)/[D060](scheduling.md#d060---automatic-fixture-pairing-with-manually-completed-schedule-drafts)/[D061](scheduling.md#d061---seasonal-planning-intervals-and-system-wide-schedule-conflict-checks).
 
@@ -274,7 +274,7 @@ Authority, transitions and allocation follow [D067](#d067---approved-postponemen
 
 ### D067 - Approved postponement and return through UC14
 
-**Confirmed policy:** Q67 option A and the entire common package, explicitly approved by the Team Leader. [Approval and rationale](../../../docs/adr/0012-schedule-generation-scope-and-drafts.md#q67---postponement-approval-and-allocation).
+**Confirmed policy:** Q67 option A and the entire common package, explicitly approved by the Team Leader. [Approval and rationale](../../docs/adr/0012-schedule-generation-scope-and-drafts.md#q67---postponement-approval-and-allocation).
 
 - **Authority:** The Scheduling Officer prepares/submits a UC14 postponement request. The Season Manager or a valid delegated approver under D019 approves; the approver must differ from all preparers/editors. The existing delegated UC14 schedule-adjustment approval operation includes postponement; all other delegation conditions remain unchanged. No direct-manager exception to D005 is introduced.
 - **Eligibility and pending work:** Only a not-yet-started match may be postponed; recheck at approval. Reject postponement for a started/ended match or a match with an Official Result. Pending requests do not establish the official Postponed state; retain D062 version, separation and final-check rules, including supporting basis when scheduled kickoff has passed.
@@ -298,7 +298,7 @@ All mutations validate their operation-specific allowlist; editable aggregates u
 
 ### D093 - Deterministic fixture generation and stable published match identity
 
-**Status:** CONFIRMED by the Team Leader, Q93 option A and the entire proposed package ("Tôi chọn A."). [Approval and rationale](../../../docs/adr/0012-schedule-generation-scope-and-drafts.md#q93---deterministic-generation-and-draft-replacement). D060-D062 retain supported scope, approval and adjustment ownership; this decision owns the generation/replacement/identity contract.
+**Status:** CONFIRMED by the Team Leader, Q93 option A and the entire proposed package ("Tôi chọn A."). [Approval and rationale](../../docs/adr/0012-schedule-generation-scope-and-drafts.md#q93---deterministic-generation-and-draft-replacement). D060-D062 retain supported scope, approval and adjustment ownership; this decision owns the generation/replacement/identity contract.
 
 - **Deterministic pairing:** Sort the approved selected clubs by normalized business code to establish the input order. Use circle rotation: fix one club, rotate the others and pair opposite ends for each first-leg round. Assign home/away through a fixed round/pair-index rule; the second leg repeats corresponding round order with home/away reversed. Store input order and algorithm version with the generated version; do not use randomness or current time for pairings.
 - **Derived algorithm v1:** For zero-based rounds r = 0..N-2 and pairs i = 0..N/2-1, pair array[i] with array[N-1-i], choosing the former as home when (r+i) is even and the latter otherwise. After each round keep array[0] fixed and move the last element to array[1], shifting the others right. Append the reversed-home/away copy as rounds N..2*(N-1). This spells out the approved fixed circle/index rules for implementation review, without adding first-leg streak/fairness constraints or calendar optimization.

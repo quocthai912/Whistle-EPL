@@ -13,7 +13,7 @@ The [D087 media storage amendment](media.md#environment-specific-media-storage) 
 5. Stable operation during external outages, data/image usage rights, provenance, validation and authorized application remain required.
 6. Future media supplementation does not authorize automated writes to fixtures, reports, Official Results, standings or statistics.
 
-See [ADR 0016](../../../docs/adr/0016-core-acceptance-before-external-integration.md) for the original gate and [ADR 0017](../../../docs/adr/0017-live-score-excluded-from-first-version.md) for the superseding Live Score scope decision.
+See [ADR 0016](../../docs/adr/0016-core-acceptance-before-external-integration.md) for the original gate and [ADR 0017](../../docs/adr/0017-live-score-excluded-from-first-version.md) for the superseding Live Score scope decision.
 
 ## V2-EXT-01 - Live Match Tracking / Live Score
 

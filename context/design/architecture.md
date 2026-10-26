@@ -1,10 +1,10 @@
 # Architecture and shared technical contracts
 
-Owns approved stack, layering, time representation and final write authorization. Only the decisions below are selected; D079 owns module responsibilities/coordination, while D080 defines session transport/storage/expiration; D082 defines relational foundations and D087 the reference deployment; detailed internal interfaces, entity/field/index mappings and remaining operational/security contracts still await design. See [open work](../open-decisions.md).
+Owns approved stack, layering, time representation and final write authorization. Only the decisions below are selected; D079 owns module responsibilities/coordination, while D080 defines session transport/storage/expiration; D082 defines relational foundations and D087 the reference deployment; D095/D096 now provide the typed dictionary, interfaces and security/execution contracts, and D097 the selected toolchain/development/operations baseline. Runtime verification and operator inputs remain outstanding. See [open work](../open-decisions.md).
 
 ### D001 - Modular, layered monolithic backend
 
-**Confirmed policy.** [Approval, source and rationale](../../../docs/adr/0001-modular-layered-backend.md#d001-english-evidence).
+**Confirmed policy.** [Approval, source and rationale](../../docs/adr/0001-modular-layered-backend.md#d001-english-evidence).
 
 - **Source:** O12; CN-01-CN-04, PDF p.26; centralized data constraint in §1.2.6.1; three-member team and source project plan in §1.5 pp.50-52.
 
@@ -12,7 +12,7 @@ Owns approved stack, layering, time representation and final write authorization
 
 ### D002 - Approved technology stack and API style
 
-**Confirmed policy.** [Approval, source and rationale](../../../docs/adr/0002-approved-technology-stack.md#d002-english-evidence).
+**Confirmed policy.** [Approval, source and rationale](../../docs/adr/0002-approved-technology-stack.md#d002-english-evidence).
 
 - **Source:** O12; CN-01-CN-04, PDF p.26; Q2 confirmation. The selection principle prioritizes technologies the team has practiced, subject to course constraints. The confirmation does not establish individual members' experience or additional course constraints.
 
@@ -22,7 +22,7 @@ Owns approved stack, layering, time representation and final write authorization
 
 ### D024 - UTC instants and a single Vietnam display/input time zone
 
-**Confirmed policy.** [Approval, source and rationale](../../../docs/adr/0006-utc-instants-and-vietnam-time-zone.md#d024-english-evidence).
+**Confirmed policy.** [Approval, source and rationale](../../docs/adr/0006-utc-instants-and-vietnam-time-zone.md#d024-english-evidence).
 
 - **Source:** O03/O12 and cross-cutting O07/O08; TT-04, PDF p.19; time-related scheduling/registration/regulation/delegation requirements. This is an explicitly confirmed v2 design policy, not a time zone specified by the PDF.
 
@@ -32,7 +32,7 @@ Owns approved stack, layering, time representation and final write authorization
 
 ### D030 - Recheck current session and authority at the final decision point of writes
 
-**Confirmed policy.** [Approval, source and rationale](../../../docs/adr/0007-final-authorization-check-for-writes.md#d030-english-evidence).
+**Confirmed policy.** [Approval, source and rationale](../../docs/adr/0007-final-authorization-check-for-writes.md#d030-english-evidence).
 
 - **Source:** O07/O08/O12; BM-01/BM-02 and CN-02, PDF pp.23/26; AT-02/AT-03, p.32; [D007](../use-cases/administration.md#d007---invalidate-sessions-after-permission-changes-or-account-locking)/[D020](access-control.md#d020---terminate-delegation-permanently-when-required-eligibility-is-lost)-[D023](access-control.md#d023---explicit-delegation-startend-instants-with-an-exclusive-end).
 
@@ -46,7 +46,7 @@ Owns approved stack, layering, time representation and final write authorization
 
 ### D079 - Backend module ownership and synchronous coordination
 
-**Status:** CONFIRMED by the Team Leader, Q79 option A and the full proposed package. [Approval and rationale](../../../docs/adr/0001-modular-layered-backend.md#q79---module-ownership-and-coordination).
+**Status:** CONFIRMED by the Team Leader, Q79 option A and the full proposed package. [Approval and rationale](../../docs/adr/0001-modular-layered-backend.md#q79---module-ownership-and-coordination).
 
 | Module | Owned responsibilities |
 |---|---|
@@ -68,7 +68,7 @@ Owns approved stack, layering, time representation and final write authorization
 
 ### D080 - PostgreSQL server-side sessions with protected cookies
 
-**Status:** CONFIRMED by the Team Leader, Q80 option A and its full proposed package. [Approval and rationale](../../../docs/adr/0019-postgresql-cookie-sessions.md).
+**Status:** CONFIRMED by the Team Leader, Q80 option A and its full proposed package. [Approval and rationale](../../docs/adr/0019-postgresql-cookie-sessions.md).
 
 - **Server-side state:** PostgreSQL stores the account association, creation/activity/expiration times and revocation state. The browser holds only a random opaque session token, not business authority claims used to decide access. Store a hash of the session token rather than a directly reusable token.
 - **Cookie/transport:** Use HttpOnly and SameSite=Lax cookies, with Secure on the HTTPS deployment. Do not store the token in localStorage/sessionStorage. Successful login creates a new session token.
@@ -78,11 +78,11 @@ Owns approved stack, layering, time representation and final write authorization
 - **Concurrent sessions/logout:** Permit multiple sessions for an account across browsers/devices. Ordinary logout revokes the current session and clears its cookie. D007/D022/D039/D076 events still invalidate all applicable sessions.
 - **Current authority:** Session validity alone grants no business action. Check current role, season, delegation and business state, retaining final in-transaction permission/session validation under D030.
 - **Feedback:** Expiration requires login again; account/permission-triggered invalidation uses the D007 notice. Do not automatically replay writes that could execute twice.
-- **Remaining contracts:** Token/hash/cookie/CSRF/security-state and error/concurrency contracts now follow [D096](#d096---api-execution-synchronized-csrf-and-transaction-contracts); exact environment/library configuration remains Q97 work. No JWT/refresh-token mechanism, Redis or session library is selected by this decision. Password hashing/lifecycle is separately selected by [D081](../use-cases/administration.md#d081---password-hashing-and-managed-credential-lifecycle).
+- **Remaining contracts:** Token/hash/cookie/CSRF/security-state and error/concurrency contracts now follow [D096](#d096---api-execution-synchronized-csrf-and-transaction-contracts); environment/library selections now follow D097; exact patch pins and executed verification remain PHASE 1 work. No JWT/refresh-token mechanism, Redis or session library is selected by this decision. Password hashing/lifecycle is separately selected by [D081](../use-cases/administration.md#d081---password-hashing-and-managed-credential-lifecycle).
 
 ### D082 - Relational identity, version and snapshot foundations
 
-**Status:** CONFIRMED by the Team Leader, Q82 option A and its full common package. [Approval and rationale](../../../docs/adr/0021-relational-identifiers-and-snapshots.md).
+**Status:** CONFIRMED by the Team Leader, Q82 option A and its full common package. [Approval and rationale](../../docs/adr/0021-relational-identifiers-and-snapshots.md).
 
 - **Identifiers:** Use backend-generated UUID v4 technical identifiers for independently identified entities, stored as PostgreSQL uuid and represented as strings in APIs. Business codes remain separate, unique/stable/nonreusable under D058; relationships do not use editable descriptive fields as keys.
 - **Normalization:** Represent core seasons, clubs, players, registrations, matches, report versions, appearances, goals and cards with explicit relational tables and appropriate foreign keys/constraints. Do not replace complete core profiles/reports with JSON documents.
@@ -145,7 +145,7 @@ A scheduled match can exist before report entry; a MatchReportCase is created wh
 
 ### D084 - Revision checks, idempotent commands and targeted transaction locks
 
-**Status:** CONFIRMED by the Team Leader, Q84 option A and its full common package. [Approval and rationale](../../../docs/adr/0022-targeted-locks-and-idempotent-commands.md).
+**Status:** CONFIRMED by the Team Leader, Q84 option A and its full common package. [Approval and rationale](../../docs/adr/0022-targeted-locks-and-idempotent-commands.md).
 
 - **Optimistic revision:** Editable records/aggregates carry a technical revision separate from D082 content-version numbering. Mutations provide the revision read; stale revisions are rejected for reload/review rather than silently overwriting another writer.
 - **Submitted content:** Approval/confirmation targets the exact submitted content version and still-valid basis. Changed prerequisites cause a conflict/review, not automatic approval of newer content.
@@ -158,7 +158,7 @@ A scheduled match can exist before report entry; a MatchReportCase is created wh
 
 ### D085 - Shared REST transport and response contract
 
-**Status:** CONFIRMED by the Team Leader, Q85 option A and its full common package. [Approval and rationale](../../../docs/adr/0023-shared-rest-contract.md).
+**Status:** CONFIRMED by the Team Leader, Q85 option A and its full common package. [Approval and rationale](../../docs/adr/0023-shared-rest-contract.md).
 
 - **Routes/methods:** Prefix routes with /api/v1. GET reads; POST creates or executes explicit business commands; PATCH edits allowed fields. Submit/approve/confirm/withdraw actions have explicit endpoints; a generic status PATCH cannot bypass workflows.
 - **Values:** Use JSON UTF-8 and camelCase fields, string UUIDs, ISO 8601 UTC instants ending in Z and YYYY-MM-DD date-only values under D024/D082.
@@ -172,7 +172,7 @@ A scheduled match can exist before report entry; a MatchReportCase is created wh
 
 ### D086 - React SPA tooling and shared UI approach
 
-**Status:** CONFIRMED by the Team Leader, Q86 option A and its full common package. [Approval and rationale](../../../docs/adr/0024-react-frontend-tooling-and-ui.md).
+**Status:** CONFIRMED by the Team Leader, Q86 option A and its full common package. [Approval and rationale](../../docs/adr/0024-react-frontend-tooling-and-ui.md).
 
 - **Tooling:** Build the React/TypeScript SPA with Vite and React Router. Use Ant Design for standard components and CSS Modules for layout/league-specific styling. Select compatible versions with the development environment; this creates no code or dependency installation now.
 - **Language/time:** The first-version UI is Vietnamese, preserving appropriate proper club/player names and terms. Context documentation stays English-only. Display/input uses D024, not automatic device-zone switching.
@@ -209,7 +209,7 @@ The internal shell is a permission-aware menu/workspace, not an additional manda
 
 ### D087 - Docker Compose reference deployment
 
-**Status:** CONFIRMED by the Team Leader, Q87 option A and the full common package, with the explicitly approved optional Supabase Storage amendment. [Approval and rationale](../../../docs/adr/0001-modular-layered-backend.md#q87---docker-compose-reference-deployment).
+**Status:** CONFIRMED by the Team Leader, Q87 option A and the full common package, with the explicitly approved optional Supabase Storage amendment. [Approval and rationale](../../docs/adr/0001-modular-layered-backend.md#q87---docker-compose-reference-deployment).
 
 - **Reference topology:** One Linux host runs the single NestJS backend, PostgreSQL and Caddy through Docker Compose with an internal service network. Caddy serves the React production build and reverse-proxies /api/v1 to the backend under the same browser origin. This retains the modular layered monolith; no hosting provider or purchased domain is selected.
 - **HTTPS:** Use valid HTTPS for deployment and D080 Secure cookies. A local HTTPS acceptance setup must establish appropriate certificate trust to exercise those controls; development configuration is separate. Persist Caddy certificate state across container replacement.
@@ -222,20 +222,20 @@ Technical references: [Docker Compose application model](https://docs.docker.com
 
 ### D088 - Coordinated backup sets and controlled restore
 
-**Status:** CONFIRMED by the Team Leader, Q88 option A and the full proposed package ("Tôi chọn A."). [Approval and rationale](../../../docs/adr/0001-modular-layered-backend.md#q88---coordinated-backup-and-restore). This elaborates D087/LOGO-01/D069 and BM-07; it does not establish implementation or acceptance.
+**Status:** CONFIRMED by the Team Leader, Q88 option A and the full proposed package ("Tôi chọn A."). [Approval and rationale](../../docs/adr/0001-modular-layered-backend.md#q88---coordinated-backup-and-restore). This elaborates D087/LOGO-01/D069 and BM-07; it does not establish implementation or acceptance.
 
 - **Backup unit:** One complete set contains a PostgreSQL custom-format pg_dump archive, the actual referenced media files/objects from the configured storage, and a manifest with set identifier, timestamp, schema/application versions and image inventory/checksums. Restore PostgreSQL through pg_restore. No simultaneous local/remote operational media stores are required.
 - **Consistent boundary:** Enter write-maintenance mode, stop admitting new writes and wait for in-flight operations to complete before establishing the backup point. This covers business writes, media replacement/removal and background writers. Reads may continue where safe, with clear maintenance feedback. Publish a set as successful only after database, media and manifest are complete and verified.
 - **Execution and failure:** Automatically back up at least once every 24 hours, with additional operator-initiated runs before migrations or important changes. Prevent overlapping runs. Record failed runs and notify the operator; permit rerun. Failed/incomplete sets do not replace good sets or count toward retention. The scheduling mechanism is owned by [D089](#d089---periodic-jobs-and-overdue-regulation-activation).
 - **Storage and retention:** Keep backup sets separate from live data directories, Git and public web paths, with restricted access. Internet deployments require a copy outside the application host. Retain at least the 7 most recent complete sets. Cleanup must preserve image content required by retained sets. Manage credentials separately; do not include them in manifests/logs. Exact destination, paths and provider-specific transfer/configuration are subsequent technical elaboration, not a selected new service.
 - **Restore authority and procedure:** Restore through an operator-controlled server procedure/command, not a public restore API/page. Keep write maintenance active; restore database and media from the same set. Check schema compatibility, relationships, image references and important business functions before reopening. Invalidate restored login sessions and require fresh login rather than reviving old sessions.
-- **Verification and limits:** Rehearse on a separate environment with the selected storage profile's season data/media, demonstrate the existing 30-minute full-season recovery threshold and test incomplete/corrupt media sets. Recovery returns to the selected backup point; no point-in-time-per-transaction recovery or zero-loss promise is added. Existing BM-07 thresholds remain unchanged. Detailed scripts, checks and runbooks are implementation-planning work; whole-v2 and Phase approval remain pending.
+- **Verification and limits:** Rehearse on a separate environment with the selected storage profile's season data/media, demonstrate the existing 30-minute full-season recovery threshold and test incomplete/corrupt media sets. Recovery returns to the selected backup point; no point-in-time-per-transaction recovery or zero-loss promise is added. Existing BM-07 thresholds remain unchanged. Detailed scripts, checks and runbooks are implementation-planning work; whole-v2 approval is recorded through Q98; Phase acceptance remains unverified.
 
 Technical references: [PostgreSQL pg_dump](https://www.postgresql.org/docs/current/app-pgdump.html) and [pg_restore](https://www.postgresql.org/docs/current/app-pgrestore.html) describe the selected database tools. [Supabase backup scope](https://supabase.com/docs/guides/platform/backups) explains why actual Storage objects must be included separately. D088's write-maintenance boundary coordinates database and media; a database dump alone does not establish that cross-store boundary.
 
 ### D089 - Periodic jobs and overdue regulation activation
 
-**Status:** CONFIRMED by the Team Leader, Q89 option A and the entire proposed package ("Tôi chọn A."). [Approval and rationale](../../../docs/adr/0001-modular-layered-backend.md#q89---periodic-jobs-and-overdue-activation). This owns scheduling/technical recovery; [D051](../use-cases/registration.md#d051---controlled-cancellation-replacement-and-activation-of-waiting-regulations) retains ownership of regulation cancellation/replacement and business-incompatible activation.
+**Status:** CONFIRMED by the Team Leader, Q89 option A and the entire proposed package ("Tôi chọn A."). [Approval and rationale](../../docs/adr/0001-modular-layered-backend.md#q89---periodic-jobs-and-overdue-activation). This owns scheduling/technical recovery; [D051](../use-cases/registration.md#d051---controlled-cancellation-replacement-and-activation-of-waiting-regulations) retains ownership of regulation cancellation/replacement and business-incompatible activation.
 
 - **Execution model:** Use @nestjs/schedule within the existing backend for business jobs, and Linux systemd timers for operator-run backup commands under D088. Do not add Redis, a message broker or an independently deployed worker service. Exact runtime/package versions and timer/service definitions remain toolchain elaboration.
 - **Due-work discovery:** Scan waiting regulation versions every 1 minute while the backend runs. At backend startup, discover overdue work from persisted PostgreSQL state and catch up. Reuse owning business services/transactions rather than maintaining separate timer-only business rules.
@@ -250,7 +250,7 @@ Technical references: [NestJS task scheduling](https://docs.nestjs.com/technique
 
 ### D095 - Domain-specific relational tables and exact-version references
 
-**Status:** CONFIRMED by the Team Leader, Q95 option A and the entire proposed design package ("Tôi chọn A cùng toàn bộ gói thiết kế trên."). [Approval and rationale](../../../docs/adr/0021-relational-identifiers-and-snapshots.md#q95---domain-specific-tables-and-detailed-dictionary). This owns the relational mapping below; business requiredness/lifecycles remain owned by their existing UCs and decisions.
+**Status:** CONFIRMED by the Team Leader, Q95 option A and the entire proposed design package ("Tôi chọn A cùng toàn bộ gói thiết kế trên."). [Approval and rationale](../../docs/adr/0021-relational-identifiers-and-snapshots.md#q95---domain-specific-tables-and-detailed-dictionary). This owns the relational mapping below; business requiredness/lifecycles remain owned by their existing UCs and decisions.
 
 - **Domain tables:** Use domain-specific cases, versions and child tables instead of a general-purpose workflow/version-payload engine. Separate accounts/sessions/system rights/seasonal roles/shared-master grants; delegation proposals from grants; draft schedule items from published Matches; and match, report and Official Result states. No new UC is introduced.
 - **Exact versions:** A case has a stable identity and numbered content versions unique within that case. Submitted content is immutable; edits after return/withdrawal use successor versions. Decisions identify the exact version, actor, instant and required reason. Processing fields/transition audit remain separate from immutable content. Current-effective/current-published references never mean merely the highest version number.
@@ -258,11 +258,11 @@ Technical references: [NestJS task scheduling](https://docs.nestjs.com/technique
 - **Draft nullability:** Permit incomplete draft business fields where the owning milestone permits them, while keeping case ownership/context keys required. Never substitute fake dates/IDs to satisfy NOT NULL. Submission/approval/confirmation validation enforces milestone completeness. The dictionary explicitly distinguishes physical nullability from business requiredness.
 - **Integrity:** Use PK/FK/UNIQUE/NOT NULL/CHECK where appropriate. Scope foreign keys to the correct season/case/version rather than accepting unrelated existing IDs. Cross-record quotas, interval/shirt/venue conflicts and authority checks execute under D084 transaction/lock rules; do not implement arbitrary cross-table CHECK expressions.
 - **History and events:** Specify FK deletion actions, protecting used masters, accounts and business history from destructive cascade. Only eligible temporary/unsubmitted data follows approved cleanup. Goal/card rows have their own IDs; player/minute/type combinations are not unique because genuine events can share them. Prevent request repetition with event identity, revision and command receipts; never silently merge equal-looking sporting events. JSONB remains limited to defined snapshots/audit, not core relationships.
-- **Derived documentation:** The dictionary/ERDs below elaborate these approved choices without migrations or source code. Proposed reference-data contents are explicitly distinguished from approved policies. D096 below now owns endpoint/permission/security execution mappings; Q97 toolchain/environment choices remain unapproved. Whole-v2 approval and software acceptance remain pending.
+- **Derived documentation:** The dictionary/ERDs below elaborate these approved choices without migrations or source code. Q98 explicitly approved the package and reference-data contents below. D096 owns endpoint/permission/security execution mappings; D097 owns the toolchain/environment selections. Software acceptance remains unverified.
 
 ## Detailed relational dictionary
 
-Read only the relevant module subsection. This is the current logical-to-PostgreSQL design dictionary under D095, not an implemented Prisma schema. Names are logical model names; physical names use snake_case. A common definition applies to every table explicitly covered below, avoiding repeated column lists. D096 below completes the security-support fields and shared execution contract; Q97 library/runtime configuration remains open.
+Read only the relevant module subsection. This is the current logical-to-PostgreSQL design dictionary under D095, not an implemented Prisma schema. Names are logical model names; physical names use snake_case. A common definition applies to every table explicitly covered below, avoiding repeated column lists. D096 below completes the security-support fields and shared execution contract; D097 now owns library/runtime selections; exact pinned compatibility remains to be verified in PHASE 1.
 
 ### Dictionary notation and common columns
 
@@ -280,7 +280,7 @@ Read only the relevant module subsection. This is the current logical-to-Postgre
 | revision | bigint NOT NULL, positive, starts at 1 and advances on a successful mutation; technical D084 revision, not content version |
 | createdAt | Z, server recording time on independently identified mutable/business rows |
 
-All independently identified model rows have id and createdAt unless a row below explicitly uses a composite/short-code PK. Mutable aggregates add revision and updatedAt Z. Catalog rows use stable code PKs and a catalog version, not generated UUIDs as external catalog values. Independently versioned rows use id; version numbering is an I > 0 unique with caseId. All fields listed without `?` are physically NOT NULL. Nullable content becomes mandatory at the stated business milestone; nullable time does not mean the system may infer that transition occurred.
+All independently identified model rows have id and createdAt unless a row below explicitly uses a composite/short-code PK. Mutable aggregates add revision and updatedAt Z. Position/Nationality reference rows use stable short-code PKs and a catalog version. Version-scoped GoalType/CardType retain UUID PKs under D082, with unique(regulationVersionId,code), matching their event FKs. Independently versioned rows use id; version numbering is an I > 0 unique with caseId. All fields listed without `?` are physically NOT NULL. Nullable content becomes mandatory at the stated business milestone; nullable time does not mean the system may infer that transition occurred.
 
 **Version envelope:** Each named version model adds caseId U to its named case, versionNumber I, preparedBy U -> Account, state, submittedAt Z?, decidedAt Z?, decidedBy U? -> Account, decisionReason T(2000)?, predecessorVersionId U? to the same version model and revision. Receipt workflows add receivedAt Z?. Store content fields separately from these processing fields. The case supplies required season/object context; decision fields are populated only by the corresponding permitted transition, including validity confirmation where no extra approval exists. Audit preserves every transition, not only the latest processing fields.
 
@@ -292,7 +292,7 @@ All independently identified model rows have id and createdAt unless a row below
 
 | Model | Columns beyond the common definitions | Keys, constraints and milestone |
 |---|---|---|
-| Account | personnelCode T(32), fullName T(200), username T(50), passwordHash text, state, mustChangePassword B, temporaryPasswordExpiresAt Z?, passwordChangedAt Z?, authRevision bigint | Unique personnelCode and normalized username. D092 formats; D081 credential state/lock/reset gates. No shared account or identity-paper fields. D096 now fixes hash representation and its initial cost; rehash/library/handoff configuration remains Q97 work. |
+| Account | personnelCode T(32), fullName T(200), username T(50), passwordHash text, state, mustChangePassword B, temporaryPasswordExpiresAt Z?, passwordChangedAt Z?, authRevision bigint | Unique personnelCode and normalized username. D092 formats; D081 credential state/lock/reset gates. No shared account or identity-paper fields. D096 now fixes hash representation and its initial cost; rehash/library/handoff policy now follows D097; the actual runbook/pins remain implementation work. |
 | Session | accountId U -> Account, tokenHash text, createdAt Z, lastActivityAt Z, absoluteExpiresAt Z, revokedAt Z?, revocationReason T(2000)? | Unique tokenHash; index(accountId,revokedAt), index(absoluteExpiresAt). D080 idle/absolute validity is checked at use, not delegated to cleanup. [D096](#d096---api-execution-synchronized-csrf-and-transaction-contracts) now specifies token/CSRF representation and supporting state. |
 | SystemRoleAssignment | accountId U -> Account, roleCode text, grantedBy U? -> Account, grantedAt Z, revokedAt Z? | System Administrator assignment is distinct from business rights; partial unique(accountId,roleCode) for live assignment. CLI bootstrap can have no pre-existing grantor, with explicit audit actor kind. |
 | SeasonRoleAssignment | accountId U -> Account, seasonId U -> Season, roleCode text, grantedBy U -> Account, grantedAt Z, revokedAt Z? | Partial unique(accountId,seasonId,roleCode) for live assignment. Use approved role matrix, not arbitrary role strings. |
@@ -325,7 +325,7 @@ All independently identified model rows have id and createdAt unless a row below
 | Model | Columns beyond the common definitions | Keys, constraints and milestone |
 |---|---|---|
 | Position | code text PK, displayName text, catalogVersion text | Exactly D092's 13 codes; no first-version catalog CRUD. |
-| Nationality | code text PK, displayName text, vietnameseLabel text, catalogVersion text | Controlled versioned reference data; derived candidate list below for whole-package review, not an external API dependency or citizenship/homegrown determination. |
+| Nationality | code text PK, displayName text, vietnameseLabel text, catalogVersion text | Controlled versioned reference data; derived approved reference list below under Q98, not an external API dependency or citizenship/homegrown determination. |
 | Club | code T(32), name T(200), abbreviation T(20), discontinuedAt Z?, currentLogoId U? -> MediaAsset | Unique code; current image must belong to this Club. Non-unique normalized names trigger D058 review. No seasonal representative/coach permanently substituted for approved application facts. |
 | Stadium | code T(32), name T(200), location T(500)?, discontinuedAt Z? | Unique code, non-unique normalized name/location search. Existing minimal master fields remain sufficient; no new capacity requirement. |
 | Player | code T(32), fullName T(200), birthDate D, nationalityCode -> Nationality.code, positionCode -> Position.code, discontinuedAt Z?, currentPortraitId U? -> MediaAsset | Unique code; name/birthDate/nationality suspicion is not a unique constraint. D092 birth-date check at input; current image belongs to this Player. Seasonal club/shirt are not Player columns. |
@@ -461,11 +461,11 @@ erDiagram
 
 MediaAsset has exactly one owner (Club xor Player), not both. A Match's official report pointer must resolve through its own report case; the optional pointer is not another result entity. Explicit editor-join families and typed correction/receipt-exception links use the dictionary above rather than a generic workflow entity.
 
-### Derived nationality reference data for package review
+### Approved nationality reference data
 
-The concrete versioned candidate below is reference-data elaboration under D092/D095 for review before whole-package approval. It is not a new external API/provider/SDK selection or a claim that every code is a FIFA/ISO football code. Country/area labels are prepared offline; short keys are local reference keys. ENG/SCO/WAL/NIR are explicit project supplements required by D092. No nationality establishes homegrown status, and catalog updates use reviewed versioned data rather than first-version CRUD. This candidate does not change approved business policy and remains subject to the final whole-package consistency review.
+**Status:** APPROVED by the Team Leader through Q98 on 2026-10-26 (Asia/Bangkok), explicitly including all 253 keys in the catalog below. This is versioned reference data under D092/D095, not a new external API/provider/SDK selection or a claim that every key is a FIFA/ISO football code. Short keys are local reference keys; ENG/SCO/WAL/NIR are the explicit D092 football-context supplements. No nationality establishes homegrown status. Future catalog changes use the approved reviewed/versioned data process rather than first-version CRUD. See [package approval](../README.md#q98---whole-package-approval).
 
-Catalog candidate WHISTLE-NATIONALITY-1 contains 253 local keys (249 country/area keys plus the four explicit football-context supplements). English/Vietnamese UI labels below were materialized with Node 24.14.0 / ICU 78.2 Intl.DisplayNames during documentation preparation, then stored as reviewable data rather than generated or fetched during operation. Vietnamese cells are UI label data in the English dictionary, not a second Context language view. The separate England/Scotland/Wales/Northern Ireland choices are project-required labels; GB is not silently substituted for them. No provider matching, citizenship verification, dual-nationality workflow or automatic homegrown classification is introduced.
+Approved catalog WHISTLE-NATIONALITY-1 contains 253 local keys (249 country/area keys plus the four explicit football-context supplements). English/Vietnamese UI labels below were materialized with Node 24.14.0 / ICU 78.2 Intl.DisplayNames during documentation preparation, then stored as reviewable data rather than generated or fetched during operation. Vietnamese cells are UI label data in the English dictionary, not a second Context language view. The separate England/Scotland/Wales/Northern Ireland choices are project-required labels; GB is not silently substituted for them. No provider matching, citizenship verification, dual-nationality workflow or automatic homegrown classification is introduced.
 
 | Local key | English label | Vietnamese UI label |
 |---|---|---|
@@ -745,7 +745,7 @@ These labels explain display only; they add no tactical formation, automatic pos
 
 ### D096 - API execution, synchronized CSRF and transaction contracts
 
-**Status:** CONFIRMED by the Team Leader, Q96 option A and the entire proposed contract package ("Tôi chọn A, cùng toàn bộ gói hợp trên"). [Approval and rationale](../../../docs/adr/0023-shared-rest-contract.md#q96---execution-security-and-concurrency-contracts). Existing domain owners retain business rights and lifecycle rules; this section owns shared execution/security/lock/error contracts. Q97 toolchain/library/environment choices and whole-package approval remain pending.
+**Status:** CONFIRMED by the Team Leader, Q96 option A and the entire proposed contract package ("Tôi chọn A, cùng toàn bộ gói hợp trên"). [Approval and rationale](../../docs/adr/0023-shared-rest-contract.md#q96---execution-security-and-concurrency-contracts). Existing domain owners retain business rights and lifecycle rules; this section owns shared execution/security/lock/error contracts. D097 now confirms toolchain/library/environment design; whole-package approval is recorded through Q98.
 
 #### Session and CSRF transport
 
@@ -759,10 +759,10 @@ These labels explain display only; they add no tactical formation, automatic pos
 #### Password and login-attempt contract
 
 - Retain D081's password length/strength/temporary-credential/reset rules. Measure length in Unicode code points, then hash UTF-8 bytes without trimming, case conversion or NFC normalization. Do not apply D092 business-text transformations to passwords.
-- Start Argon2id at memory 19 MiB (19,456 KiB), iterations 2, parallelism 1, with a separately generated random salt for each hash; store an encoded algorithm/parameter/salt/hash string. Library and exact compatible version remain Q97 choices. Verify authentication latency under the approved load before increasing cost; do not silently lower the approved baseline.
+- Start Argon2id at memory 19 MiB (19,456 KiB), iterations 2, parallelism 1, with a separately generated random salt for each hash; store an encoded algorithm/parameter/salt/hash string. D097 selects the argon2 library; PHASE 1 must verify/pin its exact compatible version. Verify authentication latency under the approved load before increasing cost; do not silently lower the approved baseline.
 - Persist throttling state in PostgreSQL. Use a rolling 15-minute failure window and the D081 username/IP thresholds, retaining the 15-minute temporary block and separate administrator-managed Locked state. A success resets the username's consecutive-failure sequence, not the IP's failure history. Attempts rejected by an existing block do not continually extend that block.
 - Apply the same response/attempt treatment to supplied usernames that do not exist; response text must not reveal existence. Determine the source IP only from the actual connection and configured trusted Caddy proxy chain, never an arbitrary client-supplied forwarding header. Counter reads/updates are coordinated so concurrent attempts cannot pass the threshold by racing. Keep secrets/passwords out of counter/audit data.
-- Existing managed direct credential handoff remains D081's process; no email, public registration/reset endpoint, HR provider or authentication SDK is selected here. The local common-password blocklist's reviewed contents/license and hashing library remain Q97 preparation, not an external password API dependency.
+- Existing managed direct credential handoff remains D081's process; no email, public registration/reset endpoint, HR provider or authentication SDK is selected here. D097 selects the local blocklist source/license and hashing library, with source pinning/verification during implementation rather than a runtime password API.
 
 #### Request and command contract
 
@@ -824,7 +824,7 @@ These fields elaborate the approved Q96 stateful transport/throttling choice in 
 | LoginFailure | id U PK, usernameKey text, ipKey text, occurredAt Z | Indexed username/time and IP/time; rolling-window failure evidence. Username sequence counts after its last successful login as well as within the 15-minute window; IP window retains failures across successes. These are technical counters, distinct from immutable D094 business/security audit. |
 | SystemGuard | key text PK | Pre-created technical bootstrap/last-administrator/maintenance admission keys where a singleton guard is needed; no new actor or privilege. Existing Account/Season/Player/Club/Stadium/case rows supply typed resource locks where applicable. |
 
-Clean expired/consumed prelogin contexts and rolling-counter evidence only when no active block/window/operation depends on them; retain required security audit under D094. Concrete cleanup batching/indices and default deployment limits remain Q97 configuration. Never derive trusted proxy identities from unverified incoming headers or expose counter keys in public responses.
+Clean expired/consumed prelogin contexts and rolling-counter evidence only when no active block/window/operation depends on them; retain required security audit under D094. D097 now supplies cleanup/deployment defaults; exact batching/indices remain implementation-plan elaboration. Never derive trusted proxy identities from unverified incoming headers or expose counter keys in public responses.
 
 #### Synchronous module interface map
 
@@ -840,4 +840,80 @@ Clean expired/consumed prelogin contexts and rolling-counter evidence only when 
 | Public Queries | Project approved public lookup/Dashboard fields and existing statistical interpretation | Read current permitted sources, never materialize a second authoritative competition dataset |
 | Media / Audit / Data Exchange | Stage/validate controlled files, bind references, append allowlisted history, preview/commit master batches | Reuse owning authority and caller transaction; filesystem/provider work obeys admission, safe reference switching and orphan cleanup |
 
-Technical references: [OWASP CSRF prevention](https://cheatsheetseries.owasp.org/cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.html), [session management](https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html) and [password storage](https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html). Their security guidance supports this approved project contract; it does not select Q97 libraries or authorize implementation.
+Technical references: [OWASP CSRF prevention](https://cheatsheetseries.owasp.org/cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.html), [session management](https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html) and [password storage](https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html). Their security guidance supports this approved project contract; D097 separately selects the supporting libraries, without authorizing implementation during this interview.
+
+### D097 - Pnpm toolchain, development quality and reference operations
+
+**Status:** CONFIRMED by the Team Leader on 2026-10-26 (Asia/Bangkok), Q97 option A and the whole proposed baseline with explicit amendments: pnpm-only Workspaces instead of npm, root ESLint/typecheck/Prettier contracts, and fixture code EPL-TEST-2026. [Approval and rationale](../../docs/adr/0002-approved-technology-stack.md#q97---compatible-baseline-and-pnpm-development-contract). This approves design selections, not a tested build, installed dependencies, source generation or whole-v2 acceptance.
+
+#### Runtime and dependency baseline
+
+| Component | Approved baseline |
+|---|---|
+| Runtime / package manager | Node.js 24 LTS; pnpm exclusively, exact Node-24-compatible pnpm version selected and pinned during PHASE 1 |
+| Backend | NestJS 11 with Express 5 adapter |
+| ORM / PostgreSQL driver | Prisma 7, @prisma/adapter-pg and pg |
+| Database / backup clients | PostgreSQL 17; compatible same-major pg_dump/pg_restore tools |
+| Frontend | React 19, Vite 8, React Router 8 in SPA/declarative mode |
+| UI / date handling | Ant Design 6, CSS Modules, Day.js UTC/timezone support under D024 |
+| TypeScript | 5.9 with strict type checking |
+| Reference host | Ubuntu Server 24.04 LTS, Docker Engine, Docker Compose v2, Caddy 2 |
+
+Keep the backend CommonJS and frontend Vite ESM configurations distinct. For Prisma 7 use generator provider `prisma-client`, an explicit backend output directory such as `../src/generated/prisma` relative to `backend/prisma/schema.prisma`, and `moduleFormat = "cjs"`. Use PrismaPg from @prisma/adapter-pg with pg; align Prisma packages to compatible version 7 releases. Do not silently switch the whole backend to ESM, reuse browser/database credentials or replace the approved architecture. Validate compiler/module-resolution, generated-client imports, adapter and transaction behavior in PHASE 1 before claiming compatibility.
+
+| Supporting purpose | Approved libraries and boundary |
+|---|---|
+| Backend DTO validation | class-validator and class-transformer through Nest ValidationPipe; reject unknown fields and invalid body types instead of silently coercing them |
+| Password hashing | argon2 with the D096 parameters; no algorithm downgrade |
+| Image processing | sharp for actual decoding/validation/normalization under LOGO-01/D069 |
+| XLSX | ExcelJS; yauzl and fast-xml-parser for bounded ZIP/XML preflight under D091 before workbook processing |
+| UUID / token / digest | node:crypto for the already-approved algorithms/entropy |
+| Optional Internet storage | @supabase/supabase-js v2, backend-only storage use if that profile is selected; not Supabase Auth/Database |
+| Backend verification | Jest and Supertest, integration verification against actual PostgreSQL |
+| Frontend verification | Vitest and React Testing Library |
+| End-to-end browsers | Playwright with actual Google Chrome and Microsoft Edge channels |
+| Performance | Locally run k6, without requiring a cloud testing service |
+| Source quality | ESLint, TypeScript compiler and Prettier under the root command contract below |
+
+Library selection is not proof that unsafe workbook content or resource limits are handled. Test actual size/decompression, formula/external-link/embedded-content rejection, type/Unicode preservation and image checks. Install native dependencies in the target OS/container; do not copy Windows node_modules into Linux. PHASE 1 must check compatible versions/peer dependencies, native installation, CommonJS imports and the approved security/file contracts before freezing exact packages/images. Do not install or generate them during this interview.
+
+#### Pnpm workspace and root development contract
+
+- Maintain frontend/ and backend/ as pnpm Workspaces, declared in root pnpm-workspace.yaml. Use one pnpm-lock.yaml and a packageManager field pinning the exact chosen pnpm version; do not maintain a competing package-manager lockfile or workspace definition.
+- Reproducible dependency installation is `pnpm install --frozen-lockfile`. Run project scripts through pnpm, installed tools through `pnpm exec`, and explicitly versioned one-off tools through `pnpm dlx` only where needed. Use only pnpm command forms in current project instructions; preserve legitimate historical third-party/source evidence.
+- Freeze exact package versions through the lockfile and specific container versions/digests after compatibility verification; do not deploy unqualified latest tags. Compatible patch/minor updates require relevant checks. Changing a selected primary library or major requires impact review rather than silent substitution.
+
+| Future root command | Required behavior when implemented |
+|---|---|
+| pnpm lint | ESLint checks frontend and backend source from the repository root; report either workspace's failure without silently skipping it |
+| pnpm typecheck | TypeScript no-emit checking or equivalent project-reference checking covers both workspaces from the root; fail on type errors |
+| pnpm format | Prettier formats only supported source/configuration files in both workspaces and appropriate root configuration; does not rewrite Context/ADRs |
+
+Implement root aggregation once; members must not have to enter/run each workspace separately. Configure explicit include/ignore scopes for format/lint: preserve context/, docs/adr/ and unrelated Markdown; exclude dependencies, generated clients, builds, coverage and generated lockfiles from manual formatting. These command contracts do not assert that scripts currently exist or pass. Nonmutating format verification may use the same approved Prettier scopes through pnpm exec; running format is an explicit source/config mutation, not a substitute for lint/typecheck/test evidence.
+
+#### Credential operations completion
+
+- Use the local SecLists Passwords/Common-Credentials/10k-most-common.txt blocklist. When incorporating it during implementation, record the exact source revision/checksum and retain applicable MIT notice/provenance. Do not fetch a password-validation API at runtime or store real user credentials in this corpus. Blocklist comparison must not modify the password bytes used for hashing.
+- Rehash only after successful password verification when an approved cost policy calls for it. Do not lower parameters or force a password change merely because cost is rehashed. D081 actual credential changes/reset/revocation rules still apply.
+- Hand temporary credentials directly to the verified intended person through the managed direct process, never tickets, repository or logs. Record the operation/outcome without storing the credential. No email or public password-reset feature is introduced.
+
+#### Operation defaults and deployment inputs
+
+| Operation / location | Approved default |
+|---|---|
+| Backup | Daily 03:00 Asia/Ho_Chi_Minh, with D088 maintenance and D089 missed-run handling |
+| Failed backup | Retry after 15 minutes, at most 3 retries for that due run; unresolved failure is visible for operator action and never counted as success |
+| Media cleanup | Daily 04:00 Asia/Ho_Chi_Minh, only under D094's unreferenced-age/reference/in-flight/backup checks |
+| Expired technical data | Hourly eligibility-based cleanup of session/receipt/prelogin context data; expiry remains enforced at use |
+| Login failure evidence | 24 hours, removed only when no active failure window/block depends on it; required audit remains D094 |
+| Operational media | /var/lib/whistle/media for selected server-file storage |
+| Temporary uploads | /var/lib/whistle/tmp, outside public routes |
+| Host backups | /srv/whistle/backups, protected and separate from live data |
+
+Configure and mount these reference paths with appropriate persistence/access; Supabase selection substitutes its object storage, not a mandatory second operational media copy. Preserve PostgreSQL/Caddy durable state under D087. Use ordinary diagnostic-log rotation with D094 retention, separate from technical-counter cleanup and protected business audit. Backup retries here are scheduled operation retries, distinct from D084's bounded database-transaction execution attempts.
+
+An Internet deployment must supply the D088 off-host backup destination, domain/certificates, trusted proxy identities and credentials. These are operator/environment inputs, not implicit approval of Vercel/Render or a paid service. Licensed media/fixture provenance must be supplied and checked before dataset/software acceptance. Local core/media acceptance remains independent; a selected Supabase profile has additional profile-specific delivery/failure/recovery verification.
+
+The canonical [test-season and measurement baseline](../quality.md#d097-test-season-and-measurement-baseline) owns all sample seasonal values/hardware/load settings. They never automatically become official operational regulations. The concrete nationality reference catalog is approved through Q98.
+
+Technical references: [pnpm workspace](https://pnpm.io/workspaces), [pnpm installation/compatibility](https://pnpm.io/installation), [Prisma 7 client generator](https://www.prisma.io/docs/orm/v7/prisma-schema/overview/generators), [NestJS 11 Prisma recipe](https://docs.nestjs.com/v11/recipes/prisma), [sharp target installation](https://sharp.pixelplumbing.com/install/), [Playwright browser channels](https://playwright.dev/docs/browsers), [SecLists source](https://github.com/danielmiessler/SecLists/blob/master/Passwords/Common-Credentials/10k-most-common.txt) and [license](https://raw.githubusercontent.com/danielmiessler/SecLists/master/LICENSE). These support the design baseline; exact pinned runtime compatibility has not been executed in this documentation stage.

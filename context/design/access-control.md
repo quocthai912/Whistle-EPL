@@ -4,7 +4,7 @@ Owns action-scoped delegation under the existing UC03/UC06 responsibilities. Acc
 
 ### D013 - Action-scoped, seasonal and time-bounded business delegation
 
-**Confirmed policy.** [Approval, source and rationale](../../../docs/adr/0005-action-scoped-business-delegation.md#d013-english-evidence).
+**Confirmed policy.** [Approval, source and rationale](../../docs/adr/0005-action-scoped-business-delegation.md#d013-english-evidence).
 
 - **Source:** O07/O08; QĐ6.1, PDF p.11; UC14 pp.103-106 and UC19 pp.118-121; [D003](../use-cases/administration.md#d003---season-scoped-business-permissions)-[D006](../use-cases/administration.md#d006---system-administrator-manages-seasonal-role-assignments)/[D010](../use-cases/administration.md#d010---prohibit-administrator-self-granting-of-seasonal-business-permissions).
 
@@ -14,7 +14,7 @@ Owns action-scoped delegation under the existing UC03/UC06 responsibilities. Acc
 
 ### D014 - Season Manager proposes delegation; System Administrator records grants/revocations
 
-**Confirmed policy.** [Approval, source and rationale](../../../docs/adr/0005-action-scoped-business-delegation.md#d014-english-evidence).
+**Confirmed policy.** [Approval, source and rationale](../../docs/adr/0005-action-scoped-business-delegation.md#d014-english-evidence).
 
 - **Source:** O07/O08; QĐ6.1, PDF p.11; UC03 pp.72-74, UC14 pp.103-106 and UC19 pp.118-121; [D006](../use-cases/administration.md#d006---system-administrator-manages-seasonal-role-assignments)/[D013](access-control.md#d013---action-scoped-seasonal-and-time-bounded-business-delegation).
 
@@ -24,7 +24,7 @@ Owns action-scoped delegation under the existing UC03/UC06 responsibilities. Acc
 
 ### D015 - Single-level delegation based on direct role authority
 
-**Confirmed policy.** [Approval, source and rationale](../../../docs/adr/0005-action-scoped-business-delegation.md#d015-english-evidence).
+**Confirmed policy.** [Approval, source and rationale](../../docs/adr/0005-action-scoped-business-delegation.md#d015-english-evidence).
 
 - **Source:** O07/O08; QĐ6.1, PDF p.11; UC14 pp.103-106 and UC19 pp.118-121; [D003](../use-cases/administration.md#d003---season-scoped-business-permissions)/[D013](access-control.md#d013---action-scoped-seasonal-and-time-bounded-business-delegation)/[D014](access-control.md#d014---season-manager-proposes-delegation-system-administrator-records-grantsrevocations).
 
@@ -34,7 +34,7 @@ Owns action-scoped delegation under the existing UC03/UC06 responsibilities. Acc
 
 ### D016 - Recipient cannot propose or record their own delegation grant
 
-**Confirmed policy.** [Approval, source and rationale](../../../docs/adr/0005-action-scoped-business-delegation.md#d016-english-evidence).
+**Confirmed policy.** [Approval, source and rationale](../../docs/adr/0005-action-scoped-business-delegation.md#d016-english-evidence).
 
 - **Source:** O07/O08; UC03, PDF pp.72-74; BM-02/BM-06, pp.23-24; [D010](../use-cases/administration.md#d010---prohibit-administrator-self-granting-of-seasonal-business-permissions)/[D013](access-control.md#d013---action-scoped-seasonal-and-time-bounded-business-delegation)-[D015](access-control.md#d015---single-level-delegation-based-on-direct-role-authority).
 
@@ -42,7 +42,7 @@ Owns action-scoped delegation under the existing UC03/UC06 responsibilities. Acc
 
 ### D017 - Three different people for a delegation grant
 
-**Confirmed policy.** [Approval, source and rationale](../../../docs/adr/0005-action-scoped-business-delegation.md#d017-english-evidence).
+**Confirmed policy.** [Approval, source and rationale](../../docs/adr/0005-action-scoped-business-delegation.md#d017-english-evidence).
 
 - **Source:** O07/O08; UC03, PDF pp.72-74; BM-02/BM-06, pp.23-24; [D004](../use-cases/administration.md#d004---multiple-business-roles-in-the-same-season)/[D014](access-control.md#d014---season-manager-proposes-delegation-system-administrator-records-grantsrevocations)/[D016](access-control.md#d016---recipient-cannot-propose-or-record-their-own-delegation-grant).
 
@@ -52,7 +52,7 @@ Owns action-scoped delegation under the existing UC03/UC06 responsibilities. Acc
 
 ### D018 - Delegation recipients must already hold a business role in the target season
 
-**Confirmed policy.** [Approval, source and rationale](../../../docs/adr/0005-action-scoped-business-delegation.md#d018-english-evidence).
+**Confirmed policy.** [Approval, source and rationale](../../docs/adr/0005-action-scoped-business-delegation.md#d018-english-evidence).
 
 - **Source:** O07/O08; BM-02, PDF p.23; UC03 pp.72-74; [D003](../use-cases/administration.md#d003---season-scoped-business-permissions)/[D006](../use-cases/administration.md#d006---system-administrator-manages-seasonal-role-assignments)/[D013](access-control.md#d013---action-scoped-seasonal-and-time-bounded-business-delegation)-[D017](access-control.md#d017---three-different-people-for-a-delegation-grant).
 
@@ -62,7 +62,7 @@ Owns action-scoped delegation under the existing UC03/UC06 responsibilities. Acc
 
 ### D019 - First-version delegation operation and recipient-role matrix
 
-**Confirmed policy.** [Approval, source and rationale](../../../docs/adr/0005-action-scoped-business-delegation.md#d019-english-evidence).
+**Confirmed policy.** [Approval, source and rationale](../../docs/adr/0005-action-scoped-business-delegation.md#d019-english-evidence).
 
 - **Source:** O07/O08; QĐ6.1, PDF p.11; UC06 pp.79-82, UC14 pp.103-106, UC19 pp.118-121; approval boundaries in UC08/UC13/UC18/UC22/UC24; [D005](../use-cases/administration.md#d005---separate-preparation-and-approval-responsibilities)/[D013](access-control.md#d013---action-scoped-seasonal-and-time-bounded-business-delegation)-[D018](access-control.md#d018---delegation-recipients-must-already-hold-a-business-role-in-the-target-season).
 
@@ -87,7 +87,7 @@ UC05 season closure/reopening approval is nondelegable under [D074](../use-cases
 
 ### D020 - Terminate delegation permanently when required eligibility is lost
 
-**Confirmed policy.** [Approval, source and rationale](../../../docs/adr/0005-action-scoped-business-delegation.md#d020-english-evidence).
+**Confirmed policy.** [Approval, source and rationale](../../docs/adr/0005-action-scoped-business-delegation.md#d020-english-evidence).
 
 - **Source:** O07/O08; BM-02/BM-06, PDF pp.23-24; [D003](../use-cases/administration.md#d003---season-scoped-business-permissions)/[D015](access-control.md#d015---single-level-delegation-based-on-direct-role-authority)/[D018](access-control.md#d018---delegation-recipients-must-already-hold-a-business-role-in-the-target-season)/[D019](access-control.md#d019---first-version-delegation-operation-and-recipient-role-matrix).
 
@@ -97,7 +97,7 @@ UC05 season closure/reopening approval is nondelegable under [D074](../use-cases
 
 ### D021 - Direct administrative revocation of business delegation
 
-**Confirmed policy.** [Approval, source and rationale](../../../docs/adr/0005-action-scoped-business-delegation.md#d021-english-evidence).
+**Confirmed policy.** [Approval, source and rationale](../../docs/adr/0005-action-scoped-business-delegation.md#d021-english-evidence).
 
 - **Source:** O07/O08; UC03, PDF pp.72-74; BM-02/BM-06, pp.23-24; [D014](access-control.md#d014---season-manager-proposes-delegation-system-administrator-records-grantsrevocations)/[D016](access-control.md#d016---recipient-cannot-propose-or-record-their-own-delegation-grant)/[D017](access-control.md#d017---three-different-people-for-a-delegation-grant)/[D020](access-control.md#d020---terminate-delegation-permanently-when-required-eligibility-is-lost).
 
@@ -109,7 +109,7 @@ UC05 season closure/reopening approval is nondelegable under [D074](../use-cases
 
 ### D022 - Invalidate recipient sessions when delegation starts or ends
 
-**Confirmed policy.** [Approval, source and rationale](../../../docs/adr/0005-action-scoped-business-delegation.md#d022-english-evidence).
+**Confirmed policy.** [Approval, source and rationale](../../docs/adr/0005-action-scoped-business-delegation.md#d022-english-evidence).
 
 - **Source:** O07/O08/O12; BM-01/BM-02, PDF p.23; [D007](../use-cases/administration.md#d007---invalidate-sessions-after-permission-changes-or-account-locking)/[D013](access-control.md#d013---action-scoped-seasonal-and-time-bounded-business-delegation)/[D020](access-control.md#d020---terminate-delegation-permanently-when-required-eligibility-is-lost)/[D021](access-control.md#d021---direct-administrative-revocation-of-business-delegation).
 
@@ -121,7 +121,7 @@ UC05 season closure/reopening approval is nondelegable under [D074](../use-cases
 
 ### D023 - Explicit delegation start/end instants with an exclusive end
 
-**Confirmed policy.** [Approval, source and rationale](../../../docs/adr/0005-action-scoped-business-delegation.md#d023-english-evidence).
+**Confirmed policy.** [Approval, source and rationale](../../docs/adr/0005-action-scoped-business-delegation.md#d023-english-evidence).
 
 - **Source:** O07/O08; QĐ6.1, PDF p.11; [D013](access-control.md#d013---action-scoped-seasonal-and-time-bounded-business-delegation)/[D022](access-control.md#d022---invalidate-recipient-sessions-when-delegation-starts-or-ends). These time-boundary details are confirmed v2 design choices, not source defaults.
 
@@ -131,27 +131,27 @@ UC05 season closure/reopening approval is nondelegable under [D074](../use-cases
 
 ### D025 - Finite delegation periods without a fixed numerical duration cap
 
-**Confirmed policy.** [Approval, source and rationale](../../../docs/adr/0005-action-scoped-business-delegation.md#d025-english-evidence).
+**Confirmed policy.** [Approval, source and rationale](../../docs/adr/0005-action-scoped-business-delegation.md#d025-english-evidence).
 
 - **Source:** O07/O08; [D013](access-control.md#d013---action-scoped-seasonal-and-time-bounded-business-delegation)/[D014](access-control.md#d014---season-manager-proposes-delegation-system-administrator-records-grantsrevocations)/[D020](access-control.md#d020---terminate-delegation-permanently-when-required-eligibility-is-lost)-[D023](access-control.md#d023---explicit-delegation-startend-instants-with-an-exclusive-end). The PDF specifies no 7-day or 30-day delegation cap; this is a confirmed v2 policy choice.
 
 - **Decision:** Do not impose a fixed numerical maximum number of days per delegation in the first version. Every delegation still requires a defined end instant; indefinite delegation is not allowed. The proposer specifies the basis and period, and the administrator checks suitability before granting.
 
-- **Boundaries:** [D020](access-control.md#d020---terminate-delegation-permanently-when-required-eligibility-is-lost) termination, [D021](access-control.md#d021---direct-administrative-revocation-of-business-delegation) revocation, [D022](access-control.md#d022---invalidate-recipient-sessions-when-delegation-starts-or-ends) session behavior and [D023](access-control.md#d023---explicit-delegation-startend-instants-with-an-exclusive-end) expiry/new-grant rules remain mandatory. [D026](access-control.md#d026---delegation-periods-may-extend-beyond-season-startend-dates) confirms the relationship with season dates; detailed season lifecycle conditions remain open.
+- **Boundaries:** [D020](access-control.md#d020---terminate-delegation-permanently-when-required-eligibility-is-lost) termination, [D021](access-control.md#d021---direct-administrative-revocation-of-business-delegation) revocation, [D022](access-control.md#d022---invalidate-recipient-sessions-when-delegation-starts-or-ends) session behavior and [D023](access-control.md#d023---explicit-delegation-startend-instants-with-an-exclusive-end) expiry/new-grant rules remain mandatory. [D026](access-control.md#d026---delegation-periods-may-extend-beyond-season-startend-dates) confirms the relationship with season dates; the [D074 lifecycle gates](../use-cases/registration.md#d074---independently-approved-season-closure-and-reopening) now govern seasonal work.
 
 ### D026 - Delegation periods may extend beyond season start/end dates
 
-**Confirmed policy.** [Approval, source and rationale](../../../docs/adr/0005-action-scoped-business-delegation.md#d026-english-evidence).
+**Confirmed policy.** [Approval, source and rationale](../../docs/adr/0005-action-scoped-business-delegation.md#d026-english-evidence).
 
 - **Source:** O07/O08; season management UC05, PDF pp.77-78; regulation proposals UC06 pp.79-82 and official corrections UC19 pp.118-121; [D019](access-control.md#d019---first-version-delegation-operation-and-recipient-role-matrix)/[D023](access-control.md#d023---explicit-delegation-startend-instants-with-an-exclusive-end)/[D025](access-control.md#d025---finite-delegation-periods-without-a-fixed-numerical-duration-cap).
 
 - **Decision:** A delegation period may start before the season's start date or extend after its end date, supporting legitimate preparation and post-season work. It still applies only to its target season and defined validity interval. The season's end date does not itself truncate the delegation, and the delegation does not automatically renew.
 
-- **Business boundary:** An operation remains permitted only when the season's lifecycle and the operation's business conditions allow it. Delegation cannot override those conditions. Detailed rules for summarized/archived seasons remain to be confirmed; [D026](access-control.md#d026---delegation-periods-may-extend-beyond-season-startend-dates) does not itself select season states or reopening policy.
+- **Business boundary:** An operation remains permitted only when the season's lifecycle and the operation's business conditions allow it. Delegation cannot override those conditions. [D073 summary](../use-cases/publication.md#d073---versioned-season-summary-confirmation-and-reconfirmation) and [D074 closure/reopening](../use-cases/registration.md#d074---independently-approved-season-closure-and-reopening) govern that boundary; no separate archive feature is selected here; [D026](access-control.md#d026---delegation-periods-may-extend-beyond-season-startend-dates) does not itself select season states or reopening policy.
 
 ### D027 - Reject overlapping delegation grants for the same recipient, operation and season
 
-**Confirmed policy.** [Approval, source and rationale](../../../docs/adr/0005-action-scoped-business-delegation.md#d027-english-evidence).
+**Confirmed policy.** [Approval, source and rationale](../../docs/adr/0005-action-scoped-business-delegation.md#d027-english-evidence).
 
 - **Source:** O07/O08; BM-02/BM-06, PDF pp.23-24; [D013](access-control.md#d013---action-scoped-seasonal-and-time-bounded-business-delegation)/[D020](access-control.md#d020---terminate-delegation-permanently-when-required-eligibility-is-lost)/[D021](access-control.md#d021---direct-administrative-revocation-of-business-delegation)/[D023](access-control.md#d023---explicit-delegation-startend-instants-with-an-exclusive-end).
 
@@ -161,7 +161,7 @@ UC05 season closure/reopening approval is nondelegable under [D074](../use-cases
 
 ### D028 - Lock submitted delegation versions and grant exactly the submitted content
 
-**Confirmed policy.** [Approval, source and rationale](../../../docs/adr/0005-action-scoped-business-delegation.md#d028-english-evidence).
+**Confirmed policy.** [Approval, source and rationale](../../docs/adr/0005-action-scoped-business-delegation.md#d028-english-evidence).
 
 - **Source:** O07/O08; BM-02/BM-06, PDF pp.23-24; [D014](access-control.md#d014---season-manager-proposes-delegation-system-administrator-records-grantsrevocations)/[D017](access-control.md#d017---three-different-people-for-a-delegation-grant)/[D023](access-control.md#d023---explicit-delegation-startend-instants-with-an-exclusive-end)/[D027](access-control.md#d027---reject-overlapping-delegation-grants-for-the-same-recipient-operation-and-season).
 
@@ -173,7 +173,7 @@ UC05 season closure/reopening approval is nondelegable under [D074](../use-cases
 
 ### D029 - Separate delegation proposal and granted-authority lifecycles
 
-**Confirmed policy.** [Approval, source and rationale](../../../docs/adr/0005-action-scoped-business-delegation.md#d029-english-evidence).
+**Confirmed policy.** [Approval, source and rationale](../../docs/adr/0005-action-scoped-business-delegation.md#d029-english-evidence).
 
 - **Source:** O07/O08; [D014](access-control.md#d014---season-manager-proposes-delegation-system-administrator-records-grantsrevocations)/[D020](access-control.md#d020---terminate-delegation-permanently-when-required-eligibility-is-lost)-[D023](access-control.md#d023---explicit-delegation-startend-instants-with-an-exclusive-end)/[D028](access-control.md#d028---lock-submitted-delegation-versions-and-grant-exactly-the-submitted-content). These are confirmed v2 business states; no database/schema implementation is selected.
 

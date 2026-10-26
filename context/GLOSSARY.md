@@ -179,3 +179,5 @@ One business context and one glossary per language. Definitions describe domain 
 **Schedule draft item**: A version-owned proposed fixture used before initial schedule approval, distinct from the stable Match created when that schedule is approved ([D093](use-cases/scheduling.md#d093---deterministic-fixture-generation-and-stable-published-match-identity)).
 
 **Business audit record**: Protected traceability evidence of an important business operation and its required changes, distinct from ordinary operational diagnostic logs ([audit policy](use-cases/administration.md#audit-access-and-retention---d094)).
+
+**Acceptance baseline**: The declared environment, data and measurement conditions used to evaluate Whistle-EPL requirements, distinct from evidence that the software has passed those requirements ([D097](quality.md#d097-test-season-and-measurement-baseline)).

@@ -1,6 +1,8 @@
 # ADR 0021 - Relational identifiers, versions and snapshots
 
-**Status:** accepted. **Decision:** D082. The Team Leader selected Q82 option A ("Tôi chọn A."), confirming the full common package. Authoritative policy is owned by [D082](../../context/english/design/architecture.md#d082---relational-identity-version-and-snapshot-foundations).
+Current package approval: [Q98 approved v2](../../context/README.md#q98---whole-package-approval). Earlier pending/open statements below are historical interview evidence; current rules remain in their linked owners.
+
+**Status:** accepted. **Decision:** D082. The Team Leader selected Q82 option A ("Tôi chọn A."), confirming the full common package. Authoritative policy is owned by [D082](../../context/design/architecture.md#d082---relational-identity-version-and-snapshot-foundations).
 
 Choose backend-generated UUID v4 technical keys, PostgreSQL uuid storage and string API identifiers instead of BIGINT identities with string conversion. Keep immutable business codes separate. This gives consistent identity handling across layers, accepting longer identifiers for manual inspection. Normalize core business relationships and versioned content, retaining exact approval-version references; use validated selective JSONB snapshots/audit payloads rather than whole-profile/report JSON storage or indiscriminate snapshots. Temporal types implement D024 and deletion rules preserve used history.
 
@@ -8,6 +10,6 @@ Technical type capabilities were checked against PostgreSQL documentation for [U
 
 ## Q95 - Domain-specific tables and detailed dictionary
 
-**Status:** accepted. **Decision:** D095. **Approver:** Team Leader. The Team Leader explicitly approved Q95 option A and the entire design package. Current owners are [D095](../../context/english/design/architecture.md#d095---domain-specific-relational-tables-and-exact-version-references) and its [detailed relational dictionary](../../context/english/design/architecture.md#detailed-relational-dictionary), read with existing domain policy owners.
+**Status:** accepted. **Decision:** D095. **Approver:** Team Leader. The Team Leader explicitly approved Q95 option A and the entire design package. Current owners are [D095](../../context/design/architecture.md#d095---domain-specific-relational-tables-and-exact-version-references) and its [detailed relational dictionary](../../context/design/architecture.md#detailed-relational-dictionary), read with existing domain policy owners.
 
 Choose typed domain-specific case/version/child tables rather than a universal workflow/version-payload engine. Explicit keys and domain ownership improve traceability, integrity and Chapter 3 implementation guidance at the cost of more tables. The approved package covers immutable submitted content versus processing fields, exact current/decision version pointers, nullable draft content with milestone validation, relational/scoped constraints with D084 cross-row transactions, protected history, report-version-based Official Results and regenerable statistics without current-club reattribution. Event IDs/revisions/receipts prevent replay without merging genuine same-minute events. The dictionary concretizes columns/types/keys/indexes/snapshot shapes and supporting ERDs, while clearly separating a derived nationality-data candidate for final package review and Q96/Q97 security/toolchain matters still unapproved. No migration, implementation, new UC, Phase completion or whole-v2 approval is established.
