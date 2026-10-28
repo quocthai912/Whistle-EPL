@@ -413,7 +413,7 @@ The rules below are the authoritative current policy for this domain. The UC flo
 
 ## Derived REST and DTO contract map
 
-This table derives routes/input groups from approved D001-D085 and this document's owning UCs; it is a technical design draft, not controller/DTO code or a generated feature Specification. Routes are relative to /api/v1. Braced segments are path parameters, not unrestricted operations: every action is explicitly allowlisted. Unspecified field lengths, enum spellings and detailed per-role/error mappings remain in the open register.
+This table derives routes/input groups from the approved decisions and this document's owning UCs; it is a technical design map, not controller/DTO code or a generated feature Specification. Routes are relative to /api/v1. Braced segments are path parameters, not unrestricted operations: every action is explicitly allowlisted. Apply D092 shared field constraints and D095/D096 dictionary/security/execution mappings with the matrix below. Remaining operation-specific DTO/action/enum details are Specification/Plan elaboration; the open register contains actual unresolved inputs/evidence, not already resolved contract choices.
 
 | UC | Route/operation family | Input/output contract | Binding checks |
 |---|---|---|---|
