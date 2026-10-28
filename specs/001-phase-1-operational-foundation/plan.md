@@ -3,7 +3,8 @@
 **Branch**: `spec/phase-1-operational-foundation` | **Date**: 2026-10-28
 **Spec**: [Approved Specification](spec.md)
 **Status**: Design reviewed against Constitution v1.0.0; Tasks approved on 2026-10-28;
-document publication by the Team Leader and subsequent Task Issue creation pending.
+documents published by the Team Leader at b8e6e15b27ed8446cc60dba94bf1a0b0259e51b2;
+all 48 Task Issues are published and linked in tasks.md. Implementation is not started here.
 
 **Input**: Approved spec.md; Context/Constitution baseline
 `e3c3c81d4782ae57443af3249b6a119a8e34f4f3`.
