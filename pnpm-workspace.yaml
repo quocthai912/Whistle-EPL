@@ -1,0 +1,14 @@
+packages:
+  - frontend
+  - backend
+
+onlyBuiltDependencies:
+  - '@prisma/engines'
+  - argon2
+  - prisma
+  - sharp
+
+ignoredBuiltDependencies:
+  - '@nestjs/core'
+
+strictPeerDependencies: true

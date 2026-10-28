@@ -1,0 +1,9 @@
+.git/
+**/node_modules/
+**/dist/
+**/coverage/
+backend/src/generated/
+.verification/
+**/.env*
+**/*.log
+**/__setup_gate_probe__*
