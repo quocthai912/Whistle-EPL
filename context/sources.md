@@ -2,6 +2,16 @@
 
 Current owner documents incorporate approved refinements. The v1 review/migration notes below are historical evidence, not a claim that current files are unchanged source transcriptions. Current decisions are indexed in [design navigation](design/README.md); open-decisions contains unresolved work only.
 
+The [Q99-Q103 PHASE 1 preparation extension](README.md#phase-1-preparation-approval---q99-q103) was separately approved on 2026-10-28 (Asia/Bangkok), after Q98. [ADR 0025](../docs/adr/0025-required-ci-and-protected-branches.md#approval-evidence) records the actual confirmations and rationale for D098 and the foundation verification clarifications. Historical Q98 verification counts below describe that milestone, not the later extension or executable software evidence.
+
+## PHASE 1 preparation review - 2026-10-28
+
+The review used the clean docs/phase-1-architecture-decisions checkout at e911899ec0b1e7dd8e8a68919a435b930cfb3731, identical to local main; a GitHub connector read also confirmed remote main at that commit. The Team Leader explicitly authorized using the current checkout. Repository inventory found no application manifests/source, migrations, functional test suite or CI workflow; the Constitution still contained placeholders. These are observed preparation gaps, not missing replacements for D001-D097.
+
+After approved documentation changes, an independent read-only agent reviewed the diff/ADR for approval fidelity, Phase allocation, source thresholds, governance, ownership and unauthorized artifacts, reporting PASS with no actionable issues. Local integrity checks passed for 43 Context/ADR Markdown documents and 2,036 local links/anchors. The decision index has 98 entries. Baseline comparisons preserved all 34 source-quality rows, 79 checkbox lines, Phase implementation statuses, acceptance/evidence entries and the D001-D097 architecture body. git diff --check passed.
+
+These results verify documentation only. At that preparation-review milestone, no application tests/build/performance/restore drills were executed, the Constitution was not yet ratified, no Specs/Plans/Tasks/Issues or workflow were created, and no GitHub settings, commit or push were performed. The later [Constitution v1.0.0 ratification](README.md#constitution-v100-ratification) resolves the governance-baseline blocker without establishing any individual Plan check or software acceptance.
+
 ## PDF
 
 Business source: `[SE104] - Báo Cáo Đồ Án - Nhóm 11.pdf`, Group 11, SE104.R13, report edition dated October 2026. All of Chapter 1 (pp.4-52) and Chapter 2 (pp.53-139) were read; pages 1-3 contain the cover/reviewer comments/contents. The PDF has 139 pages; printed labels match physical page numbers, counted from 1. `p.N`/`pp.N` in this Context always refer to those numbers; `§` identifies a report section rather than a Markdown section.
