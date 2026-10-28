@@ -33,7 +33,7 @@ claim HTTPS acceptance. Authentication/administration/audit responses are no-sto
 
 | Method/path | Exact input allowlist | Authority / output |
 |---|---|---|
-| GET /auth/csrf | No body | Reuse valid authenticated or 15-minute prelogin context; data.csrfToken only, no business authority or reusable session token |
+| GET /auth/csrf | No body | Reuse a valid authenticated context or an unexpired 15-minute prelogin context; when no valid context exists, including after prelogin expiry, create a new 15-minute prelogin context and set its cookie; data.csrfToken only, no business authority or reusable session token |
 | POST /auth/login | username,password | Valid prelogin CSRF/origin; generic failure, persistent counters, current state; create fresh session and consume prelogin context; permitted account metadata/changeRequired only |
 | GET /auth/session | No body | Live restricted/full session; own account id/personnelCode/fullName/username/changeRequired and permitted role/grant/season metadata; no security internals |
 | POST /auth/password/change | currentPassword,newPassword | Current restricted/full session; verify current credential and new C02 rules; invalidate all sessions, clear cookie; no credential receipt |

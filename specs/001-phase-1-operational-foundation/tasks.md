@@ -126,7 +126,7 @@ Append/atomicity support is already foundational; this story does not defer audi
 
 - [ ] T040 [US4] Implement frontend/src/features/audit/AuditPage.tsx and audit-filters.ts with frontend/tests/audit-page.spec.tsx; authorized Vietnamese metadata lookup, safe filter/pagination/error states and no restricted payload or export/edit/delete controls. (Depends: T039, T027; Covers: FR-043, FR-044, FR-045, FR-056; SC-005, SC-008, SC-010.) — Issue: [#45](https://github.com/quocthai912/Whistle-EPL/issues/45)
 
-- [ ] T041 [US4] Implement tests/e2e/audit.spec.ts; produce real account/login/logout/grant/recovery events and inspect authorized lookup, denied users, no secret payload and unchanged content across pagination; preserve retained history through account locking and technical cleanup. (Depends: T040, T034; Covers: FR-006, FR-009, FR-014, FR-016, FR-041, FR-042, FR-043, FR-044, FR-045, FR-055, FR-059, FR-060; SC-003, SC-005, SC-008, SC-010, SC-013.) — Issue: [#46](https://github.com/quocthai912/Whistle-EPL/issues/46)
+- [ ] T041 [US4] Implement tests/e2e/audit.spec.ts; produce real account/login/logout/grant/recovery events and inspect authorized lookup, denied users, no secret payload and unchanged content across pagination; preserve retained history through account locking and technical cleanup. (Depends: T040, T034, T021; Covers: FR-006, FR-009, FR-014, FR-016, FR-041, FR-042, FR-043, FR-044, FR-045, FR-055, FR-059, FR-060; SC-003, SC-005, SC-008, SC-010, SC-013.) — Issue: [#46](https://github.com/quocthai912/Whistle-EPL/issues/46)
 
 ## Phase 7: Polish & Cross-Cutting Verification
 
@@ -197,7 +197,7 @@ Do not edit shared schema, root manifests or the same service concurrently witho
 | T038 | T031, T026 | US4 | [#43](https://github.com/quocthai912/Whistle-EPL/issues/43) |
 | T039 | T038 | US4 | [#44](https://github.com/quocthai912/Whistle-EPL/issues/44) |
 | T040 | T039, T027 | US4 | [#45](https://github.com/quocthai912/Whistle-EPL/issues/45) |
-| T041 | T040, T034 | US4 | [#46](https://github.com/quocthai912/Whistle-EPL/issues/46) |
+| T041 | T040, T034, T021 | US4 | [#46](https://github.com/quocthai912/Whistle-EPL/issues/46) |
 | T042 | T028, T036, T037, T041, T004 | Shared | [#47](https://github.com/quocthai912/Whistle-EPL/issues/47) |
 | T043 | T042 | Shared | [#48](https://github.com/quocthai912/Whistle-EPL/issues/48) |
 | T044 | T043, T022 | Shared | [#49](https://github.com/quocthai912/Whistle-EPL/issues/49) |
