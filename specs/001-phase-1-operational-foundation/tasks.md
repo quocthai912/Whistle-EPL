@@ -12,20 +12,24 @@ Returned Issue URLs are recorded against every published Task and in the depende
 **Tests**: Explicitly required by FR-059/FR-061 and the Constitution; core security/CLI tests below
 are authored before their implementation where specified. There is no universal TDD requirement.
 **Numbering**: Internal task phases below are not project PHASE 1-PHASE 10.
-**Paths**: Implementation paths are future targets; only this feature's documents exist now.
+**Paths**: Repository-relative implementation targets; completion is recorded per Task below.
+
+**Setup execution evidence (2026-10-29):** T001–T004 implemented and verified on Windows x64
+and Ubuntu 24.04 x64; see [setup verification](../../docs/verification/phase-1/workspace-setup.md).
+This does not establish project PHASE 1 acceptance. T005–T048 remain pending.
 
 ## Phase 1: Setup (Shared Infrastructure)
 
 **Purpose**: Pin/verify the selected toolchain and establish the two Workspaces. No implementation
 may start until corresponding approved Task Issues exist.
 
-- [ ] T001 Establish root package.json, pnpm-workspace.yaml and pnpm-lock.yaml plus docs/operations/dependency-baseline.md with exact D097-compatible Node24/pnpm/package/image pins, two Workspaces and native-build allowlists; verify clean install/native argon2 and sharp imports on Ubuntu/Windows before claiming compatibility; no competing lockfile. (Depends: none; Covers: FR-001, FR-002, FR-057, FR-059, FR-060; SC-001, SC-012.) — Issue: [#6](https://github.com/quocthai912/Whistle-EPL/issues/6)
+- [X] T001 Establish root package.json, pnpm-workspace.yaml and pnpm-lock.yaml plus docs/operations/dependency-baseline.md with exact D097-compatible Node24/pnpm/package/image pins, two Workspaces and native-build allowlists; verify clean install/native argon2 and sharp imports on Ubuntu/Windows before claiming compatibility; no competing lockfile. (Depends: none; Covers: FR-001, FR-002, FR-057, FR-059, FR-060; SC-001, SC-012.) — Issue: [#6](https://github.com/quocthai912/Whistle-EPL/issues/6)
 
-- [ ] T002 [P] Create frontend/package.json, frontend/tsconfig.json, frontend/vite.config.ts and frontend/src/app/App.tsx using approved React/Vite/Router/Ant Design/CSS Modules baseline; Vietnamese shell, no fake league screens. (Depends: T001; Covers: FR-001, FR-007, FR-056; SC-001, SC-010.) — Issue: [#7](https://github.com/quocthai912/Whistle-EPL/issues/7)
+- [X] T002 [P] Create frontend/package.json, frontend/tsconfig.json, frontend/vite.config.ts and frontend/src/app/App.tsx using approved React/Vite/Router/Ant Design/CSS Modules baseline; Vietnamese shell, no fake league screens. (Depends: T001; Covers: FR-001, FR-007, FR-056; SC-001, SC-010.) — Issue: [#7](https://github.com/quocthai912/Whistle-EPL/issues/7)
 
-- [ ] T003 [P] Create backend/package.json, backend/tsconfig.json, backend/prisma.config.ts, backend/src/main.ts and backend/src/app.module.ts with Nest11/Express5 CommonJS, explicit Prisma7 CJS generator/output and PrismaPg/pg; provide bootstrap/build/health entry points without default accounts. (Depends: T001; Covers: FR-001, FR-002, FR-007, FR-050; SC-001.) — Issue: [#8](https://github.com/quocthai912/Whistle-EPL/issues/8)
+- [X] T003 [P] Create backend/package.json, backend/tsconfig.json, backend/prisma.config.ts, backend/src/main.ts and backend/src/app.module.ts with Nest11/Express5 CommonJS, explicit Prisma7 CJS generator/output and PrismaPg/pg; provide bootstrap/build/health entry points without default accounts. (Depends: T001; Covers: FR-001, FR-002, FR-007, FR-050; SC-001.) — Issue: [#8](https://github.com/quocthai912/Whistle-EPL/issues/8)
 
-- [ ] T004 Configure eslint.config.mjs, .prettierrc.json, .prettierignore, root package.json and workspace Jest/Vitest configurations; implement root lint/typecheck/format/format:check/build/test commands with failure propagation and approved source scopes; generate client before checking generated imports. (Depends: T002, T003; Covers: FR-057, FR-059, FR-060; SC-012.) — Issue: [#9](https://github.com/quocthai912/Whistle-EPL/issues/9)
+- [X] T004 Configure eslint.config.mjs, .prettierrc.json, .prettierignore, root package.json and workspace Jest/Vitest configurations; implement root lint/typecheck/format/format:check/build/test commands with failure propagation and approved source scopes; generate client before checking generated imports. (Depends: T002, T003; Covers: FR-057, FR-059, FR-060; SC-012.) — Issue: [#9](https://github.com/quocthai912/Whistle-EPL/issues/9)
 
 ## Phase 2: Foundational (Blocking Prerequisites)
 

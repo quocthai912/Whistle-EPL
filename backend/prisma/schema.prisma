@@ -1,0 +1,12 @@
+generator client {
+  provider     = "prisma-client"
+  output       = "../src/generated/prisma"
+  moduleFormat = "cjs"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// Typed models and deployable migrations are introduced by T005-T008.
+// Setup creates no account, Season, fixture model or operational data.

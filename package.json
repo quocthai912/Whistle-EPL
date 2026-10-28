@@ -1,0 +1,34 @@
+{
+  "name": "whistle-epl",
+  "version": "0.1.0",
+  "private": true,
+  "packageManager": "pnpm@10.33.2",
+  "engines": {
+    "node": "24.14.0",
+    "pnpm": "10.33.2"
+  },
+  "scripts": {
+    "db:validate": "pnpm --filter @whistle-epl/backend run db:validate",
+    "db:generate": "pnpm --filter @whistle-epl/backend run db:generate",
+    "verify:native": "pnpm --filter @whistle-epl/backend exec node scripts/verify-native.cjs",
+    "verify:client": "pnpm --filter @whistle-epl/backend exec node scripts/verify-client.cjs",
+    "verify:commands": "node --test docs/verification/phase-1/root-commands.test.mjs",
+    "lint": "pnpm -r --no-bail run lint && pnpm exec eslint eslint.config.mjs",
+    "typecheck": "pnpm db:generate && pnpm -r --no-bail run typecheck",
+    "format": "prettier --write \"{frontend,backend}/**/*.{ts,tsx,js,cjs,mjs,json,css,html}\" package.json pnpm-workspace.yaml eslint.config.mjs .prettierrc.json",
+    "format:check": "prettier --check \"{frontend,backend}/**/*.{ts,tsx,js,cjs,mjs,json,css,html}\" package.json pnpm-workspace.yaml eslint.config.mjs .prettierrc.json",
+    "build": "pnpm db:generate && pnpm -r --no-bail run build && pnpm verify:client",
+    "test": "pnpm test:unit",
+    "test:unit": "pnpm db:generate && pnpm -r --no-bail run test:unit"
+  },
+  "devDependencies": {
+    "@eslint/js": "9.39.5",
+    "@types/node": "24.19.2",
+    "eslint": "9.39.5",
+    "eslint-plugin-react-hooks": "7.1.1",
+    "eslint-plugin-react-refresh": "0.5.7",
+    "prettier": "3.9.10",
+    "typescript": "5.9.3",
+    "typescript-eslint": "8.72.1"
+  }
+}
