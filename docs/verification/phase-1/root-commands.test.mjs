@@ -39,13 +39,15 @@ for (const workspace of ['frontend', 'backend']) {
       writeFileSync(probe, contents[command]);
       try {
         const result = run(command);
+        const output = `${result.stdout ?? ''}${result.stderr ?? ''}`;
         writeFileSync(
           path.join(logs, `${workspace}-${command.replace(':', '-')}.log`),
-          `${result.stdout ?? ''}${result.stderr ?? ''}`,
+          output,
         );
         assert.equal(result.error, undefined, 'The command must finish, not time out');
         assert.notEqual(result.status, null, 'The command must return an exit code');
         assert.notEqual(result.status, 0, 'Root command must propagate workspace failure');
+        assert.ok(output.includes(filename), 'Command output must identify the injected probe');
       } finally {
         unlinkSync(probe);
       }
