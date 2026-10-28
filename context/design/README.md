@@ -2,12 +2,15 @@
 
 Package metadata/approval: [current Context](../README.md). D001-D097 are confirmed under [Q98 whole-package approval](../README.md#q98---whole-package-approval). Rules have one owner; this page only routes readers. D001-D066 retain their original approval/source/options/rationale in their English ADR evidence; no new business choice is made by reorganization.
 
+D098 is a separately approved extension on 2026-10-28, not part of Q98's historical approval. See [the extension approval](../README.md#phase-1-preparation-approval---q99-q103).
+
 ## Read by topic
 
 | Topic | Owner |
 |---|---|
 | Architecture, stack, time, final authorization | [Architecture](architecture.md) |
 | Toolchain, pnpm root commands and reference operation defaults | [D097](architecture.md#d097---pnpm-toolchain-development-quality-and-reference-operations) |
+| Required CI, Ubuntu/Windows coverage and protected integration branches | [D098](architecture.md#d098---required-ci-and-protected-integration-branches) |
 | Test season and measurement environment | [D097 baseline](../quality.md#d097-test-season-and-measurement-baseline) |
 | Shared API security, command execution and lock/error contract | [D096](architecture.md#d096---api-execution-synchronized-csrf-and-transaction-contracts) |
 | Shared fields, code formats and controlled catalogs | [D092](../business.md#d092---shared-field-validation-identifiers-and-reference-catalogs) |
@@ -129,6 +132,7 @@ Package metadata/approval: [current Context](../README.md). D001-D097 are confir
 | D095 | [Domain-specific relational design](architecture.md#d095---domain-specific-relational-tables-and-exact-version-references); [dictionary/ERDs](architecture.md#detailed-relational-dictionary) | [0021](../../docs/adr/0021-relational-identifiers-and-snapshots.md#q95---domain-specific-tables-and-detailed-dictionary) |
 | D096 | [API execution/security/lock contracts](architecture.md#d096---api-execution-synchronized-csrf-and-transaction-contracts); per-UC execution matrices in owning UC files | [0023](../../docs/adr/0023-shared-rest-contract.md#q96---execution-security-and-concurrency-contracts) |
 | D097 | [Pnpm toolchain/development/operations](architecture.md#d097---pnpm-toolchain-development-quality-and-reference-operations); [fixture/measurement baseline](../quality.md#d097-test-season-and-measurement-baseline) | [0002](../../docs/adr/0002-approved-technology-stack.md#q97---compatible-baseline-and-pnpm-development-contract) |
+| D098 | [Required CI and protected integration branches](architecture.md#d098---required-ci-and-protected-integration-branches) | [0025](../../docs/adr/0025-required-ci-and-protected-branches.md) |
 
 ## Other confirmed instructions
 
@@ -143,7 +147,7 @@ Package metadata/approval: [current Context](../README.md). D001-D097 are confir
 
 ## Resume checkpoint
 
-Q98 option A is formally approved by the Team Leader on 2026-10-26 (Asia/Bangkok), including the entire package, D001-D097, all 25 Use Cases and the 253-key nationality catalog. The Context interview is complete; no new question or implementation is started. Read [the authoritative package approval](../README.md#q98---whole-package-approval). D092 retains the 13-position amendment; D097 retains pnpm-only root quality commands and EPL-TEST-2026. Exact package pins, actual deployment values/assets and executable verification remain downstream work, not software completion. LS-01 remains excluded.
+Q98 option A remains the 2026-10-26 whole-package baseline for D001-D097, all 25 Use Cases and the 253-key nationality catalog. The separately approved [Q99-Q103 extension](../README.md#phase-1-preparation-approval---q99-q103) adds D098 and clarifies PHASE 1 verification allocation without reopening that baseline. The preparation interview is complete; no Specifications or implementation are authorized by this documentation approval. D092 retains the 13-position amendment; D097 retains pnpm-only root quality commands and EPL-TEST-2026. [Constitution v1.0.0 was separately ratified](../README.md#constitution-v100-ratification) on 2026-10-28; individual Plan checks, exact pins, executable verification and GitHub protection configuration remain downstream work. LS-01 remains excluded.
 
 ## Whole-package review - Q98
 

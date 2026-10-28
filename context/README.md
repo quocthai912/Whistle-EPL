@@ -2,7 +2,9 @@
 
 **Current version:** v2 | **Status:** APPROVED | **Whole-package approval:** Q98, Team Leader, 2026-10-26 (Asia/Bangkok)
 
-**Documentation verification:** COMPLETE after relocation, three independent reviews and final integrity checks. This is not software implementation or acceptance.
+**Approved extension:** D098 and PHASE 1 preparation clarifications, Q99-Q103 and final shared-understanding approval, Team Leader, 2026-10-28 (Asia/Bangkok). See [the extension record](#phase-1-preparation-approval---q99-q103); Q98 is not retroactive approval of this extension.
+
+**Q98 documentation verification:** COMPLETE after relocation, three independent reviews and final integrity checks at that milestone. This is not software implementation or acceptance.
 
 **Approved v1 milestone:** Team Leader, 2026-10-24; reviewed commit `adad61f2a0625d62538aa10ce0ec8b6a91defa53`, branch `docs/build-agent-context`. Retrieve with `git show adad61f2a0625d62538aa10ce0ec8b6a91defa53` and the historical commit tree.
 
@@ -23,6 +25,7 @@ One evolving, English-only Context Package is maintained in this directory for h
 | Technical/design topics or [D001](design/architecture.md#d001---modular-layered-monolithic-backend)-[D097](design/architecture.md#d097---pnpm-toolchain-development-quality-and-reference-operations) | [Design navigation and index](design/README.md) |
 | Media or future external APIs | [Media](design/media.md), [integration](design/integrations.md) |
 | Quality, acceptance or Phase selection | [Quality](quality.md), [Progress Checker](progress-checker.md) |
+| CI/merge policy or PHASE 1 preparation readiness | [D098](design/architecture.md#d098---required-ci-and-protected-integration-branches), [readiness](progress-checker.md#phase-1-specification-readiness-and-foundation-verification) |
 | Unresolved work | [Open decisions](open-decisions.md) |
 | Citations and approval evidence | [Sources](sources.md) |
 
@@ -47,3 +50,17 @@ This is the approved requirements/design baseline for Chapter 3 and subsequent s
 Approval does not establish installed dependencies, compatible locked packages, a passing build, software testing/acceptance, official operational-season values or completed Phase work. All PHASE 1-PHASE 10 implementation statuses and 79 checkboxes remain unchanged. Deployment inputs and unexecuted verification remain in open-decisions. This interview does not authorize code, generated Specs/Tasks, Issues, starting a Phase or commit/push.
 
 The Team Leader authorized the same English-only package to live directly under context/ with its existing relative domain structure; there is no parallel language/version package.
+
+## PHASE 1 preparation approval - Q99-Q103
+
+**Status:** APPROVED. **Approver:** Team Leader. **Date:** 2026-10-28 (Asia/Bangkok). Q99-Q103 and the final shared-understanding confirmation approve the [D098 CI/branch policy](design/architecture.md#d098---required-ci-and-protected-integration-branches) and [foundation verification allocation/readiness](progress-checker.md#phase-1-specification-readiness-and-foundation-verification). [ADR 0025](../docs/adr/0025-required-ci-and-protected-branches.md#approval-evidence) preserves the actual confirmations, amendments, alternatives and rationale.
+
+This is an extension of one evolving package, not a new version copy or a change to Q98's historical scope. D001-D097, source thresholds, Phase implementation statuses and checkboxes are preserved. No new business glossary term or umbrella PHASE 1 ADR is introduced.
+
+The Team Leader accepted the final summary and expressly required that no Specs be created. Authorization covers the minimal English decision-document updates only. It does not authorize Specifications, Plans, Tasks, Issues, application/database/CI workflow implementation, GitHub branch-settings changes, commit or push. Constitution ratification was handled through the separate governance approval below. Requirements readiness does not establish a passing build, configured protection or software acceptance.
+
+## Constitution v1.0.0 ratification
+
+**Status:** RATIFIED. **Approver:** Team Leader. **Date:** 2026-10-28 (Asia/Bangkok). After Q104A (risk-based testing), Q105C (agent review permitted, no mandatory human-review merge gate), Q106A (Team Leader amendment authority) and review clarifications for approved CLI/fixture controls and the dynamic decision index, the Team Leader explicitly stated: "tôi chính thức phê duyệt bản hiến chương này". [The Constitution](../.specify/memory/constitution.md) owns the adopted governance; this record establishes separate approval provenance, not a new architecture decision or retroactive Q98 approval.
+
+The Constitution placeholder/ratification blocker is resolved. Future Plans must still execute their own Constitution Check. No Specs, Plans, Tasks, Issues, workflows or application artifacts are created by this approval; Phase implementation statuses, checkboxes, source thresholds and GitHub settings remain unchanged. Commit/push is not authorized by requesting a suggested commit message.
