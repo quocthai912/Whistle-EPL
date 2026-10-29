@@ -262,7 +262,7 @@ Technical references: [NestJS task scheduling](https://docs.nestjs.com/technique
 
 ## Detailed relational dictionary
 
-Read only the relevant module subsection. This is the current logical-to-PostgreSQL design dictionary under D095, not an implemented Prisma schema. Names are logical model names; physical names use snake_case. A common definition applies to every table explicitly covered below, avoiding repeated column lists. D096 below completes the security-support fields and shared execution contract; D097 now owns library/runtime selections; exact pinned compatibility remains to be verified in PHASE 1.
+Read only the relevant module subsection. This is the current logical-to-PostgreSQL design dictionary under D095, not the deployed-schema inventory. Names are logical model names; physical names use snake_case. A common definition applies to every table explicitly covered below, avoiding repeated column lists. D096 below completes the security-support fields and shared execution contract; D097 owns library/runtime selections. The [Phase ledger](../progress-checker.md#phase-1-execution-evidence---2026-10-29) records published PHASE 1 schema/shared-foundation and exact-pin verification; later-domain schema, complete workflows and deployment acceptance remain separate work.
 
 ### Dictionary notation and common columns
 

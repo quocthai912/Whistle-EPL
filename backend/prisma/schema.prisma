@@ -8,5 +8,339 @@ datasource db {
   provider = "postgresql"
 }
 
-// Typed models and deployable migrations are introduced by T005-T008.
-// Setup creates no account, Season, fixture model or operational data.
+// SQL migrations additionally own CHECKs, live unique indexes and immutable history.
+model Account {
+  id                         String                    @id @default(uuid(4)) @db.Uuid
+  personnelCode              String                    @unique @map("personnel_code")
+  fullName                   String                    @map("full_name")
+  username                   String                    @unique
+  passwordHash               String                    @map("password_hash")
+  state                      String                    @default("ACTIVE")
+  mustChangePassword         Boolean                   @map("must_change_password")
+  temporaryPasswordExpiresAt DateTime?                 @map("temporary_password_expires_at") @db.Timestamptz(6)
+  passwordChangedAt          DateTime?                 @map("password_changed_at") @db.Timestamptz(6)
+  authRevision               BigInt                    @default(1) @map("auth_revision")
+  revision                   BigInt                    @default(1)
+  createdAt                  DateTime                  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt                  DateTime                  @default(now()) @map("updated_at") @db.Timestamptz(6)
+  sessions                   Session[]
+  systemRoles                SystemRoleAssignment[]    @relation("systemSubject")
+  systemGrants               SystemRoleAssignment[]    @relation("systemGrantor")
+  seasonRoles                SeasonRoleAssignment[]    @relation("seasonSubject")
+  seasonGrants               SeasonRoleAssignment[]    @relation("seasonGrantor")
+  sharedGrants               SharedMasterGrant[]       @relation("sharedSubject")
+  sharedRecorded             SharedMasterGrant[]       @relation("sharedGrantor")
+  createSeasonGrants         CreateSeasonGrant[]       @relation("createSubject")
+  createSeasonRecorded       CreateSeasonGrant[]       @relation("createGrantor")
+  proposals                  DelegationCase[]          @relation("proposer")
+  receivedCases              DelegationCase[]          @relation("recipient")
+  receivedGrants             DelegationGrant[]         @relation("grantRecipient")
+  preparedVersions           DelegationVersion[]       @relation("preparer")
+  decidedVersions            DelegationVersion[]       @relation("decider")
+  editedVersions             DelegationVersionEditor[]
+  recordedDelegations        DelegationGrant[]         @relation("recorder")
+  revokedDelegations         DelegationGrant[]         @relation("revoker")
+  audits                     AuditRecord[]
+  receipts                   CommandReceipt[]
+
+  @@map("account")
+}
+
+model Session {
+  id                  String    @id @default(uuid(4)) @db.Uuid
+  accountId           String    @map("account_id") @db.Uuid
+  account             Account   @relation(fields: [accountId], references: [id], onDelete: Restrict)
+  tokenHash           String    @unique @map("token_hash")
+  csrfToken           String    @map("csrf_token")
+  accountAuthRevision BigInt    @map("account_auth_revision")
+  createdAt           DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  lastActivityAt      DateTime  @map("last_activity_at") @db.Timestamptz(6)
+  absoluteExpiresAt   DateTime  @map("absolute_expires_at") @db.Timestamptz(6)
+  revokedAt           DateTime? @map("revoked_at") @db.Timestamptz(6)
+  revocationReason    String?   @map("revocation_reason")
+
+  @@index([accountId, revokedAt])
+  @@index([absoluteExpiresAt])
+  @@map("session")
+}
+
+model PreloginCsrfContext {
+  id         String    @id @default(uuid(4)) @db.Uuid
+  csrfToken  String    @map("csrf_token")
+  createdAt  DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  expiresAt  DateTime  @map("expires_at") @db.Timestamptz(6)
+  consumedAt DateTime? @map("consumed_at") @db.Timestamptz(6)
+
+  @@index([expiresAt])
+  @@map("prelogin_csrf_context")
+}
+
+model LoginThrottleKey {
+  kind          String
+  key           String
+  blockedUntil  DateTime? @map("blocked_until") @db.Timestamptz(6)
+  lastSuccessAt DateTime? @map("last_success_at") @db.Timestamptz(6)
+
+  @@id([kind, key])
+  @@map("login_throttle_key")
+}
+
+model LoginFailure {
+  id          String   @id @default(uuid(4)) @db.Uuid
+  usernameKey String   @map("username_key")
+  ipKey       String   @map("ip_key")
+  occurredAt  DateTime @map("occurred_at") @db.Timestamptz(6)
+
+  @@index([usernameKey, occurredAt])
+  @@index([ipKey, occurredAt])
+  @@map("login_failure")
+}
+
+model Season {
+  id        String                 @id @default(uuid(4)) @db.Uuid
+  code      String                 @unique
+  name      String
+  startDate DateTime               @map("start_date") @db.Date
+  endDate   DateTime               @map("end_date") @db.Date
+  state     String                 @default("OPEN")
+  revision  BigInt                 @default(1)
+  createdAt DateTime               @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime               @default(now()) @map("updated_at") @db.Timestamptz(6)
+  roles     SeasonRoleAssignment[]
+  cases     DelegationCase[]
+  grants    DelegationGrant[]
+  audits    AuditRecord[]
+
+  @@map("season")
+}
+
+model SystemRoleAssignment {
+  id        String    @id @default(uuid(4)) @db.Uuid
+  accountId String    @map("account_id") @db.Uuid
+  account   Account   @relation("systemSubject", fields: [accountId], references: [id], onDelete: Restrict)
+  roleCode  String    @map("role_code")
+  grantedBy String?   @map("granted_by") @db.Uuid
+  grantor   Account?  @relation("systemGrantor", fields: [grantedBy], references: [id], onDelete: Restrict)
+  grantedAt DateTime  @map("granted_at") @db.Timestamptz(6)
+  revokedAt DateTime? @map("revoked_at") @db.Timestamptz(6)
+
+  @@index([accountId])
+  @@index([grantedBy])
+  @@map("system_role_assignment")
+}
+
+model SeasonRoleAssignment {
+  id        String    @id @default(uuid(4)) @db.Uuid
+  accountId String    @map("account_id") @db.Uuid
+  account   Account   @relation("seasonSubject", fields: [accountId], references: [id], onDelete: Restrict)
+  seasonId  String    @map("season_id") @db.Uuid
+  season    Season    @relation(fields: [seasonId], references: [id], onDelete: Restrict)
+  roleCode  String    @map("role_code")
+  grantedBy String    @map("granted_by") @db.Uuid
+  grantor   Account   @relation("seasonGrantor", fields: [grantedBy], references: [id], onDelete: Restrict)
+  grantedAt DateTime  @map("granted_at") @db.Timestamptz(6)
+  revokedAt DateTime? @map("revoked_at") @db.Timestamptz(6)
+
+  @@index([accountId, seasonId])
+  @@index([seasonId])
+  @@index([grantedBy])
+  @@map("season_role_assignment")
+}
+
+model SharedMasterGrant {
+  id         String    @id @default(uuid(4)) @db.Uuid
+  accountId  String    @map("account_id") @db.Uuid
+  account    Account   @relation("sharedSubject", fields: [accountId], references: [id], onDelete: Restrict)
+  masterKind String    @map("master_kind")
+  grantedBy  String    @map("granted_by") @db.Uuid
+  grantor    Account   @relation("sharedGrantor", fields: [grantedBy], references: [id], onDelete: Restrict)
+  grantedAt  DateTime  @map("granted_at") @db.Timestamptz(6)
+  endedAt    DateTime? @map("ended_at") @db.Timestamptz(6)
+  endReason  String?   @map("end_reason")
+
+  @@index([accountId])
+  @@index([grantedBy])
+  @@map("shared_master_grant")
+}
+
+model CreateSeasonGrant {
+  id        String    @id @default(uuid(4)) @db.Uuid
+  accountId String    @map("account_id") @db.Uuid
+  account   Account   @relation("createSubject", fields: [accountId], references: [id], onDelete: Restrict)
+  grantedBy String    @map("granted_by") @db.Uuid
+  grantor   Account   @relation("createGrantor", fields: [grantedBy], references: [id], onDelete: Restrict)
+  grantedAt DateTime  @map("granted_at") @db.Timestamptz(6)
+  revokedAt DateTime? @map("revoked_at") @db.Timestamptz(6)
+
+  @@index([accountId])
+  @@index([grantedBy])
+  @@map("create_season_grant")
+}
+
+model DelegationCase {
+  id               String              @id @default(uuid(4)) @db.Uuid
+  seasonId         String              @map("season_id") @db.Uuid
+  season           Season              @relation(fields: [seasonId], references: [id], onDelete: Restrict)
+  proposerId       String              @map("proposer_id") @db.Uuid
+  proposer         Account             @relation("proposer", fields: [proposerId], references: [id], onDelete: Restrict)
+  recipientId      String              @map("recipient_id") @db.Uuid
+  recipient        Account             @relation("recipient", fields: [recipientId], references: [id], onDelete: Restrict)
+  currentVersionId String?             @map("current_version_id") @db.Uuid
+  currentVersion   DelegationVersion?  @relation("currentVersion", fields: [id, currentVersionId], references: [caseId, id], onDelete: NoAction, onUpdate: NoAction)
+  versions         DelegationVersion[] @relation("caseVersions")
+  revision         BigInt              @default(1)
+  createdAt        DateTime            @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt        DateTime            @default(now()) @map("updated_at") @db.Timestamptz(6)
+
+  @@unique([id, currentVersionId])
+  @@index([seasonId])
+  @@index([proposerId])
+  @@index([recipientId])
+  @@map("delegation_case")
+}
+
+model DelegationVersion {
+  id                   String                    @id @default(uuid(4)) @db.Uuid
+  caseId               String                    @map("case_id") @db.Uuid
+  case                 DelegationCase            @relation("caseVersions", fields: [caseId], references: [id], onDelete: Restrict)
+  currentFor           DelegationCase[]          @relation("currentVersion")
+  versionNumber        Int                       @map("version_number")
+  preparedBy           String                    @map("prepared_by") @db.Uuid
+  preparer             Account                   @relation("preparer", fields: [preparedBy], references: [id], onDelete: Restrict)
+  predecessorVersionId String?                   @map("predecessor_version_id") @db.Uuid
+  predecessor          DelegationVersion?        @relation("predecessor", fields: [caseId, predecessorVersionId], references: [caseId, id], onDelete: NoAction, onUpdate: NoAction)
+  successors           DelegationVersion[]       @relation("predecessor")
+  state                String                    @default("DRAFT")
+  submittedAt          DateTime?                 @map("submitted_at") @db.Timestamptz(6)
+  decidedAt            DateTime?                 @map("decided_at") @db.Timestamptz(6)
+  decidedBy            String?                   @map("decided_by") @db.Uuid
+  decider              Account?                  @relation("decider", fields: [decidedBy], references: [id], onDelete: Restrict)
+  decisionReason       String?                   @map("decision_reason")
+  actionCode           String                    @map("action_code")
+  startMode            String                    @map("start_mode")
+  startsAt             DateTime?                 @map("starts_at") @db.Timestamptz(6)
+  endsAt               DateTime?                 @map("ends_at") @db.Timestamptz(6)
+  reason               String?
+  createdAt            DateTime                  @default(now()) @map("created_at") @db.Timestamptz(6)
+  editors              DelegationVersionEditor[]
+  grant                DelegationGrant?
+
+  @@unique([caseId, versionNumber])
+  @@unique([caseId, id])
+  @@index([preparedBy])
+  @@index([decidedBy])
+  @@map("delegation_version")
+}
+
+model DelegationVersionEditor {
+  versionId     String            @map("version_id") @db.Uuid
+  version       DelegationVersion @relation(fields: [versionId], references: [id], onDelete: Restrict)
+  accountId     String            @map("account_id") @db.Uuid
+  account       Account           @relation(fields: [accountId], references: [id], onDelete: Restrict)
+  firstEditedAt DateTime          @map("first_edited_at") @db.Timestamptz(6)
+
+  @@id([versionId, accountId])
+  @@index([accountId])
+  @@map("delegation_version_editor")
+}
+
+model DelegationGrant {
+  id                String               @id @default(uuid(4)) @db.Uuid
+  approvedVersionId String               @unique @map("approved_version_id") @db.Uuid
+  approvedVersion   DelegationVersion    @relation(fields: [approvedVersionId], references: [id], onDelete: Restrict)
+  // Typed denormalized exclusion key; checked against the exact approved case/version by SQL.
+  recipientId       String               @map("recipient_id") @db.Uuid
+  recipient         Account              @relation("grantRecipient", fields: [recipientId], references: [id], onDelete: Restrict, onUpdate: NoAction, map: "delegation_recipient_fk")
+  seasonId          String               @map("season_id") @db.Uuid
+  season            Season               @relation(fields: [seasonId], references: [id], onDelete: Restrict)
+  actionCode        String               @map("action_code")
+  startsAt          DateTime             @map("starts_at") @db.Timestamptz(6)
+  endsAt            DateTime             @map("ends_at") @db.Timestamptz(6)
+  grantedBy         String               @map("granted_by") @db.Uuid
+  grantor           Account              @relation("recorder", fields: [grantedBy], references: [id], onDelete: Restrict)
+  grantedAt         DateTime             @map("granted_at") @db.Timestamptz(6)
+  revokedAt         DateTime?            @map("revoked_at") @db.Timestamptz(6)
+  revokedBy         String?              @map("revoked_by") @db.Uuid
+  revoker           Account?             @relation("revoker", fields: [revokedBy], references: [id], onDelete: Restrict)
+  terminatedAt      DateTime?            @map("terminated_at") @db.Timestamptz(6)
+  reason            String?
+  boundaries        DelegationBoundary[]
+
+  @@index([recipientId, seasonId, actionCode])
+  @@index([seasonId])
+  @@index([grantedBy])
+  @@index([revokedBy])
+  @@map("delegation_grant")
+}
+
+model DelegationBoundary {
+  id               String          @id @default(uuid(4)) @db.Uuid
+  grantId          String          @map("grant_id") @db.Uuid
+  grant            DelegationGrant @relation(fields: [grantId], references: [id], onDelete: Restrict)
+  boundaryKind     String          @map("boundary_kind")
+  effectiveAt      DateTime        @map("effective_at") @db.Timestamptz(6)
+  processedAt      DateTime        @map("processed_at") @db.Timestamptz(6)
+  terminationBasis String?         @map("termination_basis")
+
+  @@unique([grantId, boundaryKind, effectiveAt])
+  @@map("delegation_boundary")
+}
+
+model AuditRecord {
+  id               String   @id @default(uuid(4)) @db.Uuid
+  actorId          String?  @map("actor_id") @db.Uuid
+  actor            Account? @relation(fields: [actorId], references: [id], onDelete: Restrict)
+  actorKind        String   @map("actor_kind")
+  operatorIdentity String?  @map("operator_identity")
+  occurredAt       DateTime @map("occurred_at") @db.Timestamptz(6)
+  actionCode       String   @map("action_code")
+  objectKind       String   @map("object_kind")
+  objectId         String?  @map("object_id") @db.Uuid
+  seasonId         String?  @map("season_id") @db.Uuid
+  season           Season?  @relation(fields: [seasonId], references: [id], onDelete: Restrict)
+  outcome          String
+  reason           String?
+  beforeData       Json?    @map("before_data") @db.JsonB
+  afterData        Json?    @map("after_data") @db.JsonB
+  requestId        String?  @map("request_id") @db.Uuid
+
+  @@index([occurredAt(sort: Desc), id])
+  @@index([actorId, occurredAt])
+  @@index([actionCode, occurredAt])
+  @@index([objectKind, objectId, occurredAt])
+  @@index([seasonId, occurredAt])
+  @@map("audit_record")
+}
+
+model CommandReceipt {
+  id             String    @id @default(uuid(4)) @db.Uuid
+  accountId      String    @map("account_id") @db.Uuid
+  account        Account   @relation(fields: [accountId], references: [id], onDelete: Restrict)
+  actionCode     String    @map("action_code")
+  requestKey     String    @map("request_key") @db.Uuid
+  contentDigest  String    @map("content_digest")
+  outcomeState   String    @map("outcome_state")
+  responseStatus Int?      @map("response_status")
+  responseData   Json?     @map("response_data") @db.JsonB
+  completedAt    DateTime? @map("completed_at") @db.Timestamptz(6)
+  expiresAt      DateTime? @map("expires_at") @db.Timestamptz(6)
+
+  @@unique([accountId, actionCode, requestKey])
+  @@index([expiresAt])
+  @@map("command_receipt")
+}
+
+model SystemGuard {
+  key String @id
+
+  @@map("system_guard")
+}
+
+model MaintenanceState {
+  singletonId Int      @id @map("singleton_id")
+  closed      Boolean
+  operationId String?  @map("operation_id") @db.Uuid
+  changedAt   DateTime @map("changed_at") @db.Timestamptz(6)
+
+  @@map("maintenance_state")
+}

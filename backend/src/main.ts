@@ -2,12 +2,18 @@ import 'reflect-metadata';
 import { NestFactory } from '@nestjs/core';
 import type { NestExpressApplication } from '@nestjs/platform-express';
 import { AppModule } from './app.module';
+import { SafeValidationPipe } from './platform/validation.pipe';
+import { SafeErrorFilter } from './platform/error.filter';
+import { ResponseEnvelopeInterceptor } from './platform/response-envelope.interceptor';
 
 export async function createApplication(): Promise<NestExpressApplication> {
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
     logger: ['error', 'warn'],
   });
   app.disable('x-powered-by');
+  app.useGlobalPipes(new SafeValidationPipe());
+  app.useGlobalFilters(new SafeErrorFilter());
+  app.useGlobalInterceptors(new ResponseEnvelopeInterceptor());
   return app;
 }
 

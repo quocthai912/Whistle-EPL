@@ -30,12 +30,12 @@ not silently suppressed. Future dependency updates require relevant checks.
 |---|---|---|
 | Ubuntu setup verification | ubuntu:24.04@sha256:24737cef17f4e22b1977df7d9a05e77c4e28b7da5b8911f8d8ccda136bf3573c | Ubuntu 24.04 verification container |
 | Node binary source | node:24.14.0-bookworm-slim@sha256:d8e448a56fc63242f70026718378bd4b00f8c82e78d20eefb199224a4d8e33d8 | Node copied into Ubuntu, no Debian-as-Ubuntu claim |
-| PostgreSQL 17 candidate | postgres@sha256:839fbb5a4942a7758dd93e18b42ea5649807491a0545b5eeeb8f0b8bb11857a5 | Manifest resolved from 17-bookworm; database/migration verification belongs to T008/T018 |
+| PostgreSQL 17 | postgres@sha256:839fbb5a4942a7758dd93e18b42ea5649807491a0545b5eeeb8f0b8bb11857a5 | T008: PostgreSQL 17.11, fresh four-migration replay/status/intended-schema checks and 18 integration tests pass; [evidence](../verification/phase-1/foundation.md). T018 Compose deployment remains pending |
 | Caddy 2 candidate | caddy@sha256:eb4d35b7452d1ab6171fbdbe8d9275b2301dad6dad92115d91e19fb9b24d510f | Manifest resolved from 2-alpine; HTTPS/Compose verification belongs to T018/T044 |
 
-Image candidates for deployment are exact content references, not claims that
-PostgreSQL transactions, backup tools or Caddy HTTPS have been verified in setup.
-Reverify them at their owning tasks before deployment.
+Image references are exact content pins. T001 setup alone did not verify PostgreSQL
+transactions; the subsequent T008 result is recorded above. Backup tools, Caddy HTTPS
+and Compose deployment still require verification at their owning tasks.
 
 ## Ubuntu reproduction
 

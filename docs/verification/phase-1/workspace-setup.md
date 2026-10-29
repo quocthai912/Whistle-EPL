@@ -2,9 +2,16 @@
 
 **Executed:** 2026-10-29, Asia/Bangkok. **Scope:** internal task Phase 1 setup,
 not project PHASE 1 acceptance. **Baseline:** `95b01a3f26a8b95d22047b5fe67cbdb35d4b0d06`,
-branch `feat/phase-1-workspace-setup`, plus the uncommitted implementation in this session.
-No implementation commit/push was made. Issues #6–#9 matched the approved Tasks before
-implementation. The requirements checklist passed 16/16.
+branch `feat/phase-1-workspace-setup`, plus the then-uncommitted implementation snapshot.
+Issues #6–#9 matched the approved Tasks before implementation. The requirements checklist passed 16/16.
+
+**Publication follow-up (2026-10-29):** Setup was subsequently committed at
+[`699e6ee`](https://github.com/quocthai912/Whistle-EPL/commit/699e6ee31aa936ac94bf7d28186afc13c5088524),
+with command-probe hardening at [`34dc1f9`](https://github.com/quocthai912/Whistle-EPL/commit/34dc1f96c1e4ffb8d7ce735dd16f8980786d00ac),
+then integrated by `75bd416`. Both commits are ancestors of the verified published
+foundation revision `892f172`. This preserves the original setup results below;
+[the Phase ledger](../../../context/progress-checker.md#phase-1-execution-evidence---2026-10-29)
+owns current implementation and acceptance status.
 
 ## Actual environments and inputs
 
@@ -138,9 +145,11 @@ test tools), and five Constitution principles. No setup gap remains: missing/par
 contradicts/unrequested all 0; severity counts all 0. No convergence Tasks appended.
 This is convergence of T001–T004 only, not the full feature or entire referenced criteria.
 
-T005–T048 remain pending: database/migrations/transactions, auth/admin/audit, actual Chrome/
-Edge journeys, Compose/HTTPS, CI/protection, recovery and full SC-001–SC-013 acceptance.
-Context Phase statuses/checklists and unresolved operator inputs are preserved.
+At the setup verification milestone, T005–T048 were pending. T005–T014 subsequently
+passed [shared-foundation verification](foundation.md); T015–T048 still cover the
+remaining workflows, actual Chrome/Edge journeys, Compose/HTTPS, CI/protection,
+recovery and full SC-001–SC-013 acceptance. The current Phase ledger records PHASE 1
+as `IN_PROGRESS`; the original setup result did not establish Phase acceptance.
 
 Both Spec Kit prerequisite checks succeeded. `.specify/extensions.yml` is absent, so no
 before/after implementation/convergence hooks were registered. Codex and two Reviewer Agents

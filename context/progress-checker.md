@@ -4,7 +4,9 @@
 
 The [Q99-Q103 extension](README.md#phase-1-preparation-approval---q99-q103), approved on 2026-10-28, adds D098 and clarifies foundation verification allocation below. It changes no implementation status, checkbox, source threshold or D001-D097 policy.
 
-This is the current Phase ledger for one evolving package, not a Spec/Plan/Task. See [business](business.md), [quality](quality.md), [UC navigation](README.md) and [source matrix](sources.md). PHASE 1-PHASE 10 remain the same organizational units and retain their existing implementation statuses/checkboxes.
+This is the current Phase ledger for one evolving package, not a Spec/Plan/Task. See [business](business.md), [quality](quality.md), [UC navigation](README.md) and [source matrix](sources.md). PHASE 1-PHASE 10 remain the same organizational units; their current statuses and checklist states follow the dated evidence below.
+
+**Latest implementation update:** 2026-10-29 (Asia/Bangkok), published feature-branch commit [`892f172`](https://github.com/quocthai912/Whistle-EPL/commit/892f172f9ec539d5789a31a2f8046480afe15772). PHASE 1 is `IN_PROGRESS`: T001–T014 are implemented and verified; T015–T048 and Phase acceptance remain pending. See [PHASE 1 execution evidence](#phase-1-execution-evidence---2026-10-29). PHASE 2-PHASE 10 remain `NOT_STARTED` in the inspected checkout.
 
 The latest confirmed scope includes managed club/player media, with independent core acceptance before API research/selection under [INT-01](design/integrations.md#int-01---acceptance-before-api-research-and-integration). External integration is not a mandatory prerequisite to first-version core acceptance and creates no new mandatory Phase. Documented decisions do not establish implementation or acceptance.
 
@@ -18,9 +20,9 @@ The latest confirmed scope includes managed club/player media, with independent 
 | `COMPLETED` | Real functionality exists, every Phase criterion passes, verification evidence is complete, and acceptance is recorded |
 | `UNKNOWN` | Inspection/evidence is insufficient to determine status; do not infer not-started or complete |
 
-Inventory dated 24/10/2026 (Asia/Bangkok), HEAD `a7631efc05061e221a2d7d4ea3da80aafc084615`, clean working tree before creating v1: `git status --short`, `git ls-files`, and `rg --files` found only agent guidance, skills, the `.specify` skeleton, LICENSE, and configuration; no application source, application manifest/build, or functional test suite. `.specify/memory/constitution.md` still contains placeholders. Accordingly PHASE 1-PHASE 10 are `NOT_STARTED` **in this checkout**. Other branches/checkouts were not inspected; this does not establish the entire team's status. Context files added in this work do not change implementation status.
+**Historical inventory, 2026-10-24 (Asia/Bangkok):** HEAD `a7631efc05061e221a2d7d4ea3da80aafc084615`, clean working tree before creating v1: `git status --short`, `git ls-files`, and `rg --files` found only agent guidance, skills, the `.specify` skeleton, LICENSE, and configuration; no application source, application manifest/build, or functional test suite. The constitution still contained placeholders at that inventory. PHASE 1-PHASE 10 were therefore recorded as `NOT_STARTED` in that checkout. This historical result is preserved; the dated implementation update above supersedes it for PHASE 1. Other branches/checkouts were not covered by that inventory.
 
-Each Phase below lists **required evidence**, not existing implementation/test evidence. When updating status, add Specification, Plan, `tasks.md`, and Issue links; source revision or snapshot, date/environment/dataset, actual commands or scenarios and results, passed/unmet criteria, open defects, and acceptance reviewer. Do not prepopulate invented paths.
+Each Phase below lists **required evidence**; explicitly dated execution records identify the evidence actually available. When updating status, add Specification, Plan, `tasks.md`, and Issue links; source revision or snapshot, date/environment/dataset, actual commands or scenarios and results, passed/unmet criteria, open defects, and acceptance reviewer. Do not prepopulate invented paths.
 
 Creating Context/Specification/Plan/Tasks does not complete functionality. Closing all Issues is also insufficient. Set `COMPLETED` only after functionality and all criteria are verified with suitable evidence; do not invent test results or automatically complete successor Phases. If changes invalidate previous evidence, reassess and record observed status (or `UNKNOWN` when evidence is insufficient).
 
@@ -30,7 +32,7 @@ Creating Context/Specification/Plan/Tasks does not complete functionality. Closi
 - Use `[x]` only when identifiable evidence demonstrates that specific item is complete. Record its link/result in Verification Evidence; a checked preparation item does not prove implementation.
 - Keep the five status meanings above. Preparation documents may be complete while implementation remains `NOT_STARTED`; do not derive status or a completion percentage from checkbox counts. A completed Phase requires all mandatory checklist items, all acceptance criteria, and valid evidence.
 - This English document is the sole current Phase ledger. Keep item meaning/order/state, verification evidence and Phase status consistent when updating it. Resolve discrepancies against actual evidence or report them; the [package maintenance policy](README.md#current-package-maintenance) governs documentation.
-- All items introduced in this migration remain unchecked because suitable completion evidence is absent. Existing Phase statuses are preserved; no software implementation progress is claimed. Project Phases are distinct from internal phases in Spec Kit `tasks.md`; this checklist does not duplicate the Task ledger.
+- Items introduced in the original Context migration were initially unchecked. Subsequent changes require the dated evidence below; only the three approved PHASE 1 preparation items are now checked. Project Phases are distinct from internal phases in Spec Kit `tasks.md`; this checklist does not duplicate the Task ledger.
 
 ## Phase selection and ordering
 
@@ -40,7 +42,7 @@ After G0, select a Phase with satisfied dependencies → Specification against a
 
 | Phase | Owned scope | Acceptance dependencies | Implementation Status |
 |---|---|---|---|
-| PHASE 1 - Operational foundation and access administration | Web foundation, accounts/sessions/permissions, log recording/search | G0 | `NOT_STARTED` |
+| PHASE 1 - Operational foundation and access administration | Web foundation, accounts/sessions/permissions, log recording/search | G0 | `IN_PROGRESS` |
 | PHASE 2 - Seasons, catalogs, and regulations | Seasons, club master records, stadiums, seasonal regulations | PHASE 1 | `NOT_STARTED` |
 | PHASE 3 - Profiles and player registration | Player profiles, seasonal club applications, registration and validation | PHASE 1, PHASE 2 | `NOT_STARTED` |
 | PHASE 4 - Schedule creation and adjustment | Double round-robin schedules, conflict checks, approval, adjustment | PHASE 2, PHASE 3 | `NOT_STARTED` |
@@ -57,7 +59,7 @@ Expected parallel work: after PHASE 2, PHASE 3 and PHASE 8 can be developed inde
 
 **Confirmed media/API scope:** Establish reusable session/authority and maintenance contracts for later media writers; actual club/player media workflows and delivery are verified in their owning Phases. No API provider is required. See [media policy](design/media.md), [INT-01](design/integrations.md) and [foundation verification allocation](#phase-1-specification-readiness-and-foundation-verification). This adds scope/evidence requirements, not progress.
 
-**Implementation Status:** `NOT_STARTED`.
+**Implementation Status:** `IN_PROGRESS` (2026-10-29; T001–T014 verified at published commit `892f172`; remaining scope and acceptance below).
 
 **Scope:** Application foundation under CN-01-04; UC01-UC04; accounts/roles, sessions, server-side permissions and input validation; shared logging mechanism. Specific business events are added/accepted in the Phases that produce them; full-system backup/recovery belongs to PHASE 10.
 
@@ -69,9 +71,9 @@ Expected parallel work: after PHASE 2, PHASE 3 and PHASE 8 can be developed inde
 
 ### Progress Checklist
 
-- [ ] The authentication, authorization, and logging Specification is written and approved.
-- [ ] The foundation Implementation Plan is completed against approved decisions.
-- [ ] Tasks and dependencies are approved, with one linked Issue per Task under the conventions.
+- [x] The authentication, authorization, and logging Specification is written and approved.
+- [x] The foundation Implementation Plan is completed against approved decisions.
+- [x] Tasks and dependencies are approved, with one linked Issue per Task under the conventions.
 - [ ] The foundation installs/starts from the instructions in a new environment.
 - [ ] UC01-UC03, session management, and server-side permission checks work within scope.
 - [ ] UC04 and permission/login/logout logs have real records with authorized access.
@@ -82,21 +84,33 @@ Expected parallel work: after PHASE 2, PHASE 3 and PHASE 8 can be developed inde
 
 **Verification Evidence:** Source revision plus UC/permission/session/input and authentication-load results; inspection of protected password data; sample audit records; new foundation-environment setup procedure and results. No such evidence exists in v1.
 
+### PHASE 1 execution evidence - 2026-10-29
+
+**Published source and inspection:** `feat/phase-1-core-foundation`, commit [`892f172f9ec539d5789a31a2f8046480afe15772`](https://github.com/quocthai912/Whistle-EPL/commit/892f172f9ec539d5789a31a2f8046480afe15772), verified against the live GitHub branch ref on 2026-10-29. All 67 source/configuration entries match the [foundation verification manifest](../docs/verification/phase-1/foundation-source-sha256.txt), with LF-normalized text and raw upstream corpus/license bytes. This records feature-branch publication, not an integration-branch merge, successful CI gate or configured branch protection.
+
+**Preparation evidence for the three checked items:** [Specification](../specs/001-phase-1-operational-foundation/spec.md), [Implementation Plan and Constitution Check](../specs/001-phase-1-operational-foundation/plan.md), and [approved Tasks/dependencies with all 48 Issue links](../specs/001-phase-1-operational-foundation/tasks.md). Their Team Leader approvals are dated 2026-10-28; Task publication used source commit `b8e6e15b27ed8446cc60dba94bf1a0b0259e51b2`. These preparation checkmarks do not complete any of the five functional/acceptance checklist items.
+
+**Implemented scope:** T001–T004 provide the locked two-Workspace toolchain, frontend/backend shell and root quality commands; see [setup evidence](../docs/verification/phase-1/workspace-setup.md). T005–T014 provide typed identity/security/authority/delegation/audit/receipt schema and four migrations, credential/token primitives and pinned blocklist, transaction/admission/clock/validation/envelopes, transactional audit and receipts, isolated two-Season fixtures, and the shared frontend Fetch/session/router shell; see [foundation evidence and per-Task acceptance](../docs/verification/phase-1/foundation.md). GitHub Issues #6–#19 were directly verified Closed with label `completed`; the Task ledger remains the owner of individual completion/dependency states.
+
+**Executed verification:** Windows x64 and Ubuntu 24.04.5 x64; Node 24.14.0/pnpm 10.33.2; synthetic isolated identities and two real-FK Season references, with controlled clocks and independent database connections. On each OS, backend unit tests **6/6**, frontend tests **8/8**, PostgreSQL integration tests **18/18**, and root failure-propagation probes **10/10** passed. `pnpm lint`, `pnpm typecheck`, `pnpm format:check`, `pnpm test`, `pnpm build`, `pnpm verify:commands` and `pnpm test:integration` passed. Fresh migration deployment/status and intended-schema comparison passed on PostgreSQL 17.11, including the exact pinned image. The linked reports own detailed commands, environments, fixtures and results; no new software test execution is claimed by this documentation update.
+
+**Review and remaining acceptance:** Codex executed the checks; independent Standards and Spec reviewers reported zero remaining findings in T005–T014 after fixes. Scoped convergence found no remaining task-scope gap. Team Leader software/Phase acceptance has not been recorded. T015–T048 still cover operator CLI, authentication/session/throttle workflows, account/role/grant/delegation handlers and UI, protected audit lookup, Compose/HTTPS, host durable maintenance/backup/restore/cleanup/timers, browser/load/security acceptance, CI/protection and final evidence. The tested schema/support modules do not establish complete UC01-UC04 behavior or BM-01 performance. The fresh full-foundation installation checklist item remains unchecked because the operational installation/bootstrap/HTTPS/recovery path is incomplete. No unresolved defect is recorded for the completed task scope; remaining operator inputs and unexecuted acceptance are tracked in [open decisions](open-decisions.md).
+
 ### PHASE 1 Specification readiness and foundation verification
 
 **Requirements/architecture readiness: READY for separately authorized Specification writing**, after the Team Leader's Q99-Q103 and final-summary approval on 2026-10-28. No unresolved architectural choice affecting PHASE 1 Specifications was identified in that review. This is preparation readiness, not a new Phase implementation status or authorization to create a Specification in the documentation interview. The current D001-D097 owners already cover UC01-UC04, CLI bootstrap/recovery, account/role/delegation safeguards, final authorization, API/security/data/transaction contracts and D097 tools; [D098](design/architecture.md#d098---required-ci-and-protected-integration-branches) completes CI policy. Approval evidence is in [ADR 0025](../docs/adr/0025-required-ci-and-protected-branches.md#approval-evidence).
 
-**Spec Kit governance baseline: READY.** The Team Leader explicitly ratified [Constitution v1.0.0](../.specify/memory/constitution.md) on 2026-10-28, after Q104A/Q105C/Q106A and the CLI/fixture and dynamic-index clarifications. The earlier placeholder/ratification blocker is resolved; no individual Plan Constitution Check is claimed to have passed. Each future Plan must assess the ratified principles before its internal Phase 0 research and again after internal Phase 1 design. Those internal phases remain distinct from project PHASE 1. Ratification does not authorize creating Specs or implementation artifacts, satisfy every execution gate or change Phase statuses.
+**Spec Kit governance baseline: READY.** The Team Leader explicitly ratified [Constitution v1.0.0](../.specify/memory/constitution.md) on 2026-10-28, after Q104A/Q105C/Q106A and the CLI/fixture and dynamic-index clarifications. The earlier placeholder/ratification blocker is resolved. The subsequently approved [PHASE 1 Plan](../specs/001-phase-1-operational-foundation/plan.md#constitution-check) records its pre-research and post-design Constitution Checks; these are design checks, distinct from software acceptance. Each future Plan must assess the ratified principles before its internal Phase 0 research and again after internal Phase 1 design. Those internal phases remain distinct from project PHASE 1. Ratification alone did not authorize artifacts or satisfy execution gates; the separate approvals and implementation evidence above establish the later progress.
 
 | Remaining item | Classification / priority | Release condition and affected step |
 |---|---|---|
 | O04 historical data-classification reference | ALREADY DECIDED / medium documentation clarification | Apply D032/D033 and D094; do not reopen settled public/internal fields. No Specification blocker. |
-| O08 blocklist pin/provenance and handoff runbook | IMPLEMENTATION DETAIL / OPERATIONAL INPUT / medium | Record and verify the selected corpus revision/checksum/license and safe direct-handoff procedure before the corresponding implementation/acceptance claims. |
-| O12 exact versions, native imports, schema and application checks | IMPLEMENTATION DETAIL / high | Validate and lock D097-compatible packages/images and execute source/build/database tests during implementation. A proven incompatibility requires impact review before changing D097. |
+| O08 remaining credential lifecycle and handoff runbook | IMPLEMENTATION DETAIL / OPERATIONAL INPUT / medium | T009 completed corpus pin/checksum/license and primitive checks. Complete operator handoff instructions and real authentication/reset/change/issuance workflows and acceptance in the remaining Tasks. |
+| O12 remaining application/deployment checks | IMPLEMENTATION DETAIL / high | T001–T014 verified locked packages/native imports, root quality checks and PG17 schema/shared transaction support. Complete remaining controllers, workflows, deployment and their verification; a proven incompatibility still requires impact review before changing D097. |
 | O13 actual machine/browser/fixture measurements | OPERATIONAL INPUT / medium | Supply actual environment/fixture manifests and measurements for acceptance; tools/defaults are not results. |
 | O14 domain/certificates/proxy/credentials/off-host location | OPERATIONAL INPUT / medium | Supply for the selected deployment and corresponding drills; local HTTPS acceptance uses the approved trusted local certificate profile. |
 | ci.yml and branch settings not implemented | IMPLEMENTATION DETAIL / high | Implement and verify D098 in later authorized work. Policy approval is not an installed gate or protected-branch evidence. |
-| Detailed DTO/action/error/acceptance mapping | SPECIFICATION DETAIL / high | Elaborate D092/D095/D096 and owning UC rules without adding grants, unrestricted actions or alternative security policy. |
+| DTO/action/error contract execution | IMPLEMENTATION DETAIL / high | The approved Specification/contracts provide the mapping and T010 supplies shared validation/envelopes; implement and verify the remaining operation-specific DTOs/handlers without adding grants, unrestricted actions or alternative security policy. |
 
 O08/O12/O13/O14 do not themselves block writing requirements. They remain dependencies of the corresponding implementation/deployment/acceptance activities. The open register retains unresolved work; this table classifies its effect on PHASE 1 rather than replacing those inputs.
 

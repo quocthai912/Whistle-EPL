@@ -6,11 +6,14 @@
   "scripts": {
     "db:validate": "prisma validate",
     "db:generate": "prisma generate",
+    "db:migrate": "prisma migrate deploy",
+    "db:status": "prisma migrate status",
     "build": "tsc -p tsconfig.build.json",
     "start": "node dist/main.js",
     "lint": "eslint src tests scripts prisma.config.ts jest.config.cjs",
     "typecheck": "tsc --noEmit",
-    "test:unit": "jest --runInBand"
+    "test:unit": "jest --runInBand",
+    "test:integration": "jest --config jest.integration.config.cjs --runInBand"
   },
   "dependencies": {
     "@nestjs/common": "11.2.8",

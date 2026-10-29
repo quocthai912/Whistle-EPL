@@ -10,6 +10,9 @@
   "scripts": {
     "db:validate": "pnpm --filter @whistle-epl/backend run db:validate",
     "db:generate": "pnpm --filter @whistle-epl/backend run db:generate",
+    "db:migrate": "pnpm --filter @whistle-epl/backend run db:migrate",
+    "db:status": "pnpm --filter @whistle-epl/backend run db:status",
+    "test:integration": "pnpm db:generate && pnpm --filter @whistle-epl/backend run test:integration",
     "verify:native": "pnpm --filter @whistle-epl/backend exec node scripts/verify-native.cjs",
     "verify:client": "pnpm --filter @whistle-epl/backend exec node scripts/verify-client.cjs",
     "verify:commands": "node --test docs/verification/phase-1/root-commands.test.mjs",
