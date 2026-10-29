@@ -1,6 +1,6 @@
 # PHASE 1 Validation Guide
 
-**Status (2026-10-29)**: T001–T014 are published at `892f172f9ec539d5789a31a2f8046480afe15772`; T015–T022 operator/deployment/recovery commands are implemented and verified locally in the uncommitted working tree. See [operator evidence](../../docs/verification/phase-1/operator-foundation.md).
+**Status (2026-10-29)**: T001–T014 are published at `892f172f9ec539d5789a31a2f8046480afe15772`; T015–T022 operator/deployment/recovery commands are implemented, verified and published at [`7ac09e6`](https://github.com/quocthai912/Whistle-EPL/commit/7ac09e6cec9fb434248c82db142ab04695961823) on `feat/phase-1-operations-recovery` (review base `30506e3`). See [operator evidence](../../docs/verification/phase-1/operator-foundation.md).
 The command table distinguishes installed commands from remaining planned interfaces.
 Full clean-host/credential-change acceptance, authentication/administration workflows, browser/load and
 recovery acceptance remain pending. See [setup evidence](../../docs/verification/phase-1/workspace-setup.md),
@@ -24,11 +24,11 @@ of operational time. See [data model](data-model.md) and [operator contract](con
 ## Root Command Contract and Current Availability
 
 The approved command contract remains the target. Current availability below is checked
-against the current local T001–T022 working tree (review base `30506e3`); [operator evidence](../../docs/verification/phase-1/operator-foundation.md) records actual execution. T001–T014 were previously published at `892f172`; new work is uncommitted. Planned commands must not be treated as executable yet.
+against published commit [`7ac09e6`](https://github.com/quocthai912/Whistle-EPL/commit/7ac09e6cec9fb434248c82db142ab04695961823) (review base `30506e3`); [operator evidence](../../docs/verification/phase-1/operator-foundation.md) records actual execution. T001–T014 were previously published at `892f172`; T015–T022 are now published on `feat/phase-1-operations-recovery`. Planned commands must not be treated as executable yet.
 Root quality commands propagate workspace failures. For isolated database requirements,
 see the reproduction section in the foundation verification report.
 
-| Command | Required expected outcome | Availability at current local snapshot |
+| Command | Required expected outcome | Availability at published `7ac09e6` snapshot |
 |---|---|---|
 | pnpm install --frozen-lockfile | Clean locked install on each OS, with explicit allowed native build verification | Executed for T001 setup on both OSes |
 | pnpm db:validate | Pinned Prisma 7 schema/configuration validation | Implemented and verified |

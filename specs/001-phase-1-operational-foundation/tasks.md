@@ -4,7 +4,7 @@
 [data model](data-model.md), [REST](contracts/rest.md), [operator contract](contracts/operator-cli.md)
 and [quickstart](quickstart.md).
 **Status**: Approved by the Team Leader on 2026-10-28 (Asia/Bangkok).
-**Execution status (2026-10-29)**: T001–T014 complete and published at [892f172](https://github.com/quocthai912/Whistle-EPL/commit/892f172f9ec539d5789a31a2f8046480afe15772) on `feat/phase-1-core-foundation`; T015–T022 are implemented and verified in the current uncommitted working tree (review base `30506e3`); T023–T048 remain pending. Issues #6–#19 are Closed with label `completed`. [The Phase ledger](../../context/progress-checker.md#phase-1-execution-evidence---2026-10-29) records project PHASE 1 as `IN_PROGRESS`; no Phase acceptance is claimed.
+**Execution status (2026-10-29)**: T001–T014 complete and published at [892f172](https://github.com/quocthai912/Whistle-EPL/commit/892f172f9ec539d5789a31a2f8046480afe15772) on `feat/phase-1-core-foundation`; T015–T022 are implemented, verified and published at [`7ac09e6`](https://github.com/quocthai912/Whistle-EPL/commit/7ac09e6cec9fb434248c82db142ab04695961823) on `feat/phase-1-operations-recovery` (review base `30506e3`); T023–T048 remain pending. Issues #6–#27 are Closed with label `completed`. [The Phase ledger](../../context/progress-checker.md#phase-1-execution-evidence---2026-10-29) records project PHASE 1 as `IN_PROGRESS`; no Phase acceptance is claimed.
 **Task approval evidence**: After reviewing the 48 Tasks and three analysis remediations, the
 Team Leader selected “Duyệt sửa/Tasks; tôi sẽ tự commit/push tài liệu trước khi mở Issue”.
 The approved wording corrections are incorporated; that Task approval itself claimed no software implementation. Subsequent execution is recorded separately above and per Task below.
@@ -17,7 +17,7 @@ are authored before their implementation where specified. There is no universal 
 
 **Setup execution evidence (2026-10-29):** T001–T004 implemented and verified on Windows x64
 and Ubuntu 24.04 x64; see [setup verification](../../docs/verification/phase-1/workspace-setup.md).
-This does not establish project PHASE 1 acceptance. T005–T014 have subsequent execution evidence below; T015–T022 are implemented and verified in the current uncommitted working tree (review base `30506e3`); T023–T048 remain pending.
+This does not establish project PHASE 1 acceptance. T005–T014 have subsequent execution evidence below; T015–T022 are implemented, verified and published at [`7ac09e6`](https://github.com/quocthai912/Whistle-EPL/commit/7ac09e6cec9fb434248c82db142ab04695961823) on `feat/phase-1-operations-recovery` (review base `30506e3`); T023–T048 remain pending.
 
 ## Phase 1: Setup (Shared Infrastructure)
 
@@ -59,7 +59,7 @@ All story implementation waits for completion of this internal phase. This is no
 
 - [X] T014 [P] Implement frontend/src/shared/http/client.ts, session-context.tsx and frontend/src/app/router.tsx with frontend/tests/http-client.spec.ts; one Fetch layer, safe envelope/conflict handling, no automatic write replay, account-change memory clearing and Vietnamese Loading/Empty/Error shell. (Depends: T012; Covers: FR-007, FR-008, FR-017, FR-018, FR-021, FR-047, FR-056; SC-003, SC-010.) — Issue: [#19](https://github.com/quocthai912/Whistle-EPL/issues/19)
 
-**Operator execution evidence (2026-10-29):** T015–T022 completed locally; corresponding Issues #20–#27 are Closed with label `completed`, explicitly recording that implementation is uncommitted. See [operator verification and acceptance](../../docs/verification/phase-1/operator-foundation.md). No commit/push or project Phase acceptance is claimed; T023–T048 remain pending.
+**Operator execution evidence (2026-10-29):** T015–T022 completed and published at [`7ac09e6`](https://github.com/quocthai912/Whistle-EPL/commit/7ac09e6cec9fb434248c82db142ab04695961823); corresponding Issues #20–#27 are verified Closed with label `completed` and updated publication evidence. See [operator verification and acceptance](../../docs/verification/phase-1/operator-foundation.md). The live remote ref and all 68 manifest entries match the published commit. Project Phase acceptance and T023–T048 remain pending.
 
 ## Phase 3: User Story 1 — Establish and Recover the Foundation (Priority: P1)
 

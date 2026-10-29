@@ -6,7 +6,7 @@
 documents published by the Team Leader at b8e6e15b27ed8446cc60dba94bf1a0b0259e51b2;
 all 48 Task Issues are published and linked in tasks.md. **Implementation is IN_PROGRESS**:
 T001–T014 are verified and published at [892f172](https://github.com/quocthai912/Whistle-EPL/commit/892f172f9ec539d5789a31a2f8046480afe15772)
-on `feat/phase-1-core-foundation` (2026-10-29). T015–T022 are implemented/verified locally against review base `30506e3`; see [operator evidence](../../docs/verification/phase-1/operator-foundation.md). T023–T048, working-tree publication and Phase acceptance remain pending.
+on `feat/phase-1-core-foundation` (2026-10-29). T015–T022 are implemented, verified and published at [`7ac09e6`](https://github.com/quocthai912/Whistle-EPL/commit/7ac09e6cec9fb434248c82db142ab04695961823) on `feat/phase-1-operations-recovery` (review base `30506e3`); see [operator evidence](../../docs/verification/phase-1/operator-foundation.md). T023–T048 and Phase acceptance remain pending.
 See [tasks.md](tasks.md), [foundation verification](../../docs/verification/phase-1/foundation.md)
 and the [current Phase ledger](../../context/progress-checker.md#phase-1-execution-evidence---2026-10-29).
 

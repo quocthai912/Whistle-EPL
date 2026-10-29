@@ -1,6 +1,6 @@
 # PHASE 1 Operator Interface and Recovery Contract
 
-**Status**: Bootstrap/recovery and maintenance/backup/restore/verify root commands are implemented and locally verified in T015–T022; see [execution evidence](../../../docs/verification/phase-1/operator-foundation.md). Isolated fixture modules exist, but the planned root test:fixtures/test:reset aliases remain unavailable. Full installation/browser/operational acceptance is pending.
+**Status**: Bootstrap/recovery and maintenance/backup/restore/verify root commands are implemented, verified and published in T015–T022 at [`7ac09e6`](https://github.com/quocthai912/Whistle-EPL/commit/7ac09e6cec9fb434248c82db142ab04695961823); see [execution evidence](../../../docs/verification/phase-1/operator-foundation.md). Isolated fixture modules exist, but the planned root test:fixtures/test:reset aliases remain unavailable. Full installation/browser/operational acceptance is pending.
 Owners: [D008/D011](../../../docs/adr/0004-first-administrator-cli-bootstrap.md),
 [D087-D089/D096/D097](../../../context/design/architecture.md) and
 [Q102 allocation](../../../context/progress-checker.md#phase-1-specification-readiness-and-foundation-verification).

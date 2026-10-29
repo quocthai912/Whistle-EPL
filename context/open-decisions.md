@@ -4,7 +4,7 @@ This register contains only unresolved work. O identifiers retain their source p
 
 ## Actual inputs and unexecuted preparation
 
-The following items remain open as operational inputs or concrete implementation/verification deliverables, not new unapproved replacements for settled business policy. The PHASE 1 Specification/Plan/Tasks are approved and T001–T014 have published evidence and T015–T022 have local uncommitted execution evidence as of 2026-10-29; the [Phase ledger](progress-checker.md#phase-1-execution-evidence---2026-10-29) owns that progress. Future feature Specifications/Plans elaborate their approved contracts when separately authorized. Original O source identifiers remain traceable in sources/ADRs/owners; resolved design questions and completed deliverables are not maintained as open work.
+The following items remain open as operational inputs or concrete implementation/verification deliverables, not new unapproved replacements for settled business policy. The PHASE 1 Specification/Plan/Tasks are approved and T001–T014 have published evidence and T015–T022 have verified publication evidence at [`7ac09e6`](https://github.com/quocthai912/Whistle-EPL/commit/7ac09e6cec9fb434248c82db142ab04695961823) as of 2026-10-29; the [Phase ledger](progress-checker.md#phase-1-execution-evidence---2026-10-29) owns that progress. Future feature Specifications/Plans elaborate their approved contracts when separately authorized. Original O source identifiers remain traceable in sources/ADRs/owners; resolved design questions and completed deliverables are not maintained as open work.
 
 | ID | Source | Remaining input or evidence |
 |---|---|---|
