@@ -1,0 +1,17 @@
+[Unit]
+Description=Whistle-EPL backup retry 2 of 3
+OnFailure=whistle-backup-retry-3.timer
+
+[Service]
+Type=oneshot
+User=whistle-operator
+Group=whistle-operations
+EnvironmentFile=/etc/whistle-epl/operator.env
+WorkingDirectory=/opt/whistle-epl
+ExecStart=/opt/whistle-epl/ops/backup/scheduled-backup.sh retry
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/whistle-epl-operations /srv/whistle/backups

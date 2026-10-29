@@ -12,5 +12,7 @@ backend/src/generated/
 Thumbs.db
 *.tmp
 *.swp
+__pycache__/
+*.pyc
 .vscode/
 .idea/

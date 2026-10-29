@@ -4,7 +4,7 @@ const accountFields = ['personnelCode', 'fullName', 'username', 'state', 'mustCh
 // Each action owns its projection. No credential/token/hash or unrestricted snapshot field.
 const policies = {
   ADMIN_BOOTSTRAPPED: [...accountFields, 'roleCode'],
-  ADMIN_RECOVERED: ['state', 'mustChangePassword', 'sessionsInvalidated'],
+  ADMIN_RECOVERED: ['state', 'mustChangePassword', 'sessionsInvalidated', 'reset', 'unlock'],
   ACCOUNT_CREATED: accountFields,
   ACCOUNT_UPDATED: ['fullName'],
   ACCOUNT_LOCKED: ['state', 'sessionsInvalidated'],

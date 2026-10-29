@@ -2,6 +2,7 @@
 
 **Status (2026-10-29)**: T005–T008 physical schema and four committed migrations are implemented
 and verified on PostgreSQL 17.11 at published commit `892f172f9ec539d5789a31a2f8046480afe15772`.
+The current review base `30506e3` also includes the fifth delegation-history migration; T015–T022 verified all five in fresh Compose/PG17 replay and checksummed foundation recovery. See [operator evidence](../../docs/verification/phase-1/operator-foundation.md). T015–T022 are published at [`7ac09e6`](https://github.com/quocthai912/Whistle-EPL/commit/7ac09e6cec9fb434248c82db142ab04695961823); publication changes no schema/migration rules.
 See [schema.prisma](../../backend/prisma/schema.prisma), [migrations](../../backend/prisma/migrations/)
 and [verification](../../docs/verification/phase-1/foundation.md). This mapping remains the design
 reference; complete account/session/delegation use-case behavior and Phase acceptance remain pending.

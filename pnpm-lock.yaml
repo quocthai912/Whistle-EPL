@@ -44,6 +44,9 @@ importers:
       '@nestjs/platform-express':
         specifier: 11.2.8
         version: 11.2.8(@nestjs/common@11.2.8(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.2.8)
+      '@nestjs/schedule':
+        specifier: 6.1.3
+        version: 6.1.3(@nestjs/common@11.2.8(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.2.8)
       '@prisma/adapter-pg':
         specifier: 7.10.1
         version: 7.10.1
@@ -107,7 +110,7 @@ importers:
     dependencies:
       antd:
         specifier: 6.6.8
-        version: 6.6.8(react-dom@19.2.9(react@19.2.9))(react@19.2.9)
+        version: 6.6.8(luxon@3.7.2)(react-dom@19.2.9(react@19.2.9))(react@19.2.9)
       dayjs:
         specifier: 1.11.23
         version: 1.11.23
@@ -839,6 +842,12 @@ packages:
     peerDependencies:
       '@nestjs/common': ^11.0.0
       '@nestjs/core': ^11.0.0
+
+  '@nestjs/schedule@6.1.3':
+    resolution: {integrity: sha512-RflMFOpR16Dwd1jAUbeB4mfGTCh65fvEdL4mSjQPJChpkRGRjIXjb+6YQcK2faQrVT60c9DmLmoVR7/ONCtuYQ==}
+    peerDependencies:
+      '@nestjs/common': ^10.0.0 || ^11.0.0
+      '@nestjs/core': ^10.0.0 || ^11.0.0
 
   '@nestjs/testing@11.2.8':
     resolution: {integrity: sha512-ng3NlbDHehZ6I14R41Q5KFTEfRSkBSKEjnUTwMVCD1oc6KWnzmwW3Ct8BcS15WlGlxC6gmKCibJle9eclvaOaA==}
@@ -1626,6 +1635,9 @@ packages:
   '@types/lodash@4.17.27':
     resolution: {integrity: sha512-VenMRv/eKNrspX9v3H4dbmjsrnCOYdYBG3kxXKk3dG6X+urBGcj2Prww3xw1U5K4FV/mE4h5GbWd0szEKf+9ew==}
 
+  '@types/luxon@3.7.6':
+    resolution: {integrity: sha512-6KSjliQAXK8ZLgFQO4B7iE4Rpf/B3rItzCFuXezBY/XIAGxOdLd7vRNK9/StRPwiS/yJsVbB7HKpW46B8tcEuQ==}
+
   '@types/methods@1.1.4':
     resolution: {integrity: sha512-ymXWVrDiCxTBE3+RIrrP533E70eA+9qu7zdWoHuOmGujkYtzf4HQF96b8nwHLqhuf4ykX61IGRIB38CC6/sImQ==}
 
@@ -2229,6 +2241,10 @@ packages:
   cors@2.8.6:
     resolution: {integrity: sha512-tJtZBBHA6vjIAaF6EnIaq6laBBP9aq/Y3ouVJjEfoHbRBcHBAHYcMh/w8LDrk2PvIMMq8gmopa5D4V8RmbrxGw==}
     engines: {node: '>= 0.10'}
+
+  cron@4.4.0:
+    resolution: {integrity: sha512-fkdfq+b+AHI4cKdhZlppHveI/mgz2qpiYxcm+t5E5TsxX7QrLS1VE0+7GENEk9z0EeGPcpSciGv6ez24duWhwQ==}
+    engines: {node: '>=18.x'}
 
   cross-env@10.1.0:
     resolution: {integrity: sha512-GsYosgnACZTADcmEyJctkJIoqAhHjttw7RsFrVoJNXbsWWqaq6Ym+7kZjq6mS45O0jij6vtiReppKQEtqWy6Dw==}
@@ -3177,6 +3193,10 @@ packages:
   lru.min@1.1.5:
     resolution: {integrity: sha512-5J9ysMYUpYIg9RF2vJpy9SinEmSviFSe0GyPpCQ4L5QSkLAgeLXlTAOu2ZwWUU5m+0SBl6gUU1R1ZQB3aKypfA==}
     engines: {bun: '>=1.0.0', deno: '>=1.30.0', node: '>=8.0.0'}
+
+  luxon@3.7.2:
+    resolution: {integrity: sha512-vtEhXh/gNjI9Yg1u4jX/0YVPMvxzHuGgCm6tC5kZyb08yjGWGnqAjGJvcXbqQR2P3MyMEFnRbpcdFS6PBcLqew==}
+    engines: {node: '>=12'}
 
   lz-string@1.5.0:
     resolution: {integrity: sha512-h5bgJWpxJNswbU7qCrV0tIKQCaS3blPDrqKWx+QxzuzL1zGUzij9XCWLrSLsJPu5t+eWA/ycetzYAO5IOMcWAQ==}
@@ -4960,6 +4980,12 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
+  '@nestjs/schedule@6.1.3(@nestjs/common@11.2.8(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.2.8)':
+    dependencies:
+      '@nestjs/common': 11.2.8(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2)(rxjs@7.8.2)
+      '@nestjs/core': 11.2.8(@nestjs/common@11.2.8(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/platform-express@11.2.8)(reflect-metadata@0.2.2)(rxjs@7.8.2)
+      cron: 4.4.0
+
   '@nestjs/testing@11.2.8(@nestjs/common@11.2.8(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.2.8)(@nestjs/platform-express@11.2.8)':
     dependencies:
       '@nestjs/common': 11.2.8(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2)(rxjs@7.8.2)
@@ -5375,7 +5401,7 @@ snapshots:
       react: 19.2.9
       react-dom: 19.2.9(react@19.2.9)
 
-  '@rc-component/picker@1.12.2(dayjs@1.11.23)(react-dom@19.2.9(react@19.2.9))(react@19.2.9)':
+  '@rc-component/picker@1.12.2(dayjs@1.11.23)(luxon@3.7.2)(react-dom@19.2.9(react@19.2.9))(react@19.2.9)':
     dependencies:
       '@rc-component/overflow': 1.0.1(react-dom@19.2.9(react@19.2.9))(react@19.2.9)
       '@rc-component/resize-observer': 1.1.2(react-dom@19.2.9(react@19.2.9))(react@19.2.9)
@@ -5386,6 +5412,7 @@ snapshots:
       react-dom: 19.2.9(react@19.2.9)
     optionalDependencies:
       dayjs: 1.11.23
+      luxon: 3.7.2
 
   '@rc-component/portal@2.2.1(react-dom@19.2.9(react@19.2.9))(react@19.2.9)':
     dependencies:
@@ -5766,6 +5793,8 @@ snapshots:
 
   '@types/lodash@4.17.27': {}
 
+  '@types/luxon@3.7.6': {}
+
   '@types/methods@1.1.4': {}
 
   '@types/node@24.19.2':
@@ -6120,7 +6149,7 @@ snapshots:
 
   ansi-styles@6.2.3: {}
 
-  antd@6.6.8(react-dom@19.2.9(react@19.2.9))(react@19.2.9):
+  antd@6.6.8(luxon@3.7.2)(react-dom@19.2.9(react@19.2.9))(react@19.2.9):
     dependencies:
       '@ant-design/colors': 8.0.1
       '@ant-design/cssinjs': 2.1.2(react-dom@19.2.9(react@19.2.9))(react@19.2.9)
@@ -6147,7 +6176,7 @@ snapshots:
       '@rc-component/mutate-observer': 2.0.1(react-dom@19.2.9(react@19.2.9))(react@19.2.9)
       '@rc-component/notification': 2.1.1(react-dom@19.2.9(react@19.2.9))(react@19.2.9)
       '@rc-component/pagination': 1.4.0(react-dom@19.2.9(react@19.2.9))(react@19.2.9)
-      '@rc-component/picker': 1.12.2(dayjs@1.11.23)(react-dom@19.2.9(react@19.2.9))(react@19.2.9)
+      '@rc-component/picker': 1.12.2(dayjs@1.11.23)(luxon@3.7.2)(react-dom@19.2.9(react@19.2.9))(react@19.2.9)
       '@rc-component/progress': 1.0.3(react-dom@19.2.9(react@19.2.9))(react@19.2.9)
       '@rc-component/qrcode': 2.0.0(react-dom@19.2.9(react@19.2.9))(react@19.2.9)
       '@rc-component/rate': 1.0.1(react-dom@19.2.9(react@19.2.9))(react@19.2.9)
@@ -6438,6 +6467,11 @@ snapshots:
     dependencies:
       object-assign: 4.1.1
       vary: 1.1.2
+
+  cron@4.4.0:
+    dependencies:
+      '@types/luxon': 3.7.6
+      luxon: 3.7.2
 
   cross-env@10.1.0:
     dependencies:
@@ -7587,6 +7621,8 @@ snapshots:
       yallist: 3.1.1
 
   lru.min@1.1.5: {}
+
+  luxon@3.7.2: {}
 
   lz-string@1.5.0: {}
 

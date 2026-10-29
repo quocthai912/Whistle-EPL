@@ -6,4 +6,6 @@ backend/src/generated/
 .verification/
 **/.env*
 **/*.log
+**/__pycache__/
+**/*.pyc
 **/__setup_gate_probe__*

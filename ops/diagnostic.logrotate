@@ -1,0 +1,12 @@
+/var/log/whistle-epl/*.log /var/lib/whistle-epl-operations/operations.log {
+    daily
+    rotate 30
+    maxage 30
+    missingok
+    notifempty
+    compress
+    delaycompress
+    copytruncate
+    su whistle-operator whistle-operations
+    create 0640 whistle-operator whistle-operations
+}

@@ -1,6 +1,6 @@
 # PHASE 1 Operator Interface and Recovery Contract
 
-**Status**: Planned server commands, not implemented entry points.
+**Status**: Bootstrap/recovery and maintenance/backup/restore/verify root commands are implemented, verified and published in T015–T022 at [`7ac09e6`](https://github.com/quocthai912/Whistle-EPL/commit/7ac09e6cec9fb434248c82db142ab04695961823); see [execution evidence](../../../docs/verification/phase-1/operator-foundation.md). Isolated fixture modules exist, but the planned root test:fixtures/test:reset aliases remain unavailable. Full installation/browser/operational acceptance is pending.
 Owners: [D008/D011](../../../docs/adr/0004-first-administrator-cli-bootstrap.md),
 [D087-D089/D096/D097](../../../context/design/architecture.md) and
 [Q102 allocation](../../../context/progress-checker.md#phase-1-specification-readiness-and-foundation-verification).
@@ -14,7 +14,7 @@ supplied display name alone is not operator authentication. Exact host accounts/
 configuration is a deployment/runbook input. No browser session, public route or remote
 fixture endpoint is required or permitted for these operator paths.
 
-## Planned Command Families
+## Command Families and Availability
 
 Commands run through root pnpm scripts/installed backend entry points; exact package patches
 are verified during setup. Passwords are secure prompts, never flags, environment defaults,
