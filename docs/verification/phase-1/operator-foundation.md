@@ -1,5 +1,8 @@
 # T015–T022 operator foundation verification
 
+**Current authentication follow-up (2026-10-29):** T023–T026 are now verified and published at [`5cfa666`](https://github.com/quocthai912/Whistle-EPL/commit/5cfa666a7550c9b1d06cc21926dba7e2f27c1a26) on `feat/phase-1-authentication-backend`; see [authentication evidence](authentication.md). References below to deferred authentication work describe this report's original snapshot. Current progress and remaining T027–T048 work are owned by the [Phase ledger](../../../context/progress-checker.md#phase-1-execution-evidence---2026-10-29).
+
+
 Date: 2026-10-29 (Asia/Bangkok). Branch: `feat/phase-1-operations-recovery`. Reviewed base: `30506e304857636d016aa245aad53b4192a1e069`. Scope: eight approved Tasks, implemented, verified and published at [`7ac09e6`](https://github.com/quocthai912/Whistle-EPL/commit/7ac09e6cec9fb434248c82db142ab04695961823). Issues #20–#27 are Closed with label `completed`; their approved definitions and Task evidence are preserved. Project PHASE 1 acceptance remains pending. Existing v1/v2 approvals are unchanged.
 
 **Publication verification (2026-10-29):** The user committed and pushed `7ac09e6cec9fb434248c82db142ab04695961823`; the live remote branch ref was verified at that SHA. Tests originally ran against the pre-commit working tree. All **68/68** [source manifest](operator-source-sha256.txt) entries were compared with the published commit and match after LF normalization. The manifest remains unchanged and identifies the published snapshot, including its documentation as it existed at publication; subsequent publication-metadata edits do not rewrite that evidence. No new application test execution, integration-branch merge or Phase acceptance is claimed by this update.

@@ -86,10 +86,11 @@ model LoginThrottleKey {
 }
 
 model LoginFailure {
-  id          String   @id @default(uuid(4)) @db.Uuid
-  usernameKey String   @map("username_key")
-  ipKey       String   @map("ip_key")
-  occurredAt  DateTime @map("occurred_at") @db.Timestamptz(6)
+  id                     String   @id @default(uuid(4)) @db.Uuid
+  usernameKey            String   @map("username_key")
+  ipKey                  String   @map("ip_key")
+  occurredAt             DateTime @map("occurred_at") @db.Timestamptz(6)
+  usernameSequenceActive Boolean  @default(true) @map("username_sequence_active")
 
   @@index([usernameKey, occurredAt])
   @@index([ipKey, occurredAt])

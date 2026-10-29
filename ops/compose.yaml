@@ -28,6 +28,8 @@ services:
     environment:
       HOST: 0.0.0.0
       PORT: '3000'
+      AUTH_ORIGIN: ${AUTH_ORIGIN:?Exact browser HTTPS origin required}
+      AUTH_TRUSTED_PROXY_CIDRS: '${CADDY_PRIVATE_IP:?Reserved Caddy private IPv4 required}/32'
       MAINTENANCE_MARKER_PATH: /operation-state/maintenance.json
     volumes:
       - ${OPERATION_STATE_DIR:?Protected host state directory}:/operation-state:ro
@@ -48,10 +50,18 @@ services:
     ports: ['${HTTPS_BIND:?Explicit bind address}:443:443']
     volumes: [caddy-data:/data, caddy-config:/config]
     depends_on: {backend: {condition: service_healthy}}
-    networks: [private, edge]
+    networks:
+      private:
+        ipv4_address: ${CADDY_PRIVATE_IP:?Reserved Caddy private IPv4 required}
+      edge: {}
     restart: unless-stopped
 networks:
-  private: {internal: true}
+  private:
+    internal: true
+    ipam:
+      config:
+        - subnet: ${PRIVATE_SUBNET:?Dedicated non-overlapping private IPv4 subnet required}
+          ip_range: ${PRIVATE_DYNAMIC_RANGE:?Dynamic IPv4 range excluding reserved Caddy address required}
   edge: {}
 volumes:
   database: {}

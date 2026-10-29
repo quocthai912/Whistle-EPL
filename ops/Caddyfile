@@ -1,7 +1,7 @@
 {$SITE_ADDRESS} {
   tls internal
   encode zstd gzip
-  handle_path /api/v1/* {
+  handle /api/v1/* {
     reverse_proxy backend:3000 {
       header_up X-Forwarded-For {remote_host}
       header_up X-Forwarded-Proto https

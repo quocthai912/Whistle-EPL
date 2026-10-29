@@ -6,7 +6,7 @@
 documents published by the Team Leader at b8e6e15b27ed8446cc60dba94bf1a0b0259e51b2;
 all 48 Task Issues are published and linked in tasks.md. **Implementation is IN_PROGRESS**:
 T001–T014 are verified and published at [892f172](https://github.com/quocthai912/Whistle-EPL/commit/892f172f9ec539d5789a31a2f8046480afe15772)
-on `feat/phase-1-core-foundation` (2026-10-29). T015–T022 are implemented, verified and published at [`7ac09e6`](https://github.com/quocthai912/Whistle-EPL/commit/7ac09e6cec9fb434248c82db142ab04695961823) on `feat/phase-1-operations-recovery` (review base `30506e3`); see [operator evidence](../../docs/verification/phase-1/operator-foundation.md). T023–T048 and Phase acceptance remain pending.
+on `feat/phase-1-core-foundation` (2026-10-29). T015–T022 are implemented, verified and published at [`7ac09e6`](https://github.com/quocthai912/Whistle-EPL/commit/7ac09e6cec9fb434248c82db142ab04695961823) on `feat/phase-1-operations-recovery` (review base `30506e3`); see [operator evidence](../../docs/verification/phase-1/operator-foundation.md). T023–T026 are implemented, verified and published at [`5cfa666`](https://github.com/quocthai912/Whistle-EPL/commit/5cfa666a7550c9b1d06cc21926dba7e2f27c1a26) on `feat/phase-1-authentication-backend` (review base `7e28810`) (see [authentication evidence](../../docs/verification/phase-1/authentication.md)); T027–T048 and Phase acceptance remain pending.
 See [tasks.md](tasks.md), [foundation verification](../../docs/verification/phase-1/foundation.md)
 and the [current Phase ledger](../../context/progress-checker.md#phase-1-execution-evidence---2026-10-29).
 
@@ -79,8 +79,8 @@ it does not mark PHASE 1/G0 execution complete. Future implementation changes re
 
 ### Source Code (repository root)
 
-The following is the planned full-feature layout. T001–T022 now implement its setup/shared/operator
-foundation paths; remaining authentication/administration/audit UI and acceptance paths are delivered by T023–T048. Planning itself
+The following is the planned full-feature layout. T001–T026 now implement its setup/shared/operator/authentication
+foundation paths (T023–T026 verified and published at `5cfa666`); remaining authentication UI, administration/audit and acceptance paths are delivered by T027–T048. Planning itself
 did not generate application files.
 
 ```text

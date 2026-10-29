@@ -29,6 +29,11 @@ export class DatabaseService {
     this.client = new PrismaClient({ adapter: new PrismaPg({ connectionString: url }), log: [] });
   }
 
+  /** Trusted time for read-only preflight; writes still sample time after locking. */
+  now(): Promise<Date> {
+    return this.clock.now(this.client);
+  }
+
   async write<T>(
     locks: readonly LockResource[],
     authority: (context: TransactionContext, now: Date) => Promise<void>,
