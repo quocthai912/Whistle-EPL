@@ -2,7 +2,12 @@
 
 Date: 2026-10-29 (Asia/Bangkok). Branch: `feat/phase-1-core-foundation`.
 Reviewed base: `75bd41675ca777cdd811e04fae5c30630b837284`.
-Implementation is an uncommitted working-tree change; no commit/push was performed.
+**Publication update (2026-10-29):** The user committed and pushed the verified implementation
+as [892f172f9ec539d5789a31a2f8046480afe15772](https://github.com/quocthai912/Whistle-EPL/commit/892f172f9ec539d5789a31a2f8046480afe15772)
+on `feat/phase-1-core-foundation`; the live remote branch ref was verified at that SHA.
+Verification originally ran against the uncommitted snapshot; all 67 manifest entries
+were subsequently checked against the published commit and match. No new application
+test execution is claimed by this publication metadata update.
 The [source manifest](foundation-source-sha256.txt) identifies the delivered snapshot.
 Source/configuration text hashes normalize line endings to LF for cross-OS comparison;
 the vendored corpus and license hashes retain their exact upstream bytes.

@@ -1,8 +1,12 @@
-# PHASE 1 Future Validation Guide
+# PHASE 1 Validation Guide
 
-**Status**: Planned commands and scenarios; application scripts do not yet exist and none
-of the following installation/test/recovery outcomes has been executed. Implement the
-approved Tasks before using this guide as a runbook. Do not mistake documentation for evidence.
+**Status (2026-10-29)**: Setup and shared-foundation commands are implemented and verified
+through T001–T014, published at `892f172f9ec539d5789a31a2f8046480afe15772`.
+The command table distinguishes installed commands from remaining planned interfaces.
+Full installation/bootstrap, authentication/administration workflows, browser/load and
+recovery acceptance remain pending. See [setup evidence](../../docs/verification/phase-1/workspace-setup.md),
+[foundation evidence](../../docs/verification/phase-1/foundation.md) and [Task status](tasks.md);
+this guide does not replace their actual execution results.
 
 ## Prerequisites and Isolation
 
@@ -18,29 +22,34 @@ two test Season identities, controlled clocks and deterministic race barriers. N
 season/regulation or default administrator is seeded. A test clock is never a client override
 of operational time. See [data model](data-model.md) and [operator contract](contracts/operator-cli.md).
 
-## Planned Root Command Contract
+## Root Command Contract and Current Availability
 
-The future root package.json must expose these commands with both-workspace failure propagation.
-Names beyond D097's existing contract are Plan elaboration, not already installed commands.
+The approved command contract remains the target. Current availability below is checked
+against package.json at `892f172`; planned commands must not be treated as executable yet.
+Root quality commands propagate workspace failures. For isolated database requirements,
+see the reproduction section in the foundation verification report.
 
-| Command | Required expected outcome after implementation |
-|---|---|
-| pnpm install --frozen-lockfile | Clean locked install on each OS, with explicit allowed native build verification |
-| pnpm db:validate | Pinned Prisma 7 schema/configuration validation |
-| pnpm db:generate | Explicit backend CJS client generation before generated imports/typecheck/build/tests |
-| pnpm db:migrate | Deploy committed migrations to the selected fresh target, no interactive dev migration/schema push |
-| pnpm db:check | Migration status and intended-schema checks, accounting for SQL-managed constraints |
-| pnpm lint | Root ESLint checks for both workspaces, no silent skip |
-| pnpm typecheck | Both workspaces strict checks without output mutation |
-| pnpm format:check | Nonmutating Prettier on D097 source/config scopes, excluding Context/ADRs/generated output |
-| pnpm format | Explicit source-format mutation only; never used as CI format verification |
-| pnpm test:unit | Frontend Vitest/RTL and backend Jest nonwatch suites, no empty-pass acceptance |
-| pnpm test:integration | Real isolated PostgreSQL 17; deliberate independent-connection races, initially serial suites |
-| pnpm build | Frontend/backend build and import compatibility |
-| pnpm dev | Explicit development profile and labelled HTTP-cookie limitations |
-| pnpm test:e2e | Real Chrome/Edge in the acceptance HTTPS profile, record actual versions |
-| pnpm test:load | Local k6 BM-01 profile; export safe per-attempt latency/success evidence |
-| pnpm ops:verify | Available-foundation persistence/backup/restore/failure drills in an isolated target |
+| Command | Required expected outcome | Availability at published snapshot |
+|---|---|---|
+| pnpm install --frozen-lockfile | Clean locked install on each OS, with explicit allowed native build verification | Executed for T001 setup on both OSes |
+| pnpm db:validate | Pinned Prisma 7 schema/configuration validation | Implemented and verified |
+| pnpm db:generate | Explicit backend CJS client generation before generated imports/typecheck/build/tests | Implemented and verified |
+| pnpm db:migrate | Deploy committed migrations to the selected fresh target, no interactive dev migration/schema push | Implemented; four-migration fresh replay verified |
+| pnpm db:status | Inspect deployment status | Implemented and verified; current status entry point |
+| pnpm db:check | Migration status and intended-schema checks, accounting for SQL-managed constraints | Planned root alias; current checks use db:status plus schema.spec.ts/Prisma diff |
+| pnpm lint | Root ESLint checks for both workspaces, no silent skip | Implemented and verified |
+| pnpm typecheck | Both workspaces strict checks without output mutation | Implemented and verified |
+| pnpm format:check | Nonmutating Prettier on D097 source/config scopes, excluding Context/ADRs/generated output | Implemented and verified |
+| pnpm format | Explicit source-format mutation only; never used as CI format verification | Implemented and exercised |
+| pnpm test / pnpm test:unit | Frontend Vitest/RTL and backend Jest nonwatch suites, no empty-pass acceptance | Implemented; 6 backend and 8 frontend tests pass on each OS |
+| pnpm test:integration | Real isolated PostgreSQL 17; deliberate independent-connection races, initially serial suites | Implemented; 18 tests pass on each OS |
+| pnpm verify:native / pnpm verify:client | Approved native-module and CommonJS client compatibility checks | Implemented and verified |
+| pnpm verify:commands | Injected workspace failures propagate to root command failure | Implemented; 10 probes pass on each OS |
+| pnpm build | Frontend/backend build and import compatibility | Implemented and verified |
+| pnpm dev | Explicit development profile and labelled HTTP-cookie limitations | Planned root command; frontend workspace has its own dev script |
+| pnpm test:e2e | Real Chrome/Edge in the acceptance HTTPS profile, record actual versions | Planned; not browser acceptance evidence |
+| pnpm test:load | Local k6 BM-01 profile; export safe per-attempt latency/success evidence | Planned; BM-01 measurements pending |
+| pnpm ops:verify | Available-foundation persistence/backup/restore/failure drills in an isolated target | Planned; operational drills pending |
 
 Run installed tools through pnpm exec and versioned one-off tools through pnpm dlx only
 when necessary. Do not substitute npm/yarn commands or create competing lockfiles.

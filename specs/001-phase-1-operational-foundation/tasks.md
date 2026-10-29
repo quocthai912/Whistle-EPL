@@ -4,9 +4,10 @@
 [data model](data-model.md), [REST](contracts/rest.md), [operator contract](contracts/operator-cli.md)
 and [quickstart](quickstart.md).
 **Status**: Approved by the Team Leader on 2026-10-28 (Asia/Bangkok).
+**Execution status (2026-10-29)**: T001–T014 complete and published at [892f172](https://github.com/quocthai912/Whistle-EPL/commit/892f172f9ec539d5789a31a2f8046480afe15772) on `feat/phase-1-core-foundation`; T015–T048 remain pending. Issues #6–#19 are Closed with label `completed`. [The Phase ledger](../../context/progress-checker.md#phase-1-execution-evidence---2026-10-29) records project PHASE 1 as `IN_PROGRESS`; no Phase acceptance is claimed.
 **Task approval evidence**: After reviewing the 48 Tasks and three analysis remediations, the
 Team Leader selected “Duyệt sửa/Tasks; tôi sẽ tự commit/push tài liệu trước khi mở Issue”.
-The approved wording corrections are incorporated; no software implementation is claimed.
+The approved wording corrections are incorporated; that Task approval itself claimed no software implementation. Subsequent execution is recorded separately above and per Task below.
 **Issue publication**: Published 48/48 approved Task Issues after verifying the pushed documents at b8e6e15b27ed8446cc60dba94bf1a0b0259e51b2.
 Returned Issue URLs are recorded against every published Task and in the dependency table.
 **Tests**: Explicitly required by FR-059/FR-061 and the Constitution; core security/CLI tests below

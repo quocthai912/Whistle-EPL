@@ -1,6 +1,10 @@
 # PHASE 1 Data Model
 
-**Status**: Design mapping, not an implemented Prisma schema or migration.
+**Status (2026-10-29)**: T005–T008 physical schema and four committed migrations are implemented
+and verified on PostgreSQL 17.11 at published commit `892f172f9ec539d5789a31a2f8046480afe15772`.
+See [schema.prisma](../../backend/prisma/schema.prisma), [migrations](../../backend/prisma/migrations/)
+and [verification](../../docs/verification/phase-1/foundation.md). This mapping remains the design
+reference; complete account/session/delegation use-case behavior and Phase acceptance remain pending.
 Read with [spec.md](spec.md), [REST contract](contracts/rest.md) and the authoritative
 [D095 dictionary](../../context/design/architecture.md#detailed-relational-dictionary)/
 [D096 security additions](../../context/design/architecture.md#security-support-dictionary-completion).
@@ -89,4 +93,5 @@ US2: C01-C05/C12, password-reset/issuance races and exact time boundaries.
 US3: C01/C06-C14, person separation, two-season scope, overlap and receipt/final-check races.
 US4: C12 plus deterministic list ordering and current object-read projections.
 All schema/transaction tests use real PostgreSQL 17; failure-state comparisons use independent
-connections. This document establishes no migration or executed verification evidence.
+connections. This design mapping does not itself establish execution results; the linked
+verification report records the implemented schema/shared-foundation checks and their limits.
