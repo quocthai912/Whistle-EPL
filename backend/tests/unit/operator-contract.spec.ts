@@ -5,6 +5,8 @@ import {
 } from '../../src/cli/operator-contract';
 import { PassThrough } from 'node:stream';
 import { readSecret } from '../../src/cli/secure-prompt';
+import { commandArguments, operatorErrorKind } from '../../src/cli/operator-runtime';
+import { ApplicationError } from '../../src/platform/application-error';
 
 describe('operator command input contract', () => {
   it('normalizes personnel identity and username without touching credentials', () => {
@@ -30,19 +32,54 @@ describe('operator command input contract', () => {
       recoveryInput({ target: 'admin', reason: ' repair ', reset: false, unlock: true }).reason,
     ).toBe('repair');
   });
-  it('uses authenticated OS context and refuses root without a sudo origin', () => {
+  it('uses kernel OS identity and rejects environment-only root attribution', () => {
     expect(
       operatorIdentity({
         uid: 1001,
         username: 'maintainer',
-        sudoUid: undefined,
-        sudoUser: undefined,
       }),
     ).toBe('uid:1001:maintainer');
-    expect(
-      operatorIdentity({ uid: 0, username: 'root', sudoUid: '1001', sudoUser: 'maintainer' }),
-    ).toBe('uid:1001:maintainer via root');
+    expect(operatorIdentity({ uid: 0, username: 'root', loginUid: '1001' })).toBe(
+      'loginuid:1001 via uid:0:root',
+    );
+    expect(() =>
+      operatorIdentity(
+        Object.assign({ uid: 0, username: 'root' }, { sudoUid: '1001', sudoUser: 'forged' }),
+      ),
+    ).toThrow();
+    expect(() => operatorIdentity({ uid: 0, username: 'root', loginUid: '4294967295' })).toThrow();
     expect(() => operatorIdentity({ uid: 0, username: 'root' })).toThrow();
+  });
+  it('accepts dash-prefixed operands while rejecting an actual option in place of its operand', () => {
+    const argv = process.argv;
+    try {
+      process.argv = ['node', 'operator', '--full-name', '--Nguyễn', '--username', '--login'];
+      expect(commandArguments(['--full-name', '--username'])).toEqual({
+        '--full-name': '--Nguyễn',
+        '--username': '--login',
+      });
+      process.argv = ['node', 'operator', '--full-name', '--username'];
+      expect(() => commandArguments(['--full-name', '--username'])).toThrow();
+      process.argv = ['node', 'operator', '--full-name'];
+      expect(() => commandArguments(['--full-name'])).toThrow();
+    } finally {
+      process.argv = argv;
+    }
+  });
+  it('classifies failures without returning caller-controlled names, messages or codes', () => {
+    expect(operatorErrorKind(new ApplicationError(503, 'MAINTENANCE', 'synthetic secret'))).toBe(
+      'APPLICATION_ERROR',
+    );
+    expect(operatorErrorKind(new TypeError('synthetic secret'))).toBe('TYPE_ERROR');
+    expect(
+      operatorErrorKind(
+        Object.assign(new Error('synthetic secret'), {
+          name: 'synthetic secret',
+          code: 'synthetic secret',
+        }),
+      ),
+    ).toBe('OPERATOR_ERROR');
+    expect(operatorErrorKind({ name: 'synthetic secret' })).toBe('UNKNOWN_ERROR');
   });
   it('never echoes typed secrets and restores terminal mode on completion and cancellation', async () => {
     const input = Object.assign(new PassThrough(), {

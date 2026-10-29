@@ -1,6 +1,7 @@
 import { Cron } from '@nestjs/schedule';
 import { DatabaseService } from '../platform/database.service';
 import type { LockResource } from '../platform/transaction-context';
+import { Prisma } from '../generated/prisma/client';
 
 export class TechnicalCleanupService {
   constructor(private readonly database?: DatabaseService) {}
@@ -18,11 +19,6 @@ export class TechnicalCleanupService {
   }
   async execute(): Promise<void> {
     if (!this.database) throw new Error('Configured database required.');
-    const keys = await this.database.client.loginThrottleKey.findMany();
-    const failures = await this.database.client.loginFailure.findMany({
-      select: { usernameKey: true, ipKey: true },
-      distinct: ['usernameKey', 'ipKey'],
-    });
     const candidateTime = new Date();
     const accounts = await this.database.client.account.findMany({
       where: {
@@ -43,16 +39,6 @@ export class TechnicalCleanupService {
       key: a.id,
       mode: 'exclusive',
     }));
-    for (const key of keys)
-      locks.push({
-        kind: 'security',
-        key: `${key.kind.toLowerCase()}:${key.key}`,
-        mode: 'exclusive',
-      });
-    for (const failure of failures) {
-      locks.push({ kind: 'security', key: `username:${failure.usernameKey}`, mode: 'exclusive' });
-      locks.push({ kind: 'security', key: `ip:${failure.ipKey}`, mode: 'exclusive' });
-    }
     await this.database.write(
       locks,
       async () => {},
@@ -69,8 +55,6 @@ export class TechnicalCleanupService {
           },
         });
         await context.db.preloginCsrfContext.deleteMany({ where: { expiresAt: { lte: now } } });
-        await context.db
-          .$executeRaw`DELETE FROM login_failure f WHERE occurred_at < ${new Date(now.getTime() - 86400000)} AND NOT EXISTS (SELECT 1 FROM login_throttle_key k WHERE k.blocked_until > ${now} AND ((k.kind='USERNAME' AND k.key=f.username_key) OR (k.kind='IP' AND k.key=f.ip_key)))`;
         // Pending receipts never expire; completed receipts retain the full 24-hour guarantee.
         const receipts = await context.db.commandReceipt.findMany({
           where: { outcomeState: 'COMPLETED', expiresAt: { lte: now } },
@@ -93,6 +77,38 @@ export class TechnicalCleanupService {
         }
       },
     );
+    const [{ now }] = await this.database.client.$queryRaw<
+      Array<{ now: Date }>
+    >`SELECT clock_timestamp() AS now`;
+    const cutoff = new Date(now.getTime() - 86400000);
+    let cursor: string | undefined;
+    for (;;) {
+      const failures = await this.database.client.loginFailure.findMany({
+        where: { occurredAt: { lt: cutoff }, ...(cursor ? { id: { gt: cursor } } : {}) },
+        orderBy: { id: 'asc' },
+        take: 250,
+        select: { id: true, usernameKey: true, ipKey: true },
+      });
+      if (failures.length === 0) break;
+      const securityLocks: LockResource[] = failures.flatMap((failure) => [
+        { kind: 'security', key: `username:${failure.usernameKey}`, mode: 'exclusive' },
+        { kind: 'security', key: `ip:${failure.ipKey}`, mode: 'exclusive' },
+      ]);
+      // These logical keys also synchronize matching/missing throttle rows. acquire() deduplicates them.
+      await this.database.write(
+        securityLocks,
+        async () => {},
+        async (context) => {
+          const decisionTime = await context.now();
+          await context.db.$executeRaw(Prisma.sql`DELETE FROM login_failure f
+          WHERE f.id IN (${Prisma.join(failures.map((failure) => Prisma.sql`${failure.id}::uuid`))})
+          AND occurred_at < ${new Date(decisionTime.getTime() - 86400000)}
+          AND NOT EXISTS (SELECT 1 FROM login_throttle_key k WHERE k.blocked_until > ${decisionTime}
+            AND ((k.kind='USERNAME' AND k.key=f.username_key) OR (k.kind='IP' AND k.key=f.ip_key)))`);
+        },
+      );
+      cursor = failures[failures.length - 1].id;
+    }
   }
   async onModuleDestroy(): Promise<void> {
     await this.database?.close();

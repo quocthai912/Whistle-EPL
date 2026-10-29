@@ -1,6 +1,8 @@
 import { randomUUID, randomBytes } from 'node:crypto';
 import { DatabaseService } from '../../src/platform/database.service';
 import { TechnicalCleanupService } from '../../src/operations/technical-cleanup.service';
+import { Pool } from 'pg';
+import { waitForBlockedBy } from '../fixtures/test-clock';
 
 describe('hourly eligible technical cleanup', () => {
   const database = new DatabaseService(process.env.TEST_DATABASE_URL!);
@@ -97,5 +99,48 @@ describe('hourly eligible technical cleanup', () => {
     expect(
       await database.client.commandReceipt.count({ where: { id: { in: [fresh.id, pending.id] } } }),
     ).toBe(2);
+  });
+  it('never deletes failures inserted after candidate selection without acquiring their security keys', async () => {
+    const suffix = randomUUID();
+    const candidateId = `f${suffix.slice(1)}`;
+    const lateId = `0${suffix.slice(1)}`;
+    const usernameKey = `batch.${suffix}`;
+    const lateUsername = `late.${suffix}`;
+    const old = new Date(Date.now() - 90000000);
+    const observer = new Pool({ connectionString: process.env.TEST_DATABASE_URL });
+    const blocker = await observer.connect();
+    let pending: Promise<void> | undefined;
+    try {
+      await database.client.loginFailure.create({
+        data: { id: candidateId, usernameKey, ipKey: `ip.${suffix}`, occurredAt: old },
+      });
+      await blocker.query('BEGIN');
+      const pid = (await blocker.query('SELECT pg_backend_pid() pid')).rows[0].pid;
+      await blocker.query('SELECT pg_advisory_xact_lock(hashtextextended($1,0))', [
+        `security:username:${usernameKey}`,
+      ]);
+      pending = new TechnicalCleanupService(database).execute();
+      await waitForBlockedBy(observer, pid);
+      await database.client.loginFailure.create({
+        data: {
+          id: lateId,
+          usernameKey: lateUsername,
+          ipKey: `late-ip.${suffix}`,
+          occurredAt: old,
+        },
+      });
+      await blocker.query('COMMIT');
+      await pending;
+      expect(await database.client.loginFailure.count({ where: { id: lateId } })).toBe(1);
+      expect(await database.client.loginFailure.count({ where: { id: candidateId } })).toBe(0);
+    } finally {
+      await blocker.query('ROLLBACK');
+      blocker.release();
+      await pending?.catch(() => {});
+      await database.client.loginFailure.deleteMany({
+        where: { id: { in: [candidateId, lateId] } },
+      });
+      await observer.end();
+    }
   });
 });

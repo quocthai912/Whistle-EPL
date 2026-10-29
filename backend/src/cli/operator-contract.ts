@@ -28,13 +28,19 @@ export function recoveryInput(input: RecoveryInput): RecoveryInput {
 export function operatorIdentity(context: {
   uid: number;
   username: string;
-  sudoUid?: string;
-  sudoUser?: string;
+  loginUid?: string;
 }): string {
   if (context.uid === 0) {
-    if (!context.sudoUid || !/^[1-9][0-9]*$/.test(context.sudoUid) || !context.sudoUser)
-      throw new Error('Use an individually authenticated sudo operator.');
-    return `uid:${context.sudoUid}:${context.sudoUser} via root`;
+    // The caller reads this from Linux audit state, never from SUDO_* environment values.
+    if (
+      !context.loginUid ||
+      !/^[1-9][0-9]*$/.test(context.loginUid) ||
+      Number(context.loginUid) >= 4294967295
+    )
+      throw new Error(
+        'A kernel-established individual audit login UID is required for root execution.',
+      );
+    return `loginuid:${context.loginUid} via uid:0:${context.username}`;
   }
   if (!Number.isSafeInteger(context.uid) || context.uid < 1 || !context.username)
     throw new Error('Authenticated host identity required.');

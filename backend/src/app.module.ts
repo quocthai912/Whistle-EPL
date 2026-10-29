@@ -16,8 +16,9 @@ class HealthController {
 class ReadinessController {
   @Get()
   async ready(): Promise<{ status: string }> {
-    const database = new DatabaseService(process.env.DATABASE_URL ?? '');
+    let database: DatabaseService | undefined;
     try {
+      database = new DatabaseService(process.env.DATABASE_URL ?? '');
       const state = await database.client.maintenanceState.findUniqueOrThrow({
         where: { singletonId: 1 },
       });
@@ -30,7 +31,7 @@ class ReadinessController {
     } catch {
       throw new ServiceUnavailableException('Hệ thống chưa sẵn sàng.');
     } finally {
-      await database.close();
+      await database?.close();
     }
   }
 }

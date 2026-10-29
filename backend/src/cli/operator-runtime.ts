@@ -2,6 +2,15 @@ import { userInfo } from 'node:os';
 import { randomUUID } from 'node:crypto';
 import { operatorIdentity } from './operator-contract';
 import { DatabaseService } from '../platform/database.service';
+import { readFile } from 'node:fs/promises';
+import { ApplicationError } from '../platform/application-error';
+
+export function operatorErrorKind(error: unknown): string {
+  if (error instanceof ApplicationError) return 'APPLICATION_ERROR';
+  if (error instanceof TypeError) return 'TYPE_ERROR';
+  if (error instanceof RangeError) return 'RANGE_ERROR';
+  return error instanceof Error ? 'OPERATOR_ERROR' : 'UNKNOWN_ERROR';
+}
 
 export async function runOperator(
   action: (database: DatabaseService, identity: string) => Promise<unknown>,
@@ -13,18 +22,18 @@ export async function runOperator(
     // No argv/environment display-name can replace the kernel-authenticated identity.
     if (process.platform !== 'linux' || !process.getuid)
       throw new Error('Reference Linux host required.');
+    const uid = process.getuid();
     const identity = operatorIdentity({
-      uid: process.getuid(),
+      uid,
       username: userInfo().username,
-      sudoUid: process.env.SUDO_UID,
-      sudoUser: process.env.SUDO_USER,
+      loginUid: uid === 0 ? (await readFile('/proc/self/loginuid', 'utf8')).trim() : undefined,
     });
     database = new DatabaseService(process.env.DATABASE_URL ?? '');
     await action(database, identity);
     console.log(`Operation completed. Correlation: ${correlation}`);
-  } catch {
+  } catch (error) {
     console.error(
-      `Operation failed. Check operator authorization, input and maintenance status. Correlation: ${correlation}`,
+      `Operation failed (${operatorErrorKind(error)}). Check operator authorization, input and maintenance status. Correlation: ${correlation}`,
     );
     process.exitCode = 1;
   } finally {
@@ -46,7 +55,7 @@ export function commandArguments(allowed: readonly string[]): Record<string, str
       !allowed.includes(key) ||
       key in result ||
       args[index + 1] === undefined ||
-      args[index + 1].startsWith('--')
+      allowed.includes(args[index + 1])
     )
       throw new Error('Invalid command arguments.');
     result[key] = args[index + 1];
