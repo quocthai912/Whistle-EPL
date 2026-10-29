@@ -3,8 +3,11 @@ import { DatabaseService } from './platform/database.service';
 import { AdmissionService } from './platform/admission.service';
 import { ScheduleModule } from '@nestjs/schedule';
 import { TechnicalCleanupService } from './operations/technical-cleanup.service';
+import { AuthController } from './identity-access/auth.controller';
+import { CsrfService } from './identity-access/csrf.service';
+import { AuthService } from './identity-access/auth.service';
 
-@Controller('health')
+@Controller(['health', 'api/v1/health'])
 class HealthController {
   @Get()
   health(): { status: string } {
@@ -12,7 +15,7 @@ class HealthController {
   }
 }
 
-@Controller('ready')
+@Controller(['ready', 'api/v1/ready'])
 class ReadinessController {
   @Get()
   async ready(): Promise<{ status: string }> {
@@ -38,8 +41,23 @@ class ReadinessController {
 
 @Module({
   imports: [ScheduleModule.forRoot()],
-  controllers: [HealthController, ReadinessController],
+  controllers: [HealthController, ReadinessController, AuthController],
   providers: [
+    {
+      provide: DatabaseService,
+      useFactory: () =>
+        process.env.DATABASE_URL ? new DatabaseService(process.env.DATABASE_URL) : null,
+    },
+    {
+      provide: CsrfService,
+      inject: [DatabaseService],
+      useFactory: (database: DatabaseService) => new CsrfService(database),
+    },
+    {
+      provide: AuthService,
+      inject: [DatabaseService],
+      useFactory: (database: DatabaseService) => new AuthService(database),
+    },
     {
       provide: TechnicalCleanupService,
       useFactory: () =>

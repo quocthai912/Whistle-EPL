@@ -11,6 +11,8 @@ Read with [spec.md](spec.md), [REST contract](contracts/rest.md) and the authori
 [D096 security additions](../../context/design/architecture.md#security-support-dictionary-completion).
 Physical names use snake_case; logical names retain the approved vocabulary.
 
+**Local authentication extension:** T024 adds migration `202610290002_login_failure_sequence` and technical `LoginFailure.usernameSequenceActive` to distinguish pre-success username failures even at equal clock instants, retaining original username/IP/time evidence and unchanged IP/retention rules. See [authentication verification](../../docs/verification/phase-1/authentication.md); no business constraint is amended.
+
 ## Common Representation and Constraints
 
 Independently identified rows use backend UUID v4 IDs and server createdAt timestamps.

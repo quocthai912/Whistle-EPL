@@ -7,6 +7,8 @@ recovery acceptance remain pending. See [setup evidence](../../docs/verification
 [foundation evidence](../../docs/verification/phase-1/foundation.md) and [Task status](tasks.md);
 this guide does not replace their actual execution results.
 
+**Local authentication update (2026-10-29):** T023–T026 are implemented and locally verified without commit/push; see [authentication evidence](../../docs/verification/phase-1/authentication.md) for current commands/results and required Origin/proxy configuration. Historical published command counts below describe `7ac09e6`, not this working-tree test run. T027–T048 and Phase acceptance remain pending.
+
 ## Prerequisites and Isolation
 
 Use the exact Node.js 24/pnpm/package/image pins and native-install policy recorded during

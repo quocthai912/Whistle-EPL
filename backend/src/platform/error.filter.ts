@@ -8,6 +8,7 @@ import {
 import { randomUUID } from 'node:crypto';
 import type { Response } from 'express';
 import { ApplicationError } from './application-error';
+import { clearAuthCookie, SESSION_COOKIE } from '../identity-access/csrf.service';
 
 const failures: Record<number, { code: string; message: string }> = {
   400: { code: 'INVALID_INPUT', message: 'Dữ liệu không hợp lệ.' },
@@ -49,6 +50,11 @@ export class SafeErrorFilter implements ExceptionFilter {
             message: 'Có lỗi hệ thống. Vui lòng thử lại sau.',
           });
     response.setHeader('Cache-Control', 'no-store');
+    if (
+      status === 401 &&
+      ['AUTH_REQUIRED', 'SESSION_EXPIRED', 'PERMISSION_CHANGED'].includes(safe.code)
+    )
+      clearAuthCookie(response, SESSION_COOKIE);
     response.status(status).json({ error: safe, requestId });
   }
 }
