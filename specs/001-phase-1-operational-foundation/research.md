@@ -7,6 +7,7 @@ their findings against the approved Specification and Context.
 
 **Execution follow-up (2026-10-29)**: T001–T014 are verified and published at `892f172`;
 T015–T022 operator/deployment/recovery work is implemented, verified and published at [`7ac09e6`](https://github.com/quocthai912/Whistle-EPL/commit/7ac09e6cec9fb434248c82db142ab04695961823) on `feat/phase-1-operations-recovery` (review base `30506e3`), with [operator evidence](../../docs/verification/phase-1/operator-foundation.md); the live remote branch and all 68 manifest entries were verified against that commit.
+T023–T026 authentication/session/throttle work is implemented, verified and published at [`5cfa666`](https://github.com/quocthai912/Whistle-EPL/commit/5cfa666a7550c9b1d06cc21926dba7e2f27c1a26) on `feat/phase-1-authentication-backend` (review base `7e28810`); see [authentication evidence](../../docs/verification/phase-1/authentication.md). The live remote ref and all 28 authentication manifest entries match that commit. T027–T048 and Phase acceptance remain pending.
 [Task status](tasks.md) and the [Phase ledger](../../context/progress-checker.md#phase-1-execution-evidence---2026-10-29)
 own current progress. Planning-time execution deliverables below describe what research did
 not execute; use the [open register](../../context/open-decisions.md) for what remains unresolved now.

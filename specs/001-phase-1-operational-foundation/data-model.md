@@ -2,16 +2,16 @@
 
 **Status (2026-10-29)**: T005–T008 physical schema and four committed migrations are implemented
 and verified on PostgreSQL 17.11 at published commit `892f172f9ec539d5789a31a2f8046480afe15772`.
-The current review base `30506e3` also includes the fifth delegation-history migration; T015–T022 verified all five in fresh Compose/PG17 replay and checksummed foundation recovery. See [operator evidence](../../docs/verification/phase-1/operator-foundation.md). T015–T022 are published at [`7ac09e6`](https://github.com/quocthai912/Whistle-EPL/commit/7ac09e6cec9fb434248c82db142ab04695961823); publication changes no schema/migration rules.
+The earlier operator review base `30506e3` also includes the fifth delegation-history migration; T015–T022 verified all five in fresh Compose/PG17 replay and checksummed foundation recovery. See [operator evidence](../../docs/verification/phase-1/operator-foundation.md). T015–T022 are published at [`7ac09e6`](https://github.com/quocthai912/Whistle-EPL/commit/7ac09e6cec9fb434248c82db142ab04695961823); publication changes no schema/migration rules.
 See [schema.prisma](../../backend/prisma/schema.prisma), [migrations](../../backend/prisma/migrations/)
 and [verification](../../docs/verification/phase-1/foundation.md). This mapping remains the design
-reference; complete account/session/delegation use-case behavior and Phase acceptance remain pending.
+reference; account/delegation administration, browser authentication and Phase acceptance remain pending.
 Read with [spec.md](spec.md), [REST contract](contracts/rest.md) and the authoritative
 [D095 dictionary](../../context/design/architecture.md#detailed-relational-dictionary)/
 [D096 security additions](../../context/design/architecture.md#security-support-dictionary-completion).
 Physical names use snake_case; logical names retain the approved vocabulary.
 
-**Local authentication extension:** T024 adds migration `202610290002_login_failure_sequence` and technical `LoginFailure.usernameSequenceActive` to distinguish pre-success username failures even at equal clock instants, retaining original username/IP/time evidence and unchanged IP/retention rules. See [authentication verification](../../docs/verification/phase-1/authentication.md); no business constraint is amended.
+**Published authentication extension:** T023–T026 are verified and published at [`5cfa666`](https://github.com/quocthai912/Whistle-EPL/commit/5cfa666a7550c9b1d06cc21926dba7e2f27c1a26) on `feat/phase-1-authentication-backend`. T024 adds migration `202610290002_login_failure_sequence` and technical `LoginFailure.usernameSequenceActive` to distinguish pre-success username failures even at equal clock instants, retaining original username/IP/time evidence and unchanged IP/retention rules. See [authentication verification](../../docs/verification/phase-1/authentication.md); no business constraint is amended.
 
 ## Common Representation and Constraints
 

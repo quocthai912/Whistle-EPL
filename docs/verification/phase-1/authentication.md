@@ -2,11 +2,17 @@
 
 **Date:** 2026-10-29 (Asia/Bangkok). **Execution/review:** Codex, with independent
 Standards and Spec reviewer agents. **Scope:** T023–T026 / Issues #28–#31 only.
-**Source:** uncommitted working tree based on `7e28810f69ef06a7eddf4c9dc62b4432e63b962d`;
-see [LF-normalized source manifest](authentication-source-sha256.txt). This is local
-implementation/test evidence, not publication, Team Leader acceptance or PHASE 1 completion.
-Issues #28–#31 were updated with local execution evidence and independently read back as
-Closed with label `completed`; their original approved Task/dependency references remain intact.
+**Published source:** [`5cfa666`](https://github.com/quocthai912/Whistle-EPL/commit/5cfa666a7550c9b1d06cc21926dba7e2f27c1a26) (full SHA `5cfa666a7550c9b1d06cc21926dba7e2f27c1a26`) on `feat/phase-1-authentication-backend`;
+**review base:** `7e28810f69ef06a7eddf4c9dc62b4432e63b962d`.
+The live remote ref was verified at that SHA on 2026-10-29 (Asia/Bangkok).
+[The immutable LF-normalized source manifest](authentication-source-sha256.txt) contains
+28 entries, all verified against files in that published commit. Verification originally
+ran against the precommit working tree; publication preserves that tested snapshot.
+The manifest remains bound to `5cfa666`, including the then-current document bytes,
+rather than this later documentation-only status update. Issues #28–#31 were independently
+read back as Closed with label `completed` and updated with publication evidence.
+This records feature-branch publication, not an integration merge, new test run, deployment,
+CI/protection result or Team Leader/PHASE 1 acceptance.
 
 ## Implemented behavior and acceptance
 
@@ -78,8 +84,8 @@ reported **0 remaining findings**. The final 28 auth/throttle tests include thos
 
 Scoped convergence checks 21 FR references, 5 SC references, 8 US2 acceptance scenarios,
 4 selected Tasks, 12 applicable plan decisions and all 5 constitution principles. No remaining
-T023–T026 gap was found. Convergence leaves tasks.md unchanged and appends no tasks.
-The plan checks cover the locked stack/DB, module ownership, caller transaction, ordered account/security locks, fresh clock, known-rollback retries, maintenance admission, credential-basis recheck, atomic audit, digest-only protected sessions, CSRF/origin/no-store transport and isolated fixtures. The tasks.md SHA-256 remained `6f6028b26dd5cd5f958f25979af1bfd8d282494ae479d5056ec64aabaac7d0b9` across scoped convergence. No extension-hook configuration exists, so implementation/convergence pre/post hooks are not applicable.
+T023–T026 gap was found. That original convergence run left tasks.md unchanged and appended no tasks.
+The plan checks cover the locked stack/DB, module ownership, caller transaction, ordered account/security locks, fresh clock, known-rollback retries, maintenance admission, credential-basis recheck, atomic audit, digest-only protected sessions, CSRF/origin/no-store transport and isolated fixtures. At the original precommit convergence run, the tasks.md SHA-256 remained `6f6028b26dd5cd5f958f25979af1bfd8d282494ae479d5056ec64aabaac7d0b9` across scoped convergence. No extension-hook configuration exists, so implementation/convergence pre/post hooks are not applicable.
 
 Unimplemented T027–T048 are already tracked and are outside this authorization.
 
@@ -99,5 +105,5 @@ separately. `pnpm test:integration` supplies NODE_ENV=test through Jest and refu
 that aliases operational DATABASE_URL. Never run concurrent suites against this same DB:
 they reset fixtures, close maintenance and install temporary failure/wait triggers.
 Run the commands above; no test credentials or database connection strings belong in Git.
-After local verification the disposable test container can be stopped; restarting it and
+The disposable test container was stopped after local verification; restarting it and
 supplying its protected test URL permits reproduction without affecting operational data.

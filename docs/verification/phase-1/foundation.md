@@ -1,5 +1,8 @@
 # T005–T014 foundation verification
 
+**Current authentication follow-up (2026-10-29):** T023–T026 are now verified and published at [`5cfa666`](https://github.com/quocthai912/Whistle-EPL/commit/5cfa666a7550c9b1d06cc21926dba7e2f27c1a26) on `feat/phase-1-authentication-backend`; see [authentication evidence](authentication.md). References below to deferred authentication work describe this report's original snapshot. Current progress and remaining T027–T048 work are owned by the [Phase ledger](../../../context/progress-checker.md#phase-1-execution-evidence---2026-10-29).
+
+
 Date: 2026-10-29 (Asia/Bangkok). Branch: `feat/phase-1-core-foundation`.
 Reviewed base: `75bd41675ca777cdd811e04fae5c30630b837284`.
 **Publication update (2026-10-29):** The user committed and pushed the verified implementation
