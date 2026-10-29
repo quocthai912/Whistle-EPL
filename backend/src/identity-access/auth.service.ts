@@ -30,6 +30,26 @@ export class AuthService {
   ) {
     if (!this.csrf.validId(preloginId)) this.csrf.denied();
     const username = input.username.toLowerCase();
+    // Reject known-invalid attempts before Argon2 work. These unlocked reads are
+    // only an early exit; the transaction below remains authoritative.
+    await this.csrf.requirePrelogin(
+      { db: this.database.client },
+      preloginId,
+      csrfToken,
+      await this.database.now(),
+    );
+    const blocked = await this.database.client.loginThrottleKey.findFirst({
+      where: {
+        OR: [
+          { kind: 'USERNAME', key: username },
+          { kind: 'IP', key: ip },
+        ],
+        blockedUntil: { gt: await this.database.now() },
+      },
+      select: { kind: true },
+    });
+    if (blocked)
+      throw new ApplicationError(429, 'LOGIN_THROTTLED', 'Vui lòng thử lại sau 15 phút.');
     const basis = await this.database.client.account.findUnique({ where: { username } });
     const verified = await this.security.verifyPassword(
       basis?.passwordHash ?? (await this.dummyHash),

@@ -107,3 +107,28 @@ they reset fixtures, close maintenance and install temporary failure/wait trigge
 Run the commands above; no test credentials or database connection strings belong in Git.
 The disposable test container was stopped after local verification; restarting it and
 supplying its protected test URL permits reproduction without affecting operational data.
+
+## PR review follow-up — 2026-10-29
+
+The two supplied CodeRabbit findings were confirmed against base
+`31ea2d98bf664a5c1e0aea451194f0284503ceca` and corrected in the uncommitted working tree:
+login now reads prelogin validity/CSRF and live username/IP blocks before Argon2 verification,
+while retaining the locked transaction as the authoritative decision; Compose now requires
+`PRIVATE_DYNAMIC_RANGE` inside `PRIVATE_SUBNET`, excluding `CADDY_PRIVATE_IP`. The environment
+inventory and installation instructions document this allocation constraint and existing-profile
+migration without deleting named volumes. The published snapshot/manifest above is unchanged.
+
+Two new PostgreSQL-backed regressions first failed because rejected prelogin/blocked attempts
+entered the password verifier, then passed after the fix. They cover absent/consumed/expired
+prelogin, forged CSRF, both throttle-key kinds, exact block expiry and unchanged security state.
+Final Windows checks pass: 55 PG17 integration tests, 15 backend unit tests, 8 frontend tests,
+root lint/typecheck/format/build and generated-client compatibility. Compose configuration passes;
+a disposable Docker network with dynamic `172.31.245.128/25` allocates `172.31.245.129` while
+the reserved static `172.31.245.10` remains available. These are isolated test values.
+
+CodeRabbit CLI 0.8.0 was invoked with `coderabbit review --agent --uncommitted` after explicit
+user authorization to send the diff and related source context to CodeRabbit. It completed
+successfully with **0 findings** across the seven changed source/test/configuration/operator-doc
+files; this verification-note addition followed that review. The local structured output is
+retained in ignored `.verification/coderabbit-auth-preflight-review.jsonl`.
+This follow-up does not claim commit/push, new deployment or PHASE 1 acceptance.

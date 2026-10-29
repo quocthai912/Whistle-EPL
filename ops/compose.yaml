@@ -61,6 +61,7 @@ networks:
     ipam:
       config:
         - subnet: ${PRIVATE_SUBNET:?Dedicated non-overlapping private IPv4 subnet required}
+          ip_range: ${PRIVATE_DYNAMIC_RANGE:?Dynamic IPv4 range excluding reserved Caddy address required}
   edge: {}
 volumes:
   database: {}

@@ -57,7 +57,7 @@ export class CsrfService {
     );
   }
   async requirePrelogin(
-    context: TransactionContext,
+    context: Pick<TransactionContext, 'db'>,
     id: string,
     token: string,
     now: Date,

@@ -80,6 +80,92 @@ describe('authentication HTTP contract', () => {
       .set('X-CSRF-Token', pre.body.data.csrfToken)
       .send({ username, password: credential });
   }
+  it('rejects invalid prelogin protection without entering expensive password verification', async () => {
+    class UnavailableVerifier extends SecurityPrimitivesService {
+      override async verifyPassword(): Promise<boolean> {
+        throw new Error('Password verifier must not be reached for rejected preflight.');
+      }
+    }
+    const auth = new AuthService(database, new UnavailableVerifier());
+    const consumed = await auth.csrf.bootstrap();
+    await database.client.preloginCsrfContext.update({
+      where: { id: consumed.id },
+      data: { consumedAt: new Date('2026-10-29T03:00:00Z') },
+    });
+    const expired = await auth.csrf.bootstrap();
+    await database.client.preloginCsrfContext.update({
+      where: { id: expired.id },
+      data: {
+        createdAt: new Date('2026-10-29T02:45:00Z'),
+        expiresAt: new Date('2026-10-29T03:00:00Z'),
+      },
+    });
+    const live = await auth.csrf.bootstrap();
+    for (const context of [
+      { id: 'invalid', csrfToken: live.csrfToken },
+      { id: '9780c1be-de84-4c6e-bfd3-9e61d700b891', csrfToken: live.csrfToken },
+      consumed,
+      expired,
+      { id: live.id, csrfToken: 'forged' },
+    ]) {
+      await expect(
+        auth.login(
+          { username: 'preflight.unknown', password },
+          '192.0.2.171',
+          context.id,
+          context.csrfToken,
+        ),
+      ).rejects.toMatchObject({ status: 403, code: 'CSRF_REJECTED' });
+    }
+    expect(
+      await database.client.loginFailure.count({ where: { usernameKey: 'preflight.unknown' } }),
+    ).toBe(0);
+    expect(
+      (await database.client.preloginCsrfContext.findUniqueOrThrow({ where: { id: live.id } }))
+        .consumedAt,
+    ).toBeNull();
+  });
+  it('rejects existing username and IP blocks before password verification without mutating security state', async () => {
+    class UnavailableVerifier extends SecurityPrimitivesService {
+      override async verifyPassword(): Promise<boolean> {
+        throw new Error('Password verifier must not be reached for a live block.');
+      }
+    }
+    const auth = new AuthService(database, new UnavailableVerifier());
+    const blockedUntil = new Date('2026-10-29T03:15:00Z');
+    for (const [kind, username, ip] of [
+      ['USERNAME', 'preflight.blocked.user', '192.0.2.172'],
+      ['IP', 'preflight.blocked.ip', '192.0.2.173'],
+    ]) {
+      const key = kind === 'USERNAME' ? username : ip;
+      await database.client.loginThrottleKey.create({ data: { kind, key, blockedUntil } });
+      const pre = await auth.csrf.bootstrap();
+      await expect(
+        auth.login({ username, password }, ip, pre.id, pre.csrfToken),
+      ).rejects.toMatchObject({ status: 429, code: 'LOGIN_THROTTLED' });
+      expect(
+        (
+          await database.client.loginThrottleKey.findUniqueOrThrow({
+            where: { kind_key: { kind, key } },
+          })
+        ).blockedUntil,
+      ).toEqual(blockedUntil);
+      expect(await database.client.loginFailure.count({ where: { usernameKey: username } })).toBe(
+        0,
+      );
+      expect(
+        (await database.client.preloginCsrfContext.findUniqueOrThrow({ where: { id: pre.id } }))
+          .consumedAt,
+      ).toBeNull();
+      // Equality ends the precheck block and still reaches the authoritative transaction.
+      clock.set(blockedUntil);
+      const renewed = await auth.csrf.bootstrap();
+      await expect(
+        new AuthService(database).login({ username, password }, ip, renewed.id, renewed.csrfToken),
+      ).rejects.toMatchObject({ status: 401, code: 'LOGIN_FAILED' });
+      clock.set(new Date('2026-10-29T03:00:00Z'));
+    }
+  });
   it('bootstraps a protected no-store prelogin context and reuses it across tabs', async () => {
     const first = await request(app.getHttpServer()).get('/api/v1/auth/csrf').expect(200);
     expect(first.headers['cache-control']).toBe('no-store');
