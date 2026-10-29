@@ -1,4 +1,12 @@
-import { Controller, Post, Body, Module, type INestApplication } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  Module,
+  Logger,
+  BadRequestException,
+  type INestApplication,
+} from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { IsString } from 'class-validator';
 import request from 'supertest';
@@ -16,6 +24,12 @@ class TestController {
   }
   @Post('failure') fail() {
     throw new Error('password=secret SQL SELECT stack');
+  }
+  @Post('property') property(@Body('fullName') fullName: string) {
+    return { fullName };
+  }
+  @Post('expected') expected() {
+    throw new BadRequestException('internal diagnostic');
   }
 }
 @Module({ controllers: [TestController] })
@@ -55,5 +69,37 @@ describe('safe HTTP validation and failure interface', () => {
       .expect(201);
     expect(response.body.data).toEqual({ fullName: 'Nhân viên kiểm thử' });
     expect(response.body.requestId).toMatch(/^[a-f0-9-]{36}$/);
+  });
+  it('preserves property-bound body values while still rejecting non-object whole bodies', async () => {
+    const response = await request(app.getHttpServer())
+      .post('/api/v1/test/property')
+      .send({ fullName: 'Nhân viên kiểm thử' })
+      .expect(201);
+    expect(response.body.data).toEqual({ fullName: 'Nhân viên kiểm thử' });
+    await request(app.getHttpServer()).post('/api/v1/test').send([]).expect(400);
+  });
+  it('logs only a safe unexpected-error event with the client trace identifier', async () => {
+    const log = jest.spyOn(Logger.prototype, 'error').mockImplementation(() => {});
+    try {
+      const response = await request(app.getHttpServer())
+        .post('/api/v1/test/failure')
+        .send({})
+        .expect(500);
+      expect(log).toHaveBeenCalledWith({
+        event: 'UNEXPECTED_EXCEPTION',
+        requestId: response.body.requestId,
+      });
+      expect(JSON.stringify(log.mock.calls)).not.toMatch(/password|secret|SELECT|stack/);
+      expect(response.body.error).toEqual({
+        code: 'INTERNAL_ERROR',
+        message: 'Có lỗi hệ thống. Vui lòng thử lại sau.',
+      });
+      log.mockClear();
+      await request(app.getHttpServer()).post('/api/v1/test/expected').send({}).expect(400);
+      await request(app.getHttpServer()).post('/api/v1/test').send([]).expect(400);
+      expect(log).not.toHaveBeenCalled();
+    } finally {
+      log.mockRestore();
+    }
   });
 });

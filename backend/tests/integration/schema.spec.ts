@@ -58,7 +58,9 @@ describe('deployed PostgreSQL foundation schema', () => {
     ]);
   });
 
-  it('matches the intended Prisma schema after committed deployment', () => {
+  const compareIntendedSchema = () => {
+    const databaseUrl = new URL(process.env.TEST_DATABASE_URL!);
+    databaseUrl.searchParams.set('schema', schema);
     const result = execFileSync(
       process.execPath,
       [
@@ -72,12 +74,31 @@ describe('deployed PostgreSQL foundation schema', () => {
         '--exit-code',
       ],
       {
-        env: { ...process.env, DATABASE_URL: process.env.TEST_DATABASE_URL },
+        env: { ...process.env, DATABASE_URL: databaseUrl.toString() },
         encoding: 'utf8',
         timeout: 15000,
       },
     );
-    expect(result).toContain('This is an empty migration');
+    return result;
+  };
+
+  it('matches the intended Prisma schema after committed deployment', () => {
+    expect(compareIntendedSchema()).toContain('This is an empty migration');
+  });
+
+  it('detects drift in the temporary schema where migrations were replayed', async () => {
+    await db.query('ALTER TABLE account ADD COLUMN replay_schema_probe TEXT');
+    try {
+      let exitStatus: number | undefined;
+      try {
+        compareIntendedSchema();
+      } catch (error) {
+        exitStatus = (error as { status?: number }).status;
+      }
+      expect(exitStatus).toBe(2);
+    } finally {
+      await db.query('ALTER TABLE account DROP COLUMN replay_schema_probe');
+    }
   });
 
   it('enforces identity, digest/CSRF shapes, exact expiry and historical references', async () => {
@@ -202,6 +223,43 @@ describe('deployed PostgreSQL foundation schema', () => {
         caseId,
       ]),
     ).rejects.toMatchObject({ code: '23503' });
+    const grantId = (
+      await db.query('SELECT id FROM delegation_grant WHERE approved_version_id=$1', [first])
+    ).rows[0].id;
+    // An unreferenced grant must retain history just like one with processed boundaries.
+    await expect(
+      db.query('DELETE FROM delegation_grant WHERE id=$1', [grantId]),
+    ).rejects.toMatchObject({ code: '23514' });
+    await db.query(
+      "UPDATE delegation_grant SET revoked_at='2027-01-01T12:00:00Z',revoked_by=$2 WHERE id=$1",
+      [grantId, recorder],
+    );
+    await db.query(
+      "UPDATE delegation_grant SET revoked_at='2027-01-01T12:00:00Z',revoked_by=$2 WHERE id=$1",
+      [grantId, recorder],
+    );
+    for (const assignment of [
+      'revoked_at=NULL',
+      "revoked_at='2027-01-01T13:00:00Z'",
+      'revoked_by=NULL',
+    ])
+      await expect(
+        db.query(`UPDATE delegation_grant SET ${assignment} WHERE id=$1`, [grantId]),
+      ).rejects.toMatchObject({ code: '23514' });
+    await expect(
+      db.query('UPDATE delegation_grant SET revoked_by=$2 WHERE id=$1', [grantId, recipient]),
+    ).rejects.toMatchObject({ code: '23514' });
+    await db.query("UPDATE delegation_grant SET terminated_at='2027-01-01T14:00:00Z' WHERE id=$1", [
+      grantId,
+    ]);
+    for (const assignment of [
+      'terminated_at=NULL',
+      "terminated_at='2027-01-01T15:00:00Z'",
+      "ends_at='2027-01-04'",
+    ])
+      await expect(
+        db.query(`UPDATE delegation_grant SET ${assignment} WHERE id=$1`, [grantId]),
+      ).rejects.toMatchObject({ code: '23514' });
   });
 
   it('rejects incomplete receipt outcomes and preserves append-only audit records', async () => {

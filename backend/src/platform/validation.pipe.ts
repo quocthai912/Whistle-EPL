@@ -27,6 +27,7 @@ export class SafeValidationPipe extends ValidationPipe {
   override async transform(value: unknown, metadata: ArgumentMetadata): Promise<unknown> {
     if (
       metadata.type === 'body' &&
+      metadata.data === undefined &&
       (value === null || typeof value !== 'object' || Array.isArray(value))
     ) {
       throw new ApplicationError(400, 'VALIDATION_FAILED', 'Dữ liệu phải là một đối tượng.');

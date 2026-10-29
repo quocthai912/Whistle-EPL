@@ -1,4 +1,10 @@
-import { Catch, HttpException, type ArgumentsHost, type ExceptionFilter } from '@nestjs/common';
+import {
+  Catch,
+  HttpException,
+  Logger,
+  type ArgumentsHost,
+  type ExceptionFilter,
+} from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
 import type { Response } from 'express';
 import { ApplicationError } from './application-error';
@@ -16,8 +22,15 @@ const failures: Record<number, { code: string; message: string }> = {
 
 @Catch()
 export class SafeErrorFilter implements ExceptionFilter {
+  private readonly logger = new Logger(SafeErrorFilter.name);
+
   catch(exception: unknown, host: ArgumentsHost): void {
     const response = host.switchToHttp().getResponse<Response>();
+    const requestId = response.locals.requestId ?? randomUUID();
+    if (!(exception instanceof ApplicationError) && !(exception instanceof HttpException)) {
+      // Exception messages, stacks and request content may contain credentials.
+      this.logger.error({ event: 'UNEXPECTED_EXCEPTION', requestId });
+    }
     const status =
       exception instanceof ApplicationError
         ? exception.status
@@ -36,8 +49,6 @@ export class SafeErrorFilter implements ExceptionFilter {
             message: 'Có lỗi hệ thống. Vui lòng thử lại sau.',
           });
     response.setHeader('Cache-Control', 'no-store');
-    response
-      .status(status)
-      .json({ error: safe, requestId: response.locals.requestId ?? randomUUID() });
+    response.status(status).json({ error: safe, requestId });
   }
 }
