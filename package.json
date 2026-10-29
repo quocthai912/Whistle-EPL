@@ -8,6 +8,13 @@
     "pnpm": "10.33.2"
   },
   "scripts": {
+    "admin:bootstrap": "node backend/dist/cli/bootstrap-admin.js",
+    "admin:recover": "node backend/dist/cli/recover-admin.js",
+    "ops:maintenance": "bash ops/backup/maintenance.sh",
+    "ops:backup": "bash ops/backup/backup.sh",
+    "ops:restore": "bash ops/backup/restore.sh",
+    "ops:verify": "bash ops/backup/verify-foundation.sh",
+    "test:ops": "python -m unittest discover -s ops/backup/tests",
     "db:validate": "pnpm --filter @whistle-epl/backend run db:validate",
     "db:generate": "pnpm --filter @whistle-epl/backend run db:generate",
     "db:migrate": "pnpm --filter @whistle-epl/backend run db:migrate",
@@ -16,10 +23,10 @@
     "verify:native": "pnpm --filter @whistle-epl/backend exec node scripts/verify-native.cjs",
     "verify:client": "pnpm --filter @whistle-epl/backend exec node scripts/verify-client.cjs",
     "verify:commands": "node --test docs/verification/phase-1/root-commands.test.mjs",
-    "lint": "pnpm -r --no-bail run lint && pnpm exec eslint eslint.config.mjs",
+    "lint": "pnpm -r --no-bail run lint && pnpm exec eslint eslint.config.mjs ops/backup/*.cjs",
     "typecheck": "pnpm db:generate && pnpm -r --no-bail run typecheck",
-    "format": "prettier --write \"{frontend,backend}/**/*.{ts,tsx,js,cjs,mjs,json,css,html}\" package.json pnpm-workspace.yaml eslint.config.mjs .prettierrc.json",
-    "format:check": "prettier --check \"{frontend,backend}/**/*.{ts,tsx,js,cjs,mjs,json,css,html}\" package.json pnpm-workspace.yaml eslint.config.mjs .prettierrc.json",
+    "format": "prettier --write \"{frontend,backend,ops}/**/*.{ts,tsx,js,cjs,mjs,json,css,html}\" package.json pnpm-workspace.yaml eslint.config.mjs .prettierrc.json",
+    "format:check": "prettier --check \"{frontend,backend,ops}/**/*.{ts,tsx,js,cjs,mjs,json,css,html}\" package.json pnpm-workspace.yaml eslint.config.mjs .prettierrc.json",
     "build": "pnpm db:generate && pnpm -r --no-bail run build && pnpm verify:client",
     "test": "pnpm test:unit",
     "test:unit": "pnpm db:generate && pnpm -r --no-bail run test:unit"

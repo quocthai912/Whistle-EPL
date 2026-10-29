@@ -6,6 +6,7 @@ toolchain reproducibility and security/transaction mechanisms; the main agent re
 their findings against the approved Specification and Context.
 
 **Execution follow-up (2026-10-29)**: T001–T014 are verified and published at `892f172`;
+T015–T022 operator/deployment/recovery work is implemented and verified locally against `30506e3`, with [operator evidence](../../docs/verification/phase-1/operator-foundation.md); its working tree is uncommitted.
 [Task status](tasks.md) and the [Phase ledger](../../context/progress-checker.md#phase-1-execution-evidence---2026-10-29)
 own current progress. Planning-time execution deliverables below describe what research did
 not execute; use the [open register](../../context/open-decisions.md) for what remains unresolved now.

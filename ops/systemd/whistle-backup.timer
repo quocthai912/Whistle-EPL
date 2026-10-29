@@ -1,0 +1,11 @@
+[Unit]
+Description=Whistle-EPL daily 03:00 Vietnam backup and catch-up
+
+[Timer]
+OnCalendar=*-*-* 03:00:00 Asia/Ho_Chi_Minh
+Persistent=true
+AccuracySec=1s
+Unit=whistle-backup.service
+
+[Install]
+WantedBy=timers.target

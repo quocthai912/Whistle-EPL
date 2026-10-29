@@ -6,7 +6,7 @@
 documents published by the Team Leader at b8e6e15b27ed8446cc60dba94bf1a0b0259e51b2;
 all 48 Task Issues are published and linked in tasks.md. **Implementation is IN_PROGRESS**:
 T001–T014 are verified and published at [892f172](https://github.com/quocthai912/Whistle-EPL/commit/892f172f9ec539d5789a31a2f8046480afe15772)
-on `feat/phase-1-core-foundation` (2026-10-29); T015–T048 and Phase acceptance remain pending.
+on `feat/phase-1-core-foundation` (2026-10-29). T015–T022 are implemented/verified locally against review base `30506e3`; see [operator evidence](../../docs/verification/phase-1/operator-foundation.md). T023–T048, working-tree publication and Phase acceptance remain pending.
 See [tasks.md](tasks.md), [foundation verification](../../docs/verification/phase-1/foundation.md)
 and the [current Phase ledger](../../context/progress-checker.md#phase-1-execution-evidence---2026-10-29).
 
@@ -79,8 +79,8 @@ it does not mark PHASE 1/G0 execution complete. Future implementation changes re
 
 ### Source Code (repository root)
 
-The following is the planned full-feature layout. T001–T014 now implement its setup/shared
-foundation paths; remaining paths are delivered by their pending Tasks. Planning itself
+The following is the planned full-feature layout. T001–T022 now implement its setup/shared/operator
+foundation paths; remaining authentication/administration/audit UI and acceptance paths are delivered by T023–T048. Planning itself
 did not generate application files.
 
 ```text
@@ -212,15 +212,13 @@ No mandatory human review count is added; Reviewer Agent review may supplement C
 ## Validation and Remaining Execution Inputs
 
 [quickstart.md](quickstart.md) defines the intended command contract and acceptance walkthroughs.
-Its setup/shared-foundation commands have now been exercised as recorded in the linked
-verification reports; operational, workflow, browser/load and final acceptance scenarios
-remain pending. Test-first sequencing is mandatory where the Task/Spec requires it and may
+Its setup/shared-foundation and T015–T022 operator/local-deployment commands have been exercised as recorded in the linked verification reports. Remaining workflow, browser/load, full clean-host and elapsed operational acceptance scenarios remain pending. Test-first sequencing is mandatory where the Task/Spec requires it and may
 also be explicitly selected for an implementation session; it is not a universal constitutional rule.
 
-O08 credential handoff and remaining credential workflows; O12 remaining application/deployment
+O08 actual confidential handoff and remaining credential workflows (the runbook is delivered); O12 remaining application/deployment
 verification; O13 remaining browser/load/workflow measurements; and O14 target certificates/proxy/
 credentials/off-host destination remain owned implementation/operator deliverables. Corpus provenance,
-toolchain/native compatibility and shared-foundation verification are recorded T001–T014 evidence.
+toolchain/native compatibility and shared-foundation verification are recorded T001–T014 evidence; T015–T022 operator/deployment/recovery implementation and local checks are recorded in the operator report.
 The [open register](../../context/open-decisions.md) owns the remaining inputs. There are no
 unresolved architecture choices or NEEDS CLARIFICATION placeholders. These execution inputs must
 not be silently reported as supplied or as acceptance. Exact pins are a verification deliverable,

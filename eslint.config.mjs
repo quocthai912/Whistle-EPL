@@ -30,7 +30,7 @@ export default tseslint.config(
     },
   },
   {
-    files: ['backend/**/*.cjs'],
+    files: ['backend/**/*.cjs', 'ops/**/*.cjs'],
     languageOptions: {
       globals: {
         require: 'readonly',
