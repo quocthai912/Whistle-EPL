@@ -1,0 +1,6 @@
+# Vendored provenance checks use upstream bytes on both Windows and Ubuntu.
+backend/resources/password-blocklist/10k-most-common.txt -text
+backend/resources/password-blocklist/LICENSE -text
+ops/backup/*.sh text eol=lf
+ops/backup/*.py text eol=lf
+ops/systemd/* text eol=lf

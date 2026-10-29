@@ -1,0 +1,15 @@
+# Temporary credential handoff
+
+Owner: D081/D008/D011, [administration](../../context/use-cases/administration.md). Apply after bootstrap or verified account reset; never create a shared administrator identity.
+
+1. Verify the staff member and unique personnel code independently. Confirm username, environment and trusted HTTPS origin.
+2. Authorized operator enters a new credential in the hidden TTY prompt: 15–128 Unicode code points with exact whitespace/case/accents; approved common-password rejection applies. Never put it in flags, env defaults, tickets, Git, logs or screenshots.
+3. Deliver it only to the verified person through the organization's approved confidential channel. Agree channel/recipient with the operator; no email/SMS provider is selected. Communicate expiry/origin and retain no credential in the handoff record.
+4. Temporary credentials expire after 24 hours. The recipient must log in and complete the mandatory personal password change at first login, then log in again with the personal password. Until the change succeeds, only necessary change/logout access is allowed. Use the implemented authentication HTTP procedure below while browser screens remain pending; do not defer the change until UI delivery. After expiry, an authorized operator must reissue the temporary credential; unlocking does not extend the credential or revive sessions. Pending UI behavior is not executed acceptance evidence.
+5. Record non-secret evidence only: environment, verified recipient/personnel reference, issuing operator, issue/expiry times, confidential-channel confirmation and completion/reissue need. Reset/change invalidates all sessions. Dispose of temporary copies under the approved channel policy.
+
+Follow the [authentication REST contract](../../specs/001-phase-1-operational-foundation/contracts/rest.md#authentication) over the trusted HTTPS origin. Before login, call `GET /api/v1/auth/csrf` without a session cookie, read `data.csrfToken` from the response and retain the `__Host-whistle-csrf-context` cookie. Submit `POST /api/v1/auth/login` with that context cookie, its token in `X-CSRF-Token`, and `Origin` matching the configured `AUTH_ORIGIN`. The JSON login body must contain only `username` and `password` (the temporary credential).
+
+After login with the temporary credential, call `GET /api/v1/auth/csrf` with the issued session cookie to obtain that session's CSRF token; do not reuse the prelogin token. Submit `POST /api/v1/auth/password/change` with a JSON body containing only `currentPassword` (the temporary credential) and `newPassword` (the chosen personal password). Include the same protected session cookie and `X-CSRF-Token` matching the live session. Supply the exact configured `Origin` (`AUTH_ORIGIN`); only when `Origin` is absent may a valid `Referer` provide the matching origin. On success, all sessions are invalidated and the session cookie is cleared; a fresh login is required.
+
+Remaining O08 evidence is actual operator/recipient delivery and completed lifecycle. Synthetic fixture credentials are isolated test inputs, never installation defaults.

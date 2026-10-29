@@ -1,0 +1,15 @@
+**/node_modules/
+**/dist/
+**/build/
+**/coverage/
+backend/src/generated/
+pnpm-lock.yaml
+skills-lock.json
+context/
+docs/
+specs/
+.agents/
+.specify/
+.verification/
+**/*.md
+**/.env*

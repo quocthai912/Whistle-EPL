@@ -1,6 +1,12 @@
 # PHASE 1 REST and Browser Contract
 
-**Status**: Planned interface, not controllers or a running API.
+**Status (2026-10-29)**: Shared validation/envelopes and frontend Fetch/session/router support
+are implemented and verified by T010/T014 at published commit `892f172f9ec539d5789a31a2f8046480afe15772`.
+The five authentication routes are implemented, verified and published by T023–T026 at
+[`5cfa666`](https://github.com/quocthai912/Whistle-EPL/commit/5cfa666a7550c9b1d06cc21926dba7e2f27c1a26) on `feat/phase-1-authentication-backend` (review base `7e28810`); see
+[authentication evidence](../../../docs/verification/phase-1/authentication.md).
+The account/delegation/audit HTTP routes remain planned; `/health` is a liveness entry point.
+See [Task status](../tasks.md) and [foundation verification](../../../docs/verification/phase-1/foundation.md).
 Derives D085/D096 and the [administration owner](../../../context/use-cases/administration.md).
 Use [spec.md](../spec.md) for required behavior and [data-model.md](../data-model.md) C01-C14
 for field constraints. Exact routes below elaborate existing authority, not new permissions.

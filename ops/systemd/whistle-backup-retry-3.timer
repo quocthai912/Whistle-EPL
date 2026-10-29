@@ -1,0 +1,8 @@
+[Unit]
+Description=Whistle-EPL 15-minute backup retry 3
+
+[Timer]
+OnActiveSec=15min
+AccuracySec=1s
+RemainAfterElapse=no
+Unit=whistle-backup-retry-3.service

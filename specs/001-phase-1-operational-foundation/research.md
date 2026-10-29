@@ -5,6 +5,13 @@ installed dependency set or software acceptance. Two read-only research agents e
 toolchain reproducibility and security/transaction mechanisms; the main agent reconciled
 their findings against the approved Specification and Context.
 
+**Execution follow-up (2026-10-29)**: T001–T014 are verified and published at `892f172`;
+T015–T022 operator/deployment/recovery work is implemented, verified and published at [`7ac09e6`](https://github.com/quocthai912/Whistle-EPL/commit/7ac09e6cec9fb434248c82db142ab04695961823) on `feat/phase-1-operations-recovery` (review base `30506e3`), with [operator evidence](../../docs/verification/phase-1/operator-foundation.md); the live remote branch and all 68 manifest entries were verified against that commit.
+T023–T026 authentication/session/throttle work is implemented, verified and published at [`5cfa666`](https://github.com/quocthai912/Whistle-EPL/commit/5cfa666a7550c9b1d06cc21926dba7e2f27c1a26) on `feat/phase-1-authentication-backend` (review base `7e28810`); see [authentication evidence](../../docs/verification/phase-1/authentication.md). The live remote ref and all 28 authentication manifest entries match that commit. T027–T048 and Phase acceptance remain pending.
+[Task status](tasks.md) and the [Phase ledger](../../context/progress-checker.md#phase-1-execution-evidence---2026-10-29)
+own current progress. Planning-time execution deliverables below describe what research did
+not execute; use the [open register](../../context/open-decisions.md) for what remains unresolved now.
+
 ## Runtime, Workspace and Database Client
 
 **Decision**: Retain D097's Node.js 24/TypeScript 5.9, pnpm-only two-Workspace layout,
@@ -103,10 +110,10 @@ All security-state writers and cleanup participate in the same admission protoco
 meet D088's fail-closed requirement. This adds technical coordination, not a new business right.
 Owners: [D088/D089/D096](../../context/design/architecture.md); Q102 Phase allocation.
 
-## Resolved Design Versus Unexecuted Inputs
+## Resolved Design Versus Planning-Time Unexecuted Inputs
 
-The mechanisms above resolve planning choices. O08 corpus revision/license/handoff,
+At the 2026-10-28 planning milestone, the mechanisms above resolved planning choices. O08 corpus revision/license/handoff,
 O12 exact compatible pins/native/import/build proof, O13 actual environments and measured
-results, and O14 target deployment values remain explicit implementation/operator deliverables.
+results, and O14 target deployment values remained explicit implementation/operator deliverables.
 No package installation, schema generation, application build/test, benchmark or restore
 has been executed by this research. Internet deployment is not implicitly selected or purchased.

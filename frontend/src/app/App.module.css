@@ -1,0 +1,11 @@
+:global(body) {
+  margin: 0;
+  background: #f5f7fa;
+}
+
+.shell {
+  max-width: 64rem;
+  min-height: 100vh;
+  margin: 0 auto;
+  padding: clamp(1.5rem, 5vw, 4rem);
+}

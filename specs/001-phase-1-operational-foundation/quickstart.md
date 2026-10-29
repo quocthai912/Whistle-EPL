@@ -1,8 +1,13 @@
-# PHASE 1 Future Validation Guide
+# PHASE 1 Validation Guide
 
-**Status**: Planned commands and scenarios; application scripts do not yet exist and none
-of the following installation/test/recovery outcomes has been executed. Implement the
-approved Tasks before using this guide as a runbook. Do not mistake documentation for evidence.
+**Status (2026-10-29)**: T001–T014 are published at `892f172f9ec539d5789a31a2f8046480afe15772`; T015–T022 operator/deployment/recovery commands are implemented, verified and published at [`7ac09e6`](https://github.com/quocthai912/Whistle-EPL/commit/7ac09e6cec9fb434248c82db142ab04695961823) on `feat/phase-1-operations-recovery` (review base `30506e3`). See [operator evidence](../../docs/verification/phase-1/operator-foundation.md).
+The command table distinguishes installed commands from remaining planned interfaces.
+Full clean-host/browser credential-change acceptance, administration workflows, browser/load and
+recovery acceptance remain pending. See [setup evidence](../../docs/verification/phase-1/workspace-setup.md),
+[foundation evidence](../../docs/verification/phase-1/foundation.md) and [Task status](tasks.md);
+this guide does not replace their actual execution results.
+
+**Authentication publication update (2026-10-29):** T023–T026 are implemented, verified and published at [`5cfa666`](https://github.com/quocthai912/Whistle-EPL/commit/5cfa666a7550c9b1d06cc21926dba7e2f27c1a26) on `feat/phase-1-authentication-backend` (review base `7e28810`); see [authentication evidence](../../docs/verification/phase-1/authentication.md) for current commands/results and required Origin/proxy configuration. The command table now describes this published authentication snapshot. Earlier Ubuntu application and operator-deployment results retain their original evidence scope. T027–T048 and Phase acceptance remain pending.
 
 ## Prerequisites and Isolation
 
@@ -18,29 +23,37 @@ two test Season identities, controlled clocks and deterministic race barriers. N
 season/regulation or default administrator is seeded. A test clock is never a client override
 of operational time. See [data model](data-model.md) and [operator contract](contracts/operator-cli.md).
 
-## Planned Root Command Contract
+## Root Command Contract and Current Availability
 
-The future root package.json must expose these commands with both-workspace failure propagation.
-Names beyond D097's existing contract are Plan elaboration, not already installed commands.
+The approved command contract remains the target. Current availability below is checked
+against published commit [`5cfa666`](https://github.com/quocthai912/Whistle-EPL/commit/5cfa666a7550c9b1d06cc21926dba7e2f27c1a26) (review base `7e28810`); [authentication evidence](../../docs/verification/phase-1/authentication.md) records the current Windows application/PG17 results. [Operator evidence](../../docs/verification/phase-1/operator-foundation.md) retains earlier deployment/two-OS results. T001–T014 were previously published at `892f172`; T015–T022 were published on `feat/phase-1-operations-recovery`; T023–T026 are published on `feat/phase-1-authentication-backend`. Planned commands must not be treated as executable yet.
+Root quality commands propagate workspace failures. For isolated database requirements,
+see the reproduction section in the foundation verification report.
 
-| Command | Required expected outcome after implementation |
-|---|---|
-| pnpm install --frozen-lockfile | Clean locked install on each OS, with explicit allowed native build verification |
-| pnpm db:validate | Pinned Prisma 7 schema/configuration validation |
-| pnpm db:generate | Explicit backend CJS client generation before generated imports/typecheck/build/tests |
-| pnpm db:migrate | Deploy committed migrations to the selected fresh target, no interactive dev migration/schema push |
-| pnpm db:check | Migration status and intended-schema checks, accounting for SQL-managed constraints |
-| pnpm lint | Root ESLint checks for both workspaces, no silent skip |
-| pnpm typecheck | Both workspaces strict checks without output mutation |
-| pnpm format:check | Nonmutating Prettier on D097 source/config scopes, excluding Context/ADRs/generated output |
-| pnpm format | Explicit source-format mutation only; never used as CI format verification |
-| pnpm test:unit | Frontend Vitest/RTL and backend Jest nonwatch suites, no empty-pass acceptance |
-| pnpm test:integration | Real isolated PostgreSQL 17; deliberate independent-connection races, initially serial suites |
-| pnpm build | Frontend/backend build and import compatibility |
-| pnpm dev | Explicit development profile and labelled HTTP-cookie limitations |
-| pnpm test:e2e | Real Chrome/Edge in the acceptance HTTPS profile, record actual versions |
-| pnpm test:load | Local k6 BM-01 profile; export safe per-attempt latency/success evidence |
-| pnpm ops:verify | Available-foundation persistence/backup/restore/failure drills in an isolated target |
+| Command | Required expected outcome | Availability at published `5cfa666` snapshot |
+|---|---|---|
+| pnpm install --frozen-lockfile | Clean locked install on each OS, with explicit allowed native build verification | Executed for T001 setup on both OSes |
+| pnpm db:validate | Pinned Prisma 7 schema/configuration validation | Implemented and verified |
+| pnpm db:generate | Explicit backend CJS client generation before generated imports/typecheck/build/tests | Implemented and verified |
+| pnpm db:migrate | Deploy committed migrations to the selected fresh target, no interactive dev migration/schema push | Implemented; six-migration fresh PG17 replay/intended-schema check PASS; previous five-migration Compose evidence retained |
+| pnpm db:status | Inspect deployment status | Implemented and verified; current status entry point |
+| pnpm db:check | Migration status and intended-schema checks, accounting for SQL-managed constraints | Planned root alias; current checks use db:status plus schema.spec.ts/Prisma diff |
+| pnpm lint | Root ESLint checks for both workspaces, no silent skip | Implemented and verified |
+| pnpm typecheck | Both workspaces strict checks without output mutation | Implemented and verified |
+| pnpm format:check | Nonmutating Prettier on D097 source/config scopes, excluding Context/ADRs/generated output | Implemented and verified |
+| pnpm format | Explicit source-format mutation only; never used as CI format verification | Implemented and exercised |
+| pnpm test / pnpm test:unit | Frontend Vitest/RTL and backend Jest nonwatch suites, no empty-pass acceptance | Implemented; 15 backend and 8 frontend tests PASS on Windows; earlier Ubuntu results remain historical |
+| pnpm test:integration | Real isolated PostgreSQL 17; deliberate independent-connection races, initially serial suites | Implemented; 53 tests PASS against Linux PG17 from Windows, including 28 auth/throttle tests; no new Ubuntu application run |
+| pnpm verify:native / pnpm verify:client | Approved native-module and CommonJS client compatibility checks | Implemented and verified |
+| pnpm verify:commands | Injected workspace failures propagate to root command failure | Implemented; 10 probes passed in the earlier Windows operator verification; previous Ubuntu evidence retained |
+| pnpm build | Frontend/backend build and import compatibility | Implemented and verified |
+| pnpm admin:bootstrap / pnpm admin:recover | Protected host TTY, audited temporary credential bootstrap/existing-admin recovery | Implemented and verified T015–T017; see [operator access](../../docs/operations/operator-access.md) |
+| pnpm ops:maintenance / pnpm ops:backup / pnpm ops:restore | Protected profile, durable drain, selected complete-set recovery | Implemented and verified T019–T020; Linux host tools/runbooks required |
+| pnpm test:ops | Python set integrity/retention/schedule/boot-resume regressions | Implemented; 5 tests pass on both OSes |
+| pnpm dev | Explicit development profile and labelled HTTP-cookie limitations | Planned root command; frontend workspace has its own dev script |
+| pnpm test:e2e | Real Chrome/Edge in the acceptance HTTPS profile, record actual versions | Planned; not browser acceptance evidence |
+| pnpm test:load | Local k6 BM-01 profile; export safe per-attempt latency/success evidence | Planned; BM-01 measurements pending |
+| pnpm ops:verify | Available-foundation persistence/backup/restore/failure drills in an isolated target | Implemented; real isolated backup/restore/corrupt-set checks pass; T046 operational drills pending |
 
 Run installed tools through pnpm exec and versioned one-off tools through pnpm dlx only
 when necessary. Do not substitute npm/yarn commands or create competing lockfiles.

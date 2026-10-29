@@ -6,6 +6,11 @@
 
 **Status**: Approved by the Team Leader on 2026-10-28 (Asia/Bangkok)
 
+**Implementation tracking (2026-10-29)**: T001–T014 are implemented, verified and published
+at `892f172f9ec539d5789a31a2f8046480afe15772`. T015–T022 are implemented, verified and published at [`7ac09e6`](https://github.com/quocthai912/Whistle-EPL/commit/7ac09e6cec9fb434248c82db142ab04695961823) on `feat/phase-1-operations-recovery` (review base `30506e3`); see [operator evidence](../../docs/verification/phase-1/operator-foundation.md). T023–T026 are implemented, verified and published at [`5cfa666`](https://github.com/quocthai912/Whistle-EPL/commit/5cfa666a7550c9b1d06cc21926dba7e2f27c1a26) on `feat/phase-1-authentication-backend` (review base `7e28810`) (see [authentication evidence](../../docs/verification/phase-1/authentication.md)); T027–T048 and full acceptance remain pending.
+[tasks.md](tasks.md) owns Task completion; the [Phase ledger](../../context/progress-checker.md#phase-1-execution-evidence---2026-10-29)
+records PHASE 1 as `IN_PROGRESS`. This status note does not amend the approved requirements.
+
 **Approval evidence**: The Team Leader selected “Phê duyệt Spec, tiếp tục Plan/Tasks/Analyze”
 after the Specification and requirements-quality checklist were made available for review.
 This approves Specification preparation for planning, not implementation or future Tasks.

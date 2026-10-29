@@ -1,0 +1,30 @@
+{
+  "name": "@whistle-epl/frontend",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "build": "tsc --noEmit && vite build",
+    "lint": "eslint src tests vite.config.ts vitest.config.ts",
+    "typecheck": "tsc --noEmit",
+    "test:unit": "vitest run --maxWorkers=1 --pool=threads"
+  },
+  "dependencies": {
+    "antd": "6.6.8",
+    "dayjs": "1.11.23",
+    "react": "19.2.9",
+    "react-dom": "19.2.9",
+    "react-router": "8.5.1"
+  },
+  "devDependencies": {
+    "@testing-library/jest-dom": "7.0.1",
+    "@testing-library/react": "16.3.3",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "@vitejs/plugin-react": "6.1.2",
+    "jsdom": "28.1.0",
+    "vite": "8.3.5",
+    "vitest": "5.0.5"
+  }
+}

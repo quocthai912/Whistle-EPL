@@ -1,0 +1,72 @@
+name: ${COMPOSE_PROJECT_NAME:?Select an explicit profile project}
+services:
+  db:
+    image: postgres:17.11-bookworm@sha256:839fbb5a4942a7758dd93e18b42ea5649807491a0545b5eeeb8f0b8bb11857a5
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:?Required}
+      POSTGRES_USER: ${POSTGRES_USER:?Required}
+      POSTGRES_PASSWORD_FILE: /run/secrets/database_password
+    secrets: [database_password]
+    volumes: [database:/var/lib/postgresql/data]
+    networks: [private]
+    healthcheck:
+      test: [CMD-SHELL, 'pg_isready -U "$${POSTGRES_USER}" -d "$${POSTGRES_DB}"']
+      interval: 5s
+      timeout: 5s
+      retries: 30
+    restart: unless-stopped
+  migrate:
+    build: {context: .., dockerfile: backend/Dockerfile}
+    env_file: ${BACKEND_ENV_FILE:?Protected backend environment file}
+    command: [sh, -c, 'cd /app && pnpm db:migrate']
+    depends_on: {db: {condition: service_healthy}}
+    networks: [private]
+    restart: 'no'
+  backend:
+    build: {context: .., dockerfile: backend/Dockerfile}
+    env_file: ${BACKEND_ENV_FILE:?Required}
+    environment:
+      HOST: 0.0.0.0
+      PORT: '3000'
+      AUTH_ORIGIN: ${AUTH_ORIGIN:?Exact browser HTTPS origin required}
+      AUTH_TRUSTED_PROXY_CIDRS: '${CADDY_PRIVATE_IP:?Reserved Caddy private IPv4 required}/32'
+      MAINTENANCE_MARKER_PATH: /operation-state/maintenance.json
+    volumes:
+      - ${OPERATION_STATE_DIR:?Protected host state directory}:/operation-state:ro
+    depends_on: {migrate: {condition: service_completed_successfully}}
+    networks: [private]
+    healthcheck:
+      test: [CMD, node, -e, "fetch('http://127.0.0.1:3000/ready').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+    restart: unless-stopped
+  web:
+    build:
+      context: ..
+      dockerfile: frontend/Dockerfile
+      args: {CADDY_IMAGE: '${CADDY_IMAGE:?Pinned Caddy image required}'}
+    environment: {SITE_ADDRESS: '${SITE_ADDRESS:?Trusted local HTTPS address required}'}
+    ports: ['${HTTPS_BIND:?Explicit bind address}:443:443']
+    volumes: [caddy-data:/data, caddy-config:/config]
+    depends_on: {backend: {condition: service_healthy}}
+    networks:
+      private:
+        ipv4_address: ${CADDY_PRIVATE_IP:?Reserved Caddy private IPv4 required}
+      edge: {}
+    restart: unless-stopped
+networks:
+  private:
+    internal: true
+    ipam:
+      config:
+        - subnet: ${PRIVATE_SUBNET:?Dedicated non-overlapping private IPv4 subnet required}
+          ip_range: ${PRIVATE_DYNAMIC_RANGE:?Dynamic IPv4 range excluding reserved Caddy address required}
+  edge: {}
+volumes:
+  database: {}
+  caddy-data: {}
+  caddy-config: {}
+secrets:
+  database_password:
+    file: ${DATABASE_PASSWORD_FILE:?Protected password file required}
