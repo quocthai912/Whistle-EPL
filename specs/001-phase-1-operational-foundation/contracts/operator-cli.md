@@ -1,5 +1,7 @@
 # PHASE 1 Operator Interface and Recovery Contract
 
+**UI/browser publication (2026-11-04):** T027–T028 are implemented, verified and published at [`b06075f`](https://github.com/quocthai912/Whistle-EPL/commit/b06075f7a3677fb7e351160a89f59fdaa81f9fc5) on `feat/phase-1-authentication-frontend` (review base `91ff5820ad77ef75bb75aa1576df32ab53edeb10`). The live remote ref and all 30 final source-manifest entries were verified against that commit. [Authentication UI/browser evidence](../../../docs/verification/phase-1/authentication-ui.md) distinguishes the initial 22-scenario real Chrome/Edge HTTPS run from subsequent visual refinements and their scoped checks. T029–T048 and Team Leader/PHASE 1 acceptance remain pending; PHASE 1 remains `IN_PROGRESS`. This publication update changes no approved requirements, task dependencies or historical approvals.
+
 **Status**: Bootstrap/recovery and maintenance/backup/restore/verify root commands are implemented, verified and published in T015–T022 at [`7ac09e6`](https://github.com/quocthai912/Whistle-EPL/commit/7ac09e6cec9fb434248c82db142ab04695961823); see [execution evidence](../../../docs/verification/phase-1/operator-foundation.md). Isolated fixture modules exist, but the planned root test:fixtures/test:reset aliases remain unavailable. Full installation/browser/operational acceptance is pending.
 Owners: [D008/D011](../../../docs/adr/0004-first-administrator-cli-bootstrap.md),
 [D087-D089/D096/D097](../../../context/design/architecture.md) and

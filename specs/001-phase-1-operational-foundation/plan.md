@@ -1,8 +1,10 @@
 # Implementation Plan: PHASE 1 — Operational Foundation and Access Administration
 
+**UI/browser publication (2026-11-04):** T027–T028 are implemented, verified and published at [`b06075f`](https://github.com/quocthai912/Whistle-EPL/commit/b06075f7a3677fb7e351160a89f59fdaa81f9fc5) on `feat/phase-1-authentication-frontend` (review base `91ff5820ad77ef75bb75aa1576df32ab53edeb10`). The live remote ref and all 30 final source-manifest entries were verified against that commit. [Authentication UI/browser evidence](../../docs/verification/phase-1/authentication-ui.md) distinguishes the initial 22-scenario real Chrome/Edge HTTPS run from subsequent visual refinements and their scoped checks. T029–T048 and Team Leader/PHASE 1 acceptance remain pending; PHASE 1 remains `IN_PROGRESS`. This publication update changes no approved requirements, task dependencies or historical approvals.
+
 **Branch**: `spec/phase-1-operational-foundation` | **Date**: 2026-10-28
 **Spec**: [Approved Specification](spec.md)
-**Status**: Design reviewed against Constitution v1.0.0; Tasks approved on 2026-10-28;
+**Historical status (2026-10-29)**: Design reviewed against Constitution v1.0.0; Tasks approved on 2026-10-28;
 documents published by the Team Leader at b8e6e15b27ed8446cc60dba94bf1a0b0259e51b2;
 all 48 Task Issues are published and linked in tasks.md. **Implementation is IN_PROGRESS**:
 T001–T014 are verified and published at [892f172](https://github.com/quocthai912/Whistle-EPL/commit/892f172f9ec539d5789a31a2f8046480afe15772)

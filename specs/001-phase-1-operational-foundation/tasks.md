@@ -1,6 +1,6 @@
 # Tasks: PHASE 1 — Operational Foundation and Access Administration
 
-**Latest local execution (2026-11-04):** T027–T028 complete locally; T029–T048 and Phase acceptance remain pending. See the UI/browser evidence after T028. The 2026-10-29 publication records below are historical.
+**Latest publication (2026-11-04):** T027–T028 are complete, verified and published at [`b06075f`](https://github.com/quocthai912/Whistle-EPL/commit/b06075f7a3677fb7e351160a89f59fdaa81f9fc5) on `feat/phase-1-authentication-frontend` (review base `91ff5820ad77ef75bb75aa1576df32ab53edeb10`); the live remote ref and all 30 final source-manifest entries match. Issues #32–#33 are Closed with label `completed`. T029–T048 and Phase acceptance remain pending. See the UI/browser evidence after T028; the dated 2026-10-29 records retain their historical scope.
 
 **Input**: [Approved Specification](spec.md), [Plan](plan.md), [research](research.md),
 [data model](data-model.md), [REST](contracts/rest.md), [operator contract](contracts/operator-cli.md)
@@ -104,7 +104,7 @@ real installation/bootstrap/recovery/restore flows must be exercised.
 
 - [X] T028 [US2] Implement tests/e2e/auth.spec.ts and playwright.config.ts for real Chrome/Edge HTTPS login/change/logout/multi-tab/revocation and error states; record versions, no bundled-Chromium substitution or application acceptance claim before execution. (Depends: T027, T018; Covers: FR-008, FR-012, FR-013, FR-014, FR-015, FR-016, FR-017, FR-018, FR-021, FR-056, FR-059, FR-060; SC-003, SC-004, SC-010, SC-013.) — Issue: [#33](https://github.com/quocthai912/Whistle-EPL/issues/33)
 
-**UI/browser execution evidence (2026-11-04):** T027–T028 are implemented and verified locally against review base `91ff5820ad77ef75bb75aa1576df32ab53edeb10`. See [authentication UI/browser evidence](../../docs/verification/phase-1/authentication-ui.md): 22 actual Chrome/Edge HTTPS scenarios, 15 backend unit + 16 frontend tests and 55 real PostgreSQL regression tests PASS; independent Standards/Spec reviews have zero remaining findings. MH06/MH07 designs use the supplied local images. This working-tree completion does not claim publication or project PHASE 1 acceptance. T029–T048 remain pending.
+**UI/browser execution and publication evidence (2026-11-04):** T027–T028 are implemented, verified and published at [`b06075f`](https://github.com/quocthai912/Whistle-EPL/commit/b06075f7a3677fb7e351160a89f59fdaa81f9fc5) on `feat/phase-1-authentication-frontend` (review base `91ff5820ad77ef75bb75aa1576df32ab53edeb10`). The remote ref and 30-entry publication manifest match; Issues #32–#33 remain Closed with label `completed` and publication evidence. [Authentication UI/browser verification](../../docs/verification/phase-1/authentication-ui.md) retains the initial 22 real Chrome/Edge HTTPS scenarios, 15 backend unit + 16 frontend tests, 55 PG17 regressions, independent reviews and later visual-refinement checks as distinct evidence. The final source includes the supplied local artwork, shared introduction-panel typography, purple controls/vector logout icon and green password-change success feedback. Publication does not establish integration merge, CI/protection or Team Leader/PHASE 1 acceptance. T029–T048 remain pending.
 
 ## Phase 5: User Story 3 — Administer Accounts and Scoped Authority (Priority: P1)
 

@@ -1,6 +1,6 @@
 # Foundation installation
 
-Scope: T015–T026, PHASE 1. Follow the [operator contract](../../specs/001-phase-1-operational-foundation/contracts/operator-cli.md), [operator access](operator-access.md) and [operator evidence](../verification/phase-1/operator-foundation.md). Authentication HTTP execution is recorded separately in [authentication evidence](../verification/phase-1/authentication.md). Login/password-change screens and browser verification remain T027–T028; these instructions do not establish Phase acceptance.
+Scope: T015–T028, PHASE 1. Follow the [operator contract](../../specs/001-phase-1-operational-foundation/contracts/operator-cli.md), [operator access](operator-access.md) and [operator evidence](../verification/phase-1/operator-foundation.md). Authentication HTTP execution is recorded separately in [authentication evidence](../verification/phase-1/authentication.md). Login/password-change screens and scoped real Chrome/Edge HTTPS verification are published in T027–T028 at [`b06075f`](https://github.com/quocthai912/Whistle-EPL/commit/b06075f7a3677fb7e351160a89f59fdaa81f9fc5); see [UI/browser evidence](../verification/phase-1/authentication-ui.md). These instructions do not establish full clean-host or Phase acceptance.
 
 ## Prerequisites and profiles
 
@@ -40,9 +40,44 @@ Migrate waits for DB health and runs committed `prisma migrate deploy`; backend 
 
 Readiness intentionally becomes unhealthy while maintenance is closed. If `docker compose up` was attempted during maintenance, its health-based dependency may leave `web` unstarted. After the verified maintenance release, rerun the same `docker compose ... up -d` command and check `docker compose ... ps`; release does not automatically restart a previously blocked Compose startup.
 
-Export Caddy's **public root certificate only** from `/data/caddy/pki/authorities/local/root.crt`, inspect its fingerprint and install it in the selected test browser/OS trust store. Verify HTTPS without bypassing TLS checks; never copy its private key. Preserve `/data` and `/config` across replacement. Real Chrome/Edge trust/login walkthroughs remain T028/T044. Internet deployment requires explicitly supplied hostname/public-certificate configuration in place of `tls internal`; preserve routing/persistence.
+Export Caddy's **public root certificate only** from `/data/caddy/pki/authorities/local/root.crt`, inspect its fingerprint and install it in the selected test browser/OS trust store. Verify HTTPS without bypassing TLS checks; never copy its private key. Preserve `/data` and `/config` across replacement. T028 records scoped real Chrome/Edge HTTPS login/change/logout journeys; T044 still owns the complete clean-host/browser walkthrough. Internet deployment requires explicitly supplied hostname/public-certificate configuration in place of `tls internal`; preserve routing/persistence.
 
-Run bootstrap/recovery using operator-access.md and hand off under credential-handoff.md. Use the implemented authentication HTTP contract for the required first-login password change; browser screens remain T027. `docker compose ... up -d --force-recreate` preserves named volumes; do not use `down -v` on an operational profile.
+Run bootstrap/recovery using operator-access.md and hand off under credential-handoff.md. Open `/login` over the configured HTTPS origin. An issued temporary credential redirects to `/change-password`; successful personal change invalidates all sessions and returns to login. `docker compose ... up -d --force-recreate` preserves named volumes; do not use `down -v` on an operational profile.
+
+## Windows local preview lifecycle
+
+Docker Desktop runs the Linux backend/CLI and PostgreSQL containers; local PowerShell does
+not replace the protected Linux operator implementation. Keep preview configuration and
+credentials in an ignored protected profile and separate its project/database/volumes from
+operational and automated-test targets. Use `docker desktop start --timeout 120` rather than
+assuming Docker Desktop is installed under Program Files. After configuring the profile
+and local CA trust, run the following from the checkout with its real protected env-file path:
+
+```powershell
+$composeArgs = @("--env-file", "<protected-compose.env>", "-f", "ops/compose.yaml")
+docker compose @composeArgs up -d --build --wait --wait-timeout 180
+docker compose @composeArgs ps -a
+Start-Process "https://localhost/login"
+```
+
+Use the configured HTTPS origin if it differs from this local example. An authorized local
+preview operator may run the existing Linux CLI inside its container with an interactive TTY:
+
+```powershell
+docker compose @composeArgs exec --user node backend node dist/cli/bootstrap-admin.js --personnel-code <verified-code> --full-name "<verified-name>" --username <username>
+```
+
+This is first-administrator initialization only, not a default account or repeatable reset.
+Choose a temporary password of 15–128 Unicode code points in the hidden prompt. Short or
+blocked passwords are rejected before account creation; do not place them in argv or logs.
+Use the existing recovery procedure for an already initialized administrator.
+
+To finish manual testing run `docker compose @composeArgs stop`; accounts, changed passwords
+and named volumes are retained. Resume with `docker compose @composeArgs up -d --wait`.
+A CSS/frontend update can rebuild/recreate only web with `docker compose @composeArgs build web`
+and `docker compose @composeArgs up -d --no-deps web`, followed by Ctrl+F5 in the browser.
+Manual preview is separate from the resettable `pnpm test:e2e` database and supplies no full
+clean-host, operational recovery or PHASE 1 acceptance claim.
 
 ## Isolated verification and reset
 

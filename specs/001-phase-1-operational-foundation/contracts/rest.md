@@ -1,5 +1,7 @@
 # PHASE 1 REST and Browser Contract
 
+**UI/browser publication (2026-11-04):** T027–T028 are implemented, verified and published at [`b06075f`](https://github.com/quocthai912/Whistle-EPL/commit/b06075f7a3677fb7e351160a89f59fdaa81f9fc5) on `feat/phase-1-authentication-frontend` (review base `91ff5820ad77ef75bb75aa1576df32ab53edeb10`). The live remote ref and all 30 final source-manifest entries were verified against that commit. [Authentication UI/browser evidence](../../../docs/verification/phase-1/authentication-ui.md) distinguishes the initial 22-scenario real Chrome/Edge HTTPS run from subsequent visual refinements and their scoped checks. T029–T048 and Team Leader/PHASE 1 acceptance remain pending; PHASE 1 remains `IN_PROGRESS`. This publication update changes no approved requirements, task dependencies or historical approvals.
+
 **Status (2026-10-29)**: Shared validation/envelopes and frontend Fetch/session/router support
 are implemented and verified by T010/T014 at published commit `892f172f9ec539d5789a31a2f8046480afe15772`.
 The five authentication routes are implemented, verified and published by T023–T026 at
@@ -144,8 +146,10 @@ Reject unsupported methods/actions without dispatching unrestricted handlers.
 
 ## Browser Routes and Verification
 
-Planned browser paths: /login, /change-password, /admin/accounts, /admin/delegations,
-/admin/audit and a permitted internal landing shell. Manager delegation views reuse the
+Implemented browser paths: /login, /change-password and the permitted /internal landing shell.
+/admin/accounts, /admin/delegations and /admin/audit remain planned workflows; the current
+protected /admin/* fallback is only a landing shell, not those administration screens.
+Manager delegation views will reuse the
 appropriate authority without exposing account administration. No fake public league dashboard.
 Use one Fetch layer and clear all internal in-memory data on session/account loss. Forms
 never retain passwords in recovery drafts; safe fields survive validation/conflict feedback.
