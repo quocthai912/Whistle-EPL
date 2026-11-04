@@ -2,6 +2,8 @@
 
 **Current version:** v2 | **Status:** APPROVED | **Whole-package approval:** Q98, Team Leader, 2026-10-26 (Asia/Bangkok)
 
+**Latest local implementation (2026-11-04):** T027–T028 are implemented and verified in the working tree against review base `91ff5820ad77ef75bb75aa1576df32ab53edeb10`; see [authentication UI/browser evidence](../docs/verification/phase-1/authentication-ui.md). Real Chrome/Edge HTTPS passes 22 scenarios, with 31 unit/frontend and 55 PostgreSQL regression tests passing. Publication and Team Leader/PHASE 1 acceptance are not claimed. T029–T048 remain pending; PHASE 1 remains `IN_PROGRESS`. The dated published snapshots below retain their historical scope.
+
 **Approved extension:** D098 and PHASE 1 preparation clarifications, Q99-Q103 and final shared-understanding approval, Team Leader, 2026-10-28 (Asia/Bangkok). See [the extension record](#phase-1-preparation-approval---q99-q103); Q98 is not retroactive approval of this extension.
 
 **Q98 documentation verification:** COMPLETE after relocation, three independent reviews and final integrity checks at that milestone. This is not software implementation or acceptance.

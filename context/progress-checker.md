@@ -6,7 +6,7 @@ The [Q99-Q103 extension](README.md#phase-1-preparation-approval---q99-q103), app
 
 This is the current Phase ledger for one evolving package, not a Spec/Plan/Task. See [business](business.md), [quality](quality.md), [UC navigation](README.md) and [source matrix](sources.md). PHASE 1-PHASE 10 remain the same organizational units; their current statuses and checklist states follow the dated evidence below.
 
-**Latest implementation update:** 2026-10-29 (Asia/Bangkok), published authentication feature-branch commit [`5cfa666`](https://github.com/quocthai912/Whistle-EPL/commit/5cfa666a7550c9b1d06cc21926dba7e2f27c1a26) on `feat/phase-1-authentication-backend`. T001–T026 are implemented, verified and published; T027–T048 and Phase acceptance remain pending. PHASE 1 remains `IN_PROGRESS`. See [PHASE 1 execution evidence](#phase-1-execution-evidence---2026-10-29). PHASE 2-PHASE 10 remain `NOT_STARTED` in the inspected checkout.
+**Latest implementation update:** 2026-11-04 (Asia/Bangkok). T027–T028 are implemented and verified locally against review base `91ff5820ad77ef75bb75aa1576df32ab53edeb10`; see [UI/browser execution evidence](#phase-1-ui-and-browser-execution-evidence---2026-11-04). T001–T026 retain their published evidence below. T029–T048, publication of the local changes and Phase acceptance remain pending. PHASE 1 remains `IN_PROGRESS`; PHASE 2-PHASE 10 remain `NOT_STARTED`.
 
 The latest confirmed scope includes managed club/player media, with independent core acceptance before API research/selection under [INT-01](design/integrations.md#int-01---acceptance-before-api-research-and-integration). External integration is not a mandatory prerequisite to first-version core acceptance and creates no new mandatory Phase. Documented decisions do not establish implementation or acceptance.
 
@@ -83,6 +83,10 @@ Expected parallel work: after PHASE 2, PHASE 3 and PHASE 8 can be developed inde
 **Acceptance Criteria:** UC01-UC04 pass main/alternative/exception flows; lock/unlock and role assignment respect scope. BM-01 meets 100 attempts/20 concurrent users/95% within 3 seconds, inactivity timeout ≤30 minutes, and no reuse of old sessions. Check direct unauthorized access, dangerous input, password secrecy/no plaintext storage; real permission/login/logout logs exist, and lookup does not modify data. Check constraints and non-partial failed updates within administration. A fresh foundation installation runs from the instructions; business operations and module structure are further verified in subsequent Phases/PHASE 10.
 
 **Verification Evidence:** Source revision plus UC/permission/session/input and authentication-load results; inspection of protected password data; sample audit records; new foundation-environment setup procedure and results. No such evidence exists in v1.
+
+### PHASE 1 UI and browser execution evidence - 2026-11-04
+
+T027–T028 / Issues #32–#33 are implemented and verified in the uncommitted working tree, reviewed against `91ff5820ad77ef75bb75aa1576df32ab53edeb10`. [Authentication UI/browser verification](../docs/verification/phase-1/authentication-ui.md) owns the tested source manifest, actual environment, browser results, captures, test-first failures and corrections. Windows/Node24/pnpm verification passes 15 backend unit + 16 frontend tests, 55 PG17 integration tests and 22 HTTPS browser scenarios on installed Chrome 156.0.8078.81 and Edge 156.0.4314.58. Independent Standards and Spec reviewers report zero remaining actionable findings. Scoped convergence leaves no T027–T028 gap and appends no duplicate future work. This does not claim publication, elapsed-timer acceptance, future account-administration flows, BM-01 load, CI/protection, full clean-host drills or Team Leader/Phase acceptance. T029–T048 remain pending; all Phase functional/acceptance checkboxes and historical approvals are unchanged.
 
 ### PHASE 1 execution evidence - 2026-10-29
 

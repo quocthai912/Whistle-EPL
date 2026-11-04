@@ -1,5 +1,7 @@
 # Tasks: PHASE 1 — Operational Foundation and Access Administration
 
+**Latest local execution (2026-11-04):** T027–T028 complete locally; T029–T048 and Phase acceptance remain pending. See the UI/browser evidence after T028. The 2026-10-29 publication records below are historical.
+
 **Input**: [Approved Specification](spec.md), [Plan](plan.md), [research](research.md),
 [data model](data-model.md), [REST](contracts/rest.md), [operator contract](contracts/operator-cli.md)
 and [quickstart](quickstart.md).
@@ -98,9 +100,11 @@ real installation/bootstrap/recovery/restore flows must be exercised.
 
 - [X] T026 [US2] Implement backend/src/identity-access/auth.controller.ts, auth.service.ts and auth.dto.ts for the five contract auth endpoints; generic failures, verified-password/authRevision recheck, temporary24hour/change-only state, personal change/all-session invalidation, current logout and atomic security audit with no secret receipts. (Depends: T025; Covers: FR-008, FR-009, FR-010, FR-011, FR-012, FR-013, FR-014, FR-015, FR-016, FR-017, FR-018, FR-019, FR-020, FR-021, FR-041, FR-042, FR-046, FR-061; SC-002, SC-003, SC-004, SC-005.) — Issue: [#31](https://github.com/quocthai912/Whistle-EPL/issues/31)
 
-- [ ] T027 [US2] Implement frontend/src/features/auth/LoginPage.tsx, ChangePasswordPage.tsx and auth-routes.tsx plus frontend/tests/auth-flows.spec.tsx; Vietnamese restricted/full routing, logout/expiry notice, no persisted secrets and no replay; preserve safe validation input and clear internal data on account change. (Depends: T026; Covers: FR-007, FR-008, FR-012, FR-013, FR-014, FR-015, FR-016, FR-017, FR-018, FR-021, FR-056, FR-061; SC-003, SC-004, SC-010.) — Issue: [#32](https://github.com/quocthai912/Whistle-EPL/issues/32)
+- [X] T027 [US2] Implement frontend/src/features/auth/LoginPage.tsx, ChangePasswordPage.tsx and auth-routes.tsx plus frontend/tests/auth-flows.spec.tsx; Vietnamese restricted/full routing, logout/expiry notice, no persisted secrets and no replay; preserve safe validation input and clear internal data on account change. (Depends: T026; Covers: FR-007, FR-008, FR-012, FR-013, FR-014, FR-015, FR-016, FR-017, FR-018, FR-021, FR-056, FR-061; SC-003, SC-004, SC-010.) — Issue: [#32](https://github.com/quocthai912/Whistle-EPL/issues/32)
 
-- [ ] T028 [US2] Implement tests/e2e/auth.spec.ts and playwright.config.ts for real Chrome/Edge HTTPS login/change/logout/multi-tab/revocation and error states; record versions, no bundled-Chromium substitution or application acceptance claim before execution. (Depends: T027, T018; Covers: FR-008, FR-012, FR-013, FR-014, FR-015, FR-016, FR-017, FR-018, FR-021, FR-056, FR-059, FR-060; SC-003, SC-004, SC-010, SC-013.) — Issue: [#33](https://github.com/quocthai912/Whistle-EPL/issues/33)
+- [X] T028 [US2] Implement tests/e2e/auth.spec.ts and playwright.config.ts for real Chrome/Edge HTTPS login/change/logout/multi-tab/revocation and error states; record versions, no bundled-Chromium substitution or application acceptance claim before execution. (Depends: T027, T018; Covers: FR-008, FR-012, FR-013, FR-014, FR-015, FR-016, FR-017, FR-018, FR-021, FR-056, FR-059, FR-060; SC-003, SC-004, SC-010, SC-013.) — Issue: [#33](https://github.com/quocthai912/Whistle-EPL/issues/33)
+
+**UI/browser execution evidence (2026-11-04):** T027–T028 are implemented and verified locally against review base `91ff5820ad77ef75bb75aa1576df32ab53edeb10`. See [authentication UI/browser evidence](../../docs/verification/phase-1/authentication-ui.md): 22 actual Chrome/Edge HTTPS scenarios, 15 backend unit + 16 frontend tests and 55 real PostgreSQL regression tests PASS; independent Standards/Spec reviews have zero remaining findings. MH06/MH07 designs use the supplied local images. This working-tree completion does not claim publication or project PHASE 1 acceptance. T029–T048 remain pending.
 
 ## Phase 5: User Story 3 — Administer Accounts and Scoped Authority (Priority: P1)
 

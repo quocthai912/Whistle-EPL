@@ -1,0 +1,5 @@
+f9f99d28905f29ae8cdf8eda899d6251c12986d7820a0036bbe02e4c8911bf7b  frontend/src/features/auth/Auth.module.css
+f20942297c10bb9246bcb0fcfe6eb24f85eb9ac0c793f73da28f403ec08d6719  frontend/src/features/auth/LogoutButton.tsx
+0e76807572994da20bbcb7bbd51f39d0da9b212298c0513015332e37d3eff731  frontend/src/features/auth/LoginPage.tsx
+6694049b5ac50ea261784a4f0ee6c40f59cc84b51f0c5f3d6c53a2059aa7af49  frontend/src/features/auth/ChangePasswordPage.tsx
+2ba916fbb798cfadded9a6d953a57f81d9a4e3205c813d9dd5b0316cdf358f3a  frontend/src/shared/http/session-store.ts

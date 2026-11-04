@@ -1,6 +1,9 @@
 import { SessionStore } from './session-store';
 
 const notices: Record<string, string> = {
+  LOGIN_FAILED: 'Tên đăng nhập hoặc mật khẩu không hợp lệ.',
+  CURRENT_PASSWORD_INVALID: 'Mật khẩu hiện tại không hợp lệ.',
+  PASSWORD_CHANGE_REQUIRED: 'Vui lòng đổi mật khẩu trước khi tiếp tục.',
   PERMISSION_CHANGED:
     'Phiên đăng nhập không còn hiệu lực do tài khoản hoặc quyền truy cập đã thay đổi. Vui lòng đăng nhập lại.',
   AUTH_REQUIRED: 'Vui lòng đăng nhập lại.',
@@ -13,7 +16,8 @@ const notices: Record<string, string> = {
   INVALID_INPUT: 'Dữ liệu không hợp lệ.',
   VALIDATION_FAILED: 'Vui lòng kiểm tra dữ liệu đã nhập.',
   ACCESS_DENIED: 'Bạn không có quyền thực hiện thao tác này.',
-  CSRF_INVALID: 'Thông tin bảo vệ yêu cầu không hợp lệ. Vui lòng tải lại.',
+  CSRF_INVALID: 'Thông tin bảo vệ yêu cầu đã hết hạn hoặc không hợp lệ. Vui lòng thử lại.',
+  CSRF_REJECTED: 'Thông tin bảo vệ yêu cầu đã hết hạn hoặc không hợp lệ. Vui lòng thử lại.',
   ORIGIN_REJECTED: 'Nguồn yêu cầu không hợp lệ.',
   NOT_FOUND: 'Không tìm thấy dữ liệu.',
   LOGIN_THROTTLED: 'Có quá nhiều lần thử. Vui lòng thử lại sau.',
@@ -39,7 +43,7 @@ export class HttpClient {
   private csrfPending: { epoch: number; promise: Promise<string> } | null = null;
   constructor(
     private readonly session: SessionStore,
-    private readonly fetcher: typeof fetch = fetch,
+    private readonly fetcher: typeof fetch = (input, init) => fetch(input, init),
   ) {}
 
   private async csrf(epoch: number): Promise<string> {
@@ -47,6 +51,22 @@ export class HttpClient {
     if (existing) return existing;
     if (this.csrfPending?.epoch === epoch) return this.csrfPending.promise;
     const promise = (async () => {
+      // An expired authenticated cookie must retain its reason instead of silently
+      // falling back to a prelogin CSRF context and losing that feedback.
+      const active = this.session.getSnapshot().session;
+      if (active) {
+        const current = await this.request<{ id: string; changeRequired: boolean }>(
+          '/auth/session',
+        );
+        if (
+          current.data.id !== active.account.id ||
+          current.data.changeRequired !== active.changeRequired
+        ) {
+          const failure = new HttpFailure(401, 'PERMISSION_CHANGED');
+          this.session.clear(failure.message);
+          throw failure;
+        }
+      }
       const result = await this.request<{ csrfToken: string }>('/auth/csrf');
       const token = result.data?.csrfToken;
       if (
@@ -144,7 +164,8 @@ export class HttpClient {
         requestId,
         writing && response.status >= 500,
       );
-      if (response.status === 401) this.session.clear(failure.message);
+      if (response.status === 401 && path !== '/auth/login') this.session.clear(failure.message);
+      if (code === 'CSRF_INVALID' || code === 'CSRF_REJECTED') this.session.forgetCsrf();
       throw failure;
     }
     if (!('data' in body) || !requestId)

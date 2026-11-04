@@ -1,0 +1,1143 @@
+{
+  "config": {
+    "argv": [
+      "C:\\Program Files\\nodejs\\node.exe",
+      "D:\\UIT\\PROJECT\\SE104_PROJECT\\EPL\\Whistle-EPL\\node_modules\\@playwright\\test\\cli.js",
+      "test"
+    ],
+    "configFile": "D:\\UIT\\PROJECT\\SE104_PROJECT\\EPL\\Whistle-EPL\\playwright.config.ts",
+    "rootDir": "D:/UIT/PROJECT/SE104_PROJECT/EPL/Whistle-EPL/tests/e2e",
+    "failOnFlakyTests": false,
+    "forbidOnly": true,
+    "fullyParallel": false,
+    "globalSetup": "D:\\UIT\\PROJECT\\SE104_PROJECT\\EPL\\Whistle-EPL\\tests\\e2e\\global-setup.ts",
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "D:/UIT/PROJECT/SE104_PROJECT/EPL/Whistle-EPL/.verification/browser-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chrome",
+        "name": "chrome",
+        "testDir": "D:/UIT/PROJECT/SE104_PROJECT/EPL/Whistle-EPL/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/auth.spec.ts"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "D:/UIT/PROJECT/SE104_PROJECT/EPL/Whistle-EPL/.verification/browser-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "edge",
+        "name": "edge",
+        "testDir": "D:/UIT/PROJECT/SE104_PROJECT/EPL/Whistle-EPL/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/auth.spec.ts"
+        ],
+        "timeout": 30000
+      }
+    ],
+    "filteredProjects": [
+      {
+        "grep": {},
+        "grepInvert": null,
+        "outputDir": "D:\\UIT\\PROJECT\\SE104_PROJECT\\EPL\\Whistle-EPL\\.verification\\browser-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "name": "chrome",
+        "testDir": "D:\\UIT\\PROJECT\\SE104_PROJECT\\EPL\\Whistle-EPL\\tests\\e2e",
+        "snapshotDir": "D:\\UIT\\PROJECT\\SE104_PROJECT\\EPL\\Whistle-EPL\\tests\\e2e",
+        "testIgnore": [],
+        "testMatch": "**/auth.spec.ts",
+        "timeout": 30000,
+        "use": {
+          "baseURL": "https://localhost:55444",
+          "ignoreHTTPSErrors": false,
+          "viewport": {
+            "width": 1440,
+            "height": 900
+          },
+          "trace": "off",
+          "screenshot": "off",
+          "video": "off",
+          "browserName": "chromium",
+          "channel": "chrome"
+        },
+        "dependencies": [],
+        "ignoreSnapshots": false,
+        "__projectId": "chrome"
+      },
+      {
+        "grep": {},
+        "grepInvert": null,
+        "outputDir": "D:\\UIT\\PROJECT\\SE104_PROJECT\\EPL\\Whistle-EPL\\.verification\\browser-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "name": "edge",
+        "testDir": "D:\\UIT\\PROJECT\\SE104_PROJECT\\EPL\\Whistle-EPL\\tests\\e2e",
+        "snapshotDir": "D:\\UIT\\PROJECT\\SE104_PROJECT\\EPL\\Whistle-EPL\\tests\\e2e",
+        "testIgnore": [],
+        "testMatch": "**/auth.spec.ts",
+        "timeout": 30000,
+        "use": {
+          "baseURL": "https://localhost:55444",
+          "ignoreHTTPSErrors": false,
+          "viewport": {
+            "width": 1440,
+            "height": 900
+          },
+          "trace": "off",
+          "screenshot": "off",
+          "video": "off",
+          "browserName": "chromium",
+          "channel": "msedge"
+        },
+        "dependencies": [],
+        "ignoreSnapshots": false,
+        "__projectId": "edge"
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": ".verification/browser-results/report.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "default",
+    "updateSourceMethod": "patch",
+    "version": "1.64.1",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "auth.spec.ts",
+      "file": "auth.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "expired prelogin protection renews only on an explicit retry and keeps safe input",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [
+                {
+                  "type": "browser-version",
+                  "description": "chrome: 156.0.8078.81"
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "chrome",
+              "projectName": "chrome",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 943,
+                  "errors": [],
+                  "stdout": [
+                    {
+                      "text": "chrome: 156.0.8078.81; trusted HTTPS, synthetic isolated fixtures\n"
+                    }
+                  ],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-04T12:39:36.787Z",
+                  "annotations": [
+                    {
+                      "type": "browser-version",
+                      "description": "chrome: 156.0.8078.81"
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "d748ac400d08b85935ef-25ae1089b483244c7ebd",
+          "file": "auth.spec.ts",
+          "line": 8,
+          "column": 5
+        },
+        {
+          "title": "lost connection does not replay login and requires an explicit session check",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [
+                {
+                  "type": "browser-version",
+                  "description": "chrome: 156.0.8078.81"
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "chrome",
+              "projectName": "chrome",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 790,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-04T12:39:38.070Z",
+                  "annotations": [
+                    {
+                      "type": "browser-version",
+                      "description": "chrome: 156.0.8078.81"
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "d748ac400d08b85935ef-400aac4961136ded0881",
+          "file": "auth.spec.ts",
+          "line": 29,
+          "column": 5
+        },
+        {
+          "title": "required-field feedback stays Vietnamese in an English browser and layouts fit desktop/mobile",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [
+                {
+                  "type": "browser-version",
+                  "description": "chrome: 156.0.8078.81"
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "chrome",
+              "projectName": "chrome",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1240,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-04T12:39:38.867Z",
+                  "annotations": [
+                    {
+                      "type": "browser-version",
+                      "description": "chrome: 156.0.8078.81"
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "d748ac400d08b85935ef-0f51da04b37ff0682095",
+          "file": "auth.spec.ts",
+          "line": 65,
+          "column": 5
+        },
+        {
+          "title": "temporary login, restricted routing, Unicode change, all-session invalidation and new login",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [
+                {
+                  "type": "browser-version",
+                  "description": "chrome: 156.0.8078.81"
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "chrome",
+              "projectName": "chrome",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2382,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-04T12:39:40.134Z",
+                  "annotations": [
+                    {
+                      "type": "browser-version",
+                      "description": "chrome: 156.0.8078.81"
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "d748ac400d08b85935ef-86f36a39f693d4d4c32d",
+          "file": "auth.spec.ts",
+          "line": 94,
+          "column": 5
+        },
+        {
+          "title": "same-session tabs share CSRF; logout clears those tabs and leaves an independent session valid",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [
+                {
+                  "type": "browser-version",
+                  "description": "chrome: 156.0.8078.81"
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "chrome",
+              "projectName": "chrome",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2228,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-04T12:39:42.553Z",
+                  "annotations": [
+                    {
+                      "type": "browser-version",
+                      "description": "chrome: 156.0.8078.81"
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "d748ac400d08b85935ef-4d25ac0c8e4c207fc24c",
+          "file": "auth.spec.ts",
+          "line": 128,
+          "column": 5
+        },
+        {
+          "title": "idle invalidates access and never replays a pending password write",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [
+                {
+                  "type": "browser-version",
+                  "description": "chrome: 156.0.8078.81"
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "chrome",
+              "projectName": "chrome",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1305,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-04T12:39:44.842Z",
+                  "annotations": [
+                    {
+                      "type": "browser-version",
+                      "description": "chrome: 156.0.8078.81"
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "d748ac400d08b85935ef-4fa62cf2d3a6fd4f39ab",
+          "file": "auth.spec.ts",
+          "line": 168,
+          "column": 7
+        },
+        {
+          "title": "absolute invalidates access and never replays a pending password write",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [
+                {
+                  "type": "browser-version",
+                  "description": "chrome: 156.0.8078.81"
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "chrome",
+              "projectName": "chrome",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1248,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-04T12:39:46.177Z",
+                  "annotations": [
+                    {
+                      "type": "browser-version",
+                      "description": "chrome: 156.0.8078.81"
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "d748ac400d08b85935ef-25b3be39a5c51895ad96",
+          "file": "auth.spec.ts",
+          "line": 168,
+          "column": 7
+        },
+        {
+          "title": "revoke invalidates access and never replays a pending password write",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [
+                {
+                  "type": "browser-version",
+                  "description": "chrome: 156.0.8078.81"
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "chrome",
+              "projectName": "chrome",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1373,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-04T12:39:47.453Z",
+                  "annotations": [
+                    {
+                      "type": "browser-version",
+                      "description": "chrome: 156.0.8078.81"
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "d748ac400d08b85935ef-4ba321332b83cd21685e",
+          "file": "auth.spec.ts",
+          "line": 168,
+          "column": 7
+        },
+        {
+          "title": "lock invalidates access and never replays a pending password write",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [
+                {
+                  "type": "browser-version",
+                  "description": "chrome: 156.0.8078.81"
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "chrome",
+              "projectName": "chrome",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1185,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-04T12:39:48.865Z",
+                  "annotations": [
+                    {
+                      "type": "browser-version",
+                      "description": "chrome: 156.0.8078.81"
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "d748ac400d08b85935ef-0f5eac86c82db5f5328c",
+          "file": "auth.spec.ts",
+          "line": 168,
+          "column": 7
+        },
+        {
+          "title": "generic credential failure preserves username, clears password, and supports retry",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [
+                {
+                  "type": "browser-version",
+                  "description": "chrome: 156.0.8078.81"
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "chrome",
+              "projectName": "chrome",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 969,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-04T12:39:50.095Z",
+                  "annotations": [
+                    {
+                      "type": "browser-version",
+                      "description": "chrome: 156.0.8078.81"
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "d748ac400d08b85935ef-a2f962f649f316d0194f",
+          "file": "auth.spec.ts",
+          "line": 197,
+          "column": 5
+        },
+        {
+          "title": "wrong current password and confirmation errors keep the change screen and clear secret fields",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [
+                {
+                  "type": "browser-version",
+                  "description": "chrome: 156.0.8078.81"
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "chrome",
+              "projectName": "chrome",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1171,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-04T12:39:51.118Z",
+                  "annotations": [
+                    {
+                      "type": "browser-version",
+                      "description": "chrome: 156.0.8078.81"
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "d748ac400d08b85935ef-e0269d4553c78b275589",
+          "file": "auth.spec.ts",
+          "line": 210,
+          "column": 5
+        },
+        {
+          "title": "expired prelogin protection renews only on an explicit retry and keeps safe input",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [
+                {
+                  "type": "browser-version",
+                  "description": "edge: 156.0.4314.58"
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "edge",
+              "projectName": "edge",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1026,
+                  "errors": [],
+                  "stdout": [
+                    {
+                      "text": "edge: 156.0.4314.58; trusted HTTPS, synthetic isolated fixtures\n"
+                    }
+                  ],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-04T12:39:54.186Z",
+                  "annotations": [
+                    {
+                      "type": "browser-version",
+                      "description": "edge: 156.0.4314.58"
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "d748ac400d08b85935ef-cc8225c894df24c9cd1d",
+          "file": "auth.spec.ts",
+          "line": 8,
+          "column": 5
+        },
+        {
+          "title": "lost connection does not replay login and requires an explicit session check",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [
+                {
+                  "type": "browser-version",
+                  "description": "edge: 156.0.4314.58"
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "edge",
+              "projectName": "edge",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 898,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-04T12:39:55.504Z",
+                  "annotations": [
+                    {
+                      "type": "browser-version",
+                      "description": "edge: 156.0.4314.58"
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "d748ac400d08b85935ef-96ce7f675f79baa8db4a",
+          "file": "auth.spec.ts",
+          "line": 29,
+          "column": 5
+        },
+        {
+          "title": "required-field feedback stays Vietnamese in an English browser and layouts fit desktop/mobile",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [
+                {
+                  "type": "browser-version",
+                  "description": "edge: 156.0.4314.58"
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "edge",
+              "projectName": "edge",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1675,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-04T12:39:56.420Z",
+                  "annotations": [
+                    {
+                      "type": "browser-version",
+                      "description": "edge: 156.0.4314.58"
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "d748ac400d08b85935ef-ddc6ad8751c850d0755d",
+          "file": "auth.spec.ts",
+          "line": 65,
+          "column": 5
+        },
+        {
+          "title": "temporary login, restricted routing, Unicode change, all-session invalidation and new login",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [
+                {
+                  "type": "browser-version",
+                  "description": "edge: 156.0.4314.58"
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "edge",
+              "projectName": "edge",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2781,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-04T12:39:58.122Z",
+                  "annotations": [
+                    {
+                      "type": "browser-version",
+                      "description": "edge: 156.0.4314.58"
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "d748ac400d08b85935ef-6213ce8f1c1e8ee6360a",
+          "file": "auth.spec.ts",
+          "line": 94,
+          "column": 5
+        },
+        {
+          "title": "same-session tabs share CSRF; logout clears those tabs and leaves an independent session valid",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [
+                {
+                  "type": "browser-version",
+                  "description": "edge: 156.0.4314.58"
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "edge",
+              "projectName": "edge",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2987,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-04T12:40:00.945Z",
+                  "annotations": [
+                    {
+                      "type": "browser-version",
+                      "description": "edge: 156.0.4314.58"
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "d748ac400d08b85935ef-df84ab9d4c1fd702015d",
+          "file": "auth.spec.ts",
+          "line": 128,
+          "column": 5
+        },
+        {
+          "title": "idle invalidates access and never replays a pending password write",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [
+                {
+                  "type": "browser-version",
+                  "description": "edge: 156.0.4314.58"
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "edge",
+              "projectName": "edge",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1630,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-04T12:40:04.021Z",
+                  "annotations": [
+                    {
+                      "type": "browser-version",
+                      "description": "edge: 156.0.4314.58"
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "d748ac400d08b85935ef-301c7a5d946917e7121d",
+          "file": "auth.spec.ts",
+          "line": 168,
+          "column": 7
+        },
+        {
+          "title": "absolute invalidates access and never replays a pending password write",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [
+                {
+                  "type": "browser-version",
+                  "description": "edge: 156.0.4314.58"
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "edge",
+              "projectName": "edge",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1595,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-04T12:40:05.695Z",
+                  "annotations": [
+                    {
+                      "type": "browser-version",
+                      "description": "edge: 156.0.4314.58"
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "d748ac400d08b85935ef-a68d3ca5572510ec2ce8",
+          "file": "auth.spec.ts",
+          "line": 168,
+          "column": 7
+        },
+        {
+          "title": "revoke invalidates access and never replays a pending password write",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [
+                {
+                  "type": "browser-version",
+                  "description": "edge: 156.0.4314.58"
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "edge",
+              "projectName": "edge",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1692,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-04T12:40:07.334Z",
+                  "annotations": [
+                    {
+                      "type": "browser-version",
+                      "description": "edge: 156.0.4314.58"
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "d748ac400d08b85935ef-323682f71c9e052fb2d7",
+          "file": "auth.spec.ts",
+          "line": 168,
+          "column": 7
+        },
+        {
+          "title": "lock invalidates access and never replays a pending password write",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [
+                {
+                  "type": "browser-version",
+                  "description": "edge: 156.0.4314.58"
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "edge",
+              "projectName": "edge",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1339,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-04T12:40:09.076Z",
+                  "annotations": [
+                    {
+                      "type": "browser-version",
+                      "description": "edge: 156.0.4314.58"
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "d748ac400d08b85935ef-855a913ed7f05c6f055e",
+          "file": "auth.spec.ts",
+          "line": 168,
+          "column": 7
+        },
+        {
+          "title": "generic credential failure preserves username, clears password, and supports retry",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [
+                {
+                  "type": "browser-version",
+                  "description": "edge: 156.0.4314.58"
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "edge",
+              "projectName": "edge",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1204,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-04T12:40:10.482Z",
+                  "annotations": [
+                    {
+                      "type": "browser-version",
+                      "description": "edge: 156.0.4314.58"
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "d748ac400d08b85935ef-6dec63556f76d89c3f14",
+          "file": "auth.spec.ts",
+          "line": 197,
+          "column": 5
+        },
+        {
+          "title": "wrong current password and confirmation errors keep the change screen and clear secret fields",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [
+                {
+                  "type": "browser-version",
+                  "description": "edge: 156.0.4314.58"
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "edge",
+              "projectName": "edge",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1434,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-04T12:40:11.771Z",
+                  "annotations": [
+                    {
+                      "type": "browser-version",
+                      "description": "edge: 156.0.4314.58"
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "d748ac400d08b85935ef-7d386019f58d31ea5499",
+          "file": "auth.spec.ts",
+          "line": 210,
+          "column": 5
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-11-04T12:39:35.180Z",
+    "duration": 40182.154,
+    "expected": 22,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

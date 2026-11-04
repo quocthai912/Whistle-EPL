@@ -8,6 +8,7 @@
     "pnpm": "10.33.2"
   },
   "scripts": {
+    "test:e2e": "tsc -p tests/e2e/tsconfig.json && playwright test",
     "admin:bootstrap": "node backend/dist/cli/bootstrap-admin.js",
     "admin:recover": "node backend/dist/cli/recover-admin.js",
     "ops:maintenance": "bash ops/backup/maintenance.sh",
@@ -23,16 +24,17 @@
     "verify:native": "pnpm --filter @whistle-epl/backend exec node scripts/verify-native.cjs",
     "verify:client": "pnpm --filter @whistle-epl/backend exec node scripts/verify-client.cjs",
     "verify:commands": "node --test docs/verification/phase-1/root-commands.test.mjs",
-    "lint": "pnpm -r --no-bail run lint && pnpm exec eslint eslint.config.mjs ops/backup/*.cjs",
-    "typecheck": "pnpm db:generate && pnpm -r --no-bail run typecheck",
-    "format": "prettier --write \"{frontend,backend,ops}/**/*.{ts,tsx,js,cjs,mjs,json,css,html}\" package.json pnpm-workspace.yaml eslint.config.mjs .prettierrc.json",
-    "format:check": "prettier --check \"{frontend,backend,ops}/**/*.{ts,tsx,js,cjs,mjs,json,css,html}\" package.json pnpm-workspace.yaml eslint.config.mjs .prettierrc.json",
+    "lint": "pnpm -r --no-bail run lint && pnpm exec eslint eslint.config.mjs ops/backup/*.cjs playwright.config.ts tests/e2e/*.ts",
+    "typecheck": "pnpm db:generate && pnpm -r --no-bail run typecheck && tsc -p tests/e2e/tsconfig.json",
+    "format": "prettier --write \"{frontend,backend,ops,tests}/**/*.{ts,tsx,js,cjs,mjs,json,css,html}\" package.json pnpm-workspace.yaml eslint.config.mjs playwright.config.ts .prettierrc.json",
+    "format:check": "prettier --check \"{frontend,backend,ops,tests}/**/*.{ts,tsx,js,cjs,mjs,json,css,html}\" package.json pnpm-workspace.yaml eslint.config.mjs playwright.config.ts .prettierrc.json",
     "build": "pnpm db:generate && pnpm -r --no-bail run build && pnpm verify:client",
     "test": "pnpm test:unit",
     "test:unit": "pnpm db:generate && pnpm -r --no-bail run test:unit"
   },
   "devDependencies": {
     "@eslint/js": "9.39.5",
+    "@playwright/test": "1.64.1",
     "@types/node": "24.19.2",
     "eslint": "9.39.5",
     "eslint-plugin-react-hooks": "7.1.1",
