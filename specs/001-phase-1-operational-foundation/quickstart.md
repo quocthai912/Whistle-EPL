@@ -68,12 +68,18 @@ when necessary. Do not substitute npm/yarn commands or create competing lockfile
 ## Running the implemented browser suite
 
 Provision a dedicated local `whistle_test_browser` (or suffixed) database and trusted same-origin
-HTTPS frontend/backend. In PowerShell set `NODE_ENV=test`, `E2E_BASE_URL` to the exact local
+HTTPS frontend/backend. Before setting the reset acknowledgment or running the suite,
+independently verify that the target host, port and database resolve to the intended disposable
+E2E database, not an operational, shared integration or manual-preview database. A test-like
+database name or loopback address alone does not establish this.
+In PowerShell set `NODE_ENV=test`, `E2E_BASE_URL` to the exact local
 HTTPS origin, `E2E_TEST_DATABASE_URL` through the protected test profile and
 `E2E_RESET_ACK=RESET_ISOLATED_TEST_DATABASE`, then run `pnpm test:e2e`.
-The global setup resets only that dedicated database, refuses shared integration/operational
-targets and requires the explicit acknowledgment. Never use the manual-preview account database
-as this reset target. See the UI/browser evidence for the exact executed profile and versions.
+The global setup truncates fixture tables in the selected database and requires the explicit
+acknowledgment. Its guards check test mode and URL/name restrictions, and compare against
+`DATABASE_URL` only when supplied; they do not guarantee rejection of every operational or
+shared target. Strengthening that guard is a separate change. See the UI/browser evidence
+for the exact executed profile and versions.
 
 ## Fresh Installation Walkthrough — US1
 
