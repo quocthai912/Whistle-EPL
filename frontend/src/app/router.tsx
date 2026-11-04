@@ -1,6 +1,6 @@
 import { Alert, Empty, Spin } from 'antd';
-import { Navigate, Route, Routes } from 'react-router';
-import { useSession } from '../shared/http/use-session';
+import { Link, Route, Routes } from 'react-router';
+import { AuthRoute } from '../features/auth/auth-routes';
 
 export function LoadingState() {
   return (
@@ -16,33 +16,25 @@ export function ErrorState() {
   return <Alert type="error" title="Không thể tải dữ liệu. Vui lòng thử lại." />;
 }
 
-function ProtectedShell() {
-  const { session } = useSession();
-  if (!session) return <Navigate to="/login" replace />;
-  if (session.changeRequired) return <Navigate to="/change-password" replace />;
-  return <EmptyState />;
-}
-function LoginShell() {
-  const { notice } = useSession();
-  return (
-    <>
-      {notice && <Alert type="warning" title={notice} />}
-      <EmptyState />
-    </>
-  );
-}
 export function FoundationRouter() {
   return (
     <Routes>
-      <Route path="/" element={<EmptyState />} />
-      <Route path="/login" element={<LoginShell />} />
-      <Route path="/change-password" element={<ChangePasswordShell />} />
-      <Route path="/internal" element={<ProtectedShell />} />
+      <Route
+        path="/"
+        element={
+          <main style={{ padding: 32 }}>
+            <h1>Whistle-EPL</h1>
+            <h2>Nền tảng quản trị giải đấu</h2>
+            <EmptyState />
+            <Link to="/login">Đăng nhập</Link>
+          </main>
+        }
+      />
+      <Route path="/login" element={<AuthRoute page="login" />} />
+      <Route path="/change-password" element={<AuthRoute page="change" />} />
+      <Route path="/internal" element={<AuthRoute page="internal" />} />
+      <Route path="/admin/*" element={<AuthRoute page="internal" />} />
       <Route path="*" element={<ErrorState />} />
     </Routes>
   );
-}
-function ChangePasswordShell() {
-  const { session } = useSession();
-  return session ? <EmptyState /> : <Navigate to="/login" replace />;
 }

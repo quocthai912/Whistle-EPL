@@ -1,11 +1,13 @@
 # PHASE 1 Planning Research
 
+**UI/browser publication (2026-11-04):** T027–T028 are implemented, verified and published at [`b06075f`](https://github.com/quocthai912/Whistle-EPL/commit/b06075f7a3677fb7e351160a89f59fdaa81f9fc5) on `feat/phase-1-authentication-frontend` (review base `91ff5820ad77ef75bb75aa1576df32ab53edeb10`). The live remote ref and all 30 final source-manifest entries were verified against that commit. [Authentication UI/browser evidence](../../docs/verification/phase-1/authentication-ui.md) distinguishes the initial 22-scenario real Chrome/Edge HTTPS run from subsequent visual refinements and their scoped checks. T029–T048 and Team Leader/PHASE 1 acceptance remain pending; PHASE 1 remains `IN_PROGRESS`. This publication update changes no approved requirements, task dependencies or historical approvals.
+
 **Date**: 2026-10-28. **Scope**: Derived design within approved D001-D098, not a new ADR,
 installed dependency set or software acceptance. Two read-only research agents examined
 toolchain reproducibility and security/transaction mechanisms; the main agent reconciled
 their findings against the approved Specification and Context.
 
-**Execution follow-up (2026-10-29)**: T001–T014 are verified and published at `892f172`;
+**Historical execution follow-up (2026-10-29)**: T001–T014 are verified and published at `892f172`;
 T015–T022 operator/deployment/recovery work is implemented, verified and published at [`7ac09e6`](https://github.com/quocthai912/Whistle-EPL/commit/7ac09e6cec9fb434248c82db142ab04695961823) on `feat/phase-1-operations-recovery` (review base `30506e3`), with [operator evidence](../../docs/verification/phase-1/operator-foundation.md); the live remote branch and all 68 manifest entries were verified against that commit.
 T023–T026 authentication/session/throttle work is implemented, verified and published at [`5cfa666`](https://github.com/quocthai912/Whistle-EPL/commit/5cfa666a7550c9b1d06cc21926dba7e2f27c1a26) on `feat/phase-1-authentication-backend` (review base `7e28810`); see [authentication evidence](../../docs/verification/phase-1/authentication.md). The live remote ref and all 28 authentication manifest entries match that commit. T027–T048 and Phase acceptance remain pending.
 [Task status](tasks.md) and the [Phase ledger](../../context/progress-checker.md#phase-1-execution-evidence---2026-10-29)

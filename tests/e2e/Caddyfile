@@ -1,0 +1,11 @@
+localhost {
+  tls internal
+  handle /api/v1/* {
+    reverse_proxy whistle-browser-backend:3000
+  }
+  handle {
+    root * /srv
+    try_files {path} /index.html
+    file_server
+  }
+}
