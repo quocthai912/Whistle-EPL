@@ -1,5 +1,6 @@
 import type { TransactionContext } from '../platform/transaction-context';
 
+/** Revokes all live sessions or only those issued before a timed delegation boundary. */
 export async function invalidateSessions(
   context: TransactionContext,
   accountId: string,

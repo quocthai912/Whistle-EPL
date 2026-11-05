@@ -8,6 +8,7 @@ function database() {
   return new DatabaseService(assertIsolatedTarget(process.env.E2E_TEST_DATABASE_URL ?? ''));
 }
 
+/** Prepares isolated accounts and seasons whose credentials can exercise the full administration workflows. */
 export async function browserAdministration() {
   const fixtures = await createPhase1Fixtures(
     assertIsolatedTarget(process.env.E2E_TEST_DATABASE_URL ?? ''),

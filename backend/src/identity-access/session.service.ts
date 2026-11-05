@@ -12,6 +12,7 @@ export class SessionService {
     private readonly database: DatabaseService,
     private readonly security = new SecurityPrimitivesService(),
   ) {}
+  /** Resolves due delegation boundaries before returning a token match for the transaction's live-session check. */
   async candidate(token?: string): Promise<Session | null> {
     if (!token || !/^[\w-]{43}$/.test(token)) return null;
     const session = await this.database.client.session.findUnique({
@@ -39,6 +40,7 @@ export class SessionService {
   locks(candidate: Session): LockResource[] {
     return [{ kind: 'account', key: candidate.accountId, mode: 'exclusive' }];
   }
+  /** Rejects revoked, stale and expired sessions, including when a delegation boundary crosses during a lock wait. */
   async require(context: TransactionContext, candidate: Session, now: Date): Promise<LiveSession> {
     const session = await context.db.session.findUnique({ where: { id: candidate.id } });
     const account = await context.db.account.findUnique({ where: { id: candidate.accountId } });

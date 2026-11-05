@@ -5,6 +5,7 @@ import { ClockService } from './clock.service';
 import { ApplicationError } from './application-error';
 import { LockSetChanged, TransactionContext, type LockResource } from './transaction-context';
 
+/** Recognizes failures that establish a rollback and are therefore safe to retry. */
 function knownRollback(error: unknown): boolean {
   if (error instanceof LockSetChanged) return true;
   if (!error || typeof error !== 'object') return false;
@@ -35,6 +36,7 @@ export class DatabaseService {
     return this.clock.now(this.client);
   }
 
+  /** Runs an admitted transaction under ordered locks and retries only failures known to have rolled back. */
   async write<T>(
     locks: readonly LockResource[],
     authority: (context: TransactionContext, now: Date) => Promise<void>,

@@ -87,6 +87,7 @@ export type Grant = {
   reason: string | null;
   basis: string | null;
 };
+/** Displays a stored instant in Vietnam time, with a placeholder for an absent value. */
 export const formatVietnamTime = (value: string | null) =>
   value
     ? new Intl.DateTimeFormat('vi-VN', {

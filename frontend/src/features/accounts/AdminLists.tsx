@@ -1,6 +1,7 @@
 import { stateNames, type List } from './administration-model';
 import css from './Administration.module.css';
 
+/** Displays the localized label for a persisted account, proposal or grant state. */
 export function StateBadge({ state }: { state: string }) {
   return (
     <span className={css.badge} data-state={state}>
@@ -8,6 +9,7 @@ export function StateBadge({ state }: { state: string }) {
     </span>
   );
 }
+/** Shows request progress, a retryable failure or an empty result independently of visible rows. */
 export function ListFeedback({
   loading,
   error,

@@ -75,8 +75,9 @@ wire codes are mapped once in the contract and must not introduce a seventh busi
 
 The published US3 schema adds `delegation_version.recipient_id` in
 `202611050001_delegation_version_recipient`. New versions retain their recipient when
-a returned case receives a successor. The migration backfills existing versions and
-adds database checks for submitted recipient immutability and grant/version agreement.
+a returned case receives a successor. The migration backfills only the current version
+from the case recipient. Older versions without a recorded recipient keep a null value.
+Database checks enforce submitted recipient immutability and grant/version agreement.
 
 ## State and Consistency Rules
 

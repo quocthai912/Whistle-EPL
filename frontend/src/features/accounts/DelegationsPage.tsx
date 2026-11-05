@@ -30,11 +30,14 @@ const eligible: Record<keyof typeof actionNames, string[]> = {
   APPROVE_SCHEDULE_ADJUSTMENT: ['SCHEDULING_OFFICER'],
   PREPARE_OFFICIAL_RESULT_CORRECTION: ['RESULTS_OFFICER'],
 };
+/** Formats a stored instant for a datetime input in Vietnam time. */
 const dateInput = (value: string | null | undefined) =>
   value ? new Date(new Date(value).getTime() + 7 * 3600000).toISOString().slice(0, 16) : '';
+/** Converts a Vietnam-local input to the UTC instant accepted by the delegation contract. */
 const toInstant = (value: string | undefined) =>
   value ? new Date(value + '+07:00').toISOString() : undefined;
 const reasonField: Field = { name: 'reason', label: 'Lý do', type: 'textarea' };
+/** Builds the exact proposal basis displayed during confirmation and conflict review. */
 const describe = (row: Proposal) => {
   const version = row.currentVersion;
   return [
@@ -54,6 +57,7 @@ const describe = (row: Proposal) => {
     .join(' · ');
 };
 
+/** Separates proposal processing from granted authority and exposes actions for the caller's current roles. */
 export function DelegationsPage() {
   const { session, client } = useSession();
   const administrator = session?.systemAdministrator ?? false;
@@ -80,6 +84,7 @@ export function DelegationsPage() {
     setCommand(action);
   }
 
+  /** Finds the exact target in the authorized paginated list when the user requests a fresh command basis. */
   async function readRow<T extends { id: string }>(path: string, id: string) {
     for (let page = 1; ; page++) {
       const { data } = await client.request<List<T>>(path + '&pageSize=100&page=' + page);
@@ -95,6 +100,7 @@ export function DelegationsPage() {
   async function readProposal(row: Proposal) {
     return readRow<Proposal>('/delegation-proposals?seasonId=' + row.season.id, row.id);
   }
+  /** Prepares a transition bound to the selected version and requests a reason for return or rejection. */
   function process(row: Proposal, operation: Operation) {
     open({
       title: labels[operation],
@@ -107,10 +113,12 @@ export function DelegationsPage() {
         operation === 'grant' ? 'Quyền được cấp theo đúng nội dung phiên bản đã gửi.' : undefined,
     });
   }
+  /** Prepares the draft form, constraining recipient choices by season and operation. */
   function edit(row?: Proposal) {
     if (!metadata) return;
     const version = row?.currentVersion;
     const selectable = metadata.proposalSeasons;
+    /** Derives draft fields and eligible recipients from the current form selections. */
     const fields = (values: Record<string, string>): Field[] => {
       const seasonId = row?.season.id ?? values.seasonId;
       const roles = eligible[values.actionCode as keyof typeof eligible] ?? [];
@@ -230,6 +238,7 @@ export function DelegationsPage() {
         ),
     });
   }
+  /** Offers proposer and administrator actions according to the proposal state and person-separation rules. */
   function proposalActions(row: Proposal) {
     const own =
       row.proposer.id === session?.account.id && session.seasonManagerIds?.includes(row.season.id);
@@ -443,8 +452,11 @@ export function DelegationsPage() {
                   Phiên bản {version.versionNumber} · <StateBadge state={version.state} />
                 </h3>
                 <p>
-                  {version.recipient?.fullName ?? detail.recipient.fullName} ·{' '}
-                  {actionNames[version.actionCode]}
+                  {version.recipient?.fullName ??
+                    (version.id === detail.currentVersion.id
+                      ? detail.recipient.fullName
+                      : 'Chưa xác định người nhận')}{' '}
+                  · {actionNames[version.actionCode]}
                 </p>
                 <p>
                   {version.startMode === 'IMMEDIATE'

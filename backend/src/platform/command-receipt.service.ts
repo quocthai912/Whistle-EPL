@@ -57,6 +57,7 @@ function safeOutcome(value: unknown): ReceiptOutcome {
 }
 
 export class CommandReceiptService {
+  /** Validates the receipt fields and canonicalizes values exactly as needed for an intent digest. */
   private normalize(command: ReceiptCommand): ReceiptCommand {
     const allowed: readonly string[] = fields[command.action];
     if (

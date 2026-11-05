@@ -35,6 +35,7 @@ export class TransactionContext {
     await this.authority(this, await this.now());
   }
 
+  /** Acquires the full lock set once, then restarts acquisition if concurrent changes introduced an uncovered resource. */
   async acquire(
     locks: readonly LockResource[],
     discover?: (db: Prisma.TransactionClient) => Promise<LockResource[]>,
@@ -58,6 +59,7 @@ export class TransactionContext {
     }
   }
 
+  /** Deduplicates locks, retaining the strongest mode, and acquires them in the shared resource order. */
   private async acquireOrdered(locks: readonly LockResource[]): Promise<void> {
     const unique = new Map<string, LockResource>();
     for (const lock of locks) {

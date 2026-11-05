@@ -12,6 +12,7 @@ const prerequisites = {
 };
 const tabs = ['Thông tin tài khoản', 'Vai trò hệ thống', 'Phân công mùa giải', 'Quyền dùng chung'];
 
+/** Separates account details, system roles, season assignments and shared rights in the account drawer. */
 export function GrantsPanel({
   account,
   seasons,

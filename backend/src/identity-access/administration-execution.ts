@@ -25,6 +25,7 @@ export class AdministrationExecution {
     private readonly auth: AuthService,
   ) {}
 
+  /** Checks the live session and endpoint authority under ordered locks, adding origin and CSRF validation for mutations. */
   async run<T>(
     request: Request,
     work: Work<T>,
@@ -38,6 +39,7 @@ export class AdministrationExecution {
     if (options.write) this.auth.csrf.requireOrigin(request, process.env.AUTH_ORIGIN ?? '');
     const candidate = await this.auth.sessions.candidate(readCookie(request, SESSION_COOKIE));
     if (!candidate) return this.auth.sessions.missing();
+    /** Rechecks session state and the operation's current authority after lock acquisition. */
     const check = async (context: TransactionContext, now: Date) => {
       const live = await this.auth.sessions.require(context, candidate, now);
       if (live.account.mustChangePassword) throw denied();
@@ -60,6 +62,7 @@ export class AdministrationExecution {
     );
   }
 
+  /** Binds the protected request's idempotency key to the action, target and normalized intent. */
   async critical(
     context: TransactionContext,
     request: Request,
@@ -102,6 +105,7 @@ export class AdministrationExecution {
     });
   }
 
+  /** Loads an administration target inside the authorized transaction or returns a safe not-found error. */
   async subject(context: TransactionContext, id: string) {
     const account = await context.db.account.findUnique({ where: { id } });
     if (!account) throw missing();

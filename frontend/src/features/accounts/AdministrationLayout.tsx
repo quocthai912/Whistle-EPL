@@ -5,6 +5,7 @@ import { AccountsPage } from './AccountsPage';
 import { DelegationsPage } from './DelegationsPage';
 import css from './Administration.module.css';
 
+/** Shows the selected administration page only to sessions with the corresponding role. */
 export default function AdministrationLayout({ page }: { page: 'accounts' | 'delegations' }) {
   const { session } = useSession();
   const admin = session?.systemAdministrator;

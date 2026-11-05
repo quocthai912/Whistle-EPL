@@ -27,6 +27,7 @@ export type AdminCommand = {
   preview?: (values: Values) => string | undefined;
 };
 
+/** Confirms an administration command and presents conflict or uncertain-outcome recovery. */
 export function AdminDialog({
   command,
   onClose,
@@ -48,6 +49,7 @@ export function AdminDialog({
   const conflict = failure instanceof HttpFailure && failure.status === 409;
   const uncertain = failure instanceof HttpFailure && failure.unknownOutcome;
 
+  /** Sends the confirmed intent, retaining the original key only when a critical command needs outcome recovery. */
   async function submit(event: FormEvent) {
     event.preventDefault();
     if (busy || conflict || (uncertain && !unknown)) return;
@@ -88,6 +90,7 @@ export function AdminDialog({
     }
   }
 
+  /** Fetches the current revision for explicit review without submitting the command again. */
   async function review() {
     if (!command.readBasis) return;
     setBusy(true);

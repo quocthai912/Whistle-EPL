@@ -55,11 +55,13 @@ export class PermissionDto extends RevisionDto {
   @IsIn(permissionKinds) kind!: PermissionKind;
 }
 
+/** Validates a version-4 UUID before it reaches a PostgreSQL lookup and returns its canonical lowercase form. */
 export function uuid(value: string): string {
   if (!/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value))
     throw invalid();
   return value.toLowerCase();
 }
+/** Applies the field's approved whitespace rules before checking its Unicode length and requiredness. */
 export function businessText(input: string, field: 'name' | 'reason', required = true): string {
   const value =
     field === 'name'
@@ -75,9 +77,11 @@ export function businessText(input: string, field: 'name' | 'reason', required =
     throw invalid();
   return value;
 }
+/** Rejects a stale edit using decimal-string comparison so bigint revisions keep their full precision. */
 export function assertRevision(current: bigint, expected: string): void {
   if (current.toString() !== expected) throw conflict('REVISION_CONFLICT');
 }
+/** Validates an endpoint's filter and sort allowlists and bounds the pagination offset. */
 export function listQuery(
   query: Record<string, unknown>,
   filters: readonly string[],
@@ -89,6 +93,7 @@ export function listQuery(
   )
     throw invalid();
   const values = query as Record<string, string | undefined>;
+  /** Accepts positive decimal integers within the endpoint's pagination bound. */
   const integer = (value: string, max: number) => {
     if (!/^[1-9][0-9]*$/.test(value) || Number(value) > max) throw invalid();
     return Number(value);

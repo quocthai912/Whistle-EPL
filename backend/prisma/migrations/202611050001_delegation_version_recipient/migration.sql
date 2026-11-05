@@ -2,7 +2,10 @@ BEGIN;
 
 -- Keep the submitted recipient with its version when a returned case changes recipient.
 ALTER TABLE delegation_version ADD COLUMN recipient_id uuid REFERENCES account(id) ON DELETE RESTRICT;
-UPDATE delegation_version v SET recipient_id = c.recipient_id FROM delegation_case c WHERE c.id = v.case_id;
+-- The case identifies the current recipient only; older versions have no reliable source.
+UPDATE delegation_version v SET recipient_id = c.recipient_id
+FROM delegation_case c
+WHERE c.current_version_id = v.id AND c.id = v.case_id;
 
 CREATE FUNCTION preserve_delegation_version_recipient() RETURNS trigger LANGUAGE plpgsql AS $$
 BEGIN

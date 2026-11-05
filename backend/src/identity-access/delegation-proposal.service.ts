@@ -72,6 +72,7 @@ export class DelegationProposalService {
   private readonly boundaries = new DelegationBoundaryService();
   constructor(private readonly execution: AdministrationExecution) {}
 
+  /** Lists all proposals for administrators or only the caller's own proposals within their direct manager scope. */
   proposals(request: Request, query: Record<string, unknown>) {
     const { values, page, pageSize, sort, skip, take } = listQuery(
       query,
@@ -145,6 +146,7 @@ export class DelegationProposalService {
     );
   }
 
+  /** Lists authorized grants and filters lifecycle states at one trusted instant for consistent results. */
   grants(request: Request, query: Record<string, unknown>) {
     const { values, page, pageSize, sort, skip, take } = listQuery(
       query,
@@ -306,6 +308,7 @@ export class DelegationProposalService {
     );
   }
 
+  /** Checks the current version before applying a permitted proposal transition and recording its decision. */
   transition(request: Request, id: string, operation: Transition, input: VersionDto | DecisionDto) {
     const transition = transitions[operation];
     const proposerOperation = operation === 'submit' || operation === 'cancel';
@@ -523,6 +526,7 @@ export class DelegationProposalService {
     );
   }
 
+  /** Admits administrators and direct Season Managers to the delegation lists. */
   private requireReader = async (context: TransactionContext, actor: string) => {
     if (
       !(await isAdministrator(context.db, actor)) &&
@@ -534,10 +538,12 @@ export class DelegationProposalService {
   private requireDirectManager = (context: TransactionContext, actor: string) =>
     this.requireManager(context, actor);
 
+  /** Requires a current direct Season Manager role, in the specified season when one is supplied. */
   private async requireManager(context: TransactionContext, actor: string, seasonId?: string) {
     if (!(await hasSeasonRole(context.db, actor, [manager], seasonId))) throw denied();
   }
 
+  /** Conceals the case from callers who lack both ownership and current direct authority in its season. */
   private async requireProposer(
     context: TransactionContext,
     actor: string,
@@ -550,6 +556,7 @@ export class DelegationProposalService {
       throw missing();
   }
 
+  /** Limits draft recipient lookups to active accounts with a role in the same season. */
   private async requireDraftRecipient(
     context: TransactionContext,
     accountId: string,
@@ -567,6 +574,7 @@ export class DelegationProposalService {
     if (!visible) throw missing();
   }
 
+  /** Loads the proposal with its current version, treating absent cases and version pointers alike. */
   private async current(context: TransactionContext, id: string) {
     const proposal = await context.db.delegationCase.findUnique({
       where: { id },
@@ -576,11 +584,13 @@ export class DelegationProposalService {
     return { proposal, version: proposal.currentVersion };
   }
 
+  /** Binds the command to both the case revision and its exact current version. */
   private checkVersion(proposal: DelegationCase, version: DelegationVersion, input: VersionDto) {
     assertRevision(proposal.revision, input.expectedRevision);
     if (version.id !== uuid(input.versionId)) throw conflict('BASIS_CHANGED');
   }
 
+  /** Checks completeness, same-season eligibility and the effective interval at submission or grant time. */
   private async validateSubmission(
     context: TransactionContext,
     proposal: DelegationCase,
@@ -615,6 +625,7 @@ export class DelegationProposalService {
     );
   }
 
+  /** Discovers the ordered-lock inputs for the case, current version and affected participants. */
   private async caseLocks(db: Prisma.TransactionClient, id: string, additionalRecipient?: string) {
     const row = await db.delegationCase.findUnique({ where: { id } });
     if (!row) return [];
@@ -644,6 +655,7 @@ export class DelegationProposalService {
     });
   }
 
+  /** Audits the draft or edit with its version, recipient and proposed period. */
   private contentEvent(
     context: TransactionContext,
     request: Request,

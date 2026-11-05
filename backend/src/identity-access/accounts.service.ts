@@ -40,6 +40,7 @@ const sortOptions = [
   'personnelCode:asc',
 ] as const;
 
+/** Discovers the lock for an existing subject; the authorized operation resolves missing targets. */
 export async function lockSubject(db: Prisma.TransactionClient, id: string) {
   return (await db.account.count({ where: { id } })) ? [accountLock(id)] : [];
 }
@@ -49,6 +50,7 @@ export class AccountsService {
   private readonly boundaries = new DelegationBoundaryService();
   constructor(private readonly execution: AdministrationExecution) {}
 
+  /** Returns paginated account metadata and live assignments through a projection that excludes credentials. */
   list(request: Request, query: Record<string, unknown>) {
     const { values, page, pageSize, sort, skip, take } = listQuery(
       query,
@@ -112,6 +114,7 @@ export class AccountsService {
     });
   }
 
+  /** Normalizes the verified personnel identity and issues a temporary credential under uniqueness locks. */
   create(request: Request, input: CreateAccountDto) {
     const enteredCode = input.personnelCode.trim();
     if (
@@ -225,6 +228,7 @@ export class AccountsService {
     );
   }
 
+  /** Applies a revision-bound lock or unlock through a command receipt and preserves the last active administrator. */
   state(request: Request, id: string, state: 'ACTIVE' | 'LOCKED', input: RevisionDto) {
     const action = state === 'ACTIVE' ? 'ACCOUNT_UNLOCKED' : 'ACCOUNT_LOCKED';
     return this.execution.run(
@@ -277,6 +281,7 @@ export class AccountsService {
     );
   }
 
+  /** Records a separate administrator assignment or revocation and invalidates the target's sessions. */
   systemRole(
     request: Request,
     id: string,
@@ -338,6 +343,7 @@ export class AccountsService {
     );
   }
 
+  /** Rejects an operation that would leave the system without an active administrator. */
   private async preserveAdministrator(context: TransactionContext, account: Account) {
     if (account.state !== 'ACTIVE' || !(await isAdministrator(context.db, account.id))) return;
     const another = await context.db.systemRoleAssignment.count({

@@ -29,6 +29,7 @@ export class DecisionDto extends VersionDto {
   @IsString() reason!: string;
 }
 
+/** Parses a UTC instant and rejects values that JavaScript would silently normalize to another date. */
 function instant(value?: string) {
   if (value === undefined) return null;
   if (!/^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d(?:\.\d{1,3})?Z$/.test(value)) throw invalid();
@@ -37,6 +38,7 @@ function instant(value?: string) {
     throw invalid();
   return date;
 }
+/** Converts allowlisted draft fields to stored values and keeps the immediate start server-owned. */
 export function delegationContent(input: DelegationContentDto) {
   if (input.startMode === 'IMMEDIATE' && input.startsAt !== undefined) throw invalid();
   return {

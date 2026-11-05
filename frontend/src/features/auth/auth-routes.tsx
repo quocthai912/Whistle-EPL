@@ -7,6 +7,7 @@ import { ChangePasswordPage } from './ChangePasswordPage';
 import { LogoutButton } from './LogoutButton';
 const AdministrationLayout = lazy(() => import('../accounts/AdministrationLayout'));
 
+/** Resolves session and password-change requirements before rendering a protected route. */
 export function AuthRoute({
   page,
 }: {

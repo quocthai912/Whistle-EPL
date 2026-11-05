@@ -18,7 +18,7 @@ const row = {
   state: 'ACTIVE',
   mustChangePassword: false,
   revision: '1',
-  systemRoles: [],
+  systemRoles: [] as { id: string; roleCode: string }[],
   seasonRoles: [],
   sharedGrants: [],
   createSeasonGrants: [],
@@ -57,6 +57,61 @@ describe('administration navigation and confirmation', () => {
     await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
     expect(fetcher.mock.calls.map(([path]) => path)).not.toContain(
       '/api/v1/accounts/employee/lock',
+    );
+  });
+
+  it('keeps the selected grants tab open while a failed refresh is retried', async () => {
+    let failRefresh!: (response: Response) => void;
+    const refresh = new Promise<Response>((resolve) => {
+      failRefresh = resolve;
+    });
+    let listReads = 0;
+    const list = (item: typeof row) =>
+      envelope({ items: [item], page: 1, pageSize: 20, total: 1, seasons: [] });
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (path: string) => {
+        if (path.endsWith('/auth/session'))
+          return envelope({ ...account, systemRoles: [{ roleCode: 'SYSTEM_ADMINISTRATOR' }] });
+        if (path.endsWith('/auth/csrf')) return envelope({ csrfToken: 'a'.repeat(43) });
+        if (path.endsWith('/system-role-assignments'))
+          return envelope({ id: row.id, revision: '2' });
+        listReads++;
+        if (listReads === 1) return list(row);
+        if (listReads === 2) return refresh;
+        return list({
+          ...row,
+          revision: '2',
+          systemRoles: [{ id: 'assignment', roleCode: 'SYSTEM_ADMINISTRATOR' }],
+        });
+      }),
+    );
+    render(
+      <MemoryRouter initialEntries={['/admin/accounts']}>
+        <App />
+      </MemoryRouter>,
+    );
+    fireEvent.click(await screen.findByRole('button', { name: 'Chi tiết' }));
+    fireEvent.click(screen.getByRole('tab', { name: 'Vai trò hệ thống' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Cấp vai trò quản trị' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'Xác nhận' }));
+
+    await screen.findByText('Đang tải dữ liệu…');
+    expect(screen.getByRole('tab', { name: 'Vai trò hệ thống' })).toHaveAttribute(
+      'aria-selected',
+      'true',
+    );
+    failRefresh(Response.json({ error: { code: 'REQUEST_FAILED' } }, { status: 500 }));
+    const retry = await screen.findByRole('button', { name: 'Thử lại' });
+    expect(screen.getByRole('tab', { name: 'Vai trò hệ thống' })).toHaveAttribute(
+      'aria-selected',
+      'true',
+    );
+    fireEvent.click(retry);
+    await screen.findByRole('button', { name: 'Thu hồi vai trò quản trị' });
+    expect(screen.getByRole('tab', { name: 'Vai trò hệ thống' })).toHaveAttribute(
+      'aria-selected',
+      'true',
     );
   });
 });

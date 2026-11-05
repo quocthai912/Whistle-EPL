@@ -14,6 +14,7 @@ import { GrantsPanel } from './GrantsPanel';
 import { useAdminList } from './use-admin-list';
 import css from './Administration.module.css';
 
+/** Summarizes the current account state and rights for explicit revision review. */
 const describeAccount = (account: Account, seasons: Season[]) =>
   [
     account.fullName,
@@ -29,6 +30,7 @@ const describeAccount = (account: Account, seasons: Season[]) =>
     ...(account.createSeasonGrants.length ? [permissionNames.CREATE_SEASON] : []),
   ].join(' · ');
 
+/** Displays the filtered account list and coordinates its account and permission commands. */
 export function AccountsPage() {
   const { client, session } = useSession();
   const [search, setSearch] = useState('');
@@ -53,6 +55,7 @@ export function AccountsPage() {
     list.reload();
   };
 
+  /** Binds the selected account revision and provides an explicit reload when a command conflicts. */
   function accountCommand(row: Account, operation: Omit<AdminCommand, 'basis' | 'readBasis'>) {
     setSuccess(false);
     setCommand({

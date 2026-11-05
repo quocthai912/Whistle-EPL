@@ -19,6 +19,7 @@ export class GrantsService {
   private readonly boundaries = new DelegationBoundaryService();
   constructor(private readonly execution: AdministrationExecution) {}
 
+  /** Adds or revokes a season assignment, ending dependent rights when their prerequisites are lost. */
   seasonRole(
     request: Request,
     id: string,
@@ -95,6 +96,7 @@ export class GrantsService {
     );
   }
 
+  /** Changes a typed shared or Create Season permission independently of the account's roles. */
   permission(request: Request, id: string, input: PermissionDto, grantId?: string) {
     const receipt = grantId ? 'PERMISSION_REVOKED' : 'PERMISSION_GRANTED';
     const kind = input.kind;
@@ -181,6 +183,7 @@ export class GrantsService {
     );
   }
 
+  /** Ends the matching shared right only after the account loses its final qualifying assignment across seasons. */
   private async endSharedRights(
     context: TransactionContext,
     request: Request,

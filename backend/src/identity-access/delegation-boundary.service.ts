@@ -30,6 +30,7 @@ export async function dependentRecipientLocks(db: Prisma.TransactionClient, acco
   return grants.map(({ recipientId }) => accountLock(recipientId));
 }
 
+/** Projects the lifecycle at the supplied instant, giving terminal decisions precedence over the effective interval. */
 export function grantState(grant: DelegationGrant, now: Date) {
   if (grant.revokedAt) return 'REVOKED';
   if (grant.terminatedAt) return 'TERMINATED';
@@ -71,11 +72,13 @@ export class DelegationBoundaryService {
       );
   }
 
+  /** Records outstanding start and expiry boundaries in order while the recipient's account lock is held. */
   async resolve(context: TransactionContext, recipientId: string, now: Date) {
     for (const { grant, kind, at } of await this.due(context.db, recipientId, now))
       await this.record(context, grant, kind, at, now);
   }
 
+  /** Persists the boundary, invalidates affected sessions and appends its audit event in the caller's transaction. */
   async record(
     context: TransactionContext,
     grant: DelegationGrant,
@@ -123,6 +126,7 @@ export class DelegationBoundaryService {
     });
   }
 
+  /** Ends active or scheduled grants that lost either participant's eligibility, preserving earlier due boundaries. */
   async terminateIneligible(context: TransactionContext, accountId: string, now: Date) {
     const grants = await context.db.delegationGrant.findMany({
       where: { ...live, endsAt: { gt: now }, ...participant(accountId) },

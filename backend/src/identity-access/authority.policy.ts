@@ -55,6 +55,7 @@ export async function eligibleRecipient(
     },
   }));
 }
+/** Enforces actor and subject separation for operations that cannot target the caller. */
 export function rejectSelf(actor: string, subject: string) {
   if (actor === subject) throw denied();
 }

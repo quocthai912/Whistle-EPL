@@ -106,6 +106,7 @@ describe('atomic administration across independent database connections', () => 
     const admin2 = await harness.login(other.username);
     const proposer = await harness.login(manager.username);
     const oldRecipientSession = await harness.login(recipient.username);
+    /** Submits a proposal that a separate administrator can use to exercise grant contention. */
     async function proposal(start: string, end: string) {
       const {
         body: { data: draft },
