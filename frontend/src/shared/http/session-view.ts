@@ -18,5 +18,28 @@ export function sessionView(value: unknown): SessionView {
       username: data.username as string,
     },
     changeRequired: data.changeRequired,
+    ...(!data.changeRequired &&
+      Array.isArray(data.systemRoles) && {
+        systemAdministrator: data.systemRoles.some(
+          (role: unknown) =>
+            !!role &&
+            typeof role === 'object' &&
+            'roleCode' in role &&
+            role.roleCode === 'SYSTEM_ADMINISTRATOR',
+        ),
+      }),
+    ...(!data.changeRequired &&
+      Array.isArray(data.seasonRoles) && {
+        seasonManagerIds: data.seasonRoles.flatMap((role: unknown) =>
+          role &&
+          typeof role === 'object' &&
+          'roleCode' in role &&
+          role.roleCode === 'SEASON_MANAGER' &&
+          'seasonId' in role &&
+          typeof role.seasonId === 'string'
+            ? [role.seasonId]
+            : [],
+        ),
+      }),
   };
 }

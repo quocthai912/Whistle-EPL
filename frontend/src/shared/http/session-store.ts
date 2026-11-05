@@ -1,6 +1,8 @@
 export type SessionView = {
   account: { id: string; personnelCode: string; fullName: string; username: string };
   changeRequired: boolean;
+  systemAdministrator?: boolean;
+  seasonManagerIds?: string[];
 };
 type NoticeTone = 'warning' | 'success';
 export type SessionSnapshot = {

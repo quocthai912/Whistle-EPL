@@ -7,6 +7,7 @@ export type LockResource = {
   key: string;
   mode: LockMode;
 };
+export class LockSetChanged extends Error {}
 
 const resources = {
   system: { order: 2, table: 'system_guard', column: 'key' },
@@ -34,10 +35,30 @@ export class TransactionContext {
     await this.authority(this, await this.now());
   }
 
-  async acquire(locks: readonly LockResource[]): Promise<void> {
+  async acquire(
+    locks: readonly LockResource[],
+    discover?: (db: Prisma.TransactionClient) => Promise<LockResource[]>,
+  ): Promise<void> {
     if (this.receiptPhase || this.acquired)
       throw new Error('Acquire the complete resource set once, before receipts.');
     this.acquired = true;
+    const dependent = (await discover?.(this.db)) ?? [];
+    const complete = [...locks, ...dependent];
+    await this.acquireOrdered(complete);
+    if (discover) {
+      // Re-read topology after the ordered locks. A new resource requires a fresh acquisition.
+      const covered = new Set(complete.map(({ kind, key, mode }) => `${kind}:${key}:${mode}`));
+      if (
+        (await discover(this.db)).some(
+          ({ kind, key, mode }) =>
+            !covered.has(`${kind}:${key}:${mode}`) && !covered.has(`${kind}:${key}:exclusive`),
+        )
+      )
+        throw new LockSetChanged();
+    }
+  }
+
+  private async acquireOrdered(locks: readonly LockResource[]): Promise<void> {
     const unique = new Map<string, LockResource>();
     for (const lock of locks) {
       const key = `${lock.kind}:${lock.key}`;

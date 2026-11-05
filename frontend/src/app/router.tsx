@@ -33,6 +33,8 @@ export function FoundationRouter() {
       <Route path="/login" element={<AuthRoute page="login" />} />
       <Route path="/change-password" element={<AuthRoute page="change" />} />
       <Route path="/internal" element={<AuthRoute page="internal" />} />
+      <Route path="/admin/accounts" element={<AuthRoute page="accounts" />} />
+      <Route path="/admin/delegations" element={<AuthRoute page="delegations" />} />
       <Route path="/admin/*" element={<AuthRoute page="internal" />} />
       <Route path="*" element={<ErrorState />} />
     </Routes>

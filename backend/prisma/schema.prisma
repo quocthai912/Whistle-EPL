@@ -40,6 +40,7 @@ model Account {
   editedVersions             DelegationVersionEditor[]
   recordedDelegations        DelegationGrant[]         @relation("recorder")
   revokedDelegations         DelegationGrant[]         @relation("revoker")
+  delegationVersionsReceived DelegationVersion[]       @relation("versionRecipient")
   audits                     AuditRecord[]
   receipts                   CommandReceipt[]
 
@@ -208,6 +209,8 @@ model DelegationVersion {
   versionNumber        Int                       @map("version_number")
   preparedBy           String                    @map("prepared_by") @db.Uuid
   preparer             Account                   @relation("preparer", fields: [preparedBy], references: [id], onDelete: Restrict)
+  recipientId          String?                   @map("recipient_id") @db.Uuid
+  recipient            Account?                  @relation("versionRecipient", fields: [recipientId], references: [id], onDelete: Restrict, onUpdate: NoAction, map: "delegation_version_recipient_id_fkey")
   predecessorVersionId String?                   @map("predecessor_version_id") @db.Uuid
   predecessor          DelegationVersion?        @relation("predecessor", fields: [caseId, predecessorVersionId], references: [caseId, id], onDelete: NoAction, onUpdate: NoAction)
   successors           DelegationVersion[]       @relation("predecessor")

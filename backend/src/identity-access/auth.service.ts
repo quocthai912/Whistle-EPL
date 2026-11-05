@@ -83,6 +83,7 @@ export class AuthService {
               (current.temporaryPasswordExpiresAt && current.temporaryPasswordExpiresAt > issuedAt))
           );
           if (!valid || !current) return false;
+          await this.sessions.boundaries.resolve(context, current.id, issuedAt);
           const tokens = this.security.createSessionTokens();
           const session = await context.db.session.create({
             data: {

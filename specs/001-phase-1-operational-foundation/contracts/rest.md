@@ -146,11 +146,10 @@ Reject unsupported methods/actions without dispatching unrestricted handlers.
 
 ## Browser Routes and Verification
 
-Implemented browser paths: /login, /change-password and the permitted /internal landing shell.
-/admin/accounts, /admin/delegations and /admin/audit remain planned workflows; the current
-protected /admin/* fallback is only a landing shell, not those administration screens.
-Manager delegation views will reuse the
-appropriate authority without exposing account administration. No fake public league dashboard.
+The browser provides /login, /change-password and /internal. /admin/accounts requires a
+full System Administrator session. /admin/delegations supports administrator processing and
+direct Season Manager proposals within their authorized seasons. /admin/audit remains
+planned for US4. Public visitors see the foundation landing page.
 Use one Fetch layer and clear all internal in-memory data on session/account loss. Forms
 never retain passwords in recovery drafts; safe fields survive validation/conflict feedback.
 

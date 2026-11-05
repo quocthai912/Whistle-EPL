@@ -3,18 +3,38 @@ import { DatabaseService } from '../platform/database.service';
 import type { TransactionContext, LockResource } from '../platform/transaction-context';
 import { ApplicationError } from '../platform/application-error';
 import { SecurityPrimitivesService } from './security-primitives.service';
+import { DelegationBoundaryService } from './delegation-boundary.service';
 
 export type LiveSession = { account: Account; session: Session };
 export class SessionService {
+  readonly boundaries = new DelegationBoundaryService();
   constructor(
     private readonly database: DatabaseService,
     private readonly security = new SecurityPrimitivesService(),
   ) {}
   async candidate(token?: string): Promise<Session | null> {
     if (!token || !/^[\w-]{43}$/.test(token)) return null;
-    return this.database.client.session.findUnique({
+    const session = await this.database.client.session.findUnique({
       where: { tokenHash: this.security.digest(token) },
     });
+    // Resolve in a separate transaction so a subsequent 401 cannot roll back the ledger.
+    if (
+      session &&
+      !session.revokedAt &&
+      (
+        await this.boundaries.due(
+          this.database.client,
+          session.accountId,
+          await this.database.now(),
+        )
+      ).length
+    )
+      await this.database.write(
+        this.locks(session),
+        async () => {},
+        async (context) => this.boundaries.resolve(context, session.accountId, await context.now()),
+      );
+    return session;
   }
   locks(candidate: Session): LockResource[] {
     return [{ kind: 'account', key: candidate.accountId, mode: 'exclusive' }];
@@ -26,7 +46,11 @@ export class SessionService {
     if (
       account!.state !== 'ACTIVE' ||
       session!.accountAuthRevision !== account!.authRevision ||
-      session!.revokedAt
+      session!.revokedAt ||
+      // A boundary can cross while this request waits on its account lock.
+      (await this.boundaries.due(context.db, candidate.accountId, now)).some(
+        ({ at }) => at > session!.createdAt,
+      )
     )
       throw new ApplicationError(
         401,

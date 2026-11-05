@@ -6,6 +6,13 @@ import { TechnicalCleanupService } from './operations/technical-cleanup.service'
 import { AuthController } from './identity-access/auth.controller';
 import { CsrfService } from './identity-access/csrf.service';
 import { AuthService } from './identity-access/auth.service';
+import { AccountsController } from './identity-access/accounts.controller';
+import { AccountsService } from './identity-access/accounts.service';
+import { AdministrationExecution } from './identity-access/administration-execution';
+import { GrantsController } from './identity-access/grants.controller';
+import { GrantsService } from './identity-access/grants.service';
+import { DelegationsController } from './identity-access/delegations.controller';
+import { DelegationProposalService } from './identity-access/delegation-proposal.service';
 
 @Controller(['health', 'api/v1/health'])
 class HealthController {
@@ -41,8 +48,36 @@ class ReadinessController {
 
 @Module({
   imports: [ScheduleModule.forRoot()],
-  controllers: [HealthController, ReadinessController, AuthController],
+  controllers: [
+    HealthController,
+    ReadinessController,
+    AuthController,
+    AccountsController,
+    GrantsController,
+    DelegationsController,
+  ],
   providers: [
+    {
+      provide: DelegationProposalService,
+      inject: [AdministrationExecution],
+      useFactory: (execution: AdministrationExecution) => new DelegationProposalService(execution),
+    },
+    {
+      provide: GrantsService,
+      inject: [AdministrationExecution],
+      useFactory: (execution: AdministrationExecution) => new GrantsService(execution),
+    },
+    {
+      provide: AdministrationExecution,
+      inject: [DatabaseService, AuthService],
+      useFactory: (database: DatabaseService, auth: AuthService) =>
+        new AdministrationExecution(database, auth),
+    },
+    {
+      provide: AccountsService,
+      inject: [AdministrationExecution],
+      useFactory: (execution: AdministrationExecution) => new AccountsService(execution),
+    },
     {
       provide: DatabaseService,
       useFactory: () =>
