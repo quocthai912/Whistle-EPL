@@ -2,7 +2,11 @@
 
 **Execution date** 2026-11-05 (Asia/Bangkok)  
 **Scope** US3, T029–T037  
-**Source** Local working tree based on `8f6715384bd4bb3989844c1b7f3e4eef52324815`. The 45 changed application, migration, test and browser configuration files had manifest SHA-256 `57d7e2d87f12a527217ffd9c6f0de65972e1e14a2ec7af0298e20a43b0559d82`. Each manifest line contains the lowercase SHA-256 of the UTF-8 file with LF line endings, two spaces and its repository-relative path. The lines follow sorted paths and end in LF.
+**Published source** [`8a8232f`](https://github.com/quocthai912/Whistle-EPL/commit/8a8232ff0cdf3dead4c835f98c45afa12805d2f8) on `feat/phase-1-access-administration`, reviewed against `8f6715384bd4bb3989844c1b7f3e4eef52324815`. The live branch ref matched the commit on 2026-11-05. The 45 changed application, migration, test and browser configuration files had manifest SHA-256 `57d7e2d87f12a527217ffd9c6f0de65972e1e14a2ec7af0298e20a43b0559d82`. Each manifest line contains the lowercase SHA-256 of the UTF-8 file with LF line endings, two spaces and its repository-relative path. The lines follow sorted paths and end in LF.
+
+## GitHub tracking
+
+Issues [#34](https://github.com/quocthai912/Whistle-EPL/issues/34)–[#42](https://github.com/quocthai912/Whistle-EPL/issues/42) were verified Closed with reason Completed and label `completed` on 2026-11-05. Each Issue contains a task-specific completion note with the published commit and verification evidence.
 
 ## Environment and execution
 
@@ -32,4 +36,4 @@ Windows x64, Node 24.14.0, pnpm 10.33.2 and PostgreSQL 17.11. PostgreSQL listene
 
 Independent Standards and Spec reviews identified guard scope, immediate invalidation, draft recipient scope, receipt normalization, normalized field limits, audit effective time and conflict basis issues. The fixes were applied and checked in the final runs. Scoped convergence found no remaining implementation task for T029–T037.
 
-The execution records local US3 evidence. Integration-branch publication, CI, US4 audit lookup, load testing, clean-host acceptance and PHASE 1 acceptance are tracked separately.
+The evidence covers the US3 implementation published on its feature branch. Integration merge, CI, US4 audit lookup, load testing, clean-host acceptance and PHASE 1 acceptance are tracked separately.

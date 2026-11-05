@@ -1,6 +1,6 @@
 # PHASE 1 Validation Guide
 
-**UI/browser publication (2026-11-04):** T027–T028 are implemented, verified and published at [`b06075f`](https://github.com/quocthai912/Whistle-EPL/commit/b06075f7a3677fb7e351160a89f59fdaa81f9fc5) on `feat/phase-1-authentication-frontend` (review base `91ff5820ad77ef75bb75aa1576df32ab53edeb10`). The live remote ref and all 30 final source-manifest entries were verified against that commit. [Authentication UI/browser evidence](../../docs/verification/phase-1/authentication-ui.md) distinguishes the initial 22-scenario real Chrome/Edge HTTPS run from subsequent visual refinements and their scoped checks. T029–T048 and Team Leader/PHASE 1 acceptance remain pending; PHASE 1 remains `IN_PROGRESS`. This publication update changes no approved requirements, task dependencies or historical approvals.
+**Administration publication (2026-11-05)** T029–T037 are implemented, verified and published at [`8a8232f`](https://github.com/quocthai912/Whistle-EPL/commit/8a8232ff0cdf3dead4c835f98c45afa12805d2f8) on `feat/phase-1-access-administration`. See [administration verification](../../docs/verification/phase-1/administration.md). T038–T048 and PHASE 1 acceptance remain pending.
 
 **Historical status (2026-10-29)**: T001–T014 are published at `892f172f9ec539d5789a31a2f8046480afe15772`; T015–T022 operator/deployment/recovery commands are implemented, verified and published at [`7ac09e6`](https://github.com/quocthai912/Whistle-EPL/commit/7ac09e6cec9fb434248c82db142ab04695961823) on `feat/phase-1-operations-recovery` (review base `30506e3`). See [operator evidence](../../docs/verification/phase-1/operator-foundation.md).
 The command table distinguishes installed commands from remaining planned interfaces.
@@ -27,30 +27,25 @@ of operational time. See [data model](data-model.md) and [operator contract](con
 
 ## Root Command Contract and Current Availability
 
-The approved command contract remains the target. Current availability is checked against
-published commit [`b06075f`](https://github.com/quocthai912/Whistle-EPL/commit/b06075f7a3677fb7e351160a89f59fdaa81f9fc5) (review base `91ff5820ad77ef75bb75aa1576df32ab53edeb10`).
-[Authentication UI/browser evidence](../../docs/verification/phase-1/authentication-ui.md)
-separates the original full auth checks from subsequent visual refinements; earlier Windows,
-Ubuntu, backend-authentication and operation results retain their recorded scope. T001–T028
-have published implementation evidence. T029–T048 and Phase acceptance remain pending.
-This documentation synchronization does not claim a new application test run.
+The approved command contract remains the target. The current implementation snapshot is [`8a8232f`](https://github.com/quocthai912/Whistle-EPL/commit/8a8232ff0cdf3dead4c835f98c45afa12805d2f8).
+[Administration verification](../../docs/verification/phase-1/administration.md) records the Windows, PostgreSQL 17.11 and Chrome/Edge run. Earlier Windows, Ubuntu and operator results retain their recorded scope.
 Root quality commands propagate workspace failures. For isolated database requirements,
 see the reproduction section in the foundation verification report.
 
-| Command | Required expected outcome | Availability at published `b06075f` snapshot |
+| Command | Required expected outcome | Availability at published `8a8232f` snapshot |
 |---|---|---|
 | pnpm install --frozen-lockfile | Clean locked install on each OS, with explicit allowed native build verification | Executed for T001 setup on both OSes |
 | pnpm db:validate | Pinned Prisma 7 schema/configuration validation | Implemented and verified |
 | pnpm db:generate | Explicit backend CJS client generation before generated imports/typecheck/build/tests | Implemented and verified |
-| pnpm db:migrate | Deploy committed migrations to the selected fresh target, no interactive dev migration/schema push | Implemented; six-migration fresh PG17 replay/intended-schema check PASS; previous five-migration Compose evidence retained |
+| pnpm db:migrate | Deploy committed migrations to the selected fresh target, no interactive dev migration/schema push | Seven migrations applied on a fresh PG17 browser database. The integration suite verified replay and intended schema. |
 | pnpm db:status | Inspect deployment status | Implemented and verified; current status entry point |
 | pnpm db:check | Migration status and intended-schema checks, accounting for SQL-managed constraints | Planned root alias; current checks use db:status plus schema.spec.ts/Prisma diff |
 | pnpm lint | Root ESLint checks for both workspaces, no silent skip | Implemented and verified |
 | pnpm typecheck | Both workspaces strict checks without output mutation | Implemented and verified |
 | pnpm format:check | Nonmutating Prettier on D097 source/config scopes, excluding Context/ADRs/generated output | Implemented and verified |
 | pnpm format | Explicit source-format mutation only; never used as CI format verification | Implemented and exercised |
-| pnpm test / pnpm test:unit | Frontend Vitest/RTL and backend Jest nonwatch suites, no empty-pass acceptance | Implemented; initial UI run passes 15 backend + 16 frontend tests on Windows; later green-success refinement reruns all 16 frontend tests; earlier Ubuntu results remain historical |
-| pnpm test:integration | Real isolated PostgreSQL 17; deliberate independent-connection races, initially serial suites | Implemented; 55 tests PASS against Linux PG17 from Windows in T027–T028 verification; no new Ubuntu application run |
+| pnpm test / pnpm test:unit | Frontend Vitest/RTL and backend Jest nonwatch suites, no empty-pass acceptance | 15 backend and 18 frontend tests passed on Windows. |
+| pnpm test:integration | Real isolated PostgreSQL 17; deliberate independent-connection races, initially serial suites | 80 tests passed against PostgreSQL 17.11. |
 | pnpm verify:native / pnpm verify:client | Approved native-module and CommonJS client compatibility checks | Implemented and verified |
 | pnpm verify:commands | Injected workspace failures propagate to root command failure | Implemented; 10 Windows failure-propagation probes PASS in the UI implementation run; previous Ubuntu evidence retained |
 | pnpm build | Frontend/backend build and import compatibility | Implemented and verified |
@@ -58,7 +53,7 @@ see the reproduction section in the foundation verification report.
 | pnpm ops:maintenance / pnpm ops:backup / pnpm ops:restore | Protected profile, durable drain, selected complete-set recovery | Implemented and verified T019–T020; Linux host tools/runbooks required |
 | pnpm test:ops | Python set integrity/retention/schedule/boot-resume regressions | Implemented; 5 tests pass on both OSes |
 | pnpm dev | Explicit development profile and labelled HTTP-cookie limitations | Planned root command; frontend workspace has its own dev script |
-| pnpm test:e2e | Real Chrome/Edge in the acceptance HTTPS profile, record actual versions | Implemented; initial 22 scenarios PASS on installed Chrome/Edge with trusted HTTPS; later visual checks are recorded separately |
+| pnpm test:e2e | Real Chrome/Edge in the acceptance HTTPS profile, record actual versions | 28 trusted HTTPS cases passed in Chrome and Edge, including six administration cases. |
 | pnpm test:load | Local k6 BM-01 profile; export safe per-attempt latency/success evidence | Planned; BM-01 measurements pending |
 | pnpm ops:verify | Available-foundation persistence/backup/restore/failure drills in an isolated target | Implemented; real isolated backup/restore/corrupt-set checks pass; T046 operational drills pending |
 
