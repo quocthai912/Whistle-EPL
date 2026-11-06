@@ -64,16 +64,20 @@ export function AccountsPage() {
         revision: row.revision,
         description: describeAccount(row, list.data?.seasons ?? []),
       },
+      /** Searches all matching pages for the selected account ID before offering a new revision. */
       readBasis: async () => {
-        const latest = await client.request<AccountList>(
-          '/accounts?search=' + encodeURIComponent(row.username),
-        );
-        const match = latest.data.items.find(({ id }) => id === row.id);
-        if (!match) throw new Error('Không tìm thấy dữ liệu.');
-        return {
-          revision: match.revision,
-          description: describeAccount(match, latest.data.seasons),
-        };
+        const query = new URLSearchParams({ search: row.username, pageSize: '100' });
+        for (let page = 1; ; page++) {
+          query.set('page', String(page));
+          const { data } = await client.request<AccountList>('/accounts?' + query);
+          const match = data.items.find(({ id }) => id === row.id);
+          if (match)
+            return {
+              revision: match.revision,
+              description: describeAccount(match, data.seasons),
+            };
+          if (page * data.pageSize >= data.total) throw new Error('Không tìm thấy dữ liệu.');
+        }
       },
     });
   }
