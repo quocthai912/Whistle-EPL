@@ -3,16 +3,29 @@ import { LogoutButton } from '../auth/LogoutButton';
 import { useSession } from '../../shared/http/use-session';
 import { AccountsPage } from './AccountsPage';
 import { DelegationsPage } from './DelegationsPage';
+import { AuditPage } from '../audit/AuditPage';
 import css from './Administration.module.css';
 
 /** Shows the selected administration page only to sessions with the corresponding role. */
-export default function AdministrationLayout({ page }: { page: 'accounts' | 'delegations' }) {
+export default function AdministrationLayout({
+  page,
+}: {
+  page: 'accounts' | 'delegations' | 'audit';
+}) {
   const { session } = useSession();
   const admin = session?.systemAdministrator;
   const manager = !!session?.seasonManagerIds?.length;
-  const permitted = page === 'accounts' ? admin : admin || manager;
+  const permitted = page === 'delegations' ? admin || manager : admin;
+  const audit = page === 'audit' && permitted;
+  const navigation = (
+    <nav className={css.nav} aria-label="Quản trị">
+      {admin && <NavLink to="/admin/accounts">Tài khoản và phân quyền</NavLink>}
+      {(admin || manager) && <NavLink to="/admin/delegations">Ủy quyền nghiệp vụ</NavLink>}
+      {admin && <NavLink to="/admin/audit">Nhật ký hoạt động</NavLink>}
+    </nav>
+  );
   return (
-    <div className={css.layout}>
+    <div className={audit ? css.layout + ' ' + css.auditLayout : css.layout}>
       <header className={css.topbar}>
         <NavLink to="/internal" className={css.brand}>
           <img src="/images/Whistle-EPL-Logo.png" alt="" />
@@ -26,8 +39,16 @@ export default function AdministrationLayout({ page }: { page: 'accounts' | 'del
           <LogoutButton />
         </div>
       </header>
+      {audit && (
+        <aside className={css.sidebar}>
+          <strong>HỆ THỐNG QUẢN TRỊ</strong>
+          {navigation}
+        </aside>
+      )}
       <main className={css.workspace}>
-        {permitted ? (
+        {audit ? (
+          <AuditPage />
+        ) : permitted ? (
           <>
             <div className={css.hero}>
               <span className={css.kicker}>KHÔNG GIAN ĐIỀU HÀNH</span>
@@ -42,10 +63,7 @@ export default function AdministrationLayout({ page }: { page: 'accounts' | 'del
                   : 'Xử lý đề xuất và theo dõi quyền theo mùa giải.'}
               </p>
             </div>
-            <nav className={css.nav} aria-label="Quản trị">
-              {admin && <NavLink to="/admin/accounts">Tài khoản và phân quyền</NavLink>}
-              {(admin || manager) && <NavLink to="/admin/delegations">Ủy quyền nghiệp vụ</NavLink>}
-            </nav>
+            {navigation}
             {page === 'accounts' ? <AccountsPage /> : <DelegationsPage />}
           </>
         ) : (
@@ -56,6 +74,11 @@ export default function AdministrationLayout({ page }: { page: 'accounts' | 'del
           </section>
         )}
       </main>
+      {audit && (
+        <footer className={css.auditFooter}>
+          Whistle-EPL · Cổng thông tin và quản lý giải bóng đá Ngoại hạng Anh.
+        </footer>
+      )}
     </div>
   );
 }

@@ -1,0 +1,109 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [development, main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.event_name }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  source:
+    name: Source and unit checks (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, windows-2025]
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@2028fbc5c25fe9cf00d9f06a71cc4710d4507903 # v6.0.0
+        with:
+          node-version: '24.14.0'
+          package-manager-cache: false
+      - name: Install locked dependencies
+        run: |
+          corepack enable pnpm
+          pnpm install --frozen-lockfile
+      - name: Verify native modules and Prisma client
+        run: |
+          pnpm verify:native
+          pnpm db:validate
+          pnpm db:generate
+          pnpm verify:client
+      - name: Check source
+        run: |
+          pnpm lint
+          pnpm typecheck
+          pnpm format:check
+      - name: Run unit tests
+        run: pnpm test:unit
+      - name: Build both workspaces
+        run: pnpm build
+
+  postgres:
+    name: PostgreSQL 17 integration
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    services:
+      postgres:
+        image: postgres:17.11-bookworm@sha256:839fbb5a4942a7758dd93e18b42ea5649807491a0545b5eeeb8f0b8bb11857a5
+        env:
+          POSTGRES_DB: whistle_test_ci
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: whistle_ci_fixture_only
+        ports:
+          - 5432/tcp
+        options: >-
+          --health-cmd "pg_isready -U postgres -d whistle_test_ci"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 12
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@2028fbc5c25fe9cf00d9f06a71cc4710d4507903 # v6.0.0
+        with:
+          node-version: '24.14.0'
+          package-manager-cache: false
+      - name: Install locked dependencies
+        run: |
+          corepack enable pnpm
+          pnpm install --frozen-lockfile
+      - name: Verify and deploy schema
+        env:
+          DATABASE_URL: postgresql://postgres:whistle_ci_fixture_only@127.0.0.1:${{ job.services.postgres.ports[5432] }}/whistle_test_ci
+        run: |
+          pnpm db:validate
+          pnpm db:migrate
+          pnpm db:status
+      - name: Verify PostgreSQL behavior and schema consistency
+        env:
+          TEST_DATABASE_URL: postgresql://postgres:whistle_ci_fixture_only@127.0.0.1:${{ job.services.postgres.ports[5432] }}/whistle_test_ci
+        run: pnpm test:integration
+
+  required:
+    name: Required CI gate
+    if: ${{ always() }}
+    needs: [source, postgres]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Require success from all mandatory jobs
+        env:
+          SOURCE_RESULT: ${{ needs.source.result }}
+          POSTGRES_RESULT: ${{ needs.postgres.result }}
+        run: |
+          printf 'Source matrix = %s\nPostgreSQL = %s\n' "$SOURCE_RESULT" "$POSTGRES_RESULT"
+          test "$SOURCE_RESULT" = success && test "$POSTGRES_RESULT" = success

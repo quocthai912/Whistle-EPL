@@ -32,8 +32,8 @@ export class DatabaseService {
   }
 
   /** Trusted time for read-only preflight; writes still sample time after locking. */
-  now(): Promise<Date> {
-    return this.clock.now(this.client);
+  now(db: Prisma.TransactionClient = this.client): Promise<Date> {
+    return this.clock.now(db);
   }
 
   /** Runs an admitted transaction under ordered locks and retries only failures known to have rolled back. */

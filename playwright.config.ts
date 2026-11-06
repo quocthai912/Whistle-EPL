@@ -12,7 +12,7 @@ assertIsolatedTarget(process.env.E2E_TEST_DATABASE_URL ?? '');
 
 export default defineConfig({
   testDir: './tests/e2e',
-  testMatch: ['**/auth.spec.ts', '**/administration.spec.ts'],
+  testMatch: ['**/auth.spec.ts', '**/administration.spec.ts', '**/audit.spec.ts'],
   globalSetup: './tests/e2e/global-setup.ts',
   fullyParallel: false,
   workers: 1,

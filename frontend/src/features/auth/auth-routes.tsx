@@ -11,7 +11,7 @@ const AdministrationLayout = lazy(() => import('../accounts/AdministrationLayout
 export function AuthRoute({
   page,
 }: {
-  page: 'login' | 'change' | 'internal' | 'accounts' | 'delegations';
+  page: 'login' | 'change' | 'internal' | 'accounts' | 'delegations' | 'audit';
 }) {
   const { ready, session, bootstrapError, retry } = useSession();
   if (!ready) return <p role="status">Đang kiểm tra phiên đăng nhập…</p>;
@@ -26,7 +26,7 @@ export function AuthRoute({
   if (page === 'change') return <ChangePasswordPage />;
   if (session.changeRequired) return <Navigate to="/change-password" replace />;
   if (page === 'login') return <Navigate to="/internal" replace />;
-  if (page === 'accounts' || page === 'delegations')
+  if (page === 'accounts' || page === 'delegations' || page === 'audit')
     return (
       <Suspense fallback={<p role="status">Đang tải trang quản trị…</p>}>
         <AdministrationLayout page={page} />
@@ -46,6 +46,11 @@ export function AuthRoute({
           <p>
             <Link to="/admin/delegations">Ủy quyền nghiệp vụ</Link>
           </p>
+          {session.systemAdministrator && (
+            <p>
+              <Link to="/admin/audit">Nhật ký hoạt động</Link>
+            </p>
+          )}
         </nav>
       ) : (
         <p>Chưa có chức năng nội bộ được triển khai cho tài khoản này.</p>

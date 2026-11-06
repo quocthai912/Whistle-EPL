@@ -320,3 +320,70 @@
     justify-content: flex-start;
   }
 }
+
+.auditLayout {
+  display: grid;
+  grid-template-columns: clamp(195px, 17vw, 255px) minmax(0, 1fr);
+  grid-template-rows: auto 1fr auto;
+}
+.auditLayout .topbar {
+  grid-column: 1 / -1;
+  background:
+    linear-gradient(95deg, #1b1430ed, #3c195ddc),
+    url('/images/Whistle-EPL-Background.jpg') center 52% / cover;
+}
+.auditLayout .workspace {
+  min-width: 0;
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  padding: clamp(14px, 2vw, 30px);
+}
+.sidebar {
+  grid-row: span 2;
+  background: white;
+  border-right: 1px solid var(--line);
+  padding: 20px 14px;
+}
+.sidebar > strong {
+  display: block;
+  color: #645873;
+  font-size: 12px;
+  padding: 5px 10px 12px;
+  border-bottom: 1px solid var(--line);
+}
+.sidebar .nav {
+  display: grid;
+  margin: 10px 0;
+}
+.sidebar .nav a[aria-current] {
+  color: white;
+  background: var(--purple);
+}
+.auditFooter {
+  text-align: center;
+  padding: 14px;
+  border-top: 1px solid var(--line);
+  color: #645873;
+  font-size: 12px;
+}
+
+@media (max-width: 760px) {
+  .auditLayout {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto auto 1fr auto;
+  }
+  .sidebar {
+    grid-row: auto;
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+    padding: 6px 14px;
+  }
+  .sidebar > strong {
+    display: none;
+  }
+  .sidebar .nav {
+    display: flex;
+    margin: 0;
+  }
+}
