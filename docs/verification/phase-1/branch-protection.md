@@ -8,8 +8,8 @@
 
 | Target | Draft PR | Failure | Success |
 | --- | --- | --- | --- |
-| development | [#63](https://github.com/quocthai912/Whistle-EPL/pull/63) | [42164956390](https://github.com/quocthai912/Whistle-EPL/actions/runs/42164956390) | [42165164506](https://github.com/quocthai912/Whistle-EPL/actions/runs/42165164506) |
-| main | [#64](https://github.com/quocthai912/Whistle-EPL/pull/64) | [42164960119](https://github.com/quocthai912/Whistle-EPL/actions/runs/42164960119) | [42165166226](https://github.com/quocthai912/Whistle-EPL/actions/runs/42165166226) |
+| development | [#63](https://github.com/quocthai912/Whistle-EPL/pull/63) | [42164956390](https://github.com/quocthai912/Whistle-EPL/actions/runs/42164956390/attempts/1) | [42165164506](https://github.com/quocthai912/Whistle-EPL/actions/runs/42165164506) |
+| main | [#64](https://github.com/quocthai912/Whistle-EPL/pull/64) | [42164960119](https://github.com/quocthai912/Whistle-EPL/actions/runs/42164960119/attempts/1) | [42165166226](https://github.com/quocthai912/Whistle-EPL/actions/runs/42165166226) |
 
 The failure runs tested `5e171055aaa33cad8babe23dae26968ceaad05fc`. The source
 jobs invoked compiled Prisma-client verification before the build, and both
@@ -32,5 +32,25 @@ The final gate command was also executed with all 25 combinations of success,
 failure, cancellation, skipped work and missing results for the two dependencies.
 Only the success/success combination passed.
 
-Both PRs are on the existing feature branch. Hosted cancellation, automatic
-doc-only runs, and main push and manual triggers require separate evidence.
+## Cancellation, merge and trigger evidence
+
+Rerunning the previous failure attempts to exercise cancellation superseded
+the first runs on `ee5da91` through the PR concurrency group. On those first
+runs, all three mandatory jobs were cancelled and the gate reported failure
+for [development](https://github.com/quocthai912/Whistle-EPL/actions/runs/42165926710/attempts/1)
+and [main](https://github.com/quocthai912/Whistle-EPL/actions/runs/42165925427/attempts/1).
+The cancelled reruns of the older revision left no green gate. The second runs
+of `ee5da91` passed every job on both targets before the authorized merges.
+
+| Case | Result |
+| --- | --- |
+| Protected merge to development | PR #63 merged at `c91acc86f6cad5f1f9fae844726100b911356074` after [automatic CI](https://github.com/quocthai912/Whistle-EPL/actions/runs/42165926710/attempts/2). |
+| Protected merge to main | PR #64 merged at `9d2bd98c3e098aa86241fd7f787cef244ce85f9b` after [automatic CI](https://github.com/quocthai912/Whistle-EPL/actions/runs/42165925427/attempts/2). |
+| Push to main | All mandatory jobs and the gate passed in [42166453061](https://github.com/quocthai912/Whistle-EPL/actions/runs/42166453061). |
+| Manual dispatch on main | All mandatory jobs and the gate passed in [42166455772](https://github.com/quocthai912/Whistle-EPL/actions/runs/42166455772). |
+| Doc-only PR to development | [#65](https://github.com/quocthai912/Whistle-EPL/pull/65) changed a single Markdown file. Full automatic CI passed in [42166505306](https://github.com/quocthai912/Whistle-EPL/actions/runs/42166505306). |
+| Doc-only PR to main | [#66](https://github.com/quocthai912/Whistle-EPL/pull/66) changed a single Markdown file. Full automatic CI passed in [42166515317](https://github.com/quocthai912/Whistle-EPL/actions/runs/42166515317). |
+
+Branch restrictions were verified through the effective GitHub rule readback
+and compliant PR merges. The verification used no destructive operations
+against either protected branch.

@@ -30,22 +30,26 @@ describe('authentication HTTP contract', () => {
   const database = new DatabaseService(process.env.TEST_DATABASE_URL!, clock);
   const observer = new Pool({ connectionString: process.env.TEST_DATABASE_URL });
   let app: INestApplication;
-  beforeAll(async () => {
-    await resetPhase1Fixtures(process.env.TEST_DATABASE_URL!, 'RESET_ISOLATED_TEST_DATABASE');
-    process.env.AUTH_ORIGIN = 'https://whistle.test';
+  async function startApplication(db: DatabaseService) {
     const module = await Test.createTestingModule({
       imports: [AppModule],
       controllers: [ProtectedProbe],
-      providers: [AuthGuard, { provide: AuthService, useFactory: () => new AuthService(database) }],
+      providers: [AuthGuard, { provide: AuthService, useFactory: () => new AuthService(db) }],
     })
       .overrideProvider(DatabaseService)
-      .useValue(database)
+      .useValue(db)
       .compile();
-    app = module.createNestApplication();
-    app.useGlobalPipes(new SafeValidationPipe());
-    app.useGlobalFilters(new SafeErrorFilter());
-    app.useGlobalInterceptors(new ResponseEnvelopeInterceptor());
-    await app.init();
+    const application = module.createNestApplication();
+    application.useGlobalPipes(new SafeValidationPipe());
+    application.useGlobalFilters(new SafeErrorFilter());
+    application.useGlobalInterceptors(new ResponseEnvelopeInterceptor());
+    await application.init();
+    return application;
+  }
+  beforeAll(async () => {
+    await resetPhase1Fixtures(process.env.TEST_DATABASE_URL!, 'RESET_ISOLATED_TEST_DATABASE');
+    process.env.AUTH_ORIGIN = 'https://whistle.test';
+    app = await startApplication(database);
   });
   afterAll(async () => {
     await app?.close();
@@ -299,6 +303,70 @@ describe('authentication HTTP contract', () => {
       .set('Cookie', cookieOf(logged))
       .expect(401);
     expect(expired.body.error.code).toBe('SESSION_EXPIRED');
+  });
+  it('rejects persisted idle, absolute, logged-out and revoked sessions in a fresh application before cleanup', async () => {
+    const start = Date.parse('2026-10-29T03:00:00Z');
+    const exact = new Date(start + 8 * 60 * 60 * 1000);
+    for (const username of [
+      'auth.restart.absolute',
+      'auth.restart.idle',
+      'auth.restart.logout',
+      'auth.restart.revoked',
+    ]) {
+      await createAccount(username);
+    }
+    const absolute = cookieOf(await loginAs('auth.restart.absolute'));
+    const loggedOut = cookieOf(await loginAs('auth.restart.logout'));
+    const revoked = cookieOf(await loginAs('auth.restart.revoked'));
+    const server = request(app.getHttpServer());
+    const csrf = await server.get('/api/v1/auth/csrf').set('Cookie', loggedOut).expect(200);
+    await server
+      .post('/api/v1/auth/logout')
+      .set('Origin', 'https://whistle.test')
+      .set('Cookie', loggedOut)
+      .set('X-CSRF-Token', csrf.body.data.csrfToken)
+      .expect(200);
+    await observer.query('UPDATE account SET auth_revision=auth_revision+1 WHERE username=$1', [
+      'auth.restart.revoked',
+    ]);
+    for (let minute = 29; minute <= 435; minute += 29) {
+      clock.set(new Date(start + minute * 60000));
+      await server.get('/api/v1/auth/session').set('Cookie', absolute).expect(200);
+    }
+    clock.set(new Date(exact.getTime() - 30 * 60000));
+    const idle = cookieOf(await loginAs('auth.restart.idle'));
+    await server.get('/api/v1/auth/session').set('Cookie', absolute).expect(200);
+    clock.set(new Date(exact.getTime() - 60000));
+    await server.get('/api/v1/auth/session').set('Cookie', absolute).expect(200);
+
+    const restartedDatabase = new DatabaseService(
+      process.env.TEST_DATABASE_URL!,
+      new TestClock(exact),
+    );
+    let restarted: INestApplication | undefined;
+    try {
+      restarted = await startApplication(restartedDatabase);
+      for (const [cookie, code] of [
+        [idle, 'SESSION_EXPIRED'],
+        [absolute, 'SESSION_EXPIRED'],
+        [loggedOut, 'PERMISSION_CHANGED'],
+        [revoked, 'PERMISSION_CHANGED'],
+      ]) {
+        const denied = await request(restarted.getHttpServer())
+          .get('/api/v1/auth/session')
+          .set('Cookie', cookie)
+          .expect(401);
+        expect(denied.body.error.code).toBe(code);
+      }
+      expect(
+        await database.client.session.count({
+          where: { account: { username: { startsWith: 'auth.restart.' } } },
+        }),
+      ).toBe(4);
+    } finally {
+      await restarted?.close();
+      await restartedDatabase.close();
+    }
   });
   it('expires prelogin at fifteen minutes, renews bootstrap and consumes a successful context', async () => {
     await createAccount('auth.prelogin');

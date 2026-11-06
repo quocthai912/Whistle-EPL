@@ -68,11 +68,12 @@ test('traces real administration and authentication events across pages and tech
     return result;
   }
   const password = 'Temporary synthetic ' + randomUUID();
+  const displayedText = '<img src=x onerror=alert(1)>';
   const subject = await command(
     '/accounts',
     {
       personnelCode: 'AUDIT-' + randomUUID().slice(0, 8),
-      fullName: 'Nhân viên đối chiếu nhật ký',
+      fullName: displayedText,
       username: 'audit.' + randomUUID().slice(0, 8),
       temporaryPassword: password,
     },
@@ -160,6 +161,8 @@ test('traces real administration and authentication events across pages and tech
       .click();
     const detail = page.getByRole('dialog');
     await expect(detail.getByText('Sau thay đổi')).toBeVisible();
+    await expect(detail.getByText(displayedText, { exact: true })).toBeVisible();
+    await expect(detail.locator('img')).toHaveCount(0);
     const detailText = await detail.innerText();
     expect(detailText.includes(password)).toBe(false);
     expect(detailText).not.toMatch(/passwordHash|tokenHash|csrfToken/);
@@ -178,6 +181,15 @@ test('traces real administration and authentication events across pages and tech
         true,
       );
     }
+    await page.getByRole('button', { name: 'Đăng xuất' }).click();
+    await expect(page).toHaveURL(/login$/);
+    await login(page, staff);
+    await page.goto('/admin/audit');
+    await expect(page.getByRole('alert')).toContainText('Bạn không có quyền truy cập trang này.');
+    await expect(table).toHaveCount(0);
+    expect(
+      await page.evaluate(() => ({ local: localStorage.length, session: sessionStorage.length })),
+    ).toEqual({ local: 0, session: 0 });
   } finally {
     await database.close();
   }

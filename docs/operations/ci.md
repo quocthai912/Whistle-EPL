@@ -29,10 +29,12 @@ Keep the fixture target separate from any operational connection.
 ## Activate the required check
 
 Identify the check emitted by a successful automatic pull request run first.
-Verify the automatic triggers, doc-only PRs and gate outcomes on the two targets.
-Apply the [D098 ruleset](../../context/design/architecture.md#d098---required-ci-and-protected-integration-branches)
-with the check sourced from GitHub Actions. Record hosted evidence and actual
-settings in the branch protection verification record.
+Verify the automatic PR triggers and gate outcomes on both targets. Apply the
+[D098 ruleset](../../context/design/architecture.md#d098---required-ci-and-protected-integration-branches)
+with the check sourced from GitHub Actions. Once each base branch contains
+the workflow through a protected merge, verify the doc-only PRs, the automatic
+main push run and manual dispatch. Record hosted evidence and effective
+settings in the [branch protection record](../verification/phase-1/branch-protection.md).
 
 The [Phase 1 quickstart](../../specs/001-phase-1-operational-foundation/quickstart.md)
 defines the separate trusted HTTPS, Chrome/Edge, performance and recovery checks.
