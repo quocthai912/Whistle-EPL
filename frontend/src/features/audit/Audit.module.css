@@ -2,6 +2,7 @@
   margin: 0;
   font-size: clamp(19px, 2vw, 28px);
   line-height: 1.25;
+  font-weight: 700;
   letter-spacing: -0.025em;
   text-transform: uppercase;
 }
@@ -10,8 +11,8 @@
   color: #645873;
 }
 .filters {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
   align-items: end;
   gap: 10px;
   margin: 22px 0;
@@ -24,11 +25,17 @@
   gap: 4px;
   font-size: 12px;
   font-weight: 600;
-  flex: 1 1 130px;
+  grid-column: span 2;
   min-width: 0;
 }
-.filters label:nth-child(-n + 2) {
-  flex-basis: 165px;
+.filters label:nth-child(-n + 2),
+.filters label:nth-child(6) {
+  grid-column: span 3;
+}
+.filters input,
+.filters select {
+  width: 100%;
+  min-width: 0;
 }
 .filterActions,
 .footer {
@@ -36,6 +43,22 @@
   flex-wrap: wrap;
   align-items: center;
   gap: 8px;
+}
+.filterActions {
+  grid-column: 9 / -1;
+  justify-content: flex-end;
+}
+.table {
+  min-width: 880px;
+  overflow-wrap: anywhere;
+}
+.table th,
+.table td {
+  padding: 10px;
+}
+.table time,
+.table button {
+  white-space: nowrap;
 }
 .footer {
   justify-content: space-between;
@@ -77,4 +100,23 @@
 .detail dd {
   margin: 0;
   white-space: pre-wrap;
+}
+
+@media (max-width: 1050px) {
+  .filters {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .filters label,
+  .filters label:nth-child(-n + 2),
+  .filters label:nth-child(6) {
+    grid-column: auto;
+  }
+  .filterActions {
+    grid-column: 1 / -1;
+  }
+}
+@media (max-width: 580px) {
+  .filters {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }

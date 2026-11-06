@@ -28,8 +28,12 @@ type AuditRecord = {
 };
 const time = new Intl.DateTimeFormat('vi-VN', {
   timeZone: 'Asia/Ho_Chi_Minh',
-  dateStyle: 'short',
-  timeStyle: 'medium',
+  day: '2-digit',
+  month: '2-digit',
+  year: 'numeric',
+  hour: '2-digit',
+  minute: '2-digit',
+  hour12: false,
 });
 const results: Record<string, string> = {
   SUCCESS: 'Thành công',
@@ -249,7 +253,7 @@ export function AuditPage() {
         role="region"
         aria-label="Kết quả nhật ký hoạt động"
       >
-        <table className={shared.table} aria-label="Nhật ký hoạt động">
+        <table className={shared.table + ' ' + css.table} aria-label="Nhật ký hoạt động">
           <thead>
             <tr>
               {[

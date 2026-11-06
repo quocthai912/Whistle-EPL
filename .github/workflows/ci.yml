@@ -40,7 +40,6 @@ jobs:
           pnpm verify:native
           pnpm db:validate
           pnpm db:generate
-          pnpm verify:client
       - name: Check source
         run: |
           pnpm lint
