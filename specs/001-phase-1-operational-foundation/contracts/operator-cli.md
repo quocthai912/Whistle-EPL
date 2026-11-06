@@ -1,6 +1,6 @@
 # PHASE 1 Operator Interface and Recovery Contract
 
-**Administration publication (2026-11-05)** T029–T037 are implemented, verified and published at [`8a8232f`](https://github.com/quocthai912/Whistle-EPL/commit/8a8232ff0cdf3dead4c835f98c45afa12805d2f8) on `feat/phase-1-access-administration`. See [administration verification](../../../docs/verification/phase-1/administration.md). T038–T048 and PHASE 1 acceptance remain pending.
+**Administration publication (2026-11-05)** T029–T037 are implemented, verified and published at [`8a8232f`](https://github.com/quocthai912/Whistle-EPL/commit/8a8232ff0cdf3dead4c835f98c45afa12805d2f8) on `feat/phase-1-access-administration`. See [administration verification](../../../docs/verification/phase-1/administration.md). T038–T048 and PHASE 1 acceptance were pending at that publication milestone.
 
 **Status**: Bootstrap/recovery and maintenance/backup/restore/verify root commands are implemented, verified and published in T015–T022 at [`7ac09e6`](https://github.com/quocthai912/Whistle-EPL/commit/7ac09e6cec9fb434248c82db142ab04695961823); see [execution evidence](../../../docs/verification/phase-1/operator-foundation.md). Isolated fixture modules exist, but the planned root test:fixtures/test:reset aliases remain unavailable. Full installation/browser/operational acceptance is pending.
 Owners: [D008/D011](../../../docs/adr/0004-first-administrator-cli-bootstrap.md),

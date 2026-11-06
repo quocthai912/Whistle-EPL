@@ -7,6 +7,7 @@ import { DatabaseService } from '../../backend/src/platform/database.service';
 import { RecoverAdminService } from '../../backend/src/cli/recover-admin.service';
 import { TechnicalCleanupService } from '../../backend/src/operations/technical-cleanup.service';
 
+/** Checks access with the browser's current cookies and returns only the HTTP status. */
 const auditStatus = (page: Page) =>
   page.evaluate(async () => (await fetch('/api/v1/audit-logs')).status);
 
@@ -37,6 +38,7 @@ test('traces real administration and authentication events across pages and tech
   }
 
   await login(page, admin);
+  /** Sends a protected fixture command and keeps credentials out of test-runner diagnostics. */
   async function command(path: string, data: object, method = 'POST', status = 200) {
     const result = await page.evaluate(
       async ({ path, data, method }) => {
@@ -68,11 +70,12 @@ test('traces real administration and authentication events across pages and tech
     return result;
   }
   const password = 'Temporary synthetic ' + randomUUID();
+  const displayedText = '<img src=x onerror=alert(1)>';
   const subject = await command(
     '/accounts',
     {
       personnelCode: 'AUDIT-' + randomUUID().slice(0, 8),
-      fullName: 'Nhân viên đối chiếu nhật ký',
+      fullName: displayedText,
       username: 'audit.' + randomUUID().slice(0, 8),
       temporaryPassword: password,
     },
@@ -105,6 +108,7 @@ test('traces real administration and authentication events across pages and tech
     assertIsolatedTarget(process.env.E2E_TEST_DATABASE_URL ?? ''),
   );
   try {
+    /** Reads the same ordered audit rows before and after locking the fixture account. */
     const subjectHistory = () =>
       database.client.auditRecord.findMany({
         where: { objectId: subject.id },
@@ -125,6 +129,7 @@ test('traces real administration and authentication events across pages and tech
       'synthetic-browser-operator',
     );
     const retained = await database.client.auditRecord.findMany({ orderBy: { id: 'asc' } });
+    /** Counts the logged-out fixture's sessions so cleanup can be observed directly. */
     const staffSessions = () => database.client.session.count({ where: { accountId: staff.id } });
     expect(await staffSessions()).toBe(1);
     await new TechnicalCleanupService(database).execute();
@@ -160,6 +165,8 @@ test('traces real administration and authentication events across pages and tech
       .click();
     const detail = page.getByRole('dialog');
     await expect(detail.getByText('Sau thay đổi')).toBeVisible();
+    await expect(detail.getByText(displayedText, { exact: true })).toBeVisible();
+    await expect(detail.locator('img')).toHaveCount(0);
     const detailText = await detail.innerText();
     expect(detailText.includes(password)).toBe(false);
     expect(detailText).not.toMatch(/passwordHash|tokenHash|csrfToken/);
@@ -172,12 +179,39 @@ test('traces real administration and authentication events across pages and tech
     );
     await page.evaluate(() => document.fonts.ready);
     await page.screenshot({ path: '.verification/mh10-' + info.project.name + '.png' });
-    for (const width of [768, 390]) {
-      await page.setViewportSize({ width, height: 900 });
+    for (const [width, height] of [
+      [360, 800],
+      [768, 1024],
+      [1366, 768],
+    ]) {
+      await page.setViewportSize({ width, height });
+      await page.getByLabel('Mã đối tượng').fill(subject.id);
+      await page.getByRole('button', { name: 'Tra cứu' }).click();
+      await expect(page.getByText(/23 bản ghi nhật ký/)).toBeVisible();
+      await page.getByRole('button', { name: 'Trang sau' }).click();
+      await table
+        .getByRole('row')
+        .filter({ hasText: 'Tạo tài khoản' })
+        .getByRole('button', { name: 'Chi tiết' })
+        .click();
+      await expect(detail.getByText(displayedText, { exact: true })).toBeVisible();
+      await page.keyboard.press('Escape');
+      await expect(detail).toHaveCount(0);
+      await page.getByRole('button', { name: 'Trang trước' }).click();
+      await expect(table).toHaveText(firstPage, { useInnerText: true });
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
         true,
       );
     }
+    await page.getByRole('button', { name: 'Đăng xuất' }).click();
+    await expect(page).toHaveURL(/login$/);
+    await login(page, staff);
+    await page.goto('/admin/audit');
+    await expect(page.getByRole('alert')).toContainText('Bạn không có quyền truy cập trang này.');
+    await expect(table).toHaveCount(0);
+    expect(
+      await page.evaluate(() => ({ local: localStorage.length, session: sessionStorage.length })),
+    ).toEqual({ local: 0, session: 0 });
   } finally {
     await database.close();
   }

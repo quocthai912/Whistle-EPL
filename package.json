@@ -9,6 +9,7 @@
   },
   "scripts": {
     "test:e2e": "tsc -p tests/e2e/tsconfig.json && playwright test",
+    "test:load": "k6 run tests/performance/authentication.js",
     "admin:bootstrap": "node backend/dist/cli/bootstrap-admin.js",
     "admin:recover": "node backend/dist/cli/recover-admin.js",
     "ops:maintenance": "bash ops/backup/maintenance.sh",
