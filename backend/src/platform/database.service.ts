@@ -42,7 +42,6 @@ export class DatabaseService {
     authority: (context: TransactionContext, now: Date) => Promise<void>,
     execute: (context: TransactionContext) => Promise<T>,
     discover?: (db: Prisma.TransactionClient) => Promise<LockResource[]>,
-    isolationLevel: 'ReadCommitted' | 'RepeatableRead' = 'ReadCommitted',
   ): Promise<T> {
     for (let attempt = 1; attempt <= 3; attempt++) {
       try {
@@ -55,7 +54,7 @@ export class DatabaseService {
             await context.recheckAuthority();
             return execute(context);
           },
-          { isolationLevel, maxWait: 10000, timeout: 20000 },
+          { isolationLevel: 'ReadCommitted', maxWait: 10000, timeout: 20000 },
         );
       } catch (error) {
         if (!knownRollback(error)) throw error;

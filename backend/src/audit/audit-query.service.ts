@@ -1,6 +1,6 @@
 import { isISO8601 } from 'class-validator';
 import type { Request } from 'express';
-import type { Prisma } from '../generated/prisma/client';
+import { Prisma } from '../generated/prisma/client';
 import { denied, invalid, listQuery, uuid } from '../identity-access/accounts.dto';
 import type { AuthService } from '../identity-access/auth.service';
 import { isAdministrator } from '../identity-access/authority.policy';
@@ -64,20 +64,31 @@ export class AuditQueryService {
         )
           throw invalid();
 
-        const where: Prisma.AuditRecordWhereInput = {
-          actorId: actorId === undefined ? undefined : uuid(actorId),
-          actionCode,
-          objectKind,
-          objectId: objectId === undefined ? undefined : uuid(objectId),
-          occurredAt: gte || lt ? { gte, lt } : undefined,
-        };
-        const total = await db.auditRecord.count({ where });
+        const conditions = [
+          actorId === undefined ? null : Prisma.sql`actor_id = ${uuid(actorId)}::uuid`,
+          actionCode === undefined ? null : Prisma.sql`action_code = ${actionCode}`,
+          objectKind === undefined ? null : Prisma.sql`object_kind = ${objectKind}`,
+          objectId === undefined ? null : Prisma.sql`object_id = ${uuid(objectId)}::uuid`,
+          gte ? Prisma.sql`occurred_at >= ${gte}::timestamptz` : null,
+          lt ? Prisma.sql`occurred_at < ${lt}::timestamptz` : null,
+        ].filter((condition) => condition !== null);
+        const ascending = sort === 'occurredAt:asc';
+        const direction = ascending ? Prisma.sql`ASC` : Prisma.sql`DESC`;
+        const where = conditions.length
+          ? Prisma.sql`WHERE ${Prisma.join(conditions, ' AND ')}`
+          : Prisma.empty;
+        // One statement snapshots the total and page keys without weakening
+        // ReadCommitted admission. The selected audit rows are append-only.
+        const [{ total, ids }] = await db.$queryRaw<Array<{ total: bigint; ids: string[] }>>`
+          WITH matching AS NOT MATERIALIZED (SELECT id, occurred_at FROM audit_record ${where})
+          SELECT (SELECT count(*) FROM matching) AS total,
+            ARRAY(SELECT id FROM matching ORDER BY occurred_at ${direction}, id ASC
+              LIMIT ${take} OFFSET ${skip}) AS ids
+        `;
         const rows = await db.auditRecord.findMany({
-          where,
-          skip,
-          take,
+          where: { id: { in: ids } },
           select: auditSelection,
-          orderBy: [{ occurredAt: sort === 'occurredAt:asc' ? 'asc' : 'desc' }, { id: 'asc' }],
+          orderBy: [{ occurredAt: ascending ? 'asc' : 'desc' }, { id: 'asc' }],
         });
         const items = await projectAuditPage(db, rows);
         // D080 counts a successful internal lookup as session activity.
@@ -85,10 +96,8 @@ export class AuditQueryService {
           context,
           await sessions.require(context, candidate, await context.now()),
         );
-        return { page, pageSize, total, items };
+        return { page, pageSize, total: Number(total), items };
       },
-      undefined,
-      'RepeatableRead',
     );
   }
 }
