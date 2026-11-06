@@ -25,6 +25,16 @@ The documented [interruption procedure](../../operations/maintenance.md)
 was followed to resume the selected set. No operational data or off-host
 destination was used.
 
+To reproduce the fault setup in the isolated profile, put a prior successful
+due date three days before the current Vietnam due date in `schedule.json`.
+Prepend a fixture-only `pg_dump` wrapper to PATH for the daily run. It
+passes through `--version` and exits nonzero on the dump. After proving the
+immediate retry is refused, move the fixture's `nextRetry` into the past and
+run retry with the original PATH. To stop restore at the closure boundary,
+pass through `pg_restore --version` and `--list` and terminate the restore
+controller when its wrapper receives `--dbname=…`. Use the original
+unwrapped tools for the same-set repair and verification.
+
 ## Observations
 
 | Drill | Result |

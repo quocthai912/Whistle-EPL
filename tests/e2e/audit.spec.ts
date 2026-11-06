@@ -175,8 +175,26 @@ test('traces real administration and authentication events across pages and tech
     );
     await page.evaluate(() => document.fonts.ready);
     await page.screenshot({ path: '.verification/mh10-' + info.project.name + '.png' });
-    for (const width of [768, 390]) {
-      await page.setViewportSize({ width, height: 900 });
+    for (const [width, height] of [
+      [360, 800],
+      [768, 1024],
+      [1366, 768],
+    ]) {
+      await page.setViewportSize({ width, height });
+      await page.getByLabel('Mã đối tượng').fill(subject.id);
+      await page.getByRole('button', { name: 'Tra cứu' }).click();
+      await expect(page.getByText(/23 bản ghi nhật ký/)).toBeVisible();
+      await page.getByRole('button', { name: 'Trang sau' }).click();
+      await table
+        .getByRole('row')
+        .filter({ hasText: 'Tạo tài khoản' })
+        .getByRole('button', { name: 'Chi tiết' })
+        .click();
+      await expect(detail.getByText(displayedText, { exact: true })).toBeVisible();
+      await page.keyboard.press('Escape');
+      await expect(detail).toHaveCount(0);
+      await page.getByRole('button', { name: 'Trang trước' }).click();
+      await expect(table).toHaveText(firstPage, { useInnerText: true });
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
         true,
       );

@@ -50,7 +50,10 @@ of `ee5da91` passed every job on both targets before the authorized merges.
 | Manual dispatch on main | All mandatory jobs and the gate passed in [42166455772](https://github.com/quocthai912/Whistle-EPL/actions/runs/42166455772). |
 | Doc-only PR to development | [#65](https://github.com/quocthai912/Whistle-EPL/pull/65) changed a single Markdown file. Full automatic CI passed in [42166505306](https://github.com/quocthai912/Whistle-EPL/actions/runs/42166505306). |
 | Doc-only PR to main | [#66](https://github.com/quocthai912/Whistle-EPL/pull/66) changed a single Markdown file. Full automatic CI passed in [42166515317](https://github.com/quocthai912/Whistle-EPL/actions/runs/42166515317). |
+| Skipped mandatory job on development | In draft probe [#67](https://github.com/quocthai912/Whistle-EPL/pull/67), both source jobs passed, PostgreSQL was skipped, and the required gate failed in [42192684960](https://github.com/quocthai912/Whistle-EPL/actions/runs/42192684960). |
+| Skipped mandatory job on main | In draft probe [#68](https://github.com/quocthai912/Whistle-EPL/pull/68), both source jobs passed, PostgreSQL was skipped, and the required gate failed in [42192688292](https://github.com/quocthai912/Whistle-EPL/actions/runs/42192688292). |
 
 Branch restrictions were verified through the effective GitHub rule readback
 and compliant PR merges. The verification used no destructive operations
-against either protected branch.
+against either protected branch. The skip conditions existed only in the
+temporary probe PRs, which were closed after verification.

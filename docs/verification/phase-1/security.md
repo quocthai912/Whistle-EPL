@@ -32,6 +32,10 @@
   navigation, restricted password change and invalidated sessions.
 - The full trusted HTTPS suite passed 30 scenarios across both browsers
   with the security probe included.
+- The audit scenario passed again on Chrome and Edge with the exact TT-02
+  viewports of 360 × 800, 768 × 1024 and 1366 × 768. Each size exercised
+  object filtering, page navigation and the read-only detail dialog. Any
+  horizontal scrolling stayed within the table region.
 - A fresh Nest application and database adapter used the same PostgreSQL
   state before cleanup. At the exact 30-minute idle and eight-hour absolute
   boundaries, the persisted sessions failed. The logged-out and revoked
