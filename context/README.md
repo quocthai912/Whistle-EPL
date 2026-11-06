@@ -2,7 +2,7 @@
 
 **Current version:** v2 | **Status:** APPROVED | **Whole-package approval:** Q98, Team Leader, 2026-10-26 (Asia/Bangkok)
 
-**Latest implementation publication (2026-11-04):** T027–T028 are implemented, verified and published at [`b06075f`](https://github.com/quocthai912/Whistle-EPL/commit/b06075f7a3677fb7e351160a89f59fdaa81f9fc5) on `feat/phase-1-authentication-frontend` (review base `91ff5820ad77ef75bb75aa1576df32ab53edeb10`). The live remote branch and 30 final source-manifest entries match the commit; see [authentication UI/browser evidence](../docs/verification/phase-1/authentication-ui.md). The initial run passed 22 real Chrome/Edge HTTPS scenarios, 31 unit/frontend tests and 55 PostgreSQL regressions; later visual refinements have separately recorded checks. Issues #32–#33 are Closed with label `completed`. T029–T048 and Team Leader/PHASE 1 acceptance remain pending; PHASE 1 remains `IN_PROGRESS`. Publication is not an integration merge or CI/protection result.
+**Latest implementation publication (2026-11-05)** T029–T037 are implemented, verified and published at [`8a8232f`](https://github.com/quocthai912/Whistle-EPL/commit/8a8232ff0cdf3dead4c835f98c45afa12805d2f8) on `feat/phase-1-access-administration`. The [Phase ledger](progress-checker.md#phase-1-administration-execution-evidence---2026-11-05) records the verified source and execution evidence. T038–T048 and PHASE 1 acceptance remain pending. PHASE 1 remains `IN_PROGRESS`.
 
 **Approved extension:** D098 and PHASE 1 preparation clarifications, Q99-Q103 and final shared-understanding approval, Team Leader, 2026-10-28 (Asia/Bangkok). See [the extension record](#phase-1-preparation-approval---q99-q103); Q98 is not retroactive approval of this extension.
 

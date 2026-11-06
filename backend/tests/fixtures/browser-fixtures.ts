@@ -2,9 +2,33 @@ import { randomUUID } from 'node:crypto';
 import { DatabaseService } from '../../src/platform/database.service';
 import { SecurityPrimitivesService } from '../../src/identity-access/security-primitives.service';
 import { assertIsolatedTarget } from './isolated-target.guard';
+import { createPhase1Fixtures } from './phase-1-fixtures';
 
 function database() {
   return new DatabaseService(assertIsolatedTarget(process.env.E2E_TEST_DATABASE_URL ?? ''));
+}
+
+/** Prepares isolated accounts and seasons whose credentials can exercise the full administration workflows. */
+export async function browserAdministration() {
+  const fixtures = await createPhase1Fixtures(
+    assertIsolatedTarget(process.env.E2E_TEST_DATABASE_URL ?? ''),
+  );
+  const db = database();
+  try {
+    await db.client.account.updateMany({
+      where: { id: { in: fixtures.accounts.map(({ id }) => id) } },
+      data: { mustChangePassword: false, temporaryPasswordExpiresAt: null },
+    });
+    return {
+      ...fixtures,
+      accounts: fixtures.accounts.map((account) => ({
+        ...account,
+        password: 'Synthetic fixture credential 🦉 only',
+      })),
+    };
+  } finally {
+    await db.close();
+  }
 }
 
 export async function expireBrowserPrelogin(id: string) {

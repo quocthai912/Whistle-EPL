@@ -1,6 +1,6 @@
 # PHASE 1 Data Model
 
-**UI/browser publication (2026-11-04):** T027–T028 are implemented, verified and published at [`b06075f`](https://github.com/quocthai912/Whistle-EPL/commit/b06075f7a3677fb7e351160a89f59fdaa81f9fc5) on `feat/phase-1-authentication-frontend` (review base `91ff5820ad77ef75bb75aa1576df32ab53edeb10`). The live remote ref and all 30 final source-manifest entries were verified against that commit. [Authentication UI/browser evidence](../../docs/verification/phase-1/authentication-ui.md) distinguishes the initial 22-scenario real Chrome/Edge HTTPS run from subsequent visual refinements and their scoped checks. T029–T048 and Team Leader/PHASE 1 acceptance remain pending; PHASE 1 remains `IN_PROGRESS`. This publication update changes no approved requirements, task dependencies or historical approvals.
+**Administration publication (2026-11-05)** T029–T037 are implemented, verified and published at [`8a8232f`](https://github.com/quocthai912/Whistle-EPL/commit/8a8232ff0cdf3dead4c835f98c45afa12805d2f8) on `feat/phase-1-access-administration`. See [administration verification](../../docs/verification/phase-1/administration.md). T038–T048 and PHASE 1 acceptance remain pending.
 
 **Historical status (2026-10-29)**: T005–T008 physical schema and four committed migrations are implemented
 and verified on PostgreSQL 17.11 at published commit `892f172f9ec539d5789a31a2f8046480afe15772`.
@@ -72,6 +72,12 @@ Nullable columns remain physically nullable until their approved milestone; this
 authorize a submitted incomplete delegation. Required reasons use the shared 2000-code-point
 limit; revocationReason/endReason/decisionReason obey the same D092 scope. Role/action/state
 wire codes are mapped once in the contract and must not introduce a seventh business actor.
+
+The published US3 schema adds `delegation_version.recipient_id` in
+`202611050001_delegation_version_recipient`. New versions retain their recipient when
+a returned case receives a successor. The migration backfills only the current version
+from the case recipient. Older versions without a recorded recipient keep a null value.
+Database checks enforce submitted recipient immutability and grant/version agreement.
 
 ## State and Consistency Rules
 

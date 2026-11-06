@@ -21,6 +21,7 @@ export class AuthService {
     this.csrf = new CsrfService(database, security);
     this.dummyHash = security.hashPassword(`Unknown identity dummy ${security.createCsrfToken()}`);
   }
+  /** Verifies a login under throttle and credential checks, then processes due delegation boundaries before issuing a fresh session. */
   async login(
     input: LoginDto,
     ip: string,
@@ -83,6 +84,7 @@ export class AuthService {
               (current.temporaryPasswordExpiresAt && current.temporaryPasswordExpiresAt > issuedAt))
           );
           if (!valid || !current) return false;
+          await this.sessions.boundaries.resolve(context, current.id, issuedAt);
           const tokens = this.security.createSessionTokens();
           const session = await context.db.session.create({
             data: {

@@ -1,6 +1,6 @@
 # PHASE 1 REST and Browser Contract
 
-**UI/browser publication (2026-11-04):** T027–T028 are implemented, verified and published at [`b06075f`](https://github.com/quocthai912/Whistle-EPL/commit/b06075f7a3677fb7e351160a89f59fdaa81f9fc5) on `feat/phase-1-authentication-frontend` (review base `91ff5820ad77ef75bb75aa1576df32ab53edeb10`). The live remote ref and all 30 final source-manifest entries were verified against that commit. [Authentication UI/browser evidence](../../../docs/verification/phase-1/authentication-ui.md) distinguishes the initial 22-scenario real Chrome/Edge HTTPS run from subsequent visual refinements and their scoped checks. T029–T048 and Team Leader/PHASE 1 acceptance remain pending; PHASE 1 remains `IN_PROGRESS`. This publication update changes no approved requirements, task dependencies or historical approvals.
+**Administration publication (2026-11-05)** T029–T037 are implemented, verified and published at [`8a8232f`](https://github.com/quocthai912/Whistle-EPL/commit/8a8232ff0cdf3dead4c835f98c45afa12805d2f8) on `feat/phase-1-access-administration`. See [administration verification](../../../docs/verification/phase-1/administration.md). T038–T048 and PHASE 1 acceptance remain pending.
 
 **Status (2026-10-29)**: Shared validation/envelopes and frontend Fetch/session/router support
 are implemented and verified by T010/T014 at published commit `892f172f9ec539d5789a31a2f8046480afe15772`.
@@ -146,11 +146,10 @@ Reject unsupported methods/actions without dispatching unrestricted handlers.
 
 ## Browser Routes and Verification
 
-Implemented browser paths: /login, /change-password and the permitted /internal landing shell.
-/admin/accounts, /admin/delegations and /admin/audit remain planned workflows; the current
-protected /admin/* fallback is only a landing shell, not those administration screens.
-Manager delegation views will reuse the
-appropriate authority without exposing account administration. No fake public league dashboard.
+The browser provides /login, /change-password and /internal. /admin/accounts requires a
+full System Administrator session. /admin/delegations supports administrator processing and
+direct Season Manager proposals within their authorized seasons. /admin/audit remains
+planned for US4. Public visitors see the foundation landing page.
 Use one Fetch layer and clear all internal in-memory data on session/account loss. Forms
 never retain passwords in recovery drafts; safe fields survive validation/conflict feedback.
 

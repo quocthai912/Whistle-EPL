@@ -1,0 +1,322 @@
+.layout {
+  min-height: 100dvh;
+  color: #211735;
+  background: #f8f7fc;
+  font:
+    14px/1.55 'Be Vietnam Pro',
+    Arial,
+    sans-serif;
+  --purple: #6236b5;
+  --line: #e5dff0;
+}
+.layout *,
+.form * {
+  box-sizing: border-box;
+}
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  color: white;
+  background: #19112e;
+  padding: 12px clamp(16px, 4vw, 56px);
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: white;
+  text-decoration: none;
+  font-weight: 700;
+}
+.brand img {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: white;
+  object-fit: contain;
+  padding: 3px;
+}
+.brand small {
+  display: block;
+  color: #d6c9f2;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+}
+.workspace {
+  max-width: 1440px;
+  margin: auto;
+  padding: clamp(16px, 4vw, 44px);
+}
+.hero {
+  padding: 26px clamp(18px, 3vw, 34px);
+  border-radius: 18px;
+  color: white;
+  background:
+    linear-gradient(100deg, #2a1348f7, #4e2185dc),
+    url('/images/Whistle-EPL-Background.jpg') center 52% / cover;
+}
+.hero p {
+  margin: 4px 0 0;
+  color: #efe5ff;
+}
+.hero h1 {
+  margin: 4px 0;
+  font-size: clamp(22px, 3vw, 34px);
+  line-height: 1.25;
+}
+.kicker {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.11em;
+}
+.nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 18px 0;
+}
+.nav a,
+.tabs button {
+  padding: 9px 15px;
+  border-radius: 9px;
+  color: #553080;
+  text-decoration: none;
+  font-weight: 600;
+}
+.nav a[aria-current],
+.tabs button[aria-selected='true'] {
+  background: #eee4ff;
+  color: #51259a;
+}
+.panel {
+  background: white;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: clamp(14px, 2.4vw, 28px);
+  box-shadow: 0 8px 24px #39165d08;
+}
+.sectionHeader,
+.actions,
+.filters,
+.pagination,
+.tabs {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+.sectionHeader {
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+.sectionHeader h2 {
+  margin: 0;
+  font-size: 19px;
+}
+.sectionHeader p {
+  margin: 4px 0;
+  color: #645873;
+}
+.filters {
+  margin: 12px 0 18px;
+  align-items: flex-end;
+}
+.filters label,
+.form label {
+  display: grid;
+  gap: 5px;
+  font-weight: 600;
+}
+.layout button,
+.form button {
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  background: white;
+  color: #4d287f;
+  border: 1px solid #ded3ed;
+  border-radius: 8px;
+  padding: 7px 12px;
+  min-height: 36px;
+}
+.layout button:hover:not(:disabled),
+.form button:hover:not(:disabled) {
+  border-color: #7850bc;
+}
+.layout button:disabled,
+.form button:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+.layout .primary,
+.form .primary {
+  color: white;
+  background: #6236b5;
+  border-color: #6236b5;
+}
+.layout input,
+.layout select,
+.form input,
+.form select,
+.form textarea {
+  min-height: 36px;
+  border: 1px solid #ded3ed;
+  border-radius: 8px;
+  padding: 7px 10px;
+  color: #26163c;
+  background: white;
+  font: inherit;
+  font-weight: 400;
+  max-width: 100%;
+}
+.layout :focus-visible,
+.form :focus-visible {
+  outline: 2px solid #7850bc;
+  outline-offset: 2px;
+}
+.scroll {
+  overflow: auto;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+}
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  min-width: 710px;
+}
+.table th {
+  font-size: 12px;
+  color: #523577;
+  background: #f5f0fc;
+}
+.table th,
+.table td {
+  border-bottom: 1px solid #eee9f4;
+  padding: 12px;
+  vertical-align: middle;
+}
+.table tbody tr:last-child td {
+  border-bottom: 0;
+}
+.table tbody tr:hover {
+  background: #fbf9ff;
+}
+.table small {
+  display: block;
+  color: #655573;
+}
+.badge {
+  display: inline-block;
+  white-space: nowrap;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: #eee5fb;
+  color: #52278d;
+  font-size: 12px;
+  font-weight: 600;
+}
+.badge[data-state='ACTIVE'],
+.badge[data-state='GRANTED'] {
+  background: #e4f8eb;
+  color: #145f36;
+}
+.badge[data-state='LOCKED'],
+.badge[data-state='REVOKED'],
+.badge[data-state='REJECTED'] {
+  background: #fbe8ed;
+  color: #892a47;
+}
+.badge[data-state='PENDING'],
+.badge[data-state='RETURNED'] {
+  background: #fff2d7;
+  color: #785312;
+}
+.pagination {
+  justify-content: flex-end;
+  margin-top: 14px;
+}
+.form {
+  display: grid;
+  gap: 14px;
+  font:
+    14px/1.55 'Be Vietnam Pro',
+    Arial,
+    sans-serif;
+}
+.form p {
+  margin: 0;
+}
+.form .actions {
+  justify-content: flex-end;
+  margin-top: 8px;
+}
+.error {
+  color: #8e1e42;
+  background: #fff2f5;
+  border-radius: 8px;
+  padding: 9px 12px;
+}
+.success {
+  color: #145f36;
+  background: #e4f8eb;
+  border-radius: 8px;
+  padding: 9px 12px;
+}
+.basis,
+.review {
+  border-radius: 8px;
+  padding: 10px;
+  color: #553080;
+  background: #f5f0fc;
+}
+.details {
+  display: grid;
+  gap: 12px;
+  color: #26163c;
+}
+.details h3 {
+  margin: 4px 0;
+}
+.details section {
+  padding: 12px;
+  border: 1px solid #e5dff0;
+  border-radius: 10px;
+}
+.detailRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 7px 0;
+}
+.tabs {
+  margin-bottom: 12px;
+}
+.tabs button {
+  border-color: transparent;
+}
+.account {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.account a {
+  color: #efe5ff;
+}
+@media (max-width: 680px) {
+  .topbar {
+    align-items: flex-start;
+  }
+  .account > span {
+    display: none;
+  }
+  .pagination {
+    justify-content: flex-start;
+  }
+}

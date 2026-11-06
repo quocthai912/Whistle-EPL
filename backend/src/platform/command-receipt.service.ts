@@ -1,6 +1,7 @@
 import { createHash } from 'node:crypto';
 import type { Prisma } from '../generated/prisma/client';
 import { ApplicationError } from './application-error';
+import { normalizeMultilineText } from './business-text';
 import type { TransactionContext } from './transaction-context';
 
 const UUID4 = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -56,6 +57,7 @@ function safeOutcome(value: unknown): ReceiptOutcome {
 }
 
 export class CommandReceiptService {
+  /** Validates the receipt fields and canonicalizes values exactly as needed for an intent digest. */
   private normalize(command: ReceiptCommand): ReceiptCommand {
     const allowed: readonly string[] = fields[command.action];
     if (
@@ -74,7 +76,7 @@ export class CommandReceiptService {
         throw new ApplicationError(400, 'INVALID_INPUT', 'Nội dung lệnh không hợp lệ.');
       payload[key] =
         key === 'reason'
-          ? value.normalize('NFC').trim().replace(/\s+/gu, ' ')
+          ? normalizeMultilineText(value)
           : key.endsWith('Id')
             ? value.toLowerCase()
             : value;

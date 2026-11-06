@@ -45,10 +45,10 @@ const policies = {
   DELEGATION_REJECTED: ['versionId', 'state'],
   DELEGATION_CANCELLED: ['versionId', 'state'],
   DELEGATION_GRANTED: ['grantId', 'versionId', 'recipientId', 'actionCode', 'startsAt', 'endsAt'],
-  DELEGATION_REVOKED: ['grantId', 'state', 'sessionsInvalidated'],
-  DELEGATION_TERMINATED: ['grantId', 'state', 'sessionsInvalidated'],
-  DELEGATION_STARTED: ['grantId', 'sessionsInvalidated'],
-  DELEGATION_EXPIRED: ['grantId', 'sessionsInvalidated'],
+  DELEGATION_REVOKED: ['grantId', 'state', 'sessionsInvalidated', 'effectiveAt'],
+  DELEGATION_TERMINATED: ['grantId', 'state', 'sessionsInvalidated', 'effectiveAt'],
+  DELEGATION_STARTED: ['grantId', 'sessionsInvalidated', 'effectiveAt'],
+  DELEGATION_EXPIRED: ['grantId', 'sessionsInvalidated', 'effectiveAt'],
 } as const;
 export type AuditAction = keyof typeof policies;
 
