@@ -10,7 +10,9 @@
 - **Acceptance reviewer** The user approved T048 on 2026-11-06 (Asia/Bangkok)
   with “Duyệt hồ sơ T048” in response to the review request for
   [e35ccef](https://github.com/quocthai912/Whistle-EPL/commit/e35cceffd060440629af8a59df882d1a4af643a0).
-  The approval covers the recorded isolated PHASE 1 verification scope.
+  The reviewer subsequently confirmed that the recorded foundation scope is
+  sufficient for PHASE 1 completion and that production inputs are tracked
+  separately.
 
 Use the [approved Specification](../../../specs/001-phase-1-operational-foundation/spec.md),
 [task ledger](../../../specs/001-phase-1-operational-foundation/tasks.md),
@@ -61,4 +63,4 @@ No acceptance-blocking defect was observed in the recorded isolated scope.
 The recovery drill used a controlled retry deadline. Elapsed host-timer
 verification remains a deployment input. The
 [Phase ledger](../../../context/progress-checker.md#phase-1-audit-and-verification-evidence---2026-11-06)
-records the approved scope and retains PHASE 1 as `IN_PROGRESS`.
+records PHASE 1 as `COMPLETED` for the accepted foundation scope.

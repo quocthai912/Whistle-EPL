@@ -59,7 +59,7 @@ Data transmission requires protection appropriate to the deployment environment 
 | CN-03 | Version control, dependencies/configuration, and installation-configuration-startup instructions. On a new environment meeting prerequisites, following the instructions must successfully install, connect to the database, and start the system | High |
 | CN-04 | Layered/modular organization with clear UI, business, and data-access responsibilities. Rule configuration and component extension must be tested to preserve related functionality without introducing existing-business-function failures | High |
 
-These remain source constraints, not software-completion evidence. Current selections are owned by D002/D079/D082/D085/D086/D095-D097. The [Phase ledger](progress-checker.md#phase-1-ui-and-browser-execution-evidence---2026-11-04) records the published setup/shared-foundation implementation and exact-pin/compatibility checks; remaining workflow implementation, deployment inputs and full quality acceptance remain outstanding.
+These remain source constraints, not software-completion evidence. Current selections are owned by D002/D079/D082/D085/D086/D095-D097. The [Phase ledger](progress-checker.md#phase-1-audit-and-verification-evidence---2026-11-06) records accepted PHASE 1 foundation checks, including the toolchain, browser coverage, security and BM-01. Production checks and later-Phase quality criteria retain their own evidence requirements.
 
 ## Usability - TD (Table 1.7, details p.29)
 

@@ -4,7 +4,7 @@ This register contains only unresolved work. O identifiers retain their source p
 
 ## Actual inputs and unexecuted preparation
 
-These items track operational inputs and implementation or verification deliverables. The [Phase ledger](progress-checker.md#phase-1-administration-execution-evidence---2026-11-05) records published PHASE 1 evidence through T037. Future Specifications and Plans elaborate approved contracts when separately authorized. Source identifiers remain traceable through sources, ADRs and the owning documents.
+These items track operational inputs and implementation or verification deliverables. The [Phase ledger](progress-checker.md#phase-1-audit-and-verification-evidence---2026-11-06) records completed PHASE 1 foundation acceptance. The open portions of O08, O12, O13 and O14 apply to production deployment or later verification in their owning Phases. Future Specifications and Plans elaborate approved contracts when separately authorized. Source identifiers remain traceable through sources, ADRs and the owning documents.
 
 | ID | Source | Remaining input or evidence |
 |---|---|---|
@@ -17,7 +17,7 @@ These items track operational inputs and implementation or verification delivera
 | O11 | TT-03 p.19; HQ-04 p.16; UC22 p.128 | Produce actual versioned XLSX template/report artifacts and executable bounded-parser/field-preservation verification using D078/D091/D097. Formats/limits/libraries/authority are selected; outputs are not implemented. |
 | O12 | CN-01-CN-04 p.26, BM-03 p.23, TT-04 p.19 | Verify the selected deployment configuration and handover under D095-D097. |
 | O13 | HQ-01-04 p.16, TT-01 p.19, BM-01 p.23, TD-01 p.29 | Supply the remaining operational and later-Phase workflow, dataset and authorized-asset measurements under their owning criteria. |
-| O14 | BM-06/BM-07 p.24; TH-06 p.14 | Supply actual deployment domain/certificates/trusted proxy/credentials/off-host destination and provider configuration; run remaining reference-host interrupted-restore/reboot/elapsed-timer/rotation/off-host drills under D087-D089/D094/D097. T015–T022 implement recovery/cleanup/scheduling and record isolated recovery, content-integrity, boot-state and local trusted-CA checks. No provider/domain is implicitly purchased or selected. |
+| O14 | BM-06/BM-07 p.24; TH-06 p.14 | Supply actual deployment domain/certificates/trusted proxy/credentials/off-host destination and provider configuration; run remaining reference-host interrupted-restore/reboot/elapsed-timer/rotation/off-host drills under D087-D089/D094/D097. The [foundation recovery evidence](../docs/verification/phase-1/recovery.md) records completed isolated recovery, including interruption and restart. Production verification applies to the selected deployment. No provider/domain is implicitly purchased or selected. |
 | O16 | Figs.2.27/2.28 p.97; 2.42/2.44/2.45/2.49/2.51 | Chapter 3 writers retain figure/page traceability using their original hash-checked PDF. Current design treats UC11 as UC10 validation and includes source clean sheets; original analysis figures are not implementation APIs/schema. The PDF is intentionally not in this checkout. |
 
 ## Later external-media gate
