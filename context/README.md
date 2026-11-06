@@ -2,7 +2,7 @@
 
 **Current version:** v2 | **Status:** APPROVED | **Whole-package approval:** Q98, Team Leader, 2026-10-26 (Asia/Bangkok)
 
-**Latest implementation publication (2026-11-05)** T029–T037 are implemented, verified and published at [`8a8232f`](https://github.com/quocthai912/Whistle-EPL/commit/8a8232ff0cdf3dead4c835f98c45afa12805d2f8) on `feat/phase-1-access-administration`. The [Phase ledger](progress-checker.md#phase-1-administration-execution-evidence---2026-11-05) records the verified source and execution evidence. T038–T048 and PHASE 1 acceptance remain pending. PHASE 1 remains `IN_PROGRESS`.
+**Latest implementation publication (2026-11-06)** T038–T048 have recorded verification and T048 reviewer approval. See the [Phase ledger](progress-checker.md#phase-1-audit-and-verification-evidence---2026-11-06) for source and evidence. PHASE 1 remains `IN_PROGRESS`.
 
 **Approved extension:** D098 and PHASE 1 preparation clarifications, Q99-Q103 and final shared-understanding approval, Team Leader, 2026-10-28 (Asia/Bangkok). See [the extension record](#phase-1-preparation-approval---q99-q103); Q98 is not retroactive approval of this extension.
 

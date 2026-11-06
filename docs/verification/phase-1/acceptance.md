@@ -7,7 +7,10 @@
   The application and CI workflow entered development via
   [PR #63](https://github.com/quocthai912/Whistle-EPL/pull/63) and main via
   [PR #64](https://github.com/quocthai912/Whistle-EPL/pull/64).
-- **Acceptance reviewer** Team Leader. Approval is pending.
+- **Acceptance reviewer** The user approved T048 on 2026-11-06 (Asia/Bangkok)
+  with “Duyệt hồ sơ T048” in response to the review request for
+  [e35ccef](https://github.com/quocthai912/Whistle-EPL/commit/e35cceffd060440629af8a59df882d1a4af643a0).
+  The approval covers the recorded isolated PHASE 1 verification scope.
 
 Use the [approved Specification](../../../specs/001-phase-1-operational-foundation/spec.md),
 [task ledger](../../../specs/001-phase-1-operational-foundation/tasks.md),
@@ -36,7 +39,7 @@ hosted CI and operator versions.
 | SC-010, UC01–UC04, TT-01/TT-02/TD-02 | Chrome and Edge passed the real trusted-HTTPS browser journeys, including failed/unauthorized paths, credential change, administration, audit and recovery. Audit filtering, pagination and details also worked at 360 × 800, 768 × 1024 and 1366 × 768. | [Browser authentication](authentication-ui.md), [audit](audit.md), [security](security.md), [clean installation](clean-install.md) |
 | SC-011, D088/D089 | Seven complete retained sets, overlap/corruption refusal, missed and failed backup evidence, controlled retry, actual restart and same-set restore with matching inventory and fresh login. | [Recovery](recovery.md) |
 | SC-012, D098 | Hosted Ubuntu/Windows and PostgreSQL jobs passed. Failure, cancellation and a skipped mandatory job each produced a failing gate on both targets. Protected merges, doc-only PRs, push and manual triggers were verified. | [Branch protection](branch-protection.md) |
-| SC-013, CN-03 and Constitution V | Source, test environment, fixtures/reset, commands and results are collected in this assessment and its evidence links. Team Leader review is pending. | [Task ledger](../../../specs/001-phase-1-operational-foundation/tasks.md) |
+| SC-013, CN-03 and Constitution V | Source, test environment, fixtures/reset, commands and results are collected in this assessment and its evidence links. The reviewer approved the T048 evidence package. | [Task ledger](../../../specs/001-phase-1-operational-foundation/tasks.md) |
 
 ## Reproduction and remaining operator inputs
 
@@ -55,6 +58,7 @@ settings separately from hosted runner timing.
 | O14 | Isolated trusted local HTTPS and interrupted recovery passed. Real deployment domain/certificates, trusted proxy, operator identities, elapsed host timers/rotation and any selected off-host destination remain inputs. |
 
 No acceptance-blocking defect was observed in the recorded isolated scope.
-The recovery drill used a controlled retry deadline and did not measure an
-elapsed host timer. The Phase remains `IN_PROGRESS` pending the Team Leader
-review and the supported update to the Phase ledger.
+The recovery drill used a controlled retry deadline. Elapsed host-timer
+verification remains a deployment input. The
+[Phase ledger](../../../context/progress-checker.md#phase-1-audit-and-verification-evidence---2026-11-06)
+records the approved scope and retains PHASE 1 as `IN_PROGRESS`.
