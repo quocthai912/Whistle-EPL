@@ -1,3 +1,4 @@
+import { submitLogin as login } from './login';
 import { test, expect, type Page } from '@playwright/test';
 import {
   browserAccount,
@@ -44,13 +45,6 @@ test('lost connection does not replay login and requires an explicit session che
   await login(page, account);
   await expect(page).toHaveURL(/internal$/);
 });
-
-async function login(page: Page, account: { username: string; password: string }) {
-  await page.goto('/login');
-  await page.getByLabel('TÊN ĐĂNG NHẬP', { exact: false }).fill(account.username);
-  await page.getByLabel(/^MẬT KHẨU \*/).fill(account.password);
-  await page.getByRole('button', { name: 'Đăng nhập', exact: true }).click();
-}
 
 test.beforeAll(async ({ browser }, info) => {
   info.annotations.push({

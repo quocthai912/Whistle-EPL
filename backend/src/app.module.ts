@@ -13,6 +13,8 @@ import { GrantsController } from './identity-access/grants.controller';
 import { GrantsService } from './identity-access/grants.service';
 import { DelegationsController } from './identity-access/delegations.controller';
 import { DelegationProposalService } from './identity-access/delegation-proposal.service';
+import { AuditController } from './audit/audit.controller';
+import { AuditQueryService } from './audit/audit-query.service';
 
 @Controller(['health', 'api/v1/health'])
 class HealthController {
@@ -55,8 +57,15 @@ class ReadinessController {
     AccountsController,
     GrantsController,
     DelegationsController,
+    AuditController,
   ],
   providers: [
+    {
+      provide: AuditQueryService,
+      inject: [DatabaseService, AuthService],
+      useFactory: (database: DatabaseService, auth: AuthService) =>
+        new AuditQueryService(database, auth),
+    },
     {
       provide: DelegationProposalService,
       inject: [AdministrationExecution],

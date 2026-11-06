@@ -52,6 +52,27 @@ const policies = {
 } as const;
 export type AuditAction = keyof typeof policies;
 
+export function isAuditAction(value: string): value is AuditAction {
+  return Object.hasOwn(policies, value);
+}
+
+/** Project historical payloads by the same per-action field allowlist used at append time. */
+export function auditChangeSummary(action: AuditAction, payload: Prisma.JsonValue) {
+  if (!payload || typeof payload !== 'object' || Array.isArray(payload)) return null;
+  const fields: readonly string[] = policies[action];
+  const summary = Object.fromEntries(
+    Object.entries(payload).filter(
+      ([key, value]) =>
+        fields.includes(key) &&
+        (typeof value === 'string' ||
+          typeof value === 'number' ||
+          typeof value === 'boolean' ||
+          value === null),
+    ),
+  );
+  return Object.keys(summary).length ? summary : null;
+}
+
 export function auditPayload(action: AuditAction, value: unknown): Prisma.InputJsonObject {
   const allowed: readonly string[] = policies[action];
   if (

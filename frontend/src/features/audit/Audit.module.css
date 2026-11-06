@@ -1,0 +1,123 @@
+.heading h1 {
+  margin: 0;
+  font-size: clamp(19px, 2vw, 28px);
+  line-height: 1.25;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  text-transform: uppercase;
+}
+.heading p {
+  margin: 6px 0 0;
+  color: #645873;
+}
+.filters {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  align-items: end;
+  gap: 10px;
+  margin: 22px 0;
+  padding: 12px;
+  border-radius: 12px;
+  background: #f6f3fa;
+}
+.filters label {
+  display: grid;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  grid-column: span 2;
+  min-width: 0;
+}
+.filters label:nth-child(-n + 2),
+.filters label:nth-child(6) {
+  grid-column: span 3;
+}
+.filters input,
+.filters select {
+  width: 100%;
+  min-width: 0;
+}
+.filterActions,
+.footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+.filterActions {
+  grid-column: 9 / -1;
+  justify-content: flex-end;
+}
+.table {
+  min-width: 880px;
+  overflow-wrap: anywhere;
+}
+.table th,
+.table td {
+  padding: 10px;
+}
+.table th:first-child,
+.table time,
+.table button {
+  white-space: nowrap;
+}
+.footer {
+  justify-content: space-between;
+  padding-top: 18px;
+  color: #645873;
+}
+.actor {
+  font-weight: 600;
+}
+.outcome {
+  display: inline-block;
+  white-space: nowrap;
+  padding: 2px 9px;
+  border-radius: 999px;
+  background: #fae8ed;
+  color: #9f2647;
+  font-size: 12px;
+  font-weight: 600;
+}
+.outcome[data-outcome='SUCCESS'] {
+  background: #e4f6ec;
+  color: #146640;
+}
+.detail {
+  overflow-wrap: anywhere;
+}
+.detail dl {
+  display: grid;
+  gap: 7px;
+}
+.detail dl div {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: minmax(100px, 38%) minmax(0, 1fr);
+}
+.detail dt {
+  font-weight: 600;
+}
+.detail dd {
+  margin: 0;
+  white-space: pre-wrap;
+}
+
+@media (max-width: 1050px) {
+  .filters {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .filters label,
+  .filters label:nth-child(-n + 2),
+  .filters label:nth-child(6) {
+    grid-column: auto;
+  }
+  .filterActions {
+    grid-column: 1 / -1;
+  }
+}
+@media (max-width: 580px) {
+  .filters {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
