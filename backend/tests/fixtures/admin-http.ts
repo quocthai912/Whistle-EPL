@@ -66,7 +66,12 @@ export function administrationHarness() {
     const csrf = await http.get('/api/v1/auth/csrf').set('Cookie', session).expect(200);
     return {
       get: (path: string) => http.get('/api/v1' + path).set('Cookie', session),
-      send: (path: string, body: object, key = randomUUID(), method: 'post' | 'patch' = 'post') =>
+      send: (
+        path: string,
+        body: object,
+        key = randomUUID(),
+        method: 'post' | 'patch' | 'delete' = 'post',
+      ) =>
         http[method]('/api/v1' + path)
           .set('Origin', origin)
           .set('Cookie', session)
@@ -89,6 +94,7 @@ export function administrationHarness() {
     observer: observer.client,
     login,
     fixtures,
+    anonymous: (path: string) => request(app.getHttpServer()).get('/api/v1' + path),
     dropNextResponse: (key: string) => {
       droppedKey = key;
     },

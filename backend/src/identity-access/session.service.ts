@@ -12,12 +12,16 @@ export class SessionService {
     private readonly database: DatabaseService,
     private readonly security = new SecurityPrimitivesService(),
   ) {}
-  /** Resolves due delegation boundaries before returning a token match for the transaction's live-session check. */
-  async candidate(token?: string): Promise<Session | null> {
+  /** Finds the presented session without processing boundaries or refreshing activity. */
+  find(token?: string) {
     if (!token || !/^[\w-]{43}$/.test(token)) return null;
-    const session = await this.database.client.session.findUnique({
+    return this.database.client.session.findUnique({
       where: { tokenHash: this.security.digest(token) },
     });
+  }
+  /** Resolves due delegation boundaries before returning a token match for the transaction's live-session check. */
+  async candidate(token?: string): Promise<Session | null> {
+    const session = await this.find(token);
     // Resolve in a separate transaction so a subsequent 401 cannot roll back the ledger.
     if (
       session &&

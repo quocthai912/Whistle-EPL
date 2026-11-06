@@ -1,5 +1,7 @@
 # Tasks: PHASE 1 — Operational Foundation and Access Administration
 
+**Audit and CI execution (2026-11-06)** T038–T042 were implemented and verified on `feat/phase-1-audit-and-verification`. See [audit verification](../../docs/verification/phase-1/audit.md) and [hosted CI evidence](../../docs/verification/phase-1/branch-protection.md). T043–T048 and PHASE 1 acceptance remain pending.
+
 **Administration publication (2026-11-05)** T029–T037 are implemented, verified and published at [`8a8232f`](https://github.com/quocthai912/Whistle-EPL/commit/8a8232ff0cdf3dead4c835f98c45afa12805d2f8) on `feat/phase-1-access-administration`. See [administration verification](../../docs/verification/phase-1/administration.md). T038–T048 and PHASE 1 acceptance remain pending.
 
 **Input**: [Approved Specification](spec.md), [Plan](plan.md), [research](research.md),
@@ -137,20 +139,20 @@ real installation/bootstrap/recovery/restore flows must be exercised.
 **Independent test**: US4/SC-008-SC-010; real in-scope events, safe pagination and denied payloads.
 Append/atomicity support is already foundational; this story does not defer auditing earlier writes.
 
-- [ ] T038 [US4] Write backend/tests/integration/audit-access.spec.ts and frontend/tests/audit-query.spec.tsx for administrator-only metadata/current-object redaction, action/time/actor/object filters, empty/errors, default20/max100 deterministic totals/pages and no export/edit/delete or read mutation. (Depends: T031, T026; Covers: FR-041, FR-042, FR-043, FR-044, FR-045, FR-061; SC-005, SC-008, SC-009, SC-010.) — Issue: [#43](https://github.com/quocthai912/Whistle-EPL/issues/43)
+- [X] T038 [US4] Write backend/tests/integration/audit-access.spec.ts and frontend/tests/audit-query.spec.tsx for administrator-only metadata/current-object redaction, action/time/actor/object filters, empty/errors, default20/max100 deterministic totals/pages and no export/edit/delete or read mutation. (Depends: T031, T026; Covers: FR-041, FR-042, FR-043, FR-044, FR-045, FR-061; SC-005, SC-008, SC-009, SC-010.) — Issue: [#43](https://github.com/quocthai912/Whistle-EPL/issues/43)
 
-- [ ] T039 [US4] Implement backend/src/audit/audit.controller.ts, audit-query.service.ts and audit-view.policy.ts; exact GET-only contract/query allowlists and metadata projection with current object-read boundaries; preserve append-only history and safe requestId errors. (Depends: T038; Covers: FR-041, FR-043, FR-044, FR-045, FR-061; SC-005, SC-008, SC-009.) — Issue: [#44](https://github.com/quocthai912/Whistle-EPL/issues/44)
+- [X] T039 [US4] Implement backend/src/audit/audit.controller.ts, audit-query.service.ts and audit-view.policy.ts; exact GET-only contract/query allowlists and metadata projection with current object-read boundaries; preserve append-only history and safe requestId errors. (Depends: T038; Covers: FR-041, FR-043, FR-044, FR-045, FR-061; SC-005, SC-008, SC-009.) — Issue: [#44](https://github.com/quocthai912/Whistle-EPL/issues/44)
 
-- [ ] T040 [US4] Implement frontend/src/features/audit/AuditPage.tsx and audit-filters.ts with frontend/tests/audit-page.spec.tsx; authorized Vietnamese metadata lookup, safe filter/pagination/error states and no restricted payload or export/edit/delete controls. (Depends: T039, T027; Covers: FR-043, FR-044, FR-045, FR-056; SC-005, SC-008, SC-010.) — Issue: [#45](https://github.com/quocthai912/Whistle-EPL/issues/45)
+- [X] T040 [US4] Implement frontend/src/features/audit/AuditPage.tsx and audit-filters.ts with frontend/tests/audit-page.spec.tsx; authorized Vietnamese metadata lookup, safe filter/pagination/error states and no restricted payload or export/edit/delete controls. (Depends: T039, T027; Covers: FR-043, FR-044, FR-045, FR-056; SC-005, SC-008, SC-010.) — Issue: [#45](https://github.com/quocthai912/Whistle-EPL/issues/45)
 
-- [ ] T041 [US4] Implement tests/e2e/audit.spec.ts; produce real account/login/logout/grant/recovery events and inspect authorized lookup, denied users, no secret payload and unchanged content across pagination; preserve retained history through account locking and technical cleanup. (Depends: T040, T034, T021; Covers: FR-006, FR-009, FR-014, FR-016, FR-041, FR-042, FR-043, FR-044, FR-045, FR-055, FR-059, FR-060; SC-003, SC-005, SC-008, SC-010, SC-013.) — Issue: [#46](https://github.com/quocthai912/Whistle-EPL/issues/46)
+- [X] T041 [US4] Implement tests/e2e/audit.spec.ts; produce real account/login/logout/grant/recovery events and inspect authorized lookup, denied users, no secret payload and unchanged content across pagination; preserve retained history through account locking and technical cleanup. (Depends: T040, T034, T021; Covers: FR-006, FR-009, FR-014, FR-016, FR-041, FR-042, FR-043, FR-044, FR-045, FR-055, FR-059, FR-060; SC-003, SC-005, SC-008, SC-010, SC-013.) — Issue: [#46](https://github.com/quocthai912/Whistle-EPL/issues/46)
 
 ## Phase 7: Polish & Cross-Cutting Verification
 
 **Purpose**: Install the real CI/branch gate and execute clean-environment, browser, load,
 security and available-foundation recovery evidence. No Phase acceptance is inferred from task completion.
 
-- [ ] T042 Implement .github/workflows/ci.yml and docs/operations/ci.md after real scripts/tests exist; PR development/main, push main, manual, full doc-only pipeline, pinned Actions/minimal token/disposable fixtures, both OS source/unit/build and Ubuntu PG17 migration/integration; explicit always-evaluated gate rejects failure/cancellation/skipped mandatory jobs, no deploy/secrets. (Depends: T028, T036, T037, T041, T004; Covers: FR-001, FR-057, FR-058, FR-059, FR-060; SC-012, SC-013.) — Issue: [#47](https://github.com/quocthai912/Whistle-EPL/issues/47)
+- [X] T042 Implement .github/workflows/ci.yml and docs/operations/ci.md after real scripts/tests exist; PR development/main, push main, manual, full doc-only pipeline, pinned Actions/minimal token/disposable fixtures, both OS source/unit/build and Ubuntu PG17 migration/integration; explicit always-evaluated gate rejects failure/cancellation/skipped mandatory jobs, no deploy/secrets. (Depends: T028, T036, T037, T041, T004; Covers: FR-001, FR-057, FR-058, FR-059, FR-060; SC-012, SC-013.) — Issue: [#47](https://github.com/quocthai912/Whistle-EPL/issues/47)
 
 - [ ] T043 After genuine passing check discovery, configure and verify development/main PR-only required-check/no-bypass/no-direct-or-force-push/deletion rules under D098; record actual settings and safe success/failure/cancel/doc-only PR evidence in docs/verification/phase-1/branch-protection.md; no mandatory human reviewer gate or destructive branch tests. (Depends: T042; Covers: FR-057, FR-058, FR-060; SC-012, SC-013.) — Issue: [#48](https://github.com/quocthai912/Whistle-EPL/issues/48)
 
