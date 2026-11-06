@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import { administrationHarness } from '../fixtures/admin-http';
+import { administrationHarness, fixturePassword } from '../fixtures/admin-http';
 
 describe('protected audit lookup', () => {
   const harness = administrationHarness();
@@ -8,6 +8,15 @@ describe('protected audit lookup', () => {
     const { accounts } = await harness.fixtures();
     const admin = await harness.login(accounts[0].username);
     const staff = await harness.login(accounts[2].username);
+    await harness.anonymous('/audit-logs').expect(401);
+    await admin
+      .send('/accounts/' + accounts[1].id + '/reset-password', {
+        expectedRevision: '1',
+        temporaryPassword: fixturePassword,
+      })
+      .expect(200);
+    const restricted = await harness.login(accounts[1].username);
+    await restricted.get('/audit-logs').expect(403);
     const now = new Date('2026-11-05T03:00:00Z');
     const protectedId = randomUUID();
     await harness.observer.auditRecord.create({
@@ -65,9 +74,19 @@ describe('protected audit lookup', () => {
       objectId: accounts[1].id,
       outcome: 'SUCCESS',
     }));
-    await harness.observer.auditRecord.createMany({ data: rows });
+    const basis = { ...rows[0], id: undefined };
+    const excluded = [
+      { actorId: accounts[1].id },
+      { objectId: randomUUID() },
+      { objectKind: 'DelegationCase' },
+      { actionCode: 'ACCOUNT_LOCKED' },
+      { occurredAt: new Date('2026-11-05T02:59:59Z') },
+      { occurredAt: new Date('2026-11-05T03:00:01Z') },
+    ];
+    await harness.observer.auditRecord.createMany({
+      data: [...rows, ...excluded.map((override) => ({ ...basis, ...override }))],
+    });
     const auditBefore = await harness.observer.auditRecord.findMany({ orderBy: { id: 'asc' } });
-    const sessionsBefore = await harness.observer.session.findMany({ orderBy: { id: 'asc' } });
     harness.clock.set(new Date('2026-11-05T03:01:00Z'));
     const path =
       '/audit-logs?' +
@@ -88,8 +107,7 @@ describe('protected audit lookup', () => {
     );
     expect((await admin.get(path + '&pageSize=100').expect(200)).body.data.items).toHaveLength(23);
     expect(
-      (await admin.get('/audit-logs?occurredBefore=' + occurredAt.toISOString()).expect(200)).body
-        .data,
+      (await admin.get('/audit-logs?objectId=' + randomUUID()).expect(200)).body.data,
     ).toMatchObject({ total: 0, items: [] });
     for (const filter of [
       'pageSize=101',
@@ -101,6 +119,7 @@ describe('protected audit lookup', () => {
       'actionCode=constructor',
       'objectKind=invalid',
       'occurredFrom=2026-02-30T03:00:00Z',
+      'occurredFrom=2026-11-05T10:00:00%2B07:00',
       'occurredFrom=2026-11-06T00:00:00Z&occurredBefore=2026-11-05T00:00:00Z',
     ]) {
       const failure = await admin.get('/audit-logs?' + filter).expect(400);
@@ -112,11 +131,13 @@ describe('protected audit lookup', () => {
     await admin.get('/audit-logs/export').expect(404);
     await admin.send('/audit-logs', {}).expect(404);
     await admin.send('/audit-logs/' + rows[0].id, {}, randomUUID(), 'patch').expect(404);
+    await admin.send('/audit-logs/' + rows[0].id, {}, randomUUID(), 'delete').expect(404);
     expect(await harness.observer.auditRecord.findMany({ orderBy: { id: 'asc' } })).toEqual(
       auditBefore,
     );
-    expect(await harness.observer.session.findMany({ orderBy: { id: 'asc' } })).toEqual(
-      sessionsBefore,
-    );
+    const refreshed = await harness.observer.session.findFirstOrThrow({
+      where: { accountId: accounts[0].id },
+    });
+    expect(refreshed.lastActivityAt).toEqual(new Date('2026-11-05T03:01:00Z'));
   });
 });

@@ -1,3 +1,4 @@
+import { login } from './login';
 import { randomUUID } from 'node:crypto';
 import { expect, test, type Page } from '@playwright/test';
 import {
@@ -5,13 +6,6 @@ import {
   browserAccount,
 } from '../../backend/tests/fixtures/browser-fixtures';
 
-async function login(page: Page, account: { username: string; password: string }) {
-  await page.goto('/login');
-  await page.getByLabel('TÊN ĐĂNG NHẬP', { exact: false }).fill(account.username);
-  await page.getByLabel(/^MẬT KHẨU \*/).fill(account.password);
-  await page.getByRole('button', { name: 'Đăng nhập', exact: true }).click();
-  await expect(page).toHaveURL(/internal$/);
-}
 const button = (page: Page, name: string) => page.getByRole('button', { name, exact: true });
 const accountRow = (page: Page, username: string) =>
   page.getByRole('row').filter({ has: page.getByText(username, { exact: true }) });

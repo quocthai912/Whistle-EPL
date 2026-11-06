@@ -32,8 +32,8 @@ export class DatabaseService {
   }
 
   /** Trusted time for read-only preflight; writes still sample time after locking. */
-  now(db: Prisma.TransactionClient = this.client): Promise<Date> {
-    return this.clock.now(db);
+  now(): Promise<Date> {
+    return this.clock.now(this.client);
   }
 
   /** Runs an admitted transaction under ordered locks and retries only failures known to have rolled back. */
@@ -42,6 +42,7 @@ export class DatabaseService {
     authority: (context: TransactionContext, now: Date) => Promise<void>,
     execute: (context: TransactionContext) => Promise<T>,
     discover?: (db: Prisma.TransactionClient) => Promise<LockResource[]>,
+    isolationLevel: 'ReadCommitted' | 'RepeatableRead' = 'ReadCommitted',
   ): Promise<T> {
     for (let attempt = 1; attempt <= 3; attempt++) {
       try {
@@ -54,7 +55,7 @@ export class DatabaseService {
             await context.recheckAuthority();
             return execute(context);
           },
-          { isolationLevel: 'ReadCommitted', maxWait: 10000, timeout: 20000 },
+          { isolationLevel, maxWait: 10000, timeout: 20000 },
         );
       } catch (error) {
         if (!knownRollback(error)) throw error;

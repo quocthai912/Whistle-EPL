@@ -38,20 +38,18 @@ function ownsChangePayload({ actionCode, objectKind }: AuditRow) {
 export async function projectAuditPage(db: Prisma.TransactionClient, rows: AuditRow[]) {
   const ids = (kind: (typeof auditObjectKinds)[number]) =>
     rows.flatMap((row) => (row.objectKind === kind && row.objectId ? [row.objectId] : []));
-  const [accounts, cases, grants] = await Promise.all([
-    db.account.findMany({
-      where: { id: { in: ids('Account') } },
-      select: { id: true, fullName: true, personnelCode: true },
-    }),
-    db.delegationCase.findMany({
-      where: { id: { in: ids('DelegationCase') } },
-      select: { id: true },
-    }),
-    db.delegationGrant.findMany({
-      where: { id: { in: ids('DelegationGrant') } },
-      select: { id: true },
-    }),
-  ]);
+  const accounts = await db.account.findMany({
+    where: { id: { in: ids('Account') } },
+    select: { id: true, fullName: true, personnelCode: true },
+  });
+  const cases = await db.delegationCase.findMany({
+    where: { id: { in: ids('DelegationCase') } },
+    select: { id: true },
+  });
+  const grants = await db.delegationGrant.findMany({
+    where: { id: { in: ids('DelegationGrant') } },
+    select: { id: true },
+  });
   const accountById = new Map(accounts.map((account) => [account.id, account]));
   const caseIds = new Set(cases.map(({ id }) => id));
   const grantIds = new Set(grants.map(({ id }) => id));

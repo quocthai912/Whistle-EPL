@@ -1,4 +1,4 @@
-import type { Account, Prisma, Session } from '../generated/prisma/client';
+import type { Account, Session } from '../generated/prisma/client';
 import { DatabaseService } from '../platform/database.service';
 import type { TransactionContext, LockResource } from '../platform/transaction-context';
 import { ApplicationError } from '../platform/application-error';
@@ -13,9 +13,9 @@ export class SessionService {
     private readonly security = new SecurityPrimitivesService(),
   ) {}
   /** Finds the presented session without processing boundaries or refreshing activity. */
-  find(token: string | undefined, db: Prisma.TransactionClient = this.database.client) {
+  find(token?: string) {
     if (!token || !/^[\w-]{43}$/.test(token)) return null;
-    return db.session.findUnique({
+    return this.database.client.session.findUnique({
       where: { tokenHash: this.security.digest(token) },
     });
   }
@@ -45,11 +45,7 @@ export class SessionService {
     return [{ kind: 'account', key: candidate.accountId, mode: 'exclusive' }];
   }
   /** Rejects revoked, stale and expired sessions, including when a delegation boundary crosses during a lock wait. */
-  async require(
-    context: Pick<TransactionContext, 'db'>,
-    candidate: Session,
-    now: Date,
-  ): Promise<LiveSession> {
+  async require(context: TransactionContext, candidate: Session, now: Date): Promise<LiveSession> {
     const session = await context.db.session.findUnique({ where: { id: candidate.id } });
     const account = await context.db.account.findUnique({ where: { id: candidate.accountId } });
     if (!session || !account) this.missing();

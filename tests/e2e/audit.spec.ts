@@ -1,3 +1,4 @@
+import { login } from './login';
 import { randomUUID } from 'node:crypto';
 import { expect, test, type Page } from '@playwright/test';
 import { browserAdministration } from '../../backend/tests/fixtures/browser-fixtures';
@@ -6,13 +7,8 @@ import { DatabaseService } from '../../backend/src/platform/database.service';
 import { RecoverAdminService } from '../../backend/src/cli/recover-admin.service';
 import { TechnicalCleanupService } from '../../backend/src/operations/technical-cleanup.service';
 
-async function login(page: Page, account: { username: string; password: string }) {
-  await page.goto('/login');
-  await page.getByLabel('TÊN ĐĂNG NHẬP', { exact: false }).fill(account.username);
-  await page.getByLabel(/^MẬT KHẨU \*/).fill(account.password);
-  await page.getByRole('button', { name: 'Đăng nhập', exact: true }).click();
-  await expect(page).toHaveURL(/internal$/);
-}
+const auditStatus = (page: Page) =>
+  page.evaluate(async () => (await fetch('/api/v1/audit-logs')).status);
 
 test('traces real administration and authentication events across pages and technical cleanup', async ({
   page,
@@ -27,13 +23,13 @@ test('traces real administration and authentication events across pages and tech
   try {
     await outsider.goto('/admin/audit');
     await expect(outsider).toHaveURL(/login$/);
-    expect((await outsider.request.get('/api/v1/audit-logs')).status()).toBe(401);
+    expect(await auditStatus(outsider)).toBe(401);
     await login(outsider, staff);
     await outsider.goto('/admin/audit');
     await expect(outsider.getByRole('alert')).toContainText(
       'Bạn không có quyền truy cập trang này.',
     );
-    expect((await outsider.request.get('/api/v1/audit-logs')).status()).toBe(403);
+    expect(await auditStatus(outsider)).toBe(403);
     await outsider.getByRole('button', { name: 'Đăng xuất' }).click();
     await expect(outsider).toHaveURL(/login$/);
   } finally {
@@ -41,17 +37,35 @@ test('traces real administration and authentication events across pages and tech
   }
 
   await login(page, admin);
-  const csrf = await page.request.get('/api/v1/auth/csrf');
-  expect(csrf.ok()).toBe(true);
-  const token = (await csrf.json()).data.csrfToken as string;
   async function command(path: string, data: object, method = 'POST', status = 200) {
-    const response = await page.request.fetch('/api/v1' + path, {
-      method,
-      data,
-      headers: { Origin: baseURL!, 'X-CSRF-Token': token, 'Idempotency-Key': randomUUID() },
-    });
-    expect(response.status(), path).toBe(status);
-    return (await response.json()).data;
+    const result = await page.evaluate(
+      async ({ path, data, method }) => {
+        const csrf = await fetch('/api/v1/auth/csrf', { cache: 'no-store' });
+        if (!csrf.ok)
+          throw new Error('Could not obtain request protection for the fixture command.');
+        const {
+          data: { csrfToken },
+        } = await csrf.json();
+        const response = await fetch('/api/v1' + path, {
+          method,
+          body: JSON.stringify(data),
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-Token': csrfToken,
+            'Idempotency-Key': crypto.randomUUID(),
+          },
+        });
+        const { data: saved } = await response.json();
+        return {
+          status: response.status,
+          id: saved?.id as string,
+          revision: saved?.revision as string,
+        };
+      },
+      { path, data, method },
+    );
+    expect(result.status, path).toBe(status);
+    return result;
   }
   const password = 'Temporary synthetic ' + randomUUID();
   const subject = await command(
@@ -75,7 +89,7 @@ test('traces real administration and authentication events across pages and tech
     'POST',
     201,
   );
-  let revision = grant.revision as string;
+  let revision = grant.revision;
   for (let index = 1; index <= 20; index++) {
     const updated = await command(
       '/accounts/' + subject.id,
@@ -87,12 +101,20 @@ test('traces real administration and authentication events across pages and tech
     );
     revision = updated.revision;
   }
-  await command('/accounts/' + subject.id + '/lock', { expectedRevision: revision });
-
   const database = new DatabaseService(
     assertIsolatedTarget(process.env.E2E_TEST_DATABASE_URL ?? ''),
   );
   try {
+    const subjectHistory = () =>
+      database.client.auditRecord.findMany({
+        where: { objectId: subject.id },
+        orderBy: { id: 'asc' },
+      });
+    const beforeLock = await subjectHistory();
+    await command('/accounts/' + subject.id + '/lock', { expectedRevision: revision });
+    const afterLock = await subjectHistory();
+    expect(afterLock.filter((row) => row.actionCode !== 'ACCOUNT_LOCKED')).toEqual(beforeLock);
+    expect(afterLock.filter((row) => row.actionCode === 'ACCOUNT_LOCKED')).toHaveLength(1);
     await new RecoverAdminService(database).execute(
       {
         target: recoveryTarget.username,
@@ -103,7 +125,10 @@ test('traces real administration and authentication events across pages and tech
       'synthetic-browser-operator',
     );
     const retained = await database.client.auditRecord.findMany({ orderBy: { id: 'asc' } });
+    const staffSessions = () => database.client.session.count({ where: { accountId: staff.id } });
+    expect(await staffSessions()).toBe(1);
     await new TechnicalCleanupService(database).execute();
+    expect(await staffSessions()).toBe(0);
     expect(await database.client.auditRecord.findMany({ orderBy: { id: 'asc' } })).toEqual(
       retained,
     );
@@ -141,7 +166,7 @@ test('traces real administration and authentication events across pages and tech
     await page.keyboard.press('Escape');
     await expect(detail).toHaveCount(0);
     await page.getByRole('button', { name: 'Trang trước' }).click();
-    await expect(table).toHaveText(firstPage.replace(/\s+/g, ' ').trim());
+    await expect(table).toHaveText(firstPage, { useInnerText: true });
     expect(await database.client.auditRecord.findMany({ orderBy: { id: 'asc' } })).toEqual(
       retained,
     );
