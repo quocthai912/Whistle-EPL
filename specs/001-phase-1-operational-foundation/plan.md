@@ -1,6 +1,6 @@
 # Implementation Plan: PHASE 1 — Operational Foundation and Access Administration
 
-**Administration publication (2026-11-05)** T029–T037 are implemented, verified and published at [`8a8232f`](https://github.com/quocthai912/Whistle-EPL/commit/8a8232ff0cdf3dead4c835f98c45afa12805d2f8) on `feat/phase-1-access-administration`. See [administration verification](../../docs/verification/phase-1/administration.md). T038–T048 and PHASE 1 acceptance remain pending.
+**Administration publication (2026-11-05)** T029–T037 are implemented, verified and published at [`8a8232f`](https://github.com/quocthai912/Whistle-EPL/commit/8a8232ff0cdf3dead4c835f98c45afa12805d2f8) on `feat/phase-1-access-administration`. See [administration verification](../../docs/verification/phase-1/administration.md). T038–T048 and PHASE 1 acceptance were pending at that publication milestone.
 
 **Branch**: `spec/phase-1-operational-foundation` | **Date**: 2026-10-28
 **Spec**: [Approved Specification](spec.md)

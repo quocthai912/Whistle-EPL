@@ -1,13 +1,13 @@
 # PHASE 1 REST and Browser Contract
 
-**Administration publication (2026-11-05)** T029–T037 are implemented, verified and published at [`8a8232f`](https://github.com/quocthai912/Whistle-EPL/commit/8a8232ff0cdf3dead4c835f98c45afa12805d2f8) on `feat/phase-1-access-administration`. See [administration verification](../../../docs/verification/phase-1/administration.md). T038–T048 and PHASE 1 acceptance remain pending.
+**Administration publication (2026-11-05)** T029–T037 are implemented, verified and published at [`8a8232f`](https://github.com/quocthai912/Whistle-EPL/commit/8a8232ff0cdf3dead4c835f98c45afa12805d2f8) on `feat/phase-1-access-administration`. See [administration verification](../../../docs/verification/phase-1/administration.md). T038–T048 and PHASE 1 acceptance were pending at that publication milestone.
 
 **Status (2026-10-29)**: Shared validation/envelopes and frontend Fetch/session/router support
 are implemented and verified by T010/T014 at published commit `892f172f9ec539d5789a31a2f8046480afe15772`.
 The five authentication routes are implemented, verified and published by T023–T026 at
 [`5cfa666`](https://github.com/quocthai912/Whistle-EPL/commit/5cfa666a7550c9b1d06cc21926dba7e2f27c1a26) on `feat/phase-1-authentication-backend` (review base `7e28810`); see
 [authentication evidence](../../../docs/verification/phase-1/authentication.md).
-The account/delegation/audit HTTP routes remain planned; `/health` is a liveness entry point.
+The account, delegation and audit HTTP routes are implemented. `/health` is a liveness entry point.
 See [Task status](../tasks.md) and [foundation verification](../../../docs/verification/phase-1/foundation.md).
 Derives D085/D096 and the [administration owner](../../../context/use-cases/administration.md).
 Use [spec.md](../spec.md) for required behavior and [data-model.md](../data-model.md) C01-C14
@@ -148,8 +148,8 @@ Reject unsupported methods/actions without dispatching unrestricted handlers.
 
 The browser provides /login, /change-password and /internal. /admin/accounts requires a
 full System Administrator session. /admin/delegations supports administrator processing and
-direct Season Manager proposals within their authorized seasons. /admin/audit remains
-planned for US4. Public visitors see the foundation landing page.
+direct Season Manager proposals within their authorized seasons. `/admin/audit`
+requires a full System Administrator session. Public visitors see the foundation landing page.
 Use one Fetch layer and clear all internal in-memory data on session/account loss. Forms
 never retain passwords in recovery drafts; safe fields survive validation/conflict feedback.
 

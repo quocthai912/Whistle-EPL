@@ -2,13 +2,13 @@
 
 **Current version:** v2 | **Status:** APPROVED | **Whole-package approval:** Q98, Team Leader, 2026-10-26 (Asia/Bangkok)
 
-**Latest implementation publication (2026-11-05)** T029–T037 are implemented, verified and published at [`8a8232f`](https://github.com/quocthai912/Whistle-EPL/commit/8a8232ff0cdf3dead4c835f98c45afa12805d2f8) on `feat/phase-1-access-administration`. The [Phase ledger](progress-checker.md#phase-1-administration-execution-evidence---2026-11-05) records the verified source and execution evidence. T038–T048 and PHASE 1 acceptance remain pending. PHASE 1 remains `IN_PROGRESS`.
+**Latest implementation publication (2026-11-06)** T038–T048 have recorded verification and T048 reviewer approval. See the [Phase ledger](progress-checker.md#phase-1-audit-and-verification-evidence---2026-11-06) for source and evidence. PHASE 1 is `COMPLETED` for the accepted foundation scope.
 
 **Approved extension:** D098 and PHASE 1 preparation clarifications, Q99-Q103 and final shared-understanding approval, Team Leader, 2026-10-28 (Asia/Bangkok). See [the extension record](#phase-1-preparation-approval---q99-q103); Q98 is not retroactive approval of this extension.
 
 **Q98 documentation verification:** COMPLETE after relocation, three independent reviews and final integrity checks at that milestone. This is not software implementation or acceptance.
 
-**Historical implementation snapshot (2026-10-29):** PHASE 1 is `IN_PROGRESS`. T001–T014 are published on `feat/phase-1-core-foundation` at `892f172f9ec539d5789a31a2f8046480afe15772`; T015–T022 are implemented, verified and published at [`7ac09e6`](https://github.com/quocthai912/Whistle-EPL/commit/7ac09e6cec9fb434248c82db142ab04695961823) on `feat/phase-1-operations-recovery` (review base `30506e3`). The live remote ref and all 68 manifest entries match the published commit. See [operator evidence](../docs/verification/phase-1/operator-foundation.md). T023–T026 are implemented, verified and published at [`5cfa666`](https://github.com/quocthai912/Whistle-EPL/commit/5cfa666a7550c9b1d06cc21926dba7e2f27c1a26) on `feat/phase-1-authentication-backend` (review base `7e28810`); the live remote ref and all 28 authentication manifest entries match that commit (see [authentication evidence](../docs/verification/phase-1/authentication.md)); T027–T048 and Phase acceptance remain pending. The [Progress Checker](progress-checker.md#phase-1-execution-evidence---2026-10-29) owns statuses, checkboxes and evidence. Historical approvals remain unchanged; this is not a new Context version or Phase acceptance.
+**Historical implementation snapshot (2026-10-29):** PHASE 1 was `IN_PROGRESS`. T001–T014 are published on `feat/phase-1-core-foundation` at `892f172f9ec539d5789a31a2f8046480afe15772`; T015–T022 are implemented, verified and published at [`7ac09e6`](https://github.com/quocthai912/Whistle-EPL/commit/7ac09e6cec9fb434248c82db142ab04695961823) on `feat/phase-1-operations-recovery` (review base `30506e3`). The live remote ref and all 68 manifest entries match the published commit. See [operator evidence](../docs/verification/phase-1/operator-foundation.md). T023–T026 are implemented, verified and published at [`5cfa666`](https://github.com/quocthai912/Whistle-EPL/commit/5cfa666a7550c9b1d06cc21926dba7e2f27c1a26) on `feat/phase-1-authentication-backend` (review base `7e28810`); the live remote ref and all 28 authentication manifest entries match that commit (see [authentication evidence](../docs/verification/phase-1/authentication.md)); T027–T048 and Phase acceptance were pending at that milestone. The [Progress Checker](progress-checker.md#phase-1-execution-evidence---2026-10-29) owns statuses, checkboxes and evidence. Historical approvals remain unchanged; this is not a new Context version or Phase acceptance.
 
 **Approved v1 milestone:** Team Leader, 2026-10-24; reviewed commit `adad61f2a0625d62538aa10ce0ec8b6a91defa53`, branch `docs/build-agent-context`. Retrieve with `git show adad61f2a0625d62538aa10ce0ec8b6a91defa53` and the historical commit tree.
 
@@ -34,6 +34,9 @@ One evolving, English-only Context Package is maintained in this directory for h
 | Citations and approval evidence | [Sources](sources.md) |
 
 ## Authority and workflow
+
+Only an authorized human may merge a pull request. Coding agents follow the
+[repository merge-authority rule](design/architecture.md#triggers-and-branch-protection).
 
 Direct Team Leader instructions govern the work. The unchanged PDF supplies source requirements; current owner documents mark approved refinements with stable decision IDs. Use source pages and [traceability](sources.md); report unapproved conflicts instead of inventing rules. Source actor/UC/BM/QĐ/quality codes remain stable.
 

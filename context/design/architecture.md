@@ -1,6 +1,6 @@
 # Architecture and shared technical contracts
 
-Owns approved stack, layering, time representation and final write authorization. Only the decisions below are selected; D079 owns module responsibilities/coordination, while D080 defines session transport/storage/expiration; D082 defines relational foundations and D087 the reference deployment; D095/D096 now provide the typed dictionary, interfaces and security/execution contracts, D097 the selected toolchain/development/operations baseline, and D098 required CI and integration-branch protection. Runtime verification and operator inputs remain outstanding. See [open work](../open-decisions.md).
+Owns approved stack, layering, time representation and final write authorization. Only the decisions below are selected; D079 owns module responsibilities/coordination, while D080 defines session transport/storage/expiration; D082 defines relational foundations and D087 the reference deployment; D095/D096 now provide the typed dictionary, interfaces and security/execution contracts, D097 the selected toolchain/development/operations baseline, and D098 required CI and integration-branch protection. The [Phase ledger](../progress-checker.md#phase-1-audit-and-verification-evidence---2026-11-06) records foundation acceptance. The [open register](../open-decisions.md) tracks production operator inputs and later verification.
 
 ### D001 - Modular, layered monolithic backend
 
@@ -927,6 +927,15 @@ Technical references: [pnpm workspace](https://pnpm.io/workspaces), [pnpm instal
 
 #### Triggers and branch protection
 
+**Merge authority (2026-11-06, Asia/Bangkok)** An authorized human must personally
+execute every pull request merge in this repository after the applicable
+branch checks pass. Merge automation must stay disabled. Coding agents may
+prepare, review and verify PRs. They must leave the merge to the authorized
+human and must never merge a PR, enable
+auto-merge, or enqueue or delegate a merge through a tool, API, bot or workflow.
+This assigns authority to execute the merge. The existing reviewer-count and
+required-check policies still govern eligibility.
+
 - Use GitHub Actions for pull requests targeting either development or main, pushes to main, and workflow_dispatch. Required PR checks must come from the appropriate automatic PR run; a manual run is supplemental evidence, not a substitute. Run the complete small pipeline for documentation-only PRs initially; do not use workflow-level path filters that leave a required check pending.
 - Protect both development and main through an active ruleset requiring pull requests and the stable required CI gate, with no bypass actors, including administrators or integrations. Prohibit direct pushes, force pushes and branch deletion. Do not enable an update restriction that also prevents the intended compliant PR merges. Reviewer counts, YAML/job layout and exact settings mechanics are Plan elaboration, not implicitly approved extra gates.
 - Every mandatory dependency must finish successfully before the final gate succeeds, including both operating systems and Ubuntu database integration. Failure, cancellation, skipped mandatory work or missing results must never yield a green gate. The final gate must evaluate dependency outcomes even after upstream failure; do not make its success a consequence of being conditionally skipped or use continue-on-error for mandatory checks.
@@ -964,6 +973,6 @@ PHASE 2-PHASE 10 extend the relevant fast suite when introducing behavior and re
 
 Before .github/workflows/ci.yml can pass meaningfully, the separately authorized work must provide: root/workspace manifests and one committed lockfile; exact compatible runtime/package/image pins; functioning scoped source/build/test commands; the Prisma 7 schema/client configuration and committed migrations; isolated PostgreSQL 17 readiness/connection setup; deterministic synthetic fixtures and controlled test clocks; and actual application/test entry points. Source checks need generated clients available before checking their imports. Test resets must target only explicitly isolated test databases, never an operational database.
 
-Then verify cold installation/native imports and builds on both OSes, fresh migration replay and integration on Ubuntu, all required-gate outcome cases, automatic PR checks on both branch targets, and the postmerge/manual triggers. Only then enable and verify the required branch checks. Exact Actions pins, runner labels, package patches, CLI flags, cache keys and timeout values are implementation details to validate at that time. The current documentation approval supplies none of these files, successful runs or configured protections.
+Then verify cold installation/native imports and builds on both OSes, fresh migration replay and integration on Ubuntu, all required-gate outcome cases, automatic PR checks on both branch targets, and the postmerge/manual triggers. Only then enable and verify the required branch checks. Exact Actions pins, runner labels, package patches, CLI flags, cache keys and timeout values are implementation details to validate at that time. The [D098 verification record](../../docs/verification/phase-1/branch-protection.md) records the implemented workflow, hosted gate outcomes and protected branches.
 
 Technical references: [required-check behavior](https://docs.github.com/en/pull-requests/how-tos/merge-and-close-pull-requests/troubleshooting-required-status-checks), [branch rules](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-rulesets/available-rules-for-rulesets), [ruleset administration](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-rulesets/about-rulesets), [secure Actions use](https://docs.github.com/en/actions/reference/security/secure-use), [PostgreSQL service containers](https://docs.github.com/en/actions/tutorials/use-containerized-services/create-postgresql-service-containers), [public-repository Actions billing](https://docs.github.com/en/billing/concepts/product-billing/github-actions), and [Prisma 7 migration workflows](https://www.prisma.io/docs/orm/v7/prisma-migrate/workflows/development-and-production). These explain platform constraints, not executed project evidence.
