@@ -53,6 +53,7 @@ export const options = {
   summaryTrendStats: ['min', 'med', 'avg', 'p(95)', 'max'],
 };
 
+/** Creates a fresh prelogin context and submits the credentials over the same HTTPS origin. */
 function login(username, password) {
   http.cookieJar().clear(origin);
   const prelogin = http.get(origin + '/api/v1/auth/csrf', { timeout: '10s' });
@@ -68,6 +69,7 @@ function login(username, password) {
   });
 }
 
+/** Measures one fixture login and credits the latency threshold only for an accepted session. */
 export function authenticate() {
   const username = fixture.usernames[exec.scenario.iterationInTest];
   const response = login(username, fixture.password);
@@ -78,6 +80,7 @@ export function authenticate() {
   if (response) loginTime.add(response.timings.duration);
 }
 
+/** Checks the five generic failures and the subsequent throttle response with a separate fixture identity. */
 export function verifyThrottling() {
   const username = fixture.usernames[expectedAttempts];
   for (let attempt = 1; attempt <= 6; attempt++) {

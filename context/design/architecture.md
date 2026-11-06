@@ -927,6 +927,15 @@ Technical references: [pnpm workspace](https://pnpm.io/workspaces), [pnpm instal
 
 #### Triggers and branch protection
 
+**Merge authority (2026-11-06, Asia/Bangkok)** An authorized human must personally
+execute every pull request merge in this repository after the applicable
+branch checks pass. Merge automation must stay disabled. Coding agents may
+prepare, review and verify PRs. They must leave the merge to the authorized
+human and must never merge a PR, enable
+auto-merge, or enqueue or delegate a merge through a tool, API, bot or workflow.
+This assigns authority to execute the merge. The existing reviewer-count and
+required-check policies still govern eligibility.
+
 - Use GitHub Actions for pull requests targeting either development or main, pushes to main, and workflow_dispatch. Required PR checks must come from the appropriate automatic PR run; a manual run is supplemental evidence, not a substitute. Run the complete small pipeline for documentation-only PRs initially; do not use workflow-level path filters that leave a required check pending.
 - Protect both development and main through an active ruleset requiring pull requests and the stable required CI gate, with no bypass actors, including administrators or integrations. Prohibit direct pushes, force pushes and branch deletion. Do not enable an update restriction that also prevents the intended compliant PR merges. Reviewer counts, YAML/job layout and exact settings mechanics are Plan elaboration, not implicitly approved extra gates.
 - Every mandatory dependency must finish successfully before the final gate succeeds, including both operating systems and Ubuntu database integration. Failure, cancellation, skipped mandatory work or missing results must never yield a green gate. The final gate must evaluate dependency outcomes even after upstream failure; do not make its success a consequence of being conditionally skipped or use continue-on-error for mandatory checks.

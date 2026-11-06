@@ -7,6 +7,11 @@
   The application and CI workflow entered development via
   [PR #63](https://github.com/quocthai912/Whistle-EPL/pull/63) and main via
   [PR #64](https://github.com/quocthai912/Whistle-EPL/pull/64).
+- **Test sources** [d9522fa](https://github.com/quocthai912/Whistle-EPL/commit/d9522fa4b7304151db0aecb928ac5a33759ae78b)
+  records the BM-01 load script and security regression suite used for the
+  final integration run. [e35ccef](https://github.com/quocthai912/Whistle-EPL/commit/e35cceffd060440629af8a59df882d1a4af643a0)
+  adds the exact TT-02 viewport checks. Both test snapshots retain the
+  application source and migrations from `ee5da91`.
 - **Acceptance reviewer** The user approved T048 on 2026-11-06 (Asia/Bangkok)
   with “Duyệt hồ sơ T048” in response to the review request for
   [e35ccef](https://github.com/quocthai912/Whistle-EPL/commit/e35cceffd060440629af8a59df882d1a4af643a0).
@@ -45,9 +50,28 @@ hosted CI and operator versions.
 
 ## Reproduction and remaining operator inputs
 
-Run from a clean locked install. Keep each verification database isolated
-from operations and from other concurrent fixture resets. The security and
-audit reports identify direct PostgreSQL and browser commands. The clean
+Use a clean checkout of `d9522fa` for the final integration and BM-01 tests.
+Use `e35ccef` for the exact TT-02 rerun. Before building, compare the
+application files, workspace dependency manifests and lockfile with the
+tested application revision.
+
+```text
+git diff --exit-code ee5da91 HEAD -- backend/src backend/prisma backend/package.json frontend/src frontend/public frontend/index.html frontend/package.json frontend/vite.config.ts pnpm-lock.yaml
+pnpm install --frozen-lockfile
+pnpm build
+```
+
+Deploy migrations to a fresh PostgreSQL 17 test database with `pnpm db:migrate`
+and an explicit `DATABASE_URL`. Clear that variable, point
+`TEST_DATABASE_URL` to the isolated database and run `pnpm test:integration`
+from the test checkout. The HTTP suite starts the application from its
+unchanged source. For BM-01, serve the build over trusted local HTTPS with a
+separate disposable database, prepare the fixtures in the [BM-01 report](bm01.md),
+then run `pnpm test:load` in baseline and negative modes from the test checkout.
+Use the separate browser target and reset acknowledgement from the
+[quickstart](../../../specs/001-phase-1-operational-foundation/quickstart.md)
+for `pnpm test:e2e`. Keep each target separate from operations and concurrent
+fixture resets. The clean
 install and recovery reports specify the actual Compose, TLS, operator,
 backup and restore boundaries. BM-01 records the cgroup, fixture and k6
 settings separately from hosted runner timing.

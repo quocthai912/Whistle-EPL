@@ -31,20 +31,22 @@ jobs:
         with:
           node-version: '24.14.0'
           package-manager-cache: false
+      - name: Enable pnpm
+        run: corepack enable pnpm
       - name: Install locked dependencies
-        run: |
-          corepack enable pnpm
-          pnpm install --frozen-lockfile
-      - name: Verify native modules and Prisma client
-        run: |
-          pnpm verify:native
-          pnpm db:validate
-          pnpm db:generate
-      - name: Check source
-        run: |
-          pnpm lint
-          pnpm typecheck
-          pnpm format:check
+        run: pnpm install --frozen-lockfile
+      - name: Verify native modules
+        run: pnpm verify:native
+      - name: Validate Prisma schema
+        run: pnpm db:validate
+      - name: Generate Prisma client
+        run: pnpm db:generate
+      - name: Lint source
+        run: pnpm lint
+      - name: Check types
+        run: pnpm typecheck
+      - name: Check formatting
+        run: pnpm format:check
       - name: Run unit tests
         run: pnpm test:unit
       - name: Build both workspaces

@@ -7,6 +7,7 @@ import { DatabaseService } from '../../backend/src/platform/database.service';
 import { RecoverAdminService } from '../../backend/src/cli/recover-admin.service';
 import { TechnicalCleanupService } from '../../backend/src/operations/technical-cleanup.service';
 
+/** Checks access with the browser's current cookies and returns only the HTTP status. */
 const auditStatus = (page: Page) =>
   page.evaluate(async () => (await fetch('/api/v1/audit-logs')).status);
 
@@ -37,6 +38,7 @@ test('traces real administration and authentication events across pages and tech
   }
 
   await login(page, admin);
+  /** Sends a protected fixture command and keeps credentials out of test-runner diagnostics. */
   async function command(path: string, data: object, method = 'POST', status = 200) {
     const result = await page.evaluate(
       async ({ path, data, method }) => {
@@ -106,6 +108,7 @@ test('traces real administration and authentication events across pages and tech
     assertIsolatedTarget(process.env.E2E_TEST_DATABASE_URL ?? ''),
   );
   try {
+    /** Reads the same ordered audit rows before and after locking the fixture account. */
     const subjectHistory = () =>
       database.client.auditRecord.findMany({
         where: { objectId: subject.id },
@@ -126,6 +129,7 @@ test('traces real administration and authentication events across pages and tech
       'synthetic-browser-operator',
     );
     const retained = await database.client.auditRecord.findMany({ orderBy: { id: 'asc' } });
+    /** Counts the logged-out fixture's sessions so cleanup can be observed directly. */
     const staffSessions = () => database.client.session.count({ where: { accountId: staff.id } });
     expect(await staffSessions()).toBe(1);
     await new TechnicalCleanupService(database).execute();

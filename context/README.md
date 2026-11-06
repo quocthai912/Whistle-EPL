@@ -35,6 +35,9 @@ One evolving, English-only Context Package is maintained in this directory for h
 
 ## Authority and workflow
 
+Only an authorized human may merge a pull request. Coding agents follow the
+[repository merge-authority rule](design/architecture.md#triggers-and-branch-protection).
+
 Direct Team Leader instructions govern the work. The unchanged PDF supplies source requirements; current owner documents mark approved refinements with stable decision IDs. Use source pages and [traceability](sources.md); report unapproved conflicts instead of inventing rules. Source actor/UC/BM/QĐ/quality codes remain stable.
 
 After the required decisions are approved: Phase -> Specification -> Plan -> Tasks -> approved task Issues -> Implementation -> Testing and Acceptance. [Issue conventions](../docs/agents/issue-tracker.md) apply before ticket work. PHASE 1-PHASE 10 are project Phases, distinct from Spec Kit task phases. Status/checkbox changes require actual evidence.

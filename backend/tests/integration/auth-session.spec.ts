@@ -30,6 +30,7 @@ describe('authentication HTTP contract', () => {
   const database = new DatabaseService(process.env.TEST_DATABASE_URL!, clock);
   const observer = new Pool({ connectionString: process.env.TEST_DATABASE_URL });
   let app: INestApplication;
+  /** Starts a fresh HTTP application against the supplied isolated database and clock. */
   async function startApplication(db: DatabaseService) {
     const module = await Test.createTestingModule({
       imports: [AppModule],

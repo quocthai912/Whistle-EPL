@@ -1,6 +1,6 @@
 # PHASE 1 Validation Guide
 
-**Administration publication (2026-11-05)** T029–T037 are implemented, verified and published at [`8a8232f`](https://github.com/quocthai912/Whistle-EPL/commit/8a8232ff0cdf3dead4c835f98c45afa12805d2f8) on `feat/phase-1-access-administration`. See [administration verification](../../docs/verification/phase-1/administration.md). T038–T048 and PHASE 1 acceptance remain pending.
+**Administration publication (2026-11-05)** T029–T037 are implemented, verified and published at [`8a8232f`](https://github.com/quocthai912/Whistle-EPL/commit/8a8232ff0cdf3dead4c835f98c45afa12805d2f8) on `feat/phase-1-access-administration`. See [administration verification](../../docs/verification/phase-1/administration.md). T038–T048 and PHASE 1 acceptance were pending at that publication milestone.
 
 **Historical status (2026-10-29)**: T001–T014 are published at `892f172f9ec539d5789a31a2f8046480afe15772`; T015–T022 operator/deployment/recovery commands are implemented, verified and published at [`7ac09e6`](https://github.com/quocthai912/Whistle-EPL/commit/7ac09e6cec9fb434248c82db142ab04695961823) on `feat/phase-1-operations-recovery` (review base `30506e3`). See [operator evidence](../../docs/verification/phase-1/operator-foundation.md).
 The command table distinguishes installed commands from remaining planned interfaces.

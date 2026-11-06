@@ -2,7 +2,7 @@
 
 **Audit and CI execution (2026-11-06)** T038–T047 were implemented and verified on `feat/phase-1-audit-and-verification`. See [audit verification](../../docs/verification/phase-1/audit.md) and [hosted CI evidence](../../docs/verification/phase-1/branch-protection.md). See the [acceptance evidence](../../docs/verification/phase-1/acceptance.md) for clean installation, load, recovery and security. The reviewer approved the T048 evidence on 2026-11-06 and confirmed completion of the foundation scope. The [Phase ledger](../../context/progress-checker.md#phase-1-audit-and-verification-evidence---2026-11-06) records PHASE 1 as `COMPLETED` and routes remaining production inputs to their owner.
 
-**Administration publication (2026-11-05)** T029–T037 are implemented, verified and published at [`8a8232f`](https://github.com/quocthai912/Whistle-EPL/commit/8a8232ff0cdf3dead4c835f98c45afa12805d2f8) on `feat/phase-1-access-administration`. See [administration verification](../../docs/verification/phase-1/administration.md). T038–T048 and PHASE 1 acceptance remain pending.
+**Administration publication (2026-11-05)** T029–T037 are implemented, verified and published at [`8a8232f`](https://github.com/quocthai912/Whistle-EPL/commit/8a8232ff0cdf3dead4c835f98c45afa12805d2f8) on `feat/phase-1-access-administration`. See [administration verification](../../docs/verification/phase-1/administration.md). T038–T048 and PHASE 1 acceptance were pending at that publication milestone.
 
 **Input**: [Approved Specification](spec.md), [Plan](plan.md), [research](research.md),
 [data model](data-model.md), [REST](contracts/rest.md), [operator contract](contracts/operator-cli.md)

@@ -9,6 +9,7 @@ describe('Phase 1 authorization and redaction regression', () => {
     const staff = await harness.login(accounts[3].username);
     const target = '/accounts/' + accounts[1].id;
     const revision = { expectedRevision: '1' };
+    /** Reads the committed state that unauthorized requests must leave unchanged. */
     const snapshots = () =>
       Promise.all([
         harness.observer.account.findMany({

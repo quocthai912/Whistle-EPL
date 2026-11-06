@@ -28,6 +28,9 @@ Keep the fixture target separate from any operational connection.
 
 ## Activate the required check
 
+Follow the [D098 merge-authority rule](../../context/design/architecture.md#triggers-and-branch-protection)
+for every pull request. The authorized human initiates the merge after the applicable checks pass.
+
 Identify the check emitted by a successful automatic pull request run first.
 Verify the automatic PR triggers and gate outcomes on both targets. Apply the
 [D098 ruleset](../../context/design/architecture.md#d098---required-ci-and-protected-integration-branches)
