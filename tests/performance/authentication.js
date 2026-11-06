@@ -44,7 +44,7 @@ export const options = {
     },
   },
   thresholds: negative
-    ? { bm01_expected_denial: ['rate==1'] }
+    ? { bm01_attempts: ['count==6'], bm01_expected_denial: ['rate==1'] }
     : {
         bm01_attempts: ['count==100'],
         bm01_success: ['rate==1'],
@@ -83,8 +83,11 @@ export function authenticate() {
 /** Checks the five generic failures and the subsequent throttle response with a separate fixture identity. */
 export function verifyThrottling() {
   const username = fixture.usernames[expectedAttempts];
+  // Emit a sample even if the first prelogin response cannot be parsed.
+  attempts.add(0);
   for (let attempt = 1; attempt <= 6; attempt++) {
     const response = login(username, fixture.password + ' deliberately invalid');
+    if (response) attempts.add(1);
     expectedDenial.add(response?.status === (attempt <= 5 ? 401 : 429));
   }
 }
