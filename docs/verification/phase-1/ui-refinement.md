@@ -144,3 +144,95 @@ The load rerun is a local regression, not a replacement for the recorded BM-01
 acceptance resource profile. No acceptance-blocking regression was observed in
 the executed scope. PHASE 1 remains `COMPLETED`; later Phases add their own audit
 actions and evidence when implemented. Only authorized humans may merge PRs.
+
+## List display preferences — 2026-11-08
+
+The Team Leader requested page-size control for accounts and display preferences
+for both delegation lists. A shared expandable display-options group now provides
+sorting and 20/50/100 rows per page using the existing dropdown component. Account
+sort choices are preserved; proposals offer newest/oldest creation order, while
+grants offer grant-date order and earliest start/end. These choices use existing
+server allowlists and pagination without backend changes.
+
+Changing sort or page size resets the active list to page 1 while preserving its
+search and filters. Proposal and grant display preferences are independent and
+remain selected when switching tabs. Refresh restores the active list's default
+sort and 20-row size. Preferences belong to the current mounted page, not persistent
+browser storage. The controls wrap at narrow widths and retain visible labels.
+
+A read-only browser harness against the rebuilt preview frontend passed all three
+lists in Chrome and Edge, including 12 desktop/mobile viewport checks at 1440 × 900
+and 360 × 800. Mocked API responses verified the outgoing pagination/sort queries,
+page reset, retained search, independent tab preferences, refresh defaults and
+dropdown opening/Escape behavior. Reports and captures are under
+`.verification/ui-review/display-options/`; the ignored harness is
+`.verification/ui-review/display-options.cjs`. This is browser UI verification with
+mocked responses, not a new PostgreSQL/E2E acceptance run.
+
+The frontend regression exposed pre-existing short waits in asynchronous audit UI
+tests: the default one-second element wait and five-second whole-test deadline
+could expire while loading/rendering the administration route. These waits were
+made explicit (five seconds for elements, fifteen seconds for the affected tests),
+without removing assertions or changing application performance requirements.
+
+The final frontend run passed all 30 unit tests across seven files. Frontend build,
+lint, type checking, formatting and `git diff --check` also passed. Only the web
+preview was rebuilt; the existing backend/database and user data were preserved.
+
+## Administration header artwork — 2026-11-08
+
+The Team Leader selected the original artwork for the shared administration
+header, initially as JPEG and now as `frontend/public/images/Whistle-EPL-Background.svg`
+under the application-wide vector update below. It covers the full header width with a center/74% crop, showing the cyan
+curves on the left and purple arcs on the right. A light darkening gradient keeps
+branding and account actions readable. This supersedes the bounded crop and the
+alternate `Whistle-EPL-Background-Header.jpg` trials described in earlier local
+captures. Authentication composition and styling retain their previous settings;
+their image format is updated under the vector update below.
+
+At the JPEG milestone, the web preview was rebuilt with the original image. A read-only harness
+with mocked API data passed 40 page/viewport checks across Chrome and Edge, at
+1536 × 734, 1366 × 650, 1440 × 900 and 360 × 800. Computed-style assertions confirmed
+the original image on accounts, delegations, audit, login and change-password.
+Desktop/mobile captures were inspected for full coverage, crop and readability.
+Those JPEG milestone captures/reports are under `.verification/ui-review/header-original/`;
+earlier alternate-artwork trials remain under `header-art/` and `header-art-v2/`. The frontend
+image build, CSS formatting and whitespace checks passed; no application logic,
+backend or database change was needed.
+
+## Standalone vector background — 2026-11-08
+
+The Team Leader requested an SVG reconstruction of the existing 520 × 254 JPEG.
+`frontend/public/images/Whistle-EPL-Background.svg` reconstructs the colored
+serrated curves as ten closed vector contours with smoothed curved segments and
+preserved corners. Its cyan-to-magenta gradient is fitted to the source colors
+over a clean navy background. The SVG contains paths and a gradient only, with
+no embedded raster, scripts or external references. It is approximately 16 KB.
+
+The asset retains the source aspect ratio and was rendered at 2080 × 1016 and
+4160 × 2032 for visual inspection. Chrome and Edge also decoded the standalone
+SVG and rendered it at 2× pixel density. Preview artifacts and the reconstruction
+report are under `.verification/ui-review/svg-background/`. The reconstruction
+follows the available low-resolution source; it does not claim the original
+designer's exact vector control points. The asset was first delivered separately
+for review; the Team Leader then authorized its application throughout the UI.
+
+## Application-wide SVG background — 2026-11-08
+
+All four artwork URL references now use `Whistle-EPL-Background.svg`: the shared
+administration header, the login/change-password information panel and both
+normal and hover/active authentication submit-button backgrounds. Existing crop,
+cover sizing, opacity, gradients and interaction styles are retained. No source
+CSS reference to the JPEG remains.
+
+The web preview was rebuilt successfully, including TypeScript validation. The
+SVG endpoint returned 200 with `image/svg+xml`, and the login page returned 200.
+A read-only harness with mocked API responses passed 40 page/viewport checks
+across Chrome and Edge at 1536 × 734, 1366 × 650, 1440 × 900 and 360 × 800. It
+asserted SVG use on all five pages, successful browser image decoding and SVG
+backgrounds on both authentication submit buttons before and after hover. Desktop
+captures of the authentication panel and administration header were visually
+inspected for sharper edges and legibility. Current reports/captures are under
+`.verification/ui-review/svg-background/app/`. CSS formatting and whitespace
+checks passed. This visual-only update did not change application logic or data;
+the earlier functional regression evidence retains its recorded scope.

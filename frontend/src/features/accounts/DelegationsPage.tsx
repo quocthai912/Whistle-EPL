@@ -5,7 +5,7 @@ import { AdminSelect } from './AdminSelect';
 import { useSearchTerm } from './use-search-term';
 import { useSession } from '../../shared/http/use-session';
 import { AdminDialog, type AdminCommand, type Field } from './AdminDialog';
-import { ListFeedback, Pagination, StateBadge } from './AdminLists';
+import { DisplayOptions, ListFeedback, Pagination, StateBadge } from './AdminLists';
 import {
   actionNames,
   formatVietnamTime,
@@ -23,6 +23,10 @@ import css from './Administration.module.css';
 
 const proposalStates = ['DRAFT', 'PENDING', 'RETURNED', 'REJECTED', 'CANCELLED', 'GRANTED'];
 const grantStates = ['SCHEDULED', 'ACTIVE', 'EXPIRED', 'REVOKED', 'TERMINATED'];
+const displayDefaults = {
+  proposals: { sort: 'createdAt:desc', pageSize: '20' },
+  grants: { sort: 'grantedAt:desc', pageSize: '20' },
+};
 const labels = {
   submit: 'Gửi đề xuất',
   cancel: 'Hủy đề xuất',
@@ -68,6 +72,7 @@ export function DelegationsPage() {
   const { session, client } = useSession();
   const administrator = session?.systemAdministrator ?? false;
   const [tab, setTab] = useState<'proposals' | 'grants'>('proposals');
+  const [display, setDisplay] = useState(displayDefaults);
   const [filter, setFilter] = useState({
     seasonId: '',
     state: '',
@@ -81,7 +86,7 @@ export function DelegationsPage() {
   const [detail, setDetail] = useState<Proposal>();
   const [grantDetail, setGrantDetail] = useState<Grant>();
   const [success, setSuccess] = useState(false);
-  const query = new URLSearchParams({ page: String(filter.page) });
+  const query = new URLSearchParams({ page: String(filter.page), ...display[tab] });
   if (filter.seasonId) query.set('seasonId', filter.seasonId);
   if (filter.state) query.set('state', filter.state);
   if (term) query.set('search', term);
@@ -407,6 +412,7 @@ export function DelegationsPage() {
           onClick={() => {
             setSearch('');
             setFilter({ seasonId: '', state: '', actionCode: '', recipientId: '', page: 1 });
+            setDisplay({ ...display, [tab]: displayDefaults[tab] });
             proposals.reload();
             grants.reload();
           }}
@@ -414,6 +420,31 @@ export function DelegationsPage() {
           <AdminIcon name="refresh" />
         </button>
       </div>
+      <DisplayOptions
+        sort={display[tab].sort}
+        pageSize={display[tab].pageSize}
+        onSort={(sort) => {
+          setDisplay({ ...display, [tab]: { ...display[tab], sort } });
+          setFilter({ ...filter, page: 1 });
+        }}
+        onPageSize={(pageSize) => {
+          setDisplay({ ...display, [tab]: { ...display[tab], pageSize } });
+          setFilter({ ...filter, page: 1 });
+        }}
+        sorts={
+          tab === 'proposals'
+            ? [
+                { value: 'createdAt:desc', label: 'Mới nhất' },
+                { value: 'createdAt:asc', label: 'Cũ nhất' },
+              ]
+            : [
+                { value: 'grantedAt:desc', label: 'Cấp gần nhất' },
+                { value: 'grantedAt:asc', label: 'Cấp sớm nhất' },
+                { value: 'startsAt:asc', label: 'Bắt đầu sớm nhất' },
+                { value: 'endsAt:asc', label: 'Kết thúc sớm nhất' },
+              ]
+        }
+      />
       <ListFeedback
         loading={list.loading}
         error={list.error}

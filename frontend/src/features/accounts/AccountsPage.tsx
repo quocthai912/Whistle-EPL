@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useSession } from '../../shared/http/use-session';
 import { AdminDialog, type AdminCommand } from './AdminDialog';
-import { ListFeedback, Pagination, StateBadge } from './AdminLists';
+import { DisplayOptions, ListFeedback, Pagination, StateBadge } from './AdminLists';
 import {
   permissionNames,
   roleNames,
@@ -42,12 +42,17 @@ export function AccountsPage() {
     state: '',
     roleCode: '',
     sort: 'createdAt:desc',
+    pageSize: '20',
     page: 1,
   });
   const [selected, setSelected] = useState<string>();
   const [command, setCommand] = useState<AdminCommand>();
   const [success, setSuccess] = useState(false);
-  const query = new URLSearchParams({ page: String(filters.page), sort: filters.sort });
+  const query = new URLSearchParams({
+    page: String(filters.page),
+    sort: filters.sort,
+    pageSize: filters.pageSize,
+  });
   if (term) query.set('search', term);
   if (filters.state) query.set('state', filters.state);
   if (filters.roleCode) query.set('roleCode', filters.roleCode);
@@ -171,27 +176,32 @@ export function AccountsPage() {
           title="Làm mới danh sách tài khoản"
           onClick={() => {
             setSearch('');
-            setFilters({ search: '', state: '', roleCode: '', sort: 'createdAt:desc', page: 1 });
+            setFilters({
+              search: '',
+              state: '',
+              roleCode: '',
+              sort: 'createdAt:desc',
+              pageSize: '20',
+              page: 1,
+            });
             list.reload();
           }}
         >
           <AdminIcon name="refresh" />
         </button>
       </form>
-      <details className={css.listOptions}>
-        <summary>Tùy chọn hiển thị</summary>
-        <AdminSelect
-          label="Sắp xếp"
-          value={filters.sort}
-          onChange={(sort) => setFilters({ ...filters, sort, page: 1 })}
-          options={[
-            { value: 'createdAt:desc', label: 'Mới nhất' },
-            { value: 'username:asc', label: 'Tên đăng nhập A–Z' },
-            { value: 'fullName:asc', label: 'Họ tên A–Z' },
-            { value: 'personnelCode:asc', label: 'Mã nhân sự A–Z' },
-          ]}
-        />
-      </details>
+      <DisplayOptions
+        sort={filters.sort}
+        pageSize={filters.pageSize}
+        onSort={(sort) => setFilters({ ...filters, sort, page: 1 })}
+        onPageSize={(pageSize) => setFilters({ ...filters, pageSize, page: 1 })}
+        sorts={[
+          { value: 'createdAt:desc', label: 'Mới nhất' },
+          { value: 'username:asc', label: 'Tên đăng nhập A–Z' },
+          { value: 'fullName:asc', label: 'Họ tên A–Z' },
+          { value: 'personnelCode:asc', label: 'Mã nhân sự A–Z' },
+        ]}
+      />
       <ListFeedback
         loading={list.loading}
         error={list.error}

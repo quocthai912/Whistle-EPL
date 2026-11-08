@@ -1,5 +1,43 @@
 import { grantStateNames, stateNames, type List } from './administration-model';
 import css from './Administration.module.css';
+import { AdminSelect } from './AdminSelect';
+
+/** Shares display preferences while leaving each list in control of its server query. */
+export function DisplayOptions({
+  sort,
+  pageSize,
+  sorts,
+  onSort,
+  onPageSize,
+}: {
+  sort: string;
+  pageSize: string;
+  sorts: { value: string; label: string }[];
+  onSort: (sort: string) => void;
+  onPageSize: (pageSize: string) => void;
+}) {
+  return (
+    <details className={css.listOptions}>
+      <summary>Tùy chọn hiển thị</summary>
+      <div className={css.listOptionFields}>
+        <AdminSelect
+          label="Sắp xếp"
+          hideLabel={false}
+          value={sort}
+          onChange={onSort}
+          options={sorts}
+        />
+        <AdminSelect
+          label="Số dòng mỗi trang"
+          hideLabel={false}
+          value={pageSize}
+          onChange={onPageSize}
+          options={[20, 50, 100].map((size) => ({ value: String(size), label: String(size) }))}
+        />
+      </div>
+    </details>
+  );
+}
 
 /** Displays the localized label for a persisted account, proposal or grant state. */
 export function StateBadge({ state, grant = false }: { state: string; grant?: boolean }) {

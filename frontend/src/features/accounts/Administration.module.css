@@ -34,13 +34,10 @@
 .topbar::before {
   content: '';
   position: absolute;
-  inset: 0 auto 0 0;
-  width: min(100%, 960px);
+  inset: 0;
   background:
-    linear-gradient(100deg, #0b102a55, #15103455),
-    url('/images/Whistle-EPL-Background.jpg') 28% 62% / cover;
-  mask-image: linear-gradient(to right, #000 60%, transparent);
-  opacity: 0.8;
+    linear-gradient(100deg, #0b102a80, #15103440 48%, #15103499),
+    url('/images/Whistle-EPL-Background.svg') center 74% / cover;
   z-index: -1;
   pointer-events: none;
 }
@@ -946,9 +943,15 @@
   cursor: pointer;
   width: fit-content;
 }
-.listOptions > .selectField {
+.listOptionFields {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
   margin-top: 10px;
-  max-width: 220px;
+}
+.listOptionFields > .selectField {
+  flex: 0 1 220px;
+  min-width: min(100%, 180px);
 }
 .filters input {
   min-height: 42px;

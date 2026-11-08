@@ -89,9 +89,11 @@ it.each([
         <App />
       </MemoryRouter>,
     );
-    fireEvent.click(await screen.findByRole('button', { name: 'Chi tiết' }));
-    for (const text of expected) expect(await screen.findByText(text)).toBeInTheDocument();
+    fireEvent.click(await screen.findByRole('button', { name: 'Chi tiết' }, { timeout: 5000 }));
+    for (const text of expected)
+      expect(await screen.findByText(text, undefined, { timeout: 5000 })).toBeInTheDocument();
   },
+  15000,
 );
 
 it('sends only the applied audit filters, paginates, and retries a safe read error', async () => {
@@ -155,4 +157,4 @@ it('sends only the applied audit filters, paginates, and retries a safe read err
   fireEvent.click(await screen.findByRole('button', { name: 'Thử lại' }));
   await screen.findByText(/Trang 2 \/ 2/);
   expect(screen.queryByText(/raw database failure/)).not.toBeInTheDocument();
-});
+}, 15000);

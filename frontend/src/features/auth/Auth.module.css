@@ -103,7 +103,7 @@
   content: '';
   position: absolute;
   inset: 0;
-  background: url('/images/Whistle-EPL-Background.jpg') 28% 62% / cover;
+  background: url('/images/Whistle-EPL-Background.svg') 28% 62% / cover;
   opacity: 0.64;
   transform: scale(1.05);
 }
@@ -263,7 +263,7 @@
   cursor: pointer;
   background:
     linear-gradient(135deg, #111536bf, #1e1b4bbf 60%, #261653cc),
-    url('/images/Whistle-EPL-Background.jpg') center / cover;
+    url('/images/Whistle-EPL-Background.svg') center / cover;
   box-shadow: 0 4px 14px #11153659;
 }
 .submit:hover {
@@ -333,7 +333,7 @@
   border-color: #ffffff2e;
   background:
     linear-gradient(135deg, #111536bf, #1e1b4bbf 60%, #261653cc),
-    url('/images/Whistle-EPL-Background.jpg') center / cover;
+    url('/images/Whistle-EPL-Background.svg') center / cover;
 }
 .page .submit:disabled {
   color: white;
