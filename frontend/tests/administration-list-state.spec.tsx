@@ -117,8 +117,48 @@ it('keeps submitted audit identifiers when an automatic filter changes during id
   expect(requests.at(-1)?.searchParams.get('actorId')).toBe(actorId);
   expect(requests.at(-1)?.searchParams.get('objectId')).toBe(objectId);
   expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+  expect(screen.getByLabelText('Mã người thực hiện')).toHaveValue('1234');
+  expect(screen.getByLabelText('Mã đối tượng')).toHaveValue('');
+  expect(screen.getByText(/Mã người thực hiện chưa áp dụng/)).toHaveTextContent(actorId);
+  expect(screen.getByText(/Mã đối tượng chưa áp dụng/)).toHaveTextContent(objectId);
   fireEvent.click(screen.getByRole('button', { name: 'Tra cứu' }));
   expect(await screen.findByRole('alert')).toHaveTextContent('định dạng UUID');
+}, 15000);
+
+it('submits audit search and actor together without requesting the previous search', async () => {
+  const requests = mountList('/admin/audit');
+  const input = await screen.findByRole('textbox', { name: 'Tìm nhật ký' }, timeout);
+  fireEvent.change(input, { target: { value: 'old search' } });
+  await waitFor(
+    () => expect(requests.at(-1)?.searchParams.get('search')).toBe('old search'),
+    timeout,
+  );
+  const actorId = '12345678-1234-4234-8234-123456789012';
+  fireEvent.change(input, { target: { value: 'new search' } });
+  fireEvent.change(screen.getByLabelText('Mã người thực hiện'), { target: { value: actorId } });
+  fireEvent.click(screen.getByRole('button', { name: 'Tra cứu' }));
+  await waitFor(() => expect(requests.at(-1)?.searchParams.get('actorId')).toBe(actorId), timeout);
+  expect(
+    requests
+      .filter((url) => url.searchParams.get('actorId') === actorId)
+      .every((url) => url.searchParams.get('search') === 'new search'),
+  ).toBe(true);
+  await waitFor(
+    () => expect(screen.getByRole('button', { name: 'Trang sau' })).toBeEnabled(),
+    timeout,
+  );
+  expect(requests.at(-1)?.searchParams.get('search')).toBe('new search');
+  // Submit and restore the already-settled value before the timer can change it.
+  fireEvent.change(input, { target: { value: 'submitted search' } });
+  fireEvent.click(screen.getByRole('button', { name: 'Tra cứu' }));
+  fireEvent.change(input, { target: { value: 'new search' } });
+  await waitFor(
+    () => expect(requests.at(-1)?.searchParams.get('search')).toBe('new search'),
+    timeout,
+  );
+  fireEvent.change(input, { target: { value: 'pending search' } });
+  fireEvent.click(screen.getByRole('button', { name: 'Đặt lại' }));
+  await waitFor(() => expect(requests.at(-1)?.searchParams.has('search')).toBe(false), timeout);
 }, 15000);
 
 it('refreshes an open grant drawer from new results and closes it when that grant disappears', async () => {

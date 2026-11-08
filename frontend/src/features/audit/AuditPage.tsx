@@ -165,8 +165,13 @@ export function AuditPage() {
   const [selectedId, setSelectedId] = useState<string>();
   const [validation, setValidation] = useState<string>();
   const query = new URLSearchParams(applied);
-  if (term) query.set('search', term);
-  else query.delete('search');
+  if (term === draft.search.trim() && term !== (query.get('search') ?? '')) {
+    if (term) query.set('search', term);
+    else query.delete('search');
+    setApplied(query.toString());
+    setPage(1);
+    setSelectedId(undefined);
+  }
   const { data, error, requestId, loading, reload } = useAdminList<List<AuditRecord>>(
     '/audit-logs?' + query + '&page=' + page,
   );
@@ -181,11 +186,15 @@ export function AuditPage() {
     if (key === 'search' || key === 'actorId' || key === 'objectId') return;
     try {
       const previous = new URLSearchParams(applied);
+      const identifiers = {
+        actorId: previous.get('actorId') ?? '',
+        objectId: previous.get('objectId') ?? '',
+      };
       setApplied(
         auditFilters({
           ...next,
-          actorId: previous.get('actorId') ?? '',
-          objectId: previous.get('objectId') ?? '',
+          ...identifiers,
+          search: previous.get('search') ?? '',
         }),
       );
       setValidation(undefined);
@@ -288,17 +297,41 @@ export function AuditPage() {
               Mã người thực hiện
               <input
                 value={draft.actorId}
+                aria-label="Mã người thực hiện"
+                aria-describedby={
+                  draft.actorId.trim() !== (query.get('actorId') ?? '')
+                    ? 'audit-actor-pending'
+                    : undefined
+                }
                 onChange={(event) => update('actorId', event.target.value)}
                 placeholder="UUID người thực hiện"
               />
+              {draft.actorId.trim() !== (query.get('actorId') ?? '') && (
+                <small id="audit-actor-pending">
+                  Mã người thực hiện chưa áp dụng. Đang áp dụng: {query.get('actorId') ?? 'Tất cả'}.
+                  Nhấn Tra cứu để áp dụng bản nháp.
+                </small>
+              )}
             </label>
             <label>
               Mã đối tượng
               <input
                 value={draft.objectId}
+                aria-label="Mã đối tượng"
+                aria-describedby={
+                  draft.objectId.trim() !== (query.get('objectId') ?? '')
+                    ? 'audit-object-pending'
+                    : undefined
+                }
                 onChange={(event) => update('objectId', event.target.value)}
                 placeholder="UUID đối tượng"
               />
+              {draft.objectId.trim() !== (query.get('objectId') ?? '') && (
+                <small id="audit-object-pending">
+                  Mã đối tượng chưa áp dụng. Đang áp dụng: {query.get('objectId') ?? 'Tất cả'}. Nhấn
+                  Tra cứu để áp dụng bản nháp.
+                </small>
+              )}
             </label>
             <AdminSelect
               hideLabel={false}

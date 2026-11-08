@@ -345,3 +345,38 @@ Ignored evidence is under `.verification/ui-review/`: `review-list-state-red.log
 `coderabbit-review-complete.jsonl`. PHASE 1 acceptance/status and the earlier
 install/load/recovery/hosted-CI evidence remain unchanged. No commit, push or PR
 merge was performed; only authorized humans may merge PRs.
+
+### Audit filter follow-up — 2026-11-08
+
+The subsequent PR findings were reproduced against the current code. Audit
+requests now use the applied query without overriding an explicitly submitted
+search with the previous debounced term. Settled typing updates that query only
+when it matches the current draft and differs from the applied search, including
+submission followed by restoring the previous text before the debounce expires.
+Automatic filters preserve submitted actor/object identifiers and pending edits.
+Pending identifier fields explicitly identify themselves as unapplied and display
+the identifier currently used by the results; submitting validates and applies
+the draft. Before/after assertions now scope all recorded grant values to their
+corresponding summary, including negative assertions for the opposite side.
+
+Local CodeRabbit found two additional valid issues during iteration: discarding
+unfinished identifier edits on automatic refresh, and failing to restore an
+already-settled search after an immediate submission. Both were fixed with
+regression coverage. Subsequent ordinary/deep/scoped CLI runs completed with no
+new findings but reported that no fresh detailed file review was performed;
+those responses are not evidence of a fresh clean review. No finding was
+dismissed merely to clear the report. Logs are retained under the ignored
+`.verification/ui-review/audit-followup-*.log` and
+`.verification/ui-review/coderabbit-audit-followup*.jsonl` paths.
+
+This follow-up does not change PHASE 1 acceptance, scope or merge authority.
+
+The final targeted run passed all 14 audit/list-state tests, including pending
+identifier feedback, atomic search/actor submission, restoring a settled term,
+reset during debounce, and scoped historical grant summaries. Frontend lint,
+TypeScript/build, formatting and whitespace checks passed. Backend/database and
+browser suites were not rerun for this frontend-only follow-up; their earlier
+results above remain historical evidence rather than new executions.
+The complete frontend suite also passed 39/39 tests across eight files
+(`audit-followup-final-unit.log`); the subsequent settled-search adjustment was
+covered by the final 14/14 targeted rerun (`audit-followup-settled.log`).

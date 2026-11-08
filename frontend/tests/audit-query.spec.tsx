@@ -90,13 +90,14 @@ it.each([
       </MemoryRouter>,
     );
     fireEvent.click(await screen.findByRole('button', { name: 'Chi tiết' }, { timeout: 5000 }));
-    if (change.actionCode === 'ACCOUNT_LOCKED') {
+    if (change.before || change.after) {
       const before = within(screen.getByRole('heading', { name: 'Trước thay đổi' }).parentElement!);
       const after = within(screen.getByRole('heading', { name: 'Sau thay đổi' }).parentElement!);
       expect(before.getByText(expected[0])).toBeInTheDocument();
       expect(before.queryByText(expected[1])).not.toBeInTheDocument();
       expect(after.getByText(expected[1])).toBeInTheDocument();
       expect(after.queryByText(expected[0])).not.toBeInTheDocument();
+      if (expected[2]) expect(screen.getByText(expected[2])).toBeInTheDocument();
     } else
       for (const text of expected)
         expect(await screen.findByText(text, undefined, { timeout: 5000 })).toBeInTheDocument();
