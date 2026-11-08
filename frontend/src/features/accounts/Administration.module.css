@@ -37,7 +37,7 @@
   inset: 0;
   background:
     linear-gradient(100deg, #0b102a80, #15103440 48%, #15103499),
-    url('/images/Whistle-EPL-Background.svg') right 28% / 120% auto no-repeat;
+    url('/images/Whistle-EPL-Background-Header.svg') center / 100% 180px no-repeat;
   z-index: -1;
   pointer-events: none;
 }

@@ -399,3 +399,22 @@ the changed test file with zero findings. Ignored logs:
 `.verification/ui-review/audit-request-window-tests.log` and
 `.verification/ui-review/coderabbit-audit-request-window.jsonl`.
 Application code and PHASE 1 acceptance/status remain unchanged.
+
+### Expanded administration header artwork — option D, 2026-11-08
+
+The user selected option D from the expanded-artwork preview. The shared
+administration header now uses `Whistle-EPL-Background-Header.svg`, derived from
+the existing artwork with `preserveAspectRatio="none"`, centered at `100% 180px`.
+This intentionally compresses the artwork vertically to show more of its curves
+inside the existing 64 px desktop header. The original SVG and authentication
+styles remain unchanged. This selection supersedes the earlier crop selections.
+
+Frontend build, formatting and whitespace checks passed. Mocked-API browser
+checks passed all 40 page/viewport combinations across Chrome and Edge for
+accounts, delegations, audit, login and password change at 1536, 1366, 1440 and
+360 px widths. Checks verified the new administration artwork and positioning,
+the original authentication artwork, no horizontal page overflow, authentication
+footers and the own-account password-change interaction. Screenshots and results
+are retained under ignored `.verification/ui-review/header-d/`; the build log is
+`.verification/ui-review/header-d-build.log`. No production data was accessed or
+changed; PHASE 1 acceptance/status is unchanged.
