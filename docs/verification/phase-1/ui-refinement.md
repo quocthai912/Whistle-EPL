@@ -380,3 +380,22 @@ results above remain historical evidence rather than new executions.
 The complete frontend suite also passed 39/39 tests across eight files
 (`audit-followup-final-unit.log`); the subsequent settled-search adjustment was
 covered by the final 14/14 targeted rerun (`audit-followup-settled.log`).
+
+### Audit request assertion follow-up — 2026-11-08
+
+All three subsequent test-review findings were valid. The audit regression now
+captures request-count boundaries before submission, restoration and reset,
+then inspects only subsequent audit-log requests. After search settlement every
+post-submit request must use the new term, including requests without an actor
+filter. The restore sequence must contain the submitted term followed by the
+restored term. The page stays mounted for 350 ms after reset (beyond the 300 ms
+debounce), and every post-reset request must omit search. Each request group is
+required to be nonempty, directly or through its ordered term assertions.
+
+All seven tests in `administration-list-state.spec.tsx` passed. Frontend lint,
+typecheck, formatting and whitespace checks passed. CodeRabbit CLI Local
+`review --agent --uncommitted --include-untracked` completed a fresh review of
+the changed test file with zero findings. Ignored logs:
+`.verification/ui-review/audit-request-window-tests.log` and
+`.verification/ui-review/coderabbit-audit-request-window.jsonl`.
+Application code and PHASE 1 acceptance/status remain unchanged.

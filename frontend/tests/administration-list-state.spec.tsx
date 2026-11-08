@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { MemoryRouter } from 'react-router';
 import { afterEach, beforeAll, expect, it, vi } from 'vitest';
 import { App } from '../src/app/App';
@@ -136,13 +136,17 @@ it('submits audit search and actor together without requesting the previous sear
   const actorId = '12345678-1234-4234-8234-123456789012';
   fireEvent.change(input, { target: { value: 'new search' } });
   fireEvent.change(screen.getByLabelText('Mã người thực hiện'), { target: { value: actorId } });
+  const beforeSubmit = requests.length;
   fireEvent.click(screen.getByRole('button', { name: 'Tra cứu' }));
+  await act(async () => {
+    await new Promise((resolve) => setTimeout(resolve, 350));
+  });
   await waitFor(() => expect(requests.at(-1)?.searchParams.get('actorId')).toBe(actorId), timeout);
-  expect(
-    requests
-      .filter((url) => url.searchParams.get('actorId') === actorId)
-      .every((url) => url.searchParams.get('search') === 'new search'),
-  ).toBe(true);
+  const submitted = requests
+    .slice(beforeSubmit)
+    .filter((url) => url.pathname.endsWith('/audit-logs'));
+  expect(submitted.length).toBeGreaterThan(0);
+  expect(submitted.every((url) => url.searchParams.get('search') === 'new search')).toBe(true);
   await waitFor(
     () => expect(screen.getByRole('button', { name: 'Trang sau' })).toBeEnabled(),
     timeout,
@@ -150,15 +154,33 @@ it('submits audit search and actor together without requesting the previous sear
   expect(requests.at(-1)?.searchParams.get('search')).toBe('new search');
   // Submit and restore the already-settled value before the timer can change it.
   fireEvent.change(input, { target: { value: 'submitted search' } });
+  const beforeRestore = requests.length;
   fireEvent.click(screen.getByRole('button', { name: 'Tra cứu' }));
   fireEvent.change(input, { target: { value: 'new search' } });
-  await waitFor(
-    () => expect(requests.at(-1)?.searchParams.get('search')).toBe('new search'),
-    timeout,
+  await act(async () => {
+    await new Promise((resolve) => setTimeout(resolve, 350));
+  });
+  const restored = requests
+    .slice(beforeRestore)
+    .filter((url) => url.pathname.endsWith('/audit-logs'));
+  const submittedIndex = restored.findIndex(
+    (url) => url.searchParams.get('search') === 'submitted search',
   );
+  expect(submittedIndex).toBeGreaterThanOrEqual(0);
+  expect(
+    restored
+      .slice(submittedIndex + 1)
+      .some((url) => url.searchParams.get('search') === 'new search'),
+  ).toBe(true);
   fireEvent.change(input, { target: { value: 'pending search' } });
+  const beforeReset = requests.length;
   fireEvent.click(screen.getByRole('button', { name: 'Đặt lại' }));
-  await waitFor(() => expect(requests.at(-1)?.searchParams.has('search')).toBe(false), timeout);
+  await act(async () => {
+    await new Promise((resolve) => setTimeout(resolve, 350));
+  });
+  const reset = requests.slice(beforeReset).filter((url) => url.pathname.endsWith('/audit-logs'));
+  expect(reset.length).toBeGreaterThan(0);
+  expect(reset.every((url) => !url.searchParams.has('search'))).toBe(true);
 }, 15000);
 
 it('refreshes an open grant drawer from new results and closes it when that grant disappears', async () => {
