@@ -172,6 +172,7 @@ it('submits audit search and actor together without requesting the previous sear
       .slice(submittedIndex + 1)
       .some((url) => url.searchParams.get('search') === 'new search'),
   ).toBe(true);
+  expect(restored.at(-1)?.searchParams.get('search')).toBe('new search');
   fireEvent.change(input, { target: { value: 'pending search' } });
   const beforeReset = requests.length;
   fireEvent.click(screen.getByRole('button', { name: 'Đặt lại' }));
@@ -180,7 +181,9 @@ it('submits audit search and actor together without requesting the previous sear
   });
   const reset = requests.slice(beforeReset).filter((url) => url.pathname.endsWith('/audit-logs'));
   expect(reset.length).toBeGreaterThan(0);
-  expect(reset.every((url) => !url.searchParams.has('search'))).toBe(true);
+  expect(
+    reset.every((url) => !url.searchParams.has('search') && !url.searchParams.has('actorId')),
+  ).toBe(true);
 }, 15000);
 
 it('refreshes an open grant drawer from new results and closes it when that grant disappears', async () => {
