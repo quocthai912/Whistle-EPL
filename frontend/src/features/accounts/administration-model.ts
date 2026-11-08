@@ -12,16 +12,16 @@ export const permissionNames = {
   CREATE_SEASON: 'Tạo mùa giải',
 };
 export const actionNames = {
-  PREPARE_REGULATION_CHANGE: 'Soạn thay đổi điều lệ',
-  APPROVE_SCHEDULE_ADJUSTMENT: 'Duyệt điều chỉnh lịch thi đấu',
-  PREPARE_OFFICIAL_RESULT_CORRECTION: 'Soạn đính chính kết quả chính thức',
+  PREPARE_REGULATION_CHANGE: 'Chuẩn bị/chỉnh sửa đề xuất thay đổi quy định',
+  APPROVE_SCHEDULE_ADJUSTMENT: 'Phê duyệt yêu cầu điều chỉnh lịch thi đấu',
+  PREPARE_OFFICIAL_RESULT_CORRECTION: 'Chuẩn bị/chỉnh sửa đề xuất điều chỉnh kết quả chính thức',
 };
 export const stateNames: Record<string, string> = {
-  ACTIVE: 'Hoạt động',
+  ACTIVE: 'Đang hoạt động',
   LOCKED: 'Đã khóa',
-  DRAFT: 'Bản nháp',
+  DRAFT: 'Nháp',
   PENDING: 'Chờ xử lý',
-  RETURNED: 'Yêu cầu bổ sung',
+  RETURNED: 'Trả lại',
   REJECTED: 'Từ chối',
   CANCELLED: 'Đã hủy',
   GRANTED: 'Đã cấp',
@@ -31,11 +31,16 @@ export const stateNames: Record<string, string> = {
   TERMINATED: 'Mất điều kiện',
 };
 export type Season = { id: string; code: string; name: string };
+export const grantStateNames: Record<string, string> = { ...stateNames, ACTIVE: 'Đang hiệu lực' };
+/** Keeps distinct seasons identifiable when their display names happen to match. */
+export const seasonLabel = ({ name, code }: Season) => (name === code ? name : `${name} (${code})`);
 export type Person = { id: string; personnelCode: string; fullName: string };
 export type Account = Person & {
   username: string;
   state: 'ACTIVE' | 'LOCKED';
   revision: string;
+  createdAt?: string;
+  lastLoginAt?: string | null;
   mustChangePassword: boolean;
   systemRoles: { id: string; roleCode: 'SYSTEM_ADMINISTRATOR' }[];
   seasonRoles: { id: string; roleCode: keyof typeof roleNames; seasonId: string }[];

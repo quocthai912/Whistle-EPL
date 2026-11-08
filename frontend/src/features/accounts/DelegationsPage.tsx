@@ -1,22 +1,32 @@
 import { useState } from 'react';
-import { Drawer } from 'antd';
+import { AdminDrawer } from './AdminDrawer';
+import { AdminIcon } from './AdminIcon';
+import { AdminSelect } from './AdminSelect';
+import { useSearchTerm } from './use-search-term';
 import { useSession } from '../../shared/http/use-session';
 import { AdminDialog, type AdminCommand, type Field } from './AdminDialog';
-import { ListFeedback, Pagination, StateBadge } from './AdminLists';
+import { DisplayOptions, ListFeedback, Pagination, StateBadge } from './AdminLists';
 import {
   actionNames,
   formatVietnamTime,
   stateNames,
+  grantStateNames,
+  seasonLabel,
   type Grant,
   type List,
   type Proposal,
   type ProposalList,
+  type Person,
 } from './administration-model';
 import { useAdminList } from './use-admin-list';
 import css from './Administration.module.css';
 
 const proposalStates = ['DRAFT', 'PENDING', 'RETURNED', 'REJECTED', 'CANCELLED', 'GRANTED'];
 const grantStates = ['SCHEDULED', 'ACTIVE', 'EXPIRED', 'REVOKED', 'TERMINATED'];
+const displayDefaults = {
+  proposals: { sort: 'createdAt:desc', pageSize: '20' },
+  grants: { sort: 'grantedAt:desc', pageSize: '20' },
+};
 const labels = {
   submit: 'Gửi đề xuất',
   cancel: 'Hủy đề xuất',
@@ -62,25 +72,54 @@ export function DelegationsPage() {
   const { session, client } = useSession();
   const administrator = session?.systemAdministrator ?? false;
   const [tab, setTab] = useState<'proposals' | 'grants'>('proposals');
-  const [filter, setFilter] = useState({ seasonId: '', state: '', page: 1 });
+  const [display, setDisplay] = useState(displayDefaults);
+  const [filter, setFilter] = useState({
+    seasonId: '',
+    state: '',
+    actionCode: '',
+    recipientId: '',
+    page: 1,
+  });
+  const [search, setSearch] = useState('');
+  const term = useSearchTerm(search);
+  const [pageTerm, setPageTerm] = useState(term);
   const [command, setCommand] = useState<AdminCommand>();
   const [detail, setDetail] = useState<Proposal>();
+  const [grantDetail, setGrantDetail] = useState<Grant>();
   const [success, setSuccess] = useState(false);
-  const query = new URLSearchParams({ page: String(filter.page) });
+  // A new committed term starts at page one even if the old list was paged while typing.
+  if (pageTerm !== term) {
+    setPageTerm(term);
+    setFilter({ ...filter, page: 1 });
+  }
+  const query = new URLSearchParams({
+    page: String(pageTerm === term ? filter.page : 1),
+    ...display[tab],
+  });
   if (filter.seasonId) query.set('seasonId', filter.seasonId);
   if (filter.state) query.set('state', filter.state);
+  if (term) query.set('search', term);
+  if (tab === 'proposals' && filter.actionCode) query.set('actionCode', filter.actionCode);
+  if (tab === 'grants' && filter.recipientId) query.set('recipientId', filter.recipientId);
   const proposals = useAdminList<ProposalList>(
     '/delegation-proposals?' + (tab === 'proposals' ? query : 'page=1'),
   );
-  const grants = useAdminList<List<Grant>>(
+  const grants = useAdminList<List<Grant> & { recipients?: Person[] }>(
     '/delegation-grants?' + (tab === 'grants' ? query : 'page=1'),
   );
   const list = tab === 'proposals' ? proposals : grants;
   const metadata = proposals.data;
+  // Preserve the drawer during refresh, then use the authoritative result or close it.
+  if (grantDetail && grants.data && !grants.loading) {
+    const current = grants.data.items.find(({ id }) => id === grantDetail.id);
+    if (current !== grantDetail) setGrantDetail(current);
+  }
 
+  /** Opens a command after dismissing detail drawers and stale success feedback. */
   function open(action: AdminCommand) {
     setSuccess(false);
     setDetail(undefined);
+    setGrantDetail(undefined);
     setCommand(action);
   }
 
@@ -94,9 +133,11 @@ export function DelegationsPage() {
     }
   }
 
+  /** Binds confirmation to the proposal's current revision and content version. */
   function basis(row: Proposal) {
     return { revision: row.revision, versionId: row.currentVersion.id, description: describe(row) };
   }
+  /** Reloads the selected proposal within its authorized season for conflict review. */
   async function readProposal(row: Proposal) {
     return readRow<Proposal>('/delegation-proposals?seasonId=' + row.season.id, row.id);
   }
@@ -141,7 +182,10 @@ export function DelegationsPage() {
               {
                 name: 'seasonId',
                 label: 'Mùa giải',
-                options: selectable.map(({ id, name }) => ({ value: id, label: name })),
+                options: selectable.map((season) => ({
+                  value: season.id,
+                  label: seasonLabel(season),
+                })),
               },
             ]
           : []),
@@ -211,14 +255,16 @@ export function DelegationsPage() {
       }),
     });
   }
+  /** Prepares revocation from the selected grant's current state, interval and revision. */
   function revoke(row: Grant) {
+    /** Describes the exact grant basis that the user must review before revocation. */
     const basis = (item: Grant) => ({
       revision: item.revision,
       description: [
         item.recipient.fullName,
         actionNames[item.actionCode],
         item.season.name,
-        stateNames[item.state],
+        grantStateNames[item.state],
         formatVietnamTime(item.startsAt) + ' → ' + formatVietnamTime(item.endsAt),
       ].join(' · '),
     });
@@ -245,7 +291,6 @@ export function DelegationsPage() {
     const state = row.currentVersion.state;
     return (
       <div className={css.actions}>
-        <button onClick={() => setDetail(row)}>Chi tiết</button>
         {own && ['DRAFT', 'RETURNED'].includes(state) && (
           <button onClick={() => edit(row)}>Chỉnh sửa</button>
         )}
@@ -258,6 +303,7 @@ export function DelegationsPage() {
         {administrator && state === 'PENDING' && (
           <>
             <button
+              className={css.primary}
               disabled={
                 row.proposer.id === session?.account.id ||
                 row.recipient.id === session?.account.id ||
@@ -270,7 +316,9 @@ export function DelegationsPage() {
               Cấp ủy quyền
             </button>
             <button onClick={() => process(row, 'return')}>Yêu cầu bổ sung</button>
-            <button onClick={() => process(row, 'reject')}>Từ chối đề xuất</button>
+            <button className={css.danger} onClick={() => process(row, 'reject')}>
+              Từ chối đề xuất
+            </button>
           </>
         )}
       </div>
@@ -281,8 +329,8 @@ export function DelegationsPage() {
     <section className={css.panel} aria-label="Quản lý ủy quyền nghiệp vụ">
       <div className={css.sectionHeader}>
         <div>
-          <h2>Ủy quyền theo mùa giải</h2>
-          <p>Theo dõi đề xuất và thời hạn của từng quyền nghiệp vụ.</p>
+          <h1>Quản lý ủy quyền nghiệp vụ</h1>
+          <p>Theo dõi, xét duyệt và quản lý các ủy quyền nghiệp vụ theo mùa giải.</p>
         </div>
         {!!metadata?.proposalSeasons.length && (
           <button className={css.primary} onClick={() => edit()}>
@@ -303,6 +351,7 @@ export function DelegationsPage() {
             aria-selected={tab === value}
             onClick={() => {
               setTab(value);
+              setSearch('');
               setFilter({ ...filter, state: '', page: 1 });
             }}
           >
@@ -311,35 +360,110 @@ export function DelegationsPage() {
         ))}
       </div>
       <div className={css.filters}>
-        <label>
-          Mùa giải
-          <select
-            value={filter.seasonId}
-            onChange={(event) => setFilter({ ...filter, seasonId: event.target.value, page: 1 })}
-          >
-            <option value="">Tất cả mùa giải</option>
-            {metadata?.seasons.map(({ id, name }) => (
-              <option key={id} value={id}>
-                {name}
-              </option>
-            ))}
-          </select>
+        <label className={css.search}>
+          <span className={css.srOnly}>Tìm ủy quyền</span>
+          <AdminIcon name="search" />
+          <input
+            value={search}
+            onChange={(event) => {
+              setSearch(event.target.value);
+              setFilter({ ...filter, page: 1 });
+            }}
+            placeholder={
+              tab === 'proposals'
+                ? 'Tìm theo người đề xuất hoặc người nhận…'
+                : 'Tìm theo người nhận hoặc nghiệp vụ…'
+            }
+          />
         </label>
-        <label>
-          Trạng thái
-          <select
-            value={filter.state}
-            onChange={(event) => setFilter({ ...filter, state: event.target.value, page: 1 })}
-          >
-            <option value="">Tất cả trạng thái</option>
-            {(tab === 'proposals' ? proposalStates : grantStates).map((state) => (
-              <option key={state} value={state}>
-                {stateNames[state]}
-              </option>
-            ))}
-          </select>
-        </label>
+        <AdminSelect
+          label="Mùa giải"
+          value={filter.seasonId}
+          onChange={(seasonId) => setFilter({ ...filter, seasonId, page: 1 })}
+          options={[
+            { value: '', label: 'Tất cả mùa giải' },
+            ...(metadata?.seasons ?? []).map((season) => ({
+              value: season.id,
+              label: seasonLabel(season),
+            })),
+          ]}
+        />
+        <AdminSelect
+          label="Trạng thái"
+          value={filter.state}
+          onChange={(state) => setFilter({ ...filter, state, page: 1 })}
+          options={[
+            { value: '', label: 'Tất cả trạng thái' },
+            ...(tab === 'proposals' ? proposalStates : grantStates).map((value) => ({
+              value,
+              label: (tab === 'grants' ? grantStateNames : stateNames)[value],
+            })),
+          ]}
+        />
+        {tab === 'proposals' ? (
+          <AdminSelect
+            label="Nghiệp vụ"
+            value={filter.actionCode}
+            onChange={(actionCode) => setFilter({ ...filter, actionCode, page: 1 })}
+            options={[
+              { value: '', label: 'Tất cả nghiệp vụ' },
+              ...Object.entries(actionNames).map(([value, label]) => ({ value, label })),
+            ]}
+          />
+        ) : (
+          <AdminSelect
+            label="Người nhận"
+            value={filter.recipientId}
+            onChange={(recipientId) => setFilter({ ...filter, recipientId, page: 1 })}
+            options={[
+              { value: '', label: 'Tất cả người nhận' },
+              ...(grants.data?.recipients ?? []).map(({ id, fullName, personnelCode }) => ({
+                value: id,
+                label: fullName + ' · ' + personnelCode,
+              })),
+            ]}
+          />
+        )}
+        <button
+          className={css.refresh}
+          aria-label="Làm mới danh sách ủy quyền"
+          title="Làm mới danh sách ủy quyền"
+          onClick={() => {
+            setSearch('');
+            setFilter({ seasonId: '', state: '', actionCode: '', recipientId: '', page: 1 });
+            setDisplay({ ...display, [tab]: displayDefaults[tab] });
+            proposals.reload();
+            grants.reload();
+          }}
+        >
+          <AdminIcon name="refresh" />
+        </button>
       </div>
+      <DisplayOptions
+        sort={display[tab].sort}
+        pageSize={display[tab].pageSize}
+        onSort={(sort) => {
+          setDisplay({ ...display, [tab]: { ...display[tab], sort } });
+          setFilter({ ...filter, page: 1 });
+        }}
+        onPageSize={(pageSize) => {
+          setDisplay({ ...display, [tab]: { ...display[tab], pageSize } });
+          setFilter({ ...filter, page: 1 });
+        }}
+        sorts={
+          tab === 'proposals'
+            ? [
+                { value: 'createdAt:desc', label: 'Mới nhất' },
+                { value: 'createdAt:asc', label: 'Cũ nhất' },
+              ]
+            : [
+                { value: 'grantedAt:desc', label: 'Cấp gần nhất' },
+                { value: 'grantedAt:asc', label: 'Cấp sớm nhất' },
+                { value: 'startsAt:asc', label: 'Bắt đầu sớm nhất' },
+                { value: 'endsAt:asc', label: 'Kết thúc sớm nhất' },
+              ]
+        }
+      />
       <ListFeedback
         loading={list.loading}
         error={list.error}
@@ -368,19 +492,30 @@ export function DelegationsPage() {
             <tbody>
               {proposals.data.items.map((row) => (
                 <tr key={row.id}>
-                  <td>
+                  <td className={css.code}>
                     {row.id.slice(0, 8).toUpperCase()}
                     <small>Phiên bản {row.currentVersion.versionNumber}</small>
                   </td>
                   <td>
-                    {row.proposer.fullName} → {row.recipient.fullName}
+                    <span className={css.person}>
+                      <AdminIcon name="user" />
+                      {row.proposer.fullName}
+                    </span>
+                    <small>→ {row.recipient.fullName}</small>
                   </td>
                   <td>{actionNames[row.currentVersion.actionCode]}</td>
                   <td>{row.season.name}</td>
                   <td>
                     <StateBadge state={row.currentVersion.state} />
                   </td>
-                  <td>{proposalActions(row)}</td>
+                  <td>
+                    <div className={css.actions}>
+                      <button onClick={() => setDetail(row)}>
+                        <AdminIcon name="eye" />
+                        Chi tiết
+                      </button>
+                    </div>
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -419,13 +554,18 @@ export function DelegationsPage() {
                   <td>{formatVietnamTime(row.startsAt)}</td>
                   <td>{formatVietnamTime(row.endsAt)}</td>
                   <td>
-                    <StateBadge state={row.state} />
+                    <StateBadge state={row.state} grant />
                     {row.reason && <small>{row.reason}</small>}
                   </td>
                   <td>
-                    {administrator && ['SCHEDULED', 'ACTIVE'].includes(row.state) && (
-                      <button onClick={() => revoke(row)}>Thu hồi ủy quyền</button>
-                    )}
+                    <div className={css.actions}>
+                      <button onClick={() => setGrantDetail(row)}>Chi tiết</button>
+                      {administrator && ['SCHEDULED', 'ACTIVE'].includes(row.state) && (
+                        <button className={css.danger} onClick={() => revoke(row)}>
+                          Thu hồi ủy quyền
+                        </button>
+                      )}
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -437,40 +577,163 @@ export function DelegationsPage() {
         <Pagination data={list.data} change={(page) => setFilter({ ...filter, page })} />
       )}
       {detail && (
-        <Drawer
-          open
+        <AdminDrawer
           onClose={() => setDetail(undefined)}
-          size="large"
           title={'Chi tiết đề xuất · ' + detail.id.slice(0, 8).toUpperCase()}
+          subtitle="Thẩm quyền phê duyệt và cấp ủy quyền nghiệp vụ"
+          icon={<AdminIcon name="delegations" />}
         >
           <div className={css.details}>
-            <p>{describe(detail)}</p>
-            <h3>Lịch sử phiên bản</h3>
-            {detail.versions.map((version) => (
-              <section key={version.id}>
-                <h3>
-                  Phiên bản {version.versionNumber} · <StateBadge state={version.state} />
-                </h3>
-                <p>
-                  {version.recipient?.fullName ??
-                    (version.id === detail.currentVersion.id
-                      ? detail.recipient.fullName
-                      : 'Chưa xác định người nhận')}{' '}
-                  · {actionNames[version.actionCode]}
-                </p>
-                <p>
-                  {version.startMode === 'IMMEDIATE'
-                    ? 'Hiệu lực khi được cấp'
-                    : formatVietnamTime(version.startsAt)}{' '}
-                  → {formatVietnamTime(version.endsAt)}
-                </p>
-                {version.reason && <p>Lý do đề xuất: {version.reason}</p>}
-                {version.decisionReason && <p>Lý do xử lý: {version.decisionReason}</p>}
-              </section>
-            ))}
+            <div className={css.notice}>
+              <strong>Thẩm quyền phê duyệt độc lập</strong>
+              <p>
+                Người đề xuất, người nhận và quản trị viên cấp quyền phải là ba người khác nhau.
+                Người đã chỉnh sửa phiên bản đề xuất không được cấp quyền cho phiên bản đó.
+              </p>
+            </div>
+            <dl className={css.detailGrid}>
+              <div>
+                <dt>Mã đề xuất</dt>
+                <dd className={css.code}>{detail.id}</dd>
+              </div>
+              <div>
+                <dt>Trạng thái</dt>
+                <dd>
+                  <StateBadge state={detail.currentVersion.state} />
+                </dd>
+              </div>
+              <div>
+                <dt>Người đề xuất</dt>
+                <dd>
+                  {detail.proposer.fullName}
+                  <small> · {detail.proposer.personnelCode}</small>
+                </dd>
+              </div>
+              <div>
+                <dt>Người nhận ủy quyền</dt>
+                <dd>
+                  {detail.recipient.fullName}
+                  <small> · {detail.recipient.personnelCode}</small>
+                </dd>
+              </div>
+              <div className={css.fullWidth}>
+                <dt>Nghiệp vụ ủy quyền</dt>
+                <dd>{actionNames[detail.currentVersion.actionCode]}</dd>
+              </div>
+              <div>
+                <dt>Mùa giải áp dụng</dt>
+                <dd>{detail.season.name}</dd>
+              </div>
+              <div>
+                <dt>Thời hạn hiệu lực (UTC+7)</dt>
+                <dd>
+                  {detail.currentVersion.startMode === 'IMMEDIATE'
+                    ? 'Khi được cấp'
+                    : formatVietnamTime(detail.currentVersion.startsAt)}{' '}
+                  → {formatVietnamTime(detail.currentVersion.endsAt)}
+                </dd>
+              </div>
+              <div className={css.fullWidth}>
+                <dt>Lý do / Căn cứ đề xuất</dt>
+                <dd>{detail.currentVersion.reason ?? 'Chưa bổ sung'}</dd>
+              </div>
+              {detail.currentVersion.decisionReason && (
+                <div className={css.fullWidth}>
+                  <dt>Lý do xử lý</dt>
+                  <dd>{detail.currentVersion.decisionReason}</dd>
+                </div>
+              )}
+            </dl>
             {proposalActions(detail)}
+            <details>
+              <summary>Lịch sử phiên bản ({detail.versions.length})</summary>
+              <div className={css.details}>
+                {detail.versions.map((version) => (
+                  <section key={version.id}>
+                    <h3>
+                      Phiên bản {version.versionNumber} · <StateBadge state={version.state} />
+                    </h3>
+                    <p>
+                      {version.recipient?.fullName ??
+                        (version.id === detail.currentVersion.id
+                          ? detail.recipient.fullName
+                          : 'Chưa xác định người nhận')}{' '}
+                      · {actionNames[version.actionCode]}
+                    </p>
+                    <p>
+                      {version.startMode === 'IMMEDIATE'
+                        ? 'Hiệu lực khi được cấp'
+                        : formatVietnamTime(version.startsAt)}{' '}
+                      → {formatVietnamTime(version.endsAt)}
+                    </p>
+                    {version.reason && <p>Lý do đề xuất: {version.reason}</p>}
+                    {version.decisionReason && <p>Lý do xử lý: {version.decisionReason}</p>}
+                  </section>
+                ))}
+              </div>
+            </details>
           </div>
-        </Drawer>
+        </AdminDrawer>
+      )}
+      {grantDetail && (
+        <AdminDrawer
+          title="Chi tiết ủy quyền đã cấp"
+          subtitle="Theo dõi hiệu lực và căn cứ cấp quyền"
+          icon={<AdminIcon name="shield" />}
+          onClose={() => setGrantDetail(undefined)}
+        >
+          <div className={css.details}>
+            <dl className={css.detailGrid}>
+              <div>
+                <dt>Người nhận</dt>
+                <dd>{grantDetail.recipient.fullName}</dd>
+              </div>
+              <div>
+                <dt>Người đề xuất</dt>
+                <dd>{grantDetail.proposer.fullName}</dd>
+              </div>
+              <div className={css.fullWidth}>
+                <dt>Nghiệp vụ</dt>
+                <dd>{actionNames[grantDetail.actionCode]}</dd>
+              </div>
+              <div>
+                <dt>Mùa giải</dt>
+                <dd>{grantDetail.season.name}</dd>
+              </div>
+              <div>
+                <dt>Trạng thái</dt>
+                <dd>
+                  <StateBadge state={grantDetail.state} grant />
+                </dd>
+              </div>
+              <div>
+                <dt>Bắt đầu (UTC+7)</dt>
+                <dd>{formatVietnamTime(grantDetail.startsAt)}</dd>
+              </div>
+              <div>
+                <dt>Kết thúc (UTC+7)</dt>
+                <dd>{formatVietnamTime(grantDetail.endsAt)}</dd>
+              </div>
+              <div className={css.fullWidth}>
+                <dt>Căn cứ cấp quyền</dt>
+                <dd>{grantDetail.basis ?? 'Không có thông tin bổ sung'}</dd>
+              </div>
+              {grantDetail.reason && (
+                <div className={css.fullWidth}>
+                  <dt>Lý do kết thúc</dt>
+                  <dd>{grantDetail.reason}</dd>
+                </div>
+              )}
+            </dl>
+            {administrator && ['SCHEDULED', 'ACTIVE'].includes(grantDetail.state) && (
+              <div className={css.actions}>
+                <button className={css.danger} onClick={() => revoke(grantDetail)}>
+                  Thu hồi ủy quyền
+                </button>
+              </div>
+            )}
+          </div>
+        </AdminDrawer>
       )}
       {command && (
         <AdminDialog

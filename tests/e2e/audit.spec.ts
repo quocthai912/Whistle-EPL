@@ -1,4 +1,6 @@
 import { login } from './login';
+import { openOptions, selectOption } from './select-option';
+import { actions } from '../../frontend/src/features/audit/audit-filters';
 import { randomUUID } from 'node:crypto';
 import { expect, test, type Page } from '@playwright/test';
 import { browserAdministration } from '../../backend/tests/fixtures/browser-fixtures';
@@ -93,12 +95,13 @@ test('traces real administration and authentication events across pages and tech
     201,
   );
   let revision = grant.revision;
+  const searchableName = 'Nhân viên kiểm thử 20 ' + randomUUID().slice(0, 8);
   for (let index = 1; index <= 20; index++) {
     const updated = await command(
       '/accounts/' + subject.id,
       {
         expectedRevision: revision,
-        fullName: 'Nhân viên kiểm thử ' + index,
+        fullName: index === 20 ? searchableName : 'Nhân viên kiểm thử ' + index,
       },
       'PATCH',
     );
@@ -147,11 +150,33 @@ test('traces real administration and authentication events across pages and tech
       ['LOGOUT_SUCCEEDED', 'Đăng xuất hệ thống'],
       ['SEASON_ROLE_GRANTED', 'Phân công vai trò mùa giải'],
     ]) {
-      await page.getByLabel('Loại thao tác').selectOption(code);
+      await selectOption(page, 'Loại thao tác', actions[code]);
       await page.getByRole('button', { name: 'Tra cứu' }).click();
       await expect(table.getByText(label, { exact: true }).first()).toBeVisible();
+      if (code === 'SEASON_ROLE_GRANTED') {
+        await table.getByRole('button', { name: 'Chi tiết' }).first().click();
+        const changes = page.getByRole('dialog');
+        await expect(changes.getByText('Trước thay đổi', { exact: true })).toBeVisible();
+        await expect(changes.getByText('Chưa được cấp', { exact: true })).toBeVisible();
+        await expect(changes.getByText('Đã được cấp', { exact: true })).toBeVisible();
+        await page.keyboard.press('Escape');
+        await expect(changes).toHaveCount(0);
+      }
     }
-    await page.getByLabel('Loại thao tác').selectOption('');
+    await selectOption(page, 'Loại thao tác', 'Tất cả thao tác');
+    await page.getByRole('textbox', { name: 'Tìm nhật ký' }).fill(searchableName);
+    await expect(page.getByText(/23 bản ghi nhật ký/)).toBeVisible();
+    await page.getByRole('textbox', { name: 'Tìm nhật ký' }).fill('khong-co-nhat-ky-ui');
+    await expect(page.getByText('Chưa có dữ liệu phù hợp.')).toBeVisible();
+    await page.getByRole('textbox', { name: 'Tìm nhật ký' }).fill('');
+    const actionMenu = await openOptions(page, 'Loại thao tác', true);
+    await actionMenu.getByRole('option').last().hover();
+    await page.screenshot({
+      path: `.verification/ui-review/mh10-dropdown-${info.project.name}.png`,
+    });
+    await page.keyboard.press('Escape');
+    await expect(actionMenu).toBeHidden();
+    await page.getByText('Bộ lọc nâng cao', { exact: true }).click();
     await page.getByLabel('Mã đối tượng').fill(subject.id);
     await page.getByRole('button', { name: 'Tra cứu' }).click();
     await expect(page.getByText(/23 bản ghi nhật ký/)).toBeVisible();
@@ -170,6 +195,11 @@ test('traces real administration and authentication events across pages and tech
     const detailText = await detail.innerText();
     expect(detailText.includes(password)).toBe(false);
     expect(detailText).not.toMatch(/passwordHash|tokenHash|csrfToken/);
+    await expect.poll(async () => (await detail.boundingBox())?.x).toBe(880);
+    await page.screenshot({
+      animations: 'disabled',
+      path: `.verification/ui-review/mh10-detail-${info.project.name}.png`,
+    });
     await page.keyboard.press('Escape');
     await expect(detail).toHaveCount(0);
     await page.getByRole('button', { name: 'Trang trước' }).click();
@@ -178,7 +208,10 @@ test('traces real administration and authentication events across pages and tech
       retained,
     );
     await page.evaluate(() => document.fonts.ready);
-    await page.screenshot({ path: '.verification/mh10-' + info.project.name + '.png' });
+    await page.screenshot({
+      animations: 'disabled',
+      path: '.verification/mh10-' + info.project.name + '.png',
+    });
     for (const [width, height] of [
       [360, 800],
       [768, 1024],

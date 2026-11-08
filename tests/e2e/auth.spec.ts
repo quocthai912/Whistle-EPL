@@ -64,6 +64,14 @@ test('required-field feedback stays Vietnamese in an English browser and layouts
   await expect(page.getByRole('alert')).toContainText('Vui lòng nhập tên đăng nhập hợp lệ');
   await page.reload();
   await expect(page.getByRole('heading', { name: 'Đăng nhập', exact: true })).toBeVisible();
+  for (const [width, height] of [
+    [1536, 734],
+    [1366, 650],
+  ]) {
+    await page.setViewportSize({ width, height });
+    await expect(page.getByRole('contentinfo')).toBeInViewport({ ratio: 1 });
+  }
+  await page.setViewportSize({ width: 1440, height: 900 });
   await page.evaluate(() => document.fonts.ready);
   await page.screenshot({ path: `.verification/mh06-${info.project.name}.png`, fullPage: true });
   await page.setViewportSize({ width: 390, height: 844 });
@@ -82,6 +90,14 @@ test('required-field feedback stays Vietnamese in an English browser and layouts
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.reload();
   await page.evaluate(() => document.fonts.ready);
+  for (const [width, height] of [
+    [1536, 734],
+    [1366, 650],
+  ]) {
+    await page.setViewportSize({ width, height });
+    await expect(page.getByRole('contentinfo')).toBeInViewport({ ratio: 1 });
+  }
+  await page.setViewportSize({ width: 1440, height: 900 });
   await page.screenshot({ path: `.verification/mh07-${info.project.name}.png`, fullPage: true });
 });
 
