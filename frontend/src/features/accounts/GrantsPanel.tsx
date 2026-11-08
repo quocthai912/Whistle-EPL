@@ -1,4 +1,5 @@
 import { useId, useState } from 'react';
+import { useNavigate } from 'react-router';
 import type { AdminCommand } from './AdminDialog';
 import { AdminDrawer } from './AdminDrawer';
 import { AdminIcon } from './AdminIcon';
@@ -42,6 +43,7 @@ export function GrantsPanel({
   onClose: () => void;
   onCommand: (action: Omit<AdminCommand, 'basis' | 'readBasis'>) => void;
 }) {
+  const navigate = useNavigate();
   const [tab, setTab] = useState(0);
   const [seasonId, setSeasonId] = useState(seasons[0]?.id ?? '');
   const tabId = useId();
@@ -195,7 +197,12 @@ export function GrantsPanel({
                 Sửa họ và tên
               </button>
               <button
-                onClick={() =>
+                onClick={() => {
+                  if (self) {
+                    onClose();
+                    navigate('/change-password');
+                    return;
+                  }
                   onCommand({
                     title: 'Đặt lại mật khẩu',
                     path: prefix + '/reset-password',
@@ -204,10 +211,10 @@ export function GrantsPanel({
                     fields: [
                       { name: 'temporaryPassword', label: 'Mật khẩu tạm', type: 'password' },
                     ],
-                  })
-                }
+                  });
+                }}
               >
-                Đặt lại mật khẩu
+                {self ? 'Đổi mật khẩu' : 'Đặt lại mật khẩu'}
               </button>
             </div>
           </>

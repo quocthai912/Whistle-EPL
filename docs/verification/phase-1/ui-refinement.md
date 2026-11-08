@@ -183,7 +183,7 @@ preview was rebuilt; the existing backend/database and user data were preserved.
 
 The Team Leader selected the original artwork for the shared administration
 header, initially as JPEG and now as `frontend/public/images/Whistle-EPL-Background.svg`
-under the application-wide vector update below. It covers the full header width with a center/74% crop, showing the cyan
+under the application-wide vector update below. It covers the full header width with the selected option B (right/28%, 120% image width), showing the cyan
 curves on the left and purple arcs on the right. A light darkening gradient keeps
 branding and account actions readable. This supersedes the bounded crop and the
 alternate `Whistle-EPL-Background-Header.jpg` trials described in earlier local
@@ -236,3 +236,48 @@ inspected for sharper edges and legibility. Current reports/captures are under
 `.verification/ui-review/svg-background/app/`. CSS formatting and whitespace
 checks passed. This visual-only update did not change application logic or data;
 the earlier functional regression evidence retains its recorded scope.
+
+## Selected header crop and account password entry — 2026-11-08
+
+After reviewing three preview-only crops, the Team Leader initially selected A: the upper
+image region at center/12%, with cover sizing and the existing overlay. This
+replaces the previous lower crop in the shared accounts/delegations/audit header.
+Authentication-page artwork and styling were not changed in this follow-up.
+
+The administration header no longer contains a password-change link. In account
+details, the currently signed-in account now offers **Đổi mật khẩu**, closes the
+drawer and navigates to the existing self-service `/change-password` form. That
+form still requires the current and new passwords under D081. A different account
+continues to offer **Đặt lại mật khẩu**, opening the administrator's temporary
+credential dialog. No backend authorization, credential or audit contract changed;
+the existing change-password entry on `/internal` remains available.
+
+A read-only browser harness with mocked API responses passed 40 page/viewport
+checks across Chrome and Edge, including crop A on all three administration
+pages and no password-change link in their headers. It also checked own-account
+navigation, current-password input, drawer cleanup and the distinct other-account
+reset dialog. Reports and captures are under
+`.verification/ui-review/header-account-actions/`. The web preview was rebuilt
+and `/login` returned 200. These are UI checks rather than a new backend acceptance
+run; the previously recorded authentication behavior retains its own evidence.
+
+The final frontend suite passed 32/32 tests across seven files, including new
+own-account and other-account password-entry regressions. The unit tests check
+routing and form semantics; actual dialog visibility is covered by the browser
+harness because JSDOM has no modal layout engine. Frontend build, lint, type
+checking, formatting and whitespace checks also passed. No source changes to
+the authentication screens were made in this follow-up.
+
+### Final header selection B
+
+The Team Leader subsequently selected B from the same comparison. The shared
+administration header now uses the SVG at 120% image width, aligned right/28%,
+without repeating; the overlay keeps its original full-header size. This replaces
+A while preserving the account password-entry changes above. Authentication
+artwork and styling remain unchanged. The rebuilt web preview returned 200, and
+40 Chrome/Edge page/viewport checks passed with explicit assertions for the 120%
+size and 28% position on accounts, delegations and audit. The harness also retained
+the own/other-account password-entry checks. Captures and reports are under
+`.verification/ui-review/header-crop-b/`. Frontend build/type validation, CSS
+formatting and whitespace checks passed; this crop-only follow-up did not rerun
+the unit/backend suites or alter their previously recorded evidence.

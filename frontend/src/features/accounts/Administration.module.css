@@ -37,7 +37,7 @@
   inset: 0;
   background:
     linear-gradient(100deg, #0b102a80, #15103440 48%, #15103499),
-    url('/images/Whistle-EPL-Background.svg') center 74% / cover;
+    url('/images/Whistle-EPL-Background.svg') right 28% / 120% auto no-repeat;
   z-index: -1;
   pointer-events: none;
 }
@@ -88,11 +88,6 @@
   display: block;
   font-size: 12px;
   color: #c3c9db;
-}
-.account .passwordLink {
-  color: #e2ddf3;
-  font-size: 12.5px;
-  margin-left: 8px;
 }
 .topbar button {
   color: white;
@@ -763,9 +758,6 @@
   }
   .accountName {
     display: none;
-  }
-  .account .passwordLink {
-    margin-left: 0;
   }
   .sidebar {
     grid-row: auto;

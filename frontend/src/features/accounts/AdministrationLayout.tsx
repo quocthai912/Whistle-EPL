@@ -58,9 +58,6 @@ export default function AdministrationLayout({
               <small>{admin ? 'Quản trị viên hệ thống' : 'Quản lý mùa giải'}</small>
             )}
           </div>
-          <NavLink className={css.passwordLink} to="/change-password">
-            Đổi mật khẩu
-          </NavLink>
           <LogoutButton />
         </div>
       </header>

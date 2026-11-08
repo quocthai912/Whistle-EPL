@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { MemoryRouter } from 'react-router';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { App } from '../src/app/App';
@@ -28,6 +28,44 @@ const uiWait = { timeout: 5_000 };
 afterEach(() => vi.unstubAllGlobals());
 
 describe('administration navigation and confirmation', () => {
+  it.each([true, false])(
+    'offers self-service password change only for the signed-in account (self=%s)',
+    { timeout: 15000 },
+    async (self) => {
+      const item = { ...row, id: self ? account.id : row.id };
+      const fetcher = vi.fn(async (path: string) =>
+        path.endsWith('/auth/session')
+          ? envelope({ ...account, systemRoles: [{ roleCode: 'SYSTEM_ADMINISTRATOR' }] })
+          : envelope({ items: [item], page: 1, pageSize: 20, total: 1, seasons: [] }),
+      );
+      vi.stubGlobal('fetch', fetcher);
+      render(
+        <MemoryRouter initialEntries={['/admin/accounts']}>
+          <App />
+        </MemoryRouter>,
+      );
+      const detail = await screen.findByRole('button', { name: 'Chi tiết' }, uiWait);
+      expect(
+        within(screen.getByRole('banner')).queryByRole('link', { name: 'Đổi mật khẩu' }),
+      ).not.toBeInTheDocument();
+      fireEvent.click(detail);
+      if (self) {
+        expect(screen.queryByRole('button', { name: 'Đặt lại mật khẩu' })).not.toBeInTheDocument();
+        fireEvent.click(screen.getByRole('button', { name: 'Đổi mật khẩu' }));
+        expect(await screen.findByRole('heading', { name: 'Đổi mật khẩu' }, uiWait)).toBeVisible();
+        expect(screen.getByLabelText(/^Mật khẩu hiện tại \*/i)).toBeVisible();
+        expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+      } else {
+        expect(screen.queryByRole('button', { name: 'Đổi mật khẩu' })).not.toBeInTheDocument();
+        fireEvent.click(screen.getByRole('button', { name: 'Đặt lại mật khẩu' }));
+        const temporaryPassword = await screen.findByLabelText('Mật khẩu tạm *', undefined, uiWait);
+        expect(temporaryPassword).toHaveAttribute('type', 'password');
+        expect(temporaryPassword).toBeRequired();
+        expect(screen.queryByLabelText(/^Mật khẩu hiện tại \*/i)).not.toBeInTheDocument();
+      }
+      expect(fetcher.mock.calls.some(([path]) => path.endsWith('/reset-password'))).toBe(false);
+    },
+  );
   it('does not load account data for a non-administrator on direct navigation', async () => {
     const fetcher = vi.fn(async () => envelope(account));
     vi.stubGlobal('fetch', fetcher);
