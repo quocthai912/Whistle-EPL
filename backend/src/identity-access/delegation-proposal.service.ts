@@ -9,12 +9,14 @@ import {
   denied,
   invalid,
   listQuery,
+  listSearch,
   missing,
   seasonalRoles,
   uuid,
 } from './accounts.dto';
 import {
   accountLock,
+  delegationRoles,
   eligibleRecipient,
   hasSeasonRole,
   isAdministrator,
@@ -76,10 +78,20 @@ export class DelegationProposalService {
   proposals(request: Request, query: Record<string, unknown>) {
     const { values, page, pageSize, sort, skip, take } = listQuery(
       query,
-      ['seasonId', 'state'],
+      ['seasonId', 'state', 'search', 'actionCode'],
       sorts,
     );
     if (values.state !== undefined && !proposalStates.includes(values.state)) throw invalid();
+    if (values.actionCode !== undefined && !Object.hasOwn(delegationRoles, values.actionCode))
+      throw invalid();
+    const search = listSearch(values.search);
+    const personSearch: Prisma.AccountWhereInput = {
+      OR: [
+        { fullName: { contains: search, mode: 'insensitive' } },
+        { personnelCode: { contains: search, mode: 'insensitive' } },
+        { username: { contains: search, mode: 'insensitive' } },
+      ],
+    };
     const seasonId = values.seasonId === undefined ? undefined : uuid(values.seasonId);
     return this.execution.run(
       request,
@@ -89,7 +101,8 @@ export class DelegationProposalService {
         const directScope = { roles: { some: managerWhere(actor) } };
         const where: Prisma.DelegationCaseWhereInput = {
           seasonId,
-          currentVersion: { state: values.state },
+          currentVersion: { state: values.state, actionCode: values.actionCode },
+          ...(search && { OR: [{ proposer: personSearch }, { recipient: personSearch }] }),
           ...(admin ? {} : { proposerId: actor, season: directScope }),
         };
         const rows = await db.delegationCase.findMany({
@@ -150,12 +163,28 @@ export class DelegationProposalService {
   grants(request: Request, query: Record<string, unknown>) {
     const { values, page, pageSize, sort, skip, take } = listQuery(
       query,
-      ['seasonId', 'recipientId', 'state'],
+      ['seasonId', 'recipientId', 'state', 'search', 'actionCode'],
       ['grantedAt:desc', 'grantedAt:asc', 'startsAt:asc', 'endsAt:asc'],
     );
     const seasonId = values.seasonId === undefined ? undefined : uuid(values.seasonId);
     const recipientId = values.recipientId === undefined ? undefined : uuid(values.recipientId);
     if (values.state !== undefined && !grantStates.includes(values.state)) throw invalid();
+    if (values.actionCode !== undefined && !Object.hasOwn(delegationRoles, values.actionCode))
+      throw invalid();
+    const search = listSearch(values.search);
+    const actionLabels: Record<string, string> = {
+      PREPARE_REGULATION_CHANGE: 'Chuẩn bị/chỉnh sửa đề xuất thay đổi quy định',
+      APPROVE_SCHEDULE_ADJUSTMENT: 'Phê duyệt yêu cầu điều chỉnh lịch thi đấu',
+      PREPARE_OFFICIAL_RESULT_CORRECTION:
+        'Chuẩn bị/chỉnh sửa đề xuất điều chỉnh kết quả chính thức',
+    };
+    const matchingActions = Object.entries(actionLabels)
+      .filter(([, label]) =>
+        label
+          .toLocaleLowerCase('vi-VN')
+          .includes((values.search ?? '').normalize('NFC').trim().toLocaleLowerCase('vi-VN')),
+      )
+      .map(([code]) => code);
     return this.execution.run(
       request,
       async (context, actor) => {
@@ -163,6 +192,13 @@ export class DelegationProposalService {
         const now = await context.now();
         const admin = await isAdministrator(db, actor);
         const active = { revokedAt: null, terminatedAt: null };
+        const scope: Prisma.DelegationGrantWhereInput = admin
+          ? {}
+          : {
+              approvedVersion: {
+                case: { proposerId: actor, season: { roles: { some: managerWhere(actor) } } },
+              },
+            };
         const filters: Record<string, Prisma.DelegationGrantWhereInput> = {
           ACTIVE: { ...active, startsAt: { lte: now }, endsAt: { gt: now } },
           SCHEDULED: { ...active, startsAt: { gt: now } },
@@ -173,14 +209,16 @@ export class DelegationProposalService {
         const where: Prisma.DelegationGrantWhereInput = {
           seasonId,
           recipientId,
+          actionCode: values.actionCode,
+          ...(search && {
+            OR: [
+              { recipient: { fullName: { contains: search, mode: 'insensitive' } } },
+              { recipient: { personnelCode: { contains: search, mode: 'insensitive' } } },
+              { actionCode: { in: matchingActions } },
+            ],
+          }),
           ...(values.state && filters[values.state]),
-          ...(admin
-            ? {}
-            : {
-                approvedVersion: {
-                  case: { proposerId: actor, season: { roles: { some: managerWhere(actor) } } },
-                },
-              }),
+          ...scope,
         };
         const [field, direction] = sort.split(':');
         const rows = await db.delegationGrant.findMany({
@@ -208,7 +246,19 @@ export class DelegationProposalService {
           state: grantState(grant, now),
           basis: approvedVersion.reason,
         }));
-        return { items, page, pageSize, total };
+        const recipientOptions = await db.delegationGrant.findMany({
+          where: scope,
+          distinct: ['recipientId'],
+          select: { recipient: { select: person } },
+          orderBy: { recipient: { fullName: 'asc' } },
+        });
+        return {
+          items,
+          page,
+          pageSize,
+          total,
+          recipients: recipientOptions.map(({ recipient }) => recipient),
+        };
       },
       { check: this.requireReader },
     );
@@ -297,6 +347,7 @@ export class DelegationProposalService {
           proposal,
           updatedVersion,
           'DELEGATION_EDITED',
+          version,
         );
         return this.result(updated, updatedVersion);
       },
@@ -334,6 +385,7 @@ export class DelegationProposalService {
         });
         await this.execution.event(context, request, actor, {
           action: transition.action,
+          before: { versionId: version.id, state: version.state },
           objectKind: 'DelegationCase',
           objectId: id,
           seasonId: proposal.seasonId,
@@ -428,11 +480,13 @@ export class DelegationProposalService {
             });
             await this.execution.event(context, request, actor, {
               action: 'DELEGATION_GRANTED',
+              before: { versionId, state: version.state },
               objectKind: 'DelegationCase',
               objectId: id,
               seasonId: proposal.seasonId,
               after: {
                 grantId: granted.id,
+                state: 'GRANTED',
                 versionId,
                 recipientId: scope.recipientId,
                 actionCode: scope.actionCode,
@@ -663,21 +717,27 @@ export class DelegationProposalService {
     proposal: DelegationCase,
     version: DelegationVersion,
     action: 'DELEGATION_DRAFTED' | 'DELEGATION_EDITED',
+    previous?: DelegationVersion,
   ) {
+    /** Projects only the proposal fields needed to compare the original and edited content. */
+    const summary = (item: DelegationVersion) => ({
+      versionId: item.id,
+      versionNumber: item.versionNumber,
+      state: item.state,
+      reason: item.reason,
+      recipientId: item.recipientId,
+      actionCode: item.actionCode,
+      startMode: item.startMode,
+      startsAt: item.startsAt?.toISOString() ?? null,
+      endsAt: item.endsAt?.toISOString() ?? null,
+    });
     return this.execution.event(context, request, actor, {
       action,
       objectKind: 'DelegationCase',
       objectId: proposal.id,
       seasonId: proposal.seasonId,
-      after: {
-        versionId: version.id,
-        versionNumber: version.versionNumber,
-        recipientId: version.recipientId,
-        actionCode: version.actionCode,
-        startMode: version.startMode,
-        startsAt: version.startsAt?.toISOString() ?? null,
-        endsAt: version.endsAt?.toISOString() ?? null,
-      },
+      ...(previous && { before: summary(previous) }),
+      after: summary(version),
     });
   }
 

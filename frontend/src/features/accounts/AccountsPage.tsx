@@ -11,6 +11,9 @@ import {
   type Season,
 } from './administration-model';
 import { GrantsPanel } from './GrantsPanel';
+import { AdminIcon } from './AdminIcon';
+import { AdminSelect } from './AdminSelect';
+import { useSearchTerm } from './use-search-term';
 import { useAdminList } from './use-admin-list';
 import css from './Administration.module.css';
 
@@ -20,7 +23,6 @@ const describeAccount = (account: Account, seasons: Season[]) =>
     account.fullName,
     account.personnelCode,
     stateNames[account.state],
-    'phiên bản ' + account.revision,
     ...account.systemRoles.map(({ roleCode }) => roleNames[roleCode]),
     ...account.seasonRoles.map(
       ({ roleCode, seasonId }) =>
@@ -34,9 +36,11 @@ const describeAccount = (account: Account, seasons: Season[]) =>
 export function AccountsPage() {
   const { client, session } = useSession();
   const [search, setSearch] = useState('');
+  const term = useSearchTerm(search);
   const [filters, setFilters] = useState({
     search: '',
     state: '',
+    roleCode: '',
     sort: 'createdAt:desc',
     page: 1,
   });
@@ -44,8 +48,9 @@ export function AccountsPage() {
   const [command, setCommand] = useState<AdminCommand>();
   const [success, setSuccess] = useState(false);
   const query = new URLSearchParams({ page: String(filters.page), sort: filters.sort });
-  if (filters.search) query.set('search', filters.search);
+  if (term) query.set('search', term);
   if (filters.state) query.set('state', filters.state);
+  if (filters.roleCode) query.set('roleCode', filters.roleCode);
   const list = useAdminList<AccountList>('/accounts?' + query);
   const account = list.data?.items.find(({ id }) => id === selected);
   const close = () => setCommand(undefined);
@@ -86,11 +91,12 @@ export function AccountsPage() {
     <section className={css.panel} aria-label="Danh sách tài khoản">
       <div className={css.sectionHeader}>
         <div>
-          <h2>Danh sách tài khoản</h2>
-          <p>Tra cứu nhân sự, quản lý trạng thái và phân quyền.</p>
+          <h1>Quản lý tài khoản và phân quyền</h1>
+          <p>Quản lý tài khoản nhân sự, trạng thái sử dụng và quyền truy cập trong hệ thống.</p>
         </div>
         <button
           className={css.primary}
+          aria-label="+ Thêm tài khoản mới"
           onClick={() => {
             setSuccess(false);
             setCommand({
@@ -111,7 +117,8 @@ export function AccountsPage() {
             });
           }}
         >
-          + Thêm tài khoản mới
+          <AdminIcon name="plus" />
+          <span>Thêm tài khoản</span>
         </button>
       </div>
       {success && (
@@ -126,39 +133,65 @@ export function AccountsPage() {
           setFilters({ ...filters, search: search.trim(), page: 1 });
         }}
       >
-        <label>
-          Tìm tài khoản
+        <label className={css.search}>
+          <span className={css.srOnly}>Tìm tài khoản</span>
+          <AdminIcon name="search" />
           <input
             value={search}
-            onChange={(event) => setSearch(event.target.value)}
-            placeholder="Mã nhân sự, họ tên, tên đăng nhập"
+            onChange={(event) => {
+              setSearch(event.target.value);
+              setFilters({ ...filters, page: 1 });
+            }}
+            placeholder="Tìm theo mã nhân sự, họ tên hoặc tên đăng nhập…"
           />
         </label>
-        <label>
-          Trạng thái
-          <select
-            value={filters.state}
-            onChange={(event) => setFilters({ ...filters, state: event.target.value, page: 1 })}
-          >
-            <option value="">Tất cả trạng thái</option>
-            <option value="ACTIVE">Hoạt động</option>
-            <option value="LOCKED">Đã khóa</option>
-          </select>
-        </label>
-        <label>
-          Sắp xếp
-          <select
-            value={filters.sort}
-            onChange={(event) => setFilters({ ...filters, sort: event.target.value, page: 1 })}
-          >
-            <option value="createdAt:desc">Mới nhất</option>
-            <option value="username:asc">Tên đăng nhập A–Z</option>
-            <option value="fullName:asc">Họ tên A–Z</option>
-            <option value="personnelCode:asc">Mã nhân sự A–Z</option>
-          </select>
-        </label>
-        <button type="submit">Tìm kiếm</button>
+        <AdminSelect
+          label="Trạng thái"
+          value={filters.state}
+          onChange={(state) => setFilters({ ...filters, state, page: 1 })}
+          options={[
+            { value: '', label: 'Tất cả trạng thái' },
+            { value: 'ACTIVE', label: 'Đang hoạt động' },
+            { value: 'LOCKED', label: 'Đã khóa' },
+          ]}
+        />
+        <AdminSelect
+          label="Vai trò"
+          value={filters.roleCode}
+          onChange={(roleCode) => setFilters({ ...filters, roleCode, page: 1 })}
+          options={[
+            { value: '', label: 'Tất cả vai trò' },
+            ...Object.entries(roleNames).map(([value, label]) => ({ value, label })),
+          ]}
+        />
+        <button
+          type="button"
+          className={css.refresh}
+          aria-label="Làm mới danh sách tài khoản"
+          title="Làm mới danh sách tài khoản"
+          onClick={() => {
+            setSearch('');
+            setFilters({ search: '', state: '', roleCode: '', sort: 'createdAt:desc', page: 1 });
+            list.reload();
+          }}
+        >
+          <AdminIcon name="refresh" />
+        </button>
       </form>
+      <details className={css.listOptions}>
+        <summary>Tùy chọn hiển thị</summary>
+        <AdminSelect
+          label="Sắp xếp"
+          value={filters.sort}
+          onChange={(sort) => setFilters({ ...filters, sort, page: 1 })}
+          options={[
+            { value: 'createdAt:desc', label: 'Mới nhất' },
+            { value: 'username:asc', label: 'Tên đăng nhập A–Z' },
+            { value: 'fullName:asc', label: 'Họ tên A–Z' },
+            { value: 'personnelCode:asc', label: 'Mã nhân sự A–Z' },
+          ]}
+        />
+      </details>
       <ListFeedback
         loading={list.loading}
         error={list.error}
@@ -167,7 +200,12 @@ export function AccountsPage() {
       />
       {!!list.data?.items.length && (
         <div className={css.scroll}>
-          <table className={css.table}>
+          <table className={css.table + ' ' + css.accountTable}>
+            <colgroup>
+              {['5%', '13%', '17%', '14%', '14%', '25%', '12%'].map((width, index) => (
+                <col key={index} style={{ width }} />
+              ))}
+            </colgroup>
             <thead>
               <tr>
                 {[
@@ -189,17 +227,36 @@ export function AccountsPage() {
               {list.data.items.map((row, index) => (
                 <tr key={row.id}>
                   <td>{(list.data!.page - 1) * list.data!.pageSize + index + 1}</td>
-                  <td>{row.personnelCode}</td>
+                  <td className={css.code}>{row.personnelCode}</td>
                   <td>
                     <strong>{row.fullName}</strong>
                   </td>
-                  <td>{row.username}</td>
+                  <td className={css.truncate} title={row.username}>
+                    {row.username}
+                  </td>
                   <td>
                     <StateBadge state={row.state} />
                     {row.mustChangePassword && <small>Chờ đổi mật khẩu</small>}
                   </td>
                   <td>
-                    {row.systemRoles.length ? roleNames.SYSTEM_ADMINISTRATOR : 'Nhân viên'}
+                    <div className={css.roleTags}>
+                      {row.systemRoles.map(({ id, roleCode }) => (
+                        <span key={id} className={css.roleTag}>
+                          {roleNames[roleCode]}
+                        </span>
+                      ))}
+                      {row.seasonRoles.map(({ id, roleCode, seasonId }) => (
+                        <span key={id} className={css.roleTag}>
+                          {roleNames[roleCode]} (
+                          {list.data!.seasons.find((season) => season.id === seasonId)?.name ??
+                            seasonId}
+                          )
+                        </span>
+                      ))}
+                      {!row.systemRoles.length && !row.seasonRoles.length && (
+                        <span>Chưa phân công</span>
+                      )}
+                    </div>
                     {row.seasonRoles.length > 0 && (
                       <small>{row.seasonRoles.length} phân công mùa giải</small>
                     )}
@@ -207,30 +264,9 @@ export function AccountsPage() {
                   <td>
                     <div className={css.actions}>
                       <button type="button" onClick={() => setSelected(row.id)}>
+                        <AdminIcon name="eye" />
                         Chi tiết
                       </button>
-                      {row.id !== session?.account.id && (
-                        <button
-                          type="button"
-                          onClick={() =>
-                            accountCommand(row, {
-                              title:
-                                row.state === 'ACTIVE' ? 'Khóa tài khoản' : 'Mở khóa tài khoản',
-                              critical: true,
-                              path:
-                                '/accounts/' +
-                                row.id +
-                                (row.state === 'ACTIVE' ? '/lock' : '/unlock'),
-                              description:
-                                row.state === 'ACTIVE'
-                                  ? 'Người dùng sẽ mất quyền truy cập và các phiên hiện tại sẽ kết thúc.'
-                                  : 'Người dùng có thể đăng nhập lại bằng mật khẩu còn hiệu lực.',
-                            })
-                          }
-                        >
-                          {row.state === 'ACTIVE' ? 'Khóa' : 'Mở khóa'}
-                        </button>
-                      )}
                     </div>
                   </td>
                 </tr>

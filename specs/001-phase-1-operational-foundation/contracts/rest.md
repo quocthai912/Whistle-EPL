@@ -61,7 +61,7 @@ All mutations apply CSRF/origin, ordered final authority/revision and required a
 
 | Method/path | Input allowlist | Receipt and additional gates |
 |---|---|---|
-| GET /accounts | Query page,pageSize,search,state,sort | No receipt; allowlisted username/personnel/fullName search; safe list projection |
+| GET /accounts | Query page,pageSize,search,state,roleCode,sort | No receipt; allowlisted username/personnel/fullName search; safe list projection |
 | POST /accounts | personnelCode,fullName,username,temporaryPassword | No secret-bearing receipt; verified personal identity, unique C01; initial ordinary staff account, administrator role granted separately |
 | PATCH /accounts/{accountId} | fullName,expectedRevision | No receipt; stable personnel identity preserved; username/code changes are not exposed by this initial mapping |
 | POST /accounts/{accountId}/lock | expectedRevision | Critical receipt; self-lock/last-active-admin checks, terminate affected delegations and invalidate sessions |
@@ -91,7 +91,7 @@ business content. Expected revisions bind the edited case/current submitted vers
 
 | Method/path | Input allowlist | Authority / effects |
 |---|---|---|
-| GET /delegation-proposals | page,pageSize,seasonId,state,sort | Full administrator for administration metadata, or direct manager for own authorized season proposals; safe projection only |
+| GET /delegation-proposals | page,pageSize,seasonId,state,search,actionCode,sort | Full administrator for administration metadata, or direct manager for own authorized season proposals; safe projection only |
 | POST /delegation-proposals | seasonId,recipientId,actionCode,startMode,startsAt,endsAt,reason | Direct Season Manager; proposer from session; startMode IMMEDIATE or SCHEDULED; startsAt forbidden for IMMEDIATE |
 | PATCH /delegation-proposals/{caseId} | recipientId,actionCode,startMode,startsAt,endsAt,reason,expectedRevision | Proposer, own Draft; on Returned create editable successor before resubmission, preserve previous content/editor history |
 | POST /delegation-proposals/{caseId}/submit | versionId,expectedRevision | Proposer; validate C09-C11 and lock submitted content; Pending only after successful validation |
@@ -99,7 +99,7 @@ business content. Expected revisions bind the edited case/current submitted vers
 | POST /delegation-proposals/{caseId}/grant | versionId,expectedRevision | Administrator; critical receipt; exact Pending version, three-person separation, current eligibility/no overlap; invalid validation leaves Pending |
 | POST /delegation-proposals/{caseId}/return | versionId,reason,expectedRevision | Administrator, Pending; reason required, preserved processing history |
 | POST /delegation-proposals/{caseId}/reject | versionId,reason,expectedRevision | Administrator, Pending; reason required, terminal rejection |
-| GET /delegation-grants | page,pageSize,seasonId,recipientId,state,sort | Same authorized administration/proposer scope, current metadata only |
+| GET /delegation-grants | page,pageSize,seasonId,recipientId,state,search,actionCode,sort | Same authorized administration/proposer scope, current metadata only |
 | POST /delegation-grants/{grantId}/revoke | reason,expectedRevision | Administrator; critical receipt; no prior proposer approval, end authority/invalidate recipient sessions atomically |
 
 Grant processing fills immediate startsAt using the successful recording instant and never
@@ -109,7 +109,7 @@ leak into a grant. End, revoke and eligibility-loss facts remain distinct from p
 ## Audit and Lists
 
 GET /audit-logs permits only System Administrators. Query allowlist:
-page,pageSize,actorId,occurredFrom,occurredBefore,actionCode,objectKind,objectId,sort.
+page,pageSize,search,actorId,occurredFrom,occurredBefore,actionCode,objectKind,objectId,sort.
 Time bounds are [occurredFrom,occurredBefore); reject invalid/reversed ranges and filters.
 Use default 20/maximum 100 and total count. Default ordering is occurredAt descending then
 id ascending; account lists use createdAt descending then id ascending. Sort fields are
@@ -157,3 +157,26 @@ Contract checks cover each allowlist, restricted/full/no session, wrong scope, f
 unknown state/action, exact CSRF/origin behavior, secret redaction, conflict/replay, actual
 Chrome/Edge paths and atomic rollback after required audit failure. No contract check is
 claimed executed by this document.
+
+## Administration design-alignment search extension
+
+The Team Leader requested complete MH08–MH10 search and filter interactions on 2026-11-07. Search terms are normalized business text of at most 200 code points, treated literally and filtered on the server before counting and pagination. Existing authority checks, query bounds and safe projections apply.
+
+Account roleCode filters active system or seasonal assignments. Account lists include lastLoginAt from the latest successful login audit event, or null when no login is recorded. Proposal search matches proposer/recipient names, personnel codes and usernames. Grant search matches recipient names/personnel codes or the displayed business-operation label. actionCode restricts proposals/grants to an approved delegation operation. Grant lists return distinct recipients from the caller-authorized grant scope for their recipient filter. Audit search matches readable actor/account-target names, personnel codes, usernames or operator identity. It never searches reasons, before/after payloads or credentials.
+
+## PHASE 1 audit change summaries
+
+The 2026-11-08 refinement implements the necessary before/after changes required by D094 for the existing PHASE 1 actions. Both summaries remain action-allowlisted and subject to current object-read authorization. Account revisions remain command concurrency tokens; ordinary account confirmations do not display their technical sequence numbers.
+
+| Action family | Recorded change |
+| --- | --- |
+| Account update, lock/unlock, administrator recovery | Actual previous and resulting editable fields/account state; existing recovery flags and invalidated-session counts remain safe outcome metadata. |
+| Password reset/change | Previous/resulting `mustChangePassword`, with invalidated-session count in the result. No password, hash or session identifier is recorded. |
+| System/season role and shared/Create Season permission grant/revoke | Previous/resulting `granted` boolean for the specific role/right, with scoped role/master kind/season and assignment/grant identifiers. Automatic shared-right termination records the same transition with its prerequisite-loss reason. |
+| Delegation content edit | Previous/resulting version, state, recipient, operation, start mode, interval and proposal reason, captured from the transaction's original and updated versions. |
+| Delegation submission, return, rejection, cancellation and approval | Actual previous/resulting proposal state and version. Approval retains the approved recipient/operation/interval and new grant identifier. |
+| Delegation start, expiry, revocation and eligibility termination | Previous/resulting lifecycle state at the effective boundary. Immediate start proceeds from granted to active; timed start proceeds from scheduled to active. |
+| Account/bootstrap/draft creation | New safe object fields; no prior object is claimed. |
+| Login/logout | Authentication event metadata; no business-data comparison or credential/session contents. |
+
+Existing retained audit rows are not rewritten. A missing historical side is shown as not recorded, rather than reconstructed from current mutable data. Missing or unauthorized objects continue to redact change payloads and reasons. These refinements cover implemented PHASE 1 operations; later Phases must add their own action-specific projections and regression evidence under D094.

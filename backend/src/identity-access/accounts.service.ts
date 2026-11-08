@@ -12,6 +12,8 @@ import {
   conflict,
   invalid,
   listQuery,
+  listSearch,
+  seasonalRoles,
   missing,
   systemRole,
   type CreateAccountDto,
@@ -54,17 +56,23 @@ export class AccountsService {
   list(request: Request, query: Record<string, unknown>) {
     const { values, page, pageSize, sort, skip, take } = listQuery(
       query,
-      ['search', 'state'],
+      ['search', 'state', 'roleCode'],
       sortOptions,
     );
     if (values.state !== undefined && !['ACTIVE', 'LOCKED'].includes(values.state)) throw invalid();
-    const search =
-      values.search === undefined
-        ? ''
-        : businessText(values.search, 'name', false).replace(/[\\%_]/g, '\\$&');
+    if (
+      values.roleCode !== undefined &&
+      ![systemRole, ...seasonalRoles].some((role) => role === values.roleCode)
+    )
+      throw invalid();
+    const search = listSearch(values.search);
     const [field, direction] = sort.split(':');
     const where: Prisma.AccountWhereInput = {
       state: values.state,
+      ...(values.roleCode &&
+        (values.roleCode === systemRole
+          ? { systemRoles: { some: { roleCode: systemRole, revokedAt: null } } }
+          : { seasonRoles: { some: { roleCode: values.roleCode, revokedAt: null } } })),
       ...(search && {
         OR: [
           { username: { contains: search, mode: 'insensitive' } },
@@ -100,12 +108,22 @@ export class AccountsService {
         },
       });
       const total = await context.db.account.count({ where });
+      const logins = await context.db.auditRecord.groupBy({
+        by: ['actorId'],
+        where: { actionCode: 'LOGIN_SUCCEEDED', actorId: { in: rows.map(({ id }) => id) } },
+        _max: { occurredAt: true },
+      });
+      const lastLogin = new Map(logins.map((login) => [login.actorId, login._max.occurredAt]));
       const seasons = await context.db.season.findMany({
         select: { id: true, code: true, name: true },
         orderBy: { code: 'asc' },
       });
       return {
-        items: rows.map((row) => ({ ...row, revision: row.revision.toString() })),
+        items: rows.map((row) => ({
+          ...row,
+          revision: row.revision.toString(),
+          lastLoginAt: lastLogin.get(row.id) ?? null,
+        })),
         page,
         pageSize,
         total,
@@ -220,6 +238,7 @@ export class AccountsService {
           action: 'PASSWORD_RESET',
           objectKind: 'Account',
           objectId: id,
+          before: { mustChangePassword: account.mustChangePassword },
           after: { mustChangePassword: true, sessionsInvalidated },
         });
         return { id, revision: updated.revision.toString() };
@@ -331,7 +350,8 @@ export class AccountsService {
               action,
               objectKind: 'Account',
               objectId: id,
-              after: { assignmentId: assignment.id, roleCode: systemRole },
+              before: { roleCode: systemRole, granted: !!assignmentId },
+              after: { assignmentId: assignment.id, roleCode: systemRole, granted: !assignmentId },
             });
             return {
               status: assignmentId ? 200 : 201,

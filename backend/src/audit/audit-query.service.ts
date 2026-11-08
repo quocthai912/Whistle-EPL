@@ -1,7 +1,7 @@
 import { isISO8601 } from 'class-validator';
 import type { Request } from 'express';
 import { Prisma } from '../generated/prisma/client';
-import { denied, invalid, listQuery, uuid } from '../identity-access/accounts.dto';
+import { denied, invalid, listQuery, listSearch, uuid } from '../identity-access/accounts.dto';
 import type { AuthService } from '../identity-access/auth.service';
 import { isAdministrator } from '../identity-access/authority.policy';
 import { readCookie, SESSION_COOKIE } from '../identity-access/csrf.service';
@@ -16,6 +16,7 @@ const filters = [
   'actionCode',
   'objectKind',
   'objectId',
+  'search',
 ];
 const sorts = ['occurredAt:desc', 'occurredAt:asc'];
 
@@ -55,6 +56,8 @@ export class AuditQueryService {
         const { db } = context;
         const { values, page, pageSize, sort, skip, take } = listQuery(query, filters, sorts);
         const { actorId, actionCode, objectKind, objectId } = values;
+        const search = listSearch(values.search);
+        const pattern = '%' + search + '%';
         const gte = instant(values.occurredFrom);
         const lt = instant(values.occurredBefore);
         if (
@@ -71,6 +74,16 @@ export class AuditQueryService {
           objectId === undefined ? null : Prisma.sql`object_id = ${uuid(objectId)}::uuid`,
           gte ? Prisma.sql`occurred_at >= ${gte}::timestamptz` : null,
           lt ? Prisma.sql`occurred_at < ${lt}::timestamptz` : null,
+          search
+            ? Prisma.sql`(operator_identity ILIKE ${pattern} OR EXISTS (
+            SELECT 1 FROM account AS searchable_account
+            WHERE (searchable_account.id = audit_record.actor_id
+              OR (audit_record.object_kind = 'Account' AND searchable_account.id = audit_record.object_id))
+              AND (searchable_account.full_name ILIKE ${pattern}
+                OR searchable_account.personnel_code ILIKE ${pattern}
+                OR searchable_account.username ILIKE ${pattern})
+          ))`
+            : null,
         ].filter((condition) => condition !== null);
         const ascending = sort === 'occurredAt:asc';
         const direction = ascending ? Prisma.sql`ASC` : Prisma.sql`DESC`;

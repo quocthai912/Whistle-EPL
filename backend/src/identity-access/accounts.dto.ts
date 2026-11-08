@@ -77,6 +77,10 @@ export function businessText(input: string, field: 'name' | 'reason', required =
     throw invalid();
   return value;
 }
+/** Normalizes a literal list search and escapes PostgreSQL LIKE wildcards. */
+export function listSearch(value: string | undefined): string {
+  return value === undefined ? '' : businessText(value, 'name', false).replace(/[\\%_]/g, '\\$&');
+}
 /** Rejects a stale edit using decimal-string comparison so bigint revisions keep their full precision. */
 export function assertRevision(current: bigint, expected: string): void {
   if (current.toString() !== expected) throw conflict('REVISION_CONFLICT');

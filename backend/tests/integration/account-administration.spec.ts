@@ -2,6 +2,24 @@ import { administrationHarness, fixturePassword } from '../fixtures/admin-http';
 
 describe('account administration HTTP contract', () => {
   const harness = administrationHarness();
+  it('filters live roles and literal search terms before pagination and projects real last-login metadata', async () => {
+    const { accounts } = await harness.fixtures();
+    const admin = await harness.login(accounts[0].username);
+    const roles = await harness.observer.seasonRoleAssignment.findMany({
+      where: { roleCode: 'SEASON_MANAGER', revokedAt: null },
+    });
+    const result = await admin.get('/accounts?roleCode=SEASON_MANAGER').expect(200);
+    expect(result.body.data.items.map((row: { id: string }) => row.id).sort()).toEqual(
+      [...new Set(roles.map((role) => role.accountId))].sort(),
+    );
+    expect(result.body.data.total).toBe(result.body.data.items.length);
+    const self = await admin
+      .get('/accounts?search=' + encodeURIComponent(accounts[0].username))
+      .expect(200);
+    expect(self.body.data.items[0].lastLoginAt).toEqual(expect.any(String));
+    expect((await admin.get('/accounts?search=%25').expect(200)).body.data.total).toBe(0);
+    await admin.get('/accounts?roleCode=UNKNOWN').expect(400);
+  });
   it('creates a personal ordinary account, rejects duplicate identity and never returns credentials', async () => {
     const { accounts } = await harness.fixtures();
     const admin = await harness.login(accounts[0].username);

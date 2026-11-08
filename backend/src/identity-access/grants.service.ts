@@ -79,7 +79,8 @@ export class GrantsService {
             objectKind: 'Account',
             objectId: id,
             seasonId,
-            after: { assignmentId: assignment.id, seasonId, roleCode },
+            before: { seasonId, roleCode, granted: !addition },
+            after: { assignmentId: assignment.id, seasonId, roleCode, granted: !!addition },
           });
           return {
             status: addition ? 201 : 200,
@@ -139,7 +140,8 @@ export class GrantsService {
                 action: grantId ? 'CREATE_SEASON_REVOKED' : 'CREATE_SEASON_GRANTED',
                 objectKind: 'Account',
                 objectId: id,
-                after: { grantId: relatedId },
+                before: { granted: !!grantId },
+                after: { grantId: relatedId, granted: !grantId },
               });
             } else {
               const current = await db.sharedMasterGrant.findFirst({
@@ -166,7 +168,8 @@ export class GrantsService {
                 action: grantId ? 'SHARED_GRANT_ENDED' : 'SHARED_GRANT_GRANTED',
                 objectKind: 'Account',
                 objectId: id,
-                after: { grantId: relatedId, masterKind: kind },
+                before: { masterKind: kind, granted: !!grantId },
+                after: { grantId: relatedId, masterKind: kind, granted: !grantId },
               });
             }
             return {
@@ -208,7 +211,8 @@ export class GrantsService {
       objectKind: 'Account',
       objectId: id,
       reason: 'Vai trò điều kiện cuối cùng đã bị thu hồi.',
-      after: { grantId: grant.id, masterKind },
+      before: { masterKind, granted: true },
+      after: { grantId: grant.id, masterKind, granted: false },
     });
   }
 

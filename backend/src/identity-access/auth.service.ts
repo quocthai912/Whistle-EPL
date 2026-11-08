@@ -238,7 +238,8 @@ export class AuthService {
           objectId: basis.id,
           requestId,
           outcome: 'SUCCESS',
-          after: { sessionsInvalidated: invalidated.count },
+          before: { mustChangePassword: live.account.mustChangePassword },
+          after: { mustChangePassword: false, sessionsInvalidated: invalidated.count },
         });
         return { acknowledged: true };
       },

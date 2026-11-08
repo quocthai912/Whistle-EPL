@@ -117,11 +117,29 @@ export class DelegationBoundaryService {
       reason,
       requestId,
       outcome: 'SUCCESS',
+      before: {
+        grantId: grant.id,
+        state:
+          kind === 'START'
+            ? immediate
+              ? 'GRANTED'
+              : 'SCHEDULED'
+            : kind === 'EXPIRY'
+              ? 'ACTIVE'
+              : grantState(grant, at),
+      },
       after: {
         grantId: grant.id,
         sessionsInvalidated,
         effectiveAt: at.toISOString(),
-        ...(!timed && { state: kind === 'REVOCATION' ? 'REVOKED' : 'TERMINATED' }),
+        state:
+          kind === 'START'
+            ? 'ACTIVE'
+            : kind === 'EXPIRY'
+              ? 'EXPIRED'
+              : kind === 'REVOCATION'
+                ? 'REVOKED'
+                : 'TERMINATED',
       },
     });
   }

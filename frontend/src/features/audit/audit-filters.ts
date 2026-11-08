@@ -38,6 +38,7 @@ export const objectKinds: Record<string, string> = {
 };
 
 export const initialFilters = {
+  search: '',
   actorId: '',
   objectId: '',
   objectKind: '',
@@ -62,6 +63,7 @@ export function auditFilters(draft: typeof initialFilters) {
   };
   if (from && through && from > through) throw new Error('Từ ngày phải trước hoặc bằng Đến ngày.');
   const filters = {
+    search: draft.search.trim(),
     ...identifiers,
     objectKind,
     actionCode,

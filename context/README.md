@@ -29,6 +29,8 @@ One evolving, English-only Context Package is maintained in this directory for h
 | Technical/design topics or [D001](design/architecture.md#d001---modular-layered-monolithic-backend)-[D097](design/architecture.md#d097---pnpm-toolchain-development-quality-and-reference-operations) | [Design navigation and index](design/README.md) |
 | Media or future external APIs | [Media](design/media.md), [integration](design/integrations.md) |
 | Quality, acceptance or Phase selection | [Quality](quality.md), [Progress Checker](progress-checker.md) |
+| Current administration/authentication UI and search/filter verification | [UI refinement evidence](../docs/verification/phase-1/ui-refinement.md), [REST contract](../specs/001-phase-1-operational-foundation/contracts/rest.md) |
+| Implemented PHASE 1 audit before/after fields and latest regression | [Audit field catalog](../specs/001-phase-1-operational-foundation/contracts/rest.md#phase-1-audit-change-summaries), [2026-11-08 regression](../docs/verification/phase-1/ui-refinement.md#audit-completeness-and-full-regression--2026-11-08) |
 | CI/merge policy or PHASE 1 preparation readiness | [D098](design/architecture.md#d098---required-ci-and-protected-integration-branches), [readiness](progress-checker.md#phase-1-specification-readiness-and-foundation-verification) |
 | Unresolved work | [Open decisions](open-decisions.md) |
 | Citations and approval evidence | [Sources](sources.md) |

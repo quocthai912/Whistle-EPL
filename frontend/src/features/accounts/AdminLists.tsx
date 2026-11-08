@@ -1,11 +1,11 @@
-import { stateNames, type List } from './administration-model';
+import { grantStateNames, stateNames, type List } from './administration-model';
 import css from './Administration.module.css';
 
 /** Displays the localized label for a persisted account, proposal or grant state. */
-export function StateBadge({ state }: { state: string }) {
+export function StateBadge({ state, grant = false }: { state: string; grant?: boolean }) {
   return (
     <span className={css.badge} data-state={state}>
-      {stateNames[state] ?? state}
+      {(grant ? grantStateNames : stateNames)[state] ?? state}
     </span>
   );
 }
@@ -42,14 +42,29 @@ export function Pagination({
   return (
     <div className={css.pagination} aria-label="Phân trang">
       <span>
-        {data.total} kết quả · Trang {data.page}/{pages}
+        {data.items.length > 0
+          ? `Hiển thị ${(data.page - 1) * data.pageSize + 1}–${(data.page - 1) * data.pageSize + data.items.length} trong tổng số ${data.total} kết quả`
+          : `${data.total} kết quả`}
       </span>
-      <button disabled={data.page <= 1} onClick={() => change(data.page - 1)}>
-        Trang trước
-      </button>
-      <button disabled={data.page >= pages} onClick={() => change(data.page + 1)}>
-        Trang sau
-      </button>
+      <div className={css.actions}>
+        <span>
+          Trang {data.page} / {pages}
+        </span>
+        <button
+          aria-label="Trang trước"
+          disabled={data.page <= 1}
+          onClick={() => change(data.page - 1)}
+        >
+          ‹
+        </button>
+        <button
+          aria-label="Trang sau"
+          disabled={data.page >= pages}
+          onClick={() => change(data.page + 1)}
+        >
+          ›
+        </button>
+      </div>
     </div>
   );
 }

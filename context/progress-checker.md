@@ -8,6 +8,8 @@ This is the current Phase ledger for one evolving package, not a Spec/Plan/Task.
 
 **Latest implementation update** 2026-11-06 (Asia/Bangkok). T038–T048 have recorded verification and T048 reviewer approval. See the [audit and verification evidence](#phase-1-audit-and-verification-evidence---2026-11-06). PHASE 1 is `COMPLETED` for the accepted foundation scope. PHASE 2–PHASE 10 remain `NOT_STARTED`.
 
+**Post-acceptance regression** 2026-11-08 (Asia/Bangkok). Account confirmation and PHASE 1 audit before/after refinements passed 45 unit, 90 PostgreSQL integration, 32 Chrome/Edge E2E and five backup/scheduler tests, plus the baseline/negative authentication load checks. See the [dated refinement evidence](../docs/verification/phase-1/ui-refinement.md#audit-completeness-and-full-regression--2026-11-08) for scope, reproduction targets and limits. The accepted Phase status, checklist and historical approval remain unchanged; future-Phase audit actions are not claimed implemented or verified.
+
 The latest confirmed scope includes managed club/player media, with independent core acceptance before API research/selection under [INT-01](design/integrations.md#int-01---acceptance-before-api-research-and-integration). External integration is not a mandatory prerequisite to first-version core acceptance and creates no new mandatory Phase. Documented decisions do not establish implementation or acceptance.
 
 ## Status and evidence

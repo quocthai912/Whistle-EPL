@@ -36,7 +36,8 @@ describe('administration navigation and confirmation', () => {
         <App />
       </MemoryRouter>,
     );
-    await screen.findByText('Bạn không có quyền truy cập trang này.');
+    await screen.findByText('Bạn không có quyền truy cập trang này.', undefined, uiWait);
+    expect(screen.queryByText('Quản lý mùa giải')).not.toBeInTheDocument();
     expect(fetcher.mock.calls).toHaveLength(1);
   });
   it('cancels a lock without submitting a command', async () => {
@@ -52,10 +53,13 @@ describe('administration navigation and confirmation', () => {
       </MemoryRouter>,
     );
     await screen.findByText('Nguyễn An');
+    fireEvent.click(screen.getByRole('button', { name: 'Chi tiết' }));
     fireEvent.click(screen.getByRole('button', { name: 'Khóa' }));
-    await screen.findByRole('dialog');
-    fireEvent.click(screen.getByRole('button', { name: /^Hủy$/ }));
-    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+    const cancel = await screen.findByRole('button', { name: /^Hủy$/ });
+    const confirmation = cancel.closest('[role="dialog"]');
+    expect(confirmation).toBeInTheDocument();
+    fireEvent.click(cancel);
+    await waitFor(() => expect(confirmation).not.toBeInTheDocument());
     expect(fetcher.mock.calls.map(([path]) => path)).not.toContain(
       '/api/v1/accounts/employee/lock',
     );
@@ -96,26 +100,26 @@ describe('administration navigation and confirmation', () => {
         </MemoryRouter>,
       );
       fireEvent.click(await screen.findByRole('button', { name: 'Chi tiết' }, uiWait));
-      fireEvent.click(screen.getByRole('tab', { name: 'Vai trò hệ thống' }));
+      fireEvent.click(screen.getByRole('tab', { name: 'Quyền hệ thống' }));
       fireEvent.click(screen.getByRole('button', { name: 'Cấp vai trò quản trị' }));
       fireEvent.click(await screen.findByRole('button', { name: 'Xác nhận' }, uiWait));
 
       await screen.findByText('Đang tải dữ liệu…', undefined, uiWait);
       expect(screen.getByRole('cell', { name: row.fullName })).toBeVisible();
-      expect(screen.getByRole('tab', { name: 'Vai trò hệ thống' })).toHaveAttribute(
+      expect(screen.getByRole('tab', { name: 'Quyền hệ thống' })).toHaveAttribute(
         'aria-selected',
         'true',
       );
       failRefresh(Response.json({ error: { code: 'REQUEST_FAILED' } }, { status: 500 }));
       const retry = await screen.findByRole('button', { name: 'Thử lại' }, uiWait);
       expect(screen.getByRole('cell', { name: row.fullName })).toBeVisible();
-      expect(screen.getByRole('tab', { name: 'Vai trò hệ thống' })).toHaveAttribute(
+      expect(screen.getByRole('tab', { name: 'Quyền hệ thống' })).toHaveAttribute(
         'aria-selected',
         'true',
       );
       fireEvent.click(retry);
       await screen.findByRole('button', { name: 'Thu hồi vai trò quản trị' }, uiWait);
-      expect(screen.getByRole('tab', { name: 'Vai trò hệ thống' })).toHaveAttribute(
+      expect(screen.getByRole('tab', { name: 'Quyền hệ thống' })).toHaveAttribute(
         'aria-selected',
         'true',
       );
@@ -166,15 +170,14 @@ describe('administration navigation and confirmation', () => {
           <App />
         </MemoryRouter>,
       );
+      fireEvent.click(await screen.findByRole('button', { name: 'Chi tiết' }, uiWait));
       fireEvent.click(await screen.findByRole('button', { name: 'Khóa' }, uiWait));
       fireEvent.click(await screen.findByRole('button', { name: 'Xác nhận' }, uiWait));
       fireEvent.click(
         await screen.findByRole('button', { name: 'Tải dữ liệu mới để xem lại' }, uiWait),
       );
-      expect(
-        await screen.findByText(/Nguyễn An cập nhật.*phiên bản 7/, undefined, uiWait),
-      ).toBeInTheDocument();
-      fireEvent.click(await screen.findByRole('button', { name: 'Dùng phiên bản đã xem' }, uiWait));
+      expect(await screen.findByText(/Nguyễn An cập nhật/, undefined, uiWait)).toBeInTheDocument();
+      fireEvent.click(await screen.findByRole('button', { name: 'Dùng thông tin đã xem' }, uiWait));
       fireEvent.click(screen.getByRole('button', { name: 'Xác nhận' }));
       await screen.findByText('Đã lưu thay đổi.', undefined, uiWait);
       expect(submitted).toEqual(['{"expectedRevision":"1"}', '{"expectedRevision":"7"}']);
@@ -208,9 +211,11 @@ describe('administration navigation and confirmation', () => {
 
     await screen.findByText(row.fullName);
     const stateFilter = screen.getByRole('combobox', { name: /Trạng thái/ });
-    fireEvent.change(stateFilter, { target: { value: 'LOCKED' } });
+    fireEvent.mouseDown(stateFilter);
+    fireEvent.click(await screen.findByRole('option', { name: 'Đã khóa' }));
     await screen.findByText('Đang tải dữ liệu…');
-    fireEvent.change(stateFilter, { target: { value: '' } });
+    fireEvent.mouseDown(stateFilter);
+    fireEvent.click(await screen.findByRole('option', { name: 'Tất cả trạng thái' }));
     expect(unfilteredReads).toBe(2);
     expect(screen.getByText(row.fullName)).toBeVisible();
     expect(screen.getByText('Đang tải dữ liệu…')).toBeVisible();
