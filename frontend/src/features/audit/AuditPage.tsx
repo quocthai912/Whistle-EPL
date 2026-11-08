@@ -78,14 +78,17 @@ const changeLabels: Record<string, string> = {
   endsAt: 'Kết thúc',
   effectiveAt: 'Thời điểm hiệu lực',
 };
+/** Uses an own-property display label, preserving unknown historical codes as text. */
 const label = (names: Record<string, string>, key: string) =>
   Object.hasOwn(names, key) ? names[key] : key;
+/** Resolves the permitted account, operator or system identity for an audit row. */
 const actor = (row: AuditRecord) =>
   row.actorKind === 'OPERATOR'
     ? (row.operatorIdentity ?? 'Người vận hành')
     : row.actorKind === 'SYSTEM'
       ? 'Hệ thống'
       : (row.actorName ?? row.actorId ?? '—');
+/** Displays a readable target name or its safe object-kind label. */
 const target = (row: AuditRecord) => row.objectName ?? label(objectKinds, row.objectKind);
 
 /** Translates safe audit fields without reconstructing missing historical values. */
@@ -120,6 +123,7 @@ function changeValue(name: string, value: Change[string], actionCode: string, af
     : value;
 }
 
+/** Displays one recorded side of a change without reconstructing absent history. */
 function ChangeSummary({
   title,
   values,
@@ -151,9 +155,11 @@ function ChangeSummary({
   );
 }
 
+/** Coordinates debounced audit search, submitted identifiers and read-only detail lookup. */
 export function AuditPage() {
   const [draft, setDraft] = useState(initialFilters);
   const term = useSearchTerm(draft.search);
+  const searchPending = term !== draft.search.trim();
   const [applied, setApplied] = useState(() => auditFilters(initialFilters));
   const [page, setPage] = useState(1);
   const [selectedId, setSelectedId] = useState<string>();
@@ -166,6 +172,7 @@ export function AuditPage() {
   );
   const selected = error ? undefined : data?.items.find((row) => row.id === selectedId);
   const pages = Math.max(1, Math.ceil((data?.total ?? 0) / (data?.pageSize ?? 20)));
+  /** Applies automatic filters while keeping unfinished identifiers separate from submitted ones. */
   function update(key: keyof typeof draft, value: string) {
     const next = { ...draft, [key]: value };
     setDraft(next);
@@ -173,12 +180,20 @@ export function AuditPage() {
     setSelectedId(undefined);
     if (key === 'search' || key === 'actorId' || key === 'objectId') return;
     try {
-      setApplied(auditFilters(next));
+      const previous = new URLSearchParams(applied);
+      setApplied(
+        auditFilters({
+          ...next,
+          actorId: previous.get('actorId') ?? '',
+          objectId: previous.get('objectId') ?? '',
+        }),
+      );
       setValidation(undefined);
     } catch (error) {
       setValidation(error instanceof Error ? error.message : 'Bộ lọc không hợp lệ.');
     }
   }
+  /** Validates and applies the complete draft, including explicitly submitted identifiers. */
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     try {
@@ -192,6 +207,7 @@ export function AuditPage() {
       setValidation(error instanceof Error ? error.message : 'Bộ lọc không hợp lệ.');
     }
   }
+  /** Restores default filters and refreshes the first audit page. */
   function clear() {
     setDraft(initialFilters);
     setApplied(auditFilters(initialFilters));
@@ -399,7 +415,7 @@ export function AuditPage() {
             <button
               type="button"
               aria-label="Trang trước"
-              disabled={loading || data.page <= 1}
+              disabled={loading || searchPending || data.page <= 1}
               onClick={() => setPage(page - 1)}
             >
               ‹
@@ -407,7 +423,7 @@ export function AuditPage() {
             <button
               type="button"
               aria-label="Trang sau"
-              disabled={loading || data.page >= pages}
+              disabled={loading || searchPending || data.page >= pages}
               onClick={() => setPage(page + 1)}
             >
               ›

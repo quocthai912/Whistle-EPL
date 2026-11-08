@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, within } from '@testing-library/react';
 import { MemoryRouter } from 'react-router';
 import { afterEach, expect, it, vi } from 'vitest';
 import { App } from '../src/app/App';
@@ -90,8 +90,16 @@ it.each([
       </MemoryRouter>,
     );
     fireEvent.click(await screen.findByRole('button', { name: 'Chi tiết' }, { timeout: 5000 }));
-    for (const text of expected)
-      expect(await screen.findByText(text, undefined, { timeout: 5000 })).toBeInTheDocument();
+    if (change.actionCode === 'ACCOUNT_LOCKED') {
+      const before = within(screen.getByRole('heading', { name: 'Trước thay đổi' }).parentElement!);
+      const after = within(screen.getByRole('heading', { name: 'Sau thay đổi' }).parentElement!);
+      expect(before.getByText(expected[0])).toBeInTheDocument();
+      expect(before.queryByText(expected[1])).not.toBeInTheDocument();
+      expect(after.getByText(expected[1])).toBeInTheDocument();
+      expect(after.queryByText(expected[0])).not.toBeInTheDocument();
+    } else
+      for (const text of expected)
+        expect(await screen.findByText(text, undefined, { timeout: 5000 })).toBeInTheDocument();
   },
   15000,
 );

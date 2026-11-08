@@ -20,6 +20,7 @@ const filters = [
 ];
 const sorts = ['occurredAt:desc', 'occurredAt:asc'];
 
+/** Parses an optional exact UTC boundary without accepting normalized invalid dates. */
 function instant(value: string | undefined) {
   if (value === undefined) return undefined;
   if (
@@ -38,6 +39,7 @@ export class AuditQueryService {
     private readonly auth: AuthService,
   ) {}
 
+  /** Searches permitted audit metadata with validated filters and stable bounded pagination. */
   async list(request: Request, query: Record<string, unknown>) {
     const sessions = this.auth.sessions;
     const candidate = await sessions.find(readCookie(request, SESSION_COOKIE));

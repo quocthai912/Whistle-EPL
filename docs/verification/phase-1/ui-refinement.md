@@ -281,3 +281,67 @@ the own/other-account password-entry checks. Captures and reports are under
 `.verification/ui-review/header-crop-b/`. Frontend build/type validation, CSS
 formatting and whitespace checks passed; this crop-only follow-up did not rerun
 the unit/backend suites or alter their previously recorded evidence.
+
+## CodeRabbit PR follow-up — 2026-11-08
+
+All supplied inline findings and test nitpicks were verified against the current
+code and remained valid; none was skipped. Review text was treated as untrusted
+data. The follow-up makes the following corrections without changing business
+authority or database schema:
+
+| Finding | Correction and regression evidence |
+| --- | --- |
+| Recipient options load grant history before client-side distinct | Query accounts through `receivedGrants.some(scope)`, selecting only person metadata and ordering by name/ID. Each recipient is returned once by the database. A real HTTP test creates repeated grants and a different manager's grant, then verifies unique ordered options, caller scope and independence from one-row pagination. |
+| Operation-label search normalizes whitespace differently | Apply `businessText(..., 'name', false)` before Vietnamese lowercasing. A PostgreSQL HTTP assertion uses repeated spaces and a tab in the displayed operation label. |
+| New debounced searches can inherit an old page | Bind account/proposal/grant pagination to the committed term and reset it before querying a new term. Three routed tests choose another page during the debounce interval and require the committed search to request only page 1. |
+| Grant drawer keeps an obsolete status/revision | Reconcile the selected grant with completed refreshed results, or close it if absent. A routed test refreshes active to expired, checks revocation disappears, then removes the grant and checks the drawer closes. |
+| Automatic audit filters consume unfinished identifiers | Reuse submitted actor/object IDs when applying another automatic filter. A routed test edits both drafts, changes page size, verifies prior IDs remain applied, and confirms explicit invalid submission still fails validation. |
+| Audit pages remain clickable during debounce | Disable previous/next while draft and committed search differ; restore ordinary bounds after commit. The regression checks both pending controls and re-enabled next-page navigation. |
+
+The role-filter integration fixture now interleaves matching/nonmatching accounts
+and asserts the total and exact rows across two filtered pages. Last-login
+metadata is checked after two logins one minute apart, with an explicit null for
+an account that never logged in. Account-lock UI assertions are scoped to their
+respective before/after cards, including negative assertions against swapped
+labels. A temporary mutation probe swapped only the fixture's state sides and
+confirmed that the expected before-state assertion failed; the probe was removed.
+The browser role-filter journey now checks an unassigned role produces no rows,
+then restores the matching scheduling role.
+
+JSDoc was added to undocumented named production functions in the PR's changed
+TypeScript/TSX files, including safe audit payload/query helpers, credential and
+delegation operations, and list/filter handlers. A TypeScript AST audit against
+the local `origin/development...HEAD` production-file inventory found no remaining
+undocumented named declarations/methods/arrow helpers in that scope. The hosted
+CodeRabbit Docstring Coverage check must still recalculate when this commit is
+pushed; a local AST audit is not a hosted-check result.
+
+The six new routed UI regressions were first run against the old code and failed
+on the reported symptoms. After correction, the final results were:
+
+| Check | Result |
+| --- | --- |
+| Backend unit | 15/15 passed, five suites. |
+| Frontend unit | 38/38 passed, eight files. |
+| PostgreSQL integration | 91/91 passed, 17 suites, on a newly migrated isolated database. |
+| Trusted-HTTPS Chrome/Edge E2E | 32/32 passed on a separate isolated browser database. |
+| Audit state-swap mutation probe | Rejected specifically by the scoped before-state assertion. |
+| Quality | Root build, lint, typecheck, formatting and whitespace checks passed. |
+| CodeRabbit CLI Local | `coderabbit review --agent --uncommitted --include-untracked` completed on the final code/test snapshot with zero findings across 22 reviewed files. |
+
+Initial runs exposed a new fixture missing the recipient's role in the selected
+season; the fixture was corrected through the authorized role-assignment route.
+The existing JSDOM cancellation journey took about 5.9 seconds to render its
+steps, beyond its old five-second whole-test deadline; multi-step UI test budgets
+were adjusted without removing assertions or changing application latency targets.
+The E2E dropdown helper now dismisses an already-selected option with Escape,
+avoiding a redundant selection/close race while still clicking genuinely new
+values. The final complete reruns passed. Temporary diagnostic instrumentation
+and the failed animation-disabled experiment were removed.
+
+Ignored evidence is under `.verification/ui-review/`: `review-list-state-red.log`,
+`review-frontend-final.log`, `review-integration-final.log`, `review-e2e-final.log`,
+`review-audit-swap.log`, `review-final-checks.log` and
+`coderabbit-review-complete.jsonl`. PHASE 1 acceptance/status and the earlier
+install/load/recovery/hosted-CI evidence remain unchanged. No commit, push or PR
+merge was performed; only authorized humans may merge PRs.

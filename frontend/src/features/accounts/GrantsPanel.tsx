@@ -49,6 +49,7 @@ export function GrantsPanel({
   const tabId = useId();
   const prefix = '/accounts/' + account.id;
   const canExpand = !self && account.state === 'ACTIVE';
+  /** Prepares a replay-safe grant/revoke command for the selected account. */
   const confirm = (title: string, path: string, body?: Record<string, string>) =>
     onCommand({
       title,
@@ -58,6 +59,7 @@ export function GrantsPanel({
       description: 'Thay đổi quyền sẽ kết thúc các phiên đăng nhập hiện tại của tài khoản.',
     });
 
+  /** Opens the assignment form with the selected season and an optional preset role. */
   function addAssignment(roleCode = '') {
     onCommand({
       title: 'Thêm phân công',

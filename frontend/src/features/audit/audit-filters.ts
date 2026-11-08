@@ -49,12 +49,14 @@ export const initialFilters = {
   pageSize: '20',
 };
 
+/** Validates identifiers and Vietnam-local date bounds before serializing an audit query. */
 export function auditFilters(draft: typeof initialFilters) {
   const { actorId, objectId, from, through, objectKind, actionCode, sort, pageSize } = draft;
   const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
   const identifiers = { actorId: actorId.trim(), objectId: objectId.trim() };
   if (Object.values(identifiers).some((value) => value && !uuid.test(value)))
     throw new Error('Mã người thực hiện và mã đối tượng phải có định dạng UUID.');
+  /** Converts a local calendar boundary to its UTC instant, optionally advancing whole days. */
   const localMidnight = (date: string, days: number) => {
     if (!date) return '';
     const at = Date.parse(date + 'T00:00:00+07:00');

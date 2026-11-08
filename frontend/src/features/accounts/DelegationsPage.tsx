@@ -82,11 +82,20 @@ export function DelegationsPage() {
   });
   const [search, setSearch] = useState('');
   const term = useSearchTerm(search);
+  const [pageTerm, setPageTerm] = useState(term);
   const [command, setCommand] = useState<AdminCommand>();
   const [detail, setDetail] = useState<Proposal>();
   const [grantDetail, setGrantDetail] = useState<Grant>();
   const [success, setSuccess] = useState(false);
-  const query = new URLSearchParams({ page: String(filter.page), ...display[tab] });
+  // A new committed term starts at page one even if the old list was paged while typing.
+  if (pageTerm !== term) {
+    setPageTerm(term);
+    setFilter({ ...filter, page: 1 });
+  }
+  const query = new URLSearchParams({
+    page: String(pageTerm === term ? filter.page : 1),
+    ...display[tab],
+  });
   if (filter.seasonId) query.set('seasonId', filter.seasonId);
   if (filter.state) query.set('state', filter.state);
   if (term) query.set('search', term);
@@ -100,7 +109,13 @@ export function DelegationsPage() {
   );
   const list = tab === 'proposals' ? proposals : grants;
   const metadata = proposals.data;
+  // Preserve the drawer during refresh, then use the authoritative result or close it.
+  if (grantDetail && grants.data && !grants.loading) {
+    const current = grants.data.items.find(({ id }) => id === grantDetail.id);
+    if (current !== grantDetail) setGrantDetail(current);
+  }
 
+  /** Opens a command after dismissing detail drawers and stale success feedback. */
   function open(action: AdminCommand) {
     setSuccess(false);
     setDetail(undefined);
@@ -118,9 +133,11 @@ export function DelegationsPage() {
     }
   }
 
+  /** Binds confirmation to the proposal's current revision and content version. */
   function basis(row: Proposal) {
     return { revision: row.revision, versionId: row.currentVersion.id, description: describe(row) };
   }
+  /** Reloads the selected proposal within its authorized season for conflict review. */
   async function readProposal(row: Proposal) {
     return readRow<Proposal>('/delegation-proposals?seasonId=' + row.season.id, row.id);
   }
@@ -238,7 +255,9 @@ export function DelegationsPage() {
       }),
     });
   }
+  /** Prepares revocation from the selected grant's current state, interval and revision. */
   function revoke(row: Grant) {
+    /** Describes the exact grant basis that the user must review before revocation. */
     const basis = (item: Grant) => ({
       revision: item.revision,
       description: [

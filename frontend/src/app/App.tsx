@@ -3,6 +3,7 @@ import viVN from 'antd/locale/vi_VN';
 import { SessionProvider } from '../shared/http/session-context';
 import { FoundationRouter } from './router';
 
+/** Provides the shared Vietnamese theme and session context for all application routes. */
 export function App() {
   return (
     <ConfigProvider

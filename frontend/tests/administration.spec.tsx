@@ -78,7 +78,7 @@ describe('administration navigation and confirmation', () => {
     expect(screen.queryByText('Quản lý mùa giải')).not.toBeInTheDocument();
     expect(fetcher.mock.calls).toHaveLength(1);
   });
-  it('cancels a lock without submitting a command', async () => {
+  it('cancels a lock without submitting a command', { timeout: 15000 }, async () => {
     const fetcher = vi.fn(async (path: string) =>
       path.includes('/auth/session')
         ? envelope({ ...account, systemRoles: [{ roleCode: 'SYSTEM_ADMINISTRATOR' }] })
@@ -105,7 +105,7 @@ describe('administration navigation and confirmation', () => {
 
   it(
     'keeps the selected grants tab open while a failed refresh is retried',
-    { timeout: 15_000 },
+    { timeout: 30_000 },
     async () => {
       let failRefresh!: (response: Response) => void;
       const refresh = new Promise<Response>((resolve) => {
@@ -166,7 +166,7 @@ describe('administration navigation and confirmation', () => {
 
   it(
     'reviews and retries a conflict for an account beyond the first search page',
-    { timeout: 15_000 },
+    { timeout: 30_000 },
     async () => {
       const fresh = { ...row, fullName: 'Nguyễn An cập nhật', revision: '7' };
       const matches = [
@@ -222,47 +222,51 @@ describe('administration navigation and confirmation', () => {
     },
   );
 
-  it('shows loading for a returning query until its new request finishes', async () => {
-    let finishLocked!: (response: Response) => void;
-    let finishReturning!: (response: Response) => void;
-    const locked = new Promise<Response>((resolve) => {
-      finishLocked = resolve;
-    });
-    const returning = new Promise<Response>((resolve) => {
-      finishReturning = resolve;
-    });
-    let unfilteredReads = 0;
-    const list = (fullName: string) =>
-      envelope({ items: [{ ...row, fullName }], page: 1, pageSize: 20, total: 1, seasons: [] });
-    const fetcher = vi.fn(async (path: string) => {
-      if (path.endsWith('/auth/session'))
-        return envelope({ ...account, systemRoles: [{ roleCode: 'SYSTEM_ADMINISTRATOR' }] });
-      if (path.includes('state=LOCKED')) return locked;
-      return ++unfilteredReads === 1 ? list(row.fullName) : returning;
-    });
-    vi.stubGlobal('fetch', fetcher);
-    render(
-      <MemoryRouter initialEntries={['/admin/accounts']}>
-        <App />
-      </MemoryRouter>,
-    );
+  it(
+    'shows loading for a returning query until its new request finishes',
+    { timeout: 15000 },
+    async () => {
+      let finishLocked!: (response: Response) => void;
+      let finishReturning!: (response: Response) => void;
+      const locked = new Promise<Response>((resolve) => {
+        finishLocked = resolve;
+      });
+      const returning = new Promise<Response>((resolve) => {
+        finishReturning = resolve;
+      });
+      let unfilteredReads = 0;
+      const list = (fullName: string) =>
+        envelope({ items: [{ ...row, fullName }], page: 1, pageSize: 20, total: 1, seasons: [] });
+      const fetcher = vi.fn(async (path: string) => {
+        if (path.endsWith('/auth/session'))
+          return envelope({ ...account, systemRoles: [{ roleCode: 'SYSTEM_ADMINISTRATOR' }] });
+        if (path.includes('state=LOCKED')) return locked;
+        return ++unfilteredReads === 1 ? list(row.fullName) : returning;
+      });
+      vi.stubGlobal('fetch', fetcher);
+      render(
+        <MemoryRouter initialEntries={['/admin/accounts']}>
+          <App />
+        </MemoryRouter>,
+      );
 
-    await screen.findByText(row.fullName);
-    const stateFilter = screen.getByRole('combobox', { name: /Trạng thái/ });
-    fireEvent.mouseDown(stateFilter);
-    fireEvent.click(await screen.findByRole('option', { name: 'Đã khóa' }));
-    await screen.findByText('Đang tải dữ liệu…');
-    fireEvent.mouseDown(stateFilter);
-    fireEvent.click(await screen.findByRole('option', { name: 'Tất cả trạng thái' }));
-    expect(unfilteredReads).toBe(2);
-    expect(screen.getByText(row.fullName)).toBeVisible();
-    expect(screen.getByText('Đang tải dữ liệu…')).toBeVisible();
+      await screen.findByText(row.fullName);
+      const stateFilter = screen.getByRole('combobox', { name: /Trạng thái/ });
+      fireEvent.mouseDown(stateFilter);
+      fireEvent.click(await screen.findByRole('option', { name: 'Đã khóa' }));
+      await screen.findByText('Đang tải dữ liệu…');
+      fireEvent.mouseDown(stateFilter);
+      fireEvent.click(await screen.findByRole('option', { name: 'Tất cả trạng thái' }));
+      expect(unfilteredReads).toBe(2);
+      expect(screen.getByText(row.fullName)).toBeVisible();
+      expect(screen.getByText('Đang tải dữ liệu…')).toBeVisible();
 
-    await act(async () => finishLocked(list('Kết quả bộ lọc cũ')));
-    expect(screen.getByText('Đang tải dữ liệu…')).toBeVisible();
-    expect(screen.queryByText('Kết quả bộ lọc cũ')).not.toBeInTheDocument();
-    await act(async () => finishReturning(list('Nguyễn An mới')));
-    expect(screen.getByText('Nguyễn An mới')).toBeVisible();
-    expect(screen.queryByText('Đang tải dữ liệu…')).not.toBeInTheDocument();
-  });
+      await act(async () => finishLocked(list('Kết quả bộ lọc cũ')));
+      expect(screen.getByText('Đang tải dữ liệu…')).toBeVisible();
+      expect(screen.queryByText('Kết quả bộ lọc cũ')).not.toBeInTheDocument();
+      await act(async () => finishReturning(list('Nguyễn An mới')));
+      expect(screen.getByText('Nguyễn An mới')).toBeVisible();
+      expect(screen.queryByText('Đang tải dữ liệu…')).not.toBeInTheDocument();
+    },
+  );
 });

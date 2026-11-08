@@ -64,6 +64,7 @@ const policies = {
 } as const;
 export type AuditAction = keyof typeof policies;
 
+/** Recognizes only actions with an explicitly owned audit payload policy. */
 export function isAuditAction(value: string): value is AuditAction {
   return Object.hasOwn(policies, value);
 }
@@ -85,6 +86,7 @@ export function auditChangeSummary(action: AuditAction, payload: Prisma.JsonValu
   return Object.keys(summary).length ? summary : null;
 }
 
+/** Validates primitive, bounded values against the action allowlist before audit append. */
 export function auditPayload(action: AuditAction, value: unknown): Prisma.InputJsonObject {
   const allowed: readonly string[] = policies[action];
   if (

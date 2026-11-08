@@ -3,20 +3,53 @@ import { administrationHarness, fixturePassword } from '../fixtures/admin-http';
 describe('account administration HTTP contract', () => {
   const harness = administrationHarness();
   it('filters live roles and literal search terms before pagination and projects real last-login metadata', async () => {
-    const { accounts } = await harness.fixtures();
+    const { accounts, seasons } = await harness.fixtures();
+    for (const [index, account] of accounts.entries())
+      await harness.observer.account.update({
+        where: { id: account.id },
+        data: { fullName: 'Ordered ' + index },
+      });
+    await harness.observer.seasonRoleAssignment.createMany({
+      data: [accounts[1], accounts[4]].map((account) => ({
+        accountId: account.id,
+        roleCode: 'SEASON_MANAGER',
+        seasonId: seasons[0].id,
+        grantedBy: accounts[0].id,
+        grantedAt: new Date('2026-11-05T03:00:00Z'),
+      })),
+    });
     const admin = await harness.login(accounts[0].username);
     const roles = await harness.observer.seasonRoleAssignment.findMany({
       where: { roleCode: 'SEASON_MANAGER', revokedAt: null },
     });
-    const result = await admin.get('/accounts?roleCode=SEASON_MANAGER').expect(200);
-    expect(result.body.data.items.map((row: { id: string }) => row.id).sort()).toEqual(
-      [...new Set(roles.map((role) => role.accountId))].sort(),
-    );
-    expect(result.body.data.total).toBe(result.body.data.items.length);
+    const first = await admin
+      .get('/accounts?roleCode=SEASON_MANAGER&sort=fullName:asc&pageSize=2')
+      .expect(200);
+    const second = await admin
+      .get('/accounts?roleCode=SEASON_MANAGER&sort=fullName:asc&pageSize=2&page=2')
+      .expect(200);
+    expect(first.body.data.total).toBe(3);
+    expect(second.body.data.total).toBe(3);
+    expect(first.body.data.items.map((row: { id: string }) => row.id)).toEqual([
+      accounts[1].id,
+      accounts[2].id,
+    ]);
+    expect(second.body.data.items.map((row: { id: string }) => row.id)).toEqual([accounts[4].id]);
+    expect(
+      [...first.body.data.items, ...second.body.data.items]
+        .map((row: { id: string }) => row.id)
+        .sort(),
+    ).toEqual([...new Set(roles.map((role) => role.accountId))].sort());
+    harness.clock.set(new Date('2026-11-05T03:01:00Z'));
+    await harness.login(accounts[0].username);
     const self = await admin
       .get('/accounts?search=' + encodeURIComponent(accounts[0].username))
       .expect(200);
-    expect(self.body.data.items[0].lastLoginAt).toEqual(expect.any(String));
+    expect(self.body.data.items[0].lastLoginAt).toBe('2026-11-05T03:01:00.000Z');
+    const neverLoggedIn = await admin
+      .get('/accounts?search=' + encodeURIComponent(accounts[3].username))
+      .expect(200);
+    expect(neverLoggedIn.body.data.items[0].lastLoginAt).toBeNull();
     expect((await admin.get('/accounts?search=%25').expect(200)).body.data.total).toBe(0);
     await admin.get('/accounts?roleCode=UNKNOWN').expect(400);
   });

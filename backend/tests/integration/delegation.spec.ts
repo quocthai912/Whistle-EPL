@@ -49,6 +49,77 @@ describe('delegation proposal and grant contract', () => {
       .get('/delegation-proposals?search=test')
       .expect(403);
   });
+  it('returns ordered unique recipients from only the authorized grant scope, independently of pagination', async () => {
+    const {
+      accounts: [first, second, proposer, recipient, other],
+      seasons: [season],
+    } = await harness.fixtures();
+    const admin = await harness.login(first.username);
+    await admin
+      .send('/accounts/' + second.id + '/role-assignments', {
+        expectedRevision: '1',
+        roleCode: 'SEASON_MANAGER',
+        seasonId: season.id,
+      })
+      .expect(201);
+    const manager = await harness.login(proposer.username);
+    const otherManager = await harness.login(second.username);
+    await admin
+      .send('/accounts/' + other.id + '/role-assignments', {
+        expectedRevision: '1',
+        roleCode: 'RESULTS_OFFICER',
+        seasonId: season.id,
+      })
+      .expect(201);
+    /** Creates a valid scheduled grant through the same separated proposal/approval flow as production. */
+    async function grantFor(
+      owner: Awaited<ReturnType<typeof harness.login>>,
+      content: { recipientId: string; actionCode: string; startsAt: string; endsAt: string },
+    ) {
+      const draft = (
+        await owner
+          .send('/delegation-proposals', {
+            ...content,
+            seasonId: season.id,
+            startMode: 'SCHEDULED',
+            reason: 'Hỗ trợ nghiệp vụ',
+          })
+          .expect(201)
+      ).body.data;
+      const path = '/delegation-proposals/' + draft.id;
+      const pending = (
+        await owner
+          .send(path + '/submit', { versionId: draft.versionId, expectedRevision: draft.revision })
+          .expect(200)
+      ).body.data;
+      await admin
+        .send(path + '/grant', { versionId: pending.versionId, expectedRevision: pending.revision })
+        .expect(201);
+    }
+    for (const day of [6, 8])
+      await grantFor(manager, {
+        recipientId: recipient.id,
+        actionCode: 'APPROVE_SCHEDULE_ADJUSTMENT',
+        startsAt: `2026-11-0${day}T03:00:00Z`,
+        endsAt: `2026-11-0${day + 1}T03:00:00Z`,
+      });
+    await grantFor(otherManager, {
+      recipientId: other.id,
+      actionCode: 'PREPARE_OFFICIAL_RESULT_CORRECTION',
+      startsAt: '2026-11-06T03:00:00Z',
+      endsAt: '2026-11-07T03:00:00Z',
+    });
+    const all = (await admin.get('/delegation-grants?pageSize=1').expect(200)).body.data;
+    expect(all.items).toHaveLength(1);
+    expect(all.total).toBe(3);
+    expect(all.recipients.map((person: { id: string }) => person.id)).toEqual([
+      recipient.id,
+      other.id,
+    ]);
+    const own = (await manager.get('/delegation-grants?pageSize=1').expect(200)).body.data;
+    expect(own.total).toBe(2);
+    expect(own.recipients.map((person: { id: string }) => person.id)).toEqual([recipient.id]);
+  });
   it('enforces three-person grant separation even when proposer and recipient also administer accounts', async () => {
     const {
       accounts: [independent, , proposer, recipient],
@@ -93,6 +164,11 @@ describe('delegation proposal and grant contract', () => {
     expect(matching.recipients).toEqual(
       expect.arrayContaining([expect.objectContaining({ id: recipient.id })]),
     );
+    const spaced = await administrator
+      .get('/delegation-grants?search=' + encodeURIComponent('lịch  \t thi đấu'))
+      .expect(200);
+    expect(spaced.body.data.total).toBe(1);
+    expect(spaced.body.data.items[0].id).toBe(matching.items[0].id);
     expect(
       (await administrator.get('/delegation-grants?search=%25').expect(200)).body.data.total,
     ).toBe(0);

@@ -188,6 +188,7 @@ export class AccountsService {
     );
   }
 
+  /** Updates the verified account name and records its before/after values under revision checks. */
   edit(request: Request, id: string, input: EditAccountDto) {
     const fullName = businessText(input.fullName, 'name');
     return this.execution.run(
@@ -214,6 +215,7 @@ export class AccountsService {
     );
   }
 
+  /** Issues a temporary credential, requires a later password change and invalidates existing sessions. */
   reset(request: Request, id: string, input: ResetAccountDto) {
     return this.execution.run(
       request,

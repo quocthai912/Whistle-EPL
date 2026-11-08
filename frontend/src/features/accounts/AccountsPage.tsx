@@ -37,6 +37,7 @@ export function AccountsPage() {
   const { client, session } = useSession();
   const [search, setSearch] = useState('');
   const term = useSearchTerm(search);
+  const [pageTerm, setPageTerm] = useState(term);
   const [filters, setFilters] = useState({
     search: '',
     state: '',
@@ -48,8 +49,13 @@ export function AccountsPage() {
   const [selected, setSelected] = useState<string>();
   const [command, setCommand] = useState<AdminCommand>();
   const [success, setSuccess] = useState(false);
+  // Bind pagination to the committed term, including navigation during debounce.
+  if (pageTerm !== term) {
+    setPageTerm(term);
+    setFilters({ ...filters, page: 1 });
+  }
   const query = new URLSearchParams({
-    page: String(filters.page),
+    page: String(pageTerm === term ? filters.page : 1),
     sort: filters.sort,
     pageSize: filters.pageSize,
   });
@@ -58,7 +64,9 @@ export function AccountsPage() {
   if (filters.roleCode) query.set('roleCode', filters.roleCode);
   const list = useAdminList<AccountList>('/accounts?' + query);
   const account = list.data?.items.find(({ id }) => id === selected);
+  /** Dismisses the pending account command without issuing a request. */
   const close = () => setCommand(undefined);
+  /** Closes a completed command and reloads authoritative account data. */
   const onSuccess = () => {
     close();
     setSuccess(true);

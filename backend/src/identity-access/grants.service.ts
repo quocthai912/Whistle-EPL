@@ -216,6 +216,7 @@ export class GrantsService {
     });
   }
 
+  /** Resolves grant boundaries, invalidates sessions and advances the affected account revision. */
   private async changeAuthority(
     context: TransactionContext,
     id: string,

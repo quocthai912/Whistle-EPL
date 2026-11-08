@@ -50,6 +50,7 @@ const transitions = {
   reject: { from: ['PENDING'], to: 'REJECTED', action: 'DELEGATION_REJECTED' },
 } as const;
 type Transition = keyof typeof transitions;
+/** Restricts a season relation to the caller's current direct manager assignment. */
 const managerWhere = (accountId: string) => ({ accountId, roleCode: manager, revokedAt: null });
 const versionFields = {
   id: true,
@@ -178,12 +179,9 @@ export class DelegationProposalService {
       PREPARE_OFFICIAL_RESULT_CORRECTION:
         'Chuẩn bị/chỉnh sửa đề xuất điều chỉnh kết quả chính thức',
     };
+    const labelSearch = businessText(values.search ?? '', 'name', false).toLocaleLowerCase('vi-VN');
     const matchingActions = Object.entries(actionLabels)
-      .filter(([, label]) =>
-        label
-          .toLocaleLowerCase('vi-VN')
-          .includes((values.search ?? '').normalize('NFC').trim().toLocaleLowerCase('vi-VN')),
-      )
+      .filter(([, label]) => label.toLocaleLowerCase('vi-VN').includes(labelSearch))
       .map(([code]) => code);
     return this.execution.run(
       request,
@@ -246,24 +244,24 @@ export class DelegationProposalService {
           state: grantState(grant, now),
           basis: approvedVersion.reason,
         }));
-        const recipientOptions = await db.delegationGrant.findMany({
-          where: scope,
-          distinct: ['recipientId'],
-          select: { recipient: { select: person } },
-          orderBy: { recipient: { fullName: 'asc' } },
+        const recipients = await db.account.findMany({
+          where: { receivedGrants: { some: scope } },
+          select: person,
+          orderBy: [{ fullName: 'asc' }, { id: 'asc' }],
         });
         return {
           items,
           page,
           pageSize,
           total,
-          recipients: recipientOptions.map(({ recipient }) => recipient),
+          recipients,
         };
       },
       { check: this.requireReader },
     );
   }
 
+  /** Creates a manager-owned proposal and its initial editable content version atomically. */
   create(request: Request, input: CreateDelegationDto) {
     const content = delegationContent(input);
     const seasonId = uuid(input.seasonId);
@@ -307,6 +305,7 @@ export class DelegationProposalService {
     );
   }
 
+  /** Updates a draft or creates a successor to returned content while preserving its prior audit basis. */
   edit(request: Request, id: string, input: EditDelegationDto) {
     const content = delegationContent(input);
     return this.execution.run(
@@ -406,6 +405,7 @@ export class DelegationProposalService {
     );
   }
 
+  /** Approves the submitted version under person-separation, eligibility and interval checks. */
   grant(request: Request, id: string, input: VersionDto) {
     const versionId = uuid(input.versionId);
     return this.execution.run(
@@ -520,6 +520,7 @@ export class DelegationProposalService {
     );
   }
 
+  /** Ends a live or scheduled delegation through a revision-bound, replay-safe command. */
   revoke(request: Request, id: string, input: RevocationDto) {
     const reason = businessText(input.reason, 'reason');
     return this.execution.run(
@@ -673,6 +674,7 @@ export class DelegationProposalService {
     return { startsAt, endsAt: version.endsAt };
   }
 
+  /** Discovers existing participant locks before the transaction's authorization recheck. */
   private async existingAccounts(db: Prisma.TransactionClient, ids: string[]) {
     return (await db.account.findMany({ where: { id: { in: ids } }, select: { id: true } })).map(
       ({ id }) => accountLock(id),
@@ -697,6 +699,7 @@ export class DelegationProposalService {
     ];
   }
 
+  /** Advances the proposal revision and update time with any changed current-version reference. */
   private advance(
     context: TransactionContext,
     proposal: DelegationCase,
@@ -741,6 +744,7 @@ export class DelegationProposalService {
     });
   }
 
+  /** Returns the safe identifiers and revision needed for the next proposal command. */
   private result(proposal: DelegationCase, version: DelegationVersion) {
     return {
       id: proposal.id,

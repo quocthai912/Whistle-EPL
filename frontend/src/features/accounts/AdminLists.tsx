@@ -69,6 +69,7 @@ export function ListFeedback({
   if (empty) return <p role="status">Chưa có dữ liệu phù hợp.</p>;
   return null;
 }
+/** Displays server-counted page bounds and offers valid previous/next navigation. */
 export function Pagination({
   data,
   change,

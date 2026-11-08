@@ -100,6 +100,11 @@ test('checks direct navigation and administrator cancellation, account creation 
   await expect(page.getByText(/trong tổng số 1 kết quả/)).toBeVisible();
   await selectOption(page, 'Vai trò', 'Phụ trách lập lịch');
   await expect(row).toBeVisible();
+  await selectOption(page, 'Vai trò', 'Phụ trách kết quả');
+  await expect(page.getByText('Chưa có dữ liệu phù hợp.', { exact: true })).toBeVisible();
+  await expect(row).toHaveCount(0);
+  await selectOption(page, 'Vai trò', 'Phụ trách lập lịch');
+  await expect(row).toBeVisible();
   const stateMenu = await openOptions(page, 'Trạng thái', true);
   await expect(page.getByRole('option', { name: 'Đã khóa', exact: true })).toBeVisible();
   await stateMenu.getByRole('option').last().hover();
