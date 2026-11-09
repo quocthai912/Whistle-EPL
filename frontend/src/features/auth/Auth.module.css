@@ -20,17 +20,22 @@
 .page p {
   margin: 0;
 }
+.header,
+.footer {
+  background:
+    linear-gradient(90deg, #0000001f, transparent 22%, transparent 78%, #0000001f),
+    linear-gradient(110deg, #1f3e67 0%, #262857 35%, #5c3a8b 100%);
+}
 .header {
   flex-shrink: 0;
   min-height: 64px;
-  background: #111536;
   color: white;
   padding: 14px 32px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 24px;
-  border-bottom: 1px solid #ffffff1a;
+  border-bottom: 1px solid #ffffff20;
 }
 .brand {
   display: flex;
@@ -60,13 +65,27 @@
   font-weight: 500;
 }
 .header a {
-  color: #ffffffcc;
+  color: white;
   text-decoration: none;
   font-weight: 500;
   font-size: 14px;
 }
 .header a:hover {
   color: white;
+}
+.header .brand small {
+  color: #e1e3f0;
+}
+.header .logout {
+  color: white;
+  background: #ffffff24;
+  border: 1px solid #ffffff20;
+}
+.page .header .logout:not(:disabled):hover,
+.page .header .logout:not(:disabled):focus-visible {
+  color: white;
+  background: #ffffff36;
+  border-color: #ffffff66;
 }
 .main {
   flex: 1;
@@ -283,12 +302,11 @@
 }
 .footer {
   flex-shrink: 0;
-  background: #111536;
-  color: #ffffff99;
+  color: #e1e3f0;
   padding: 10px 24px;
   font-size: 12px;
   text-align: center;
-  border-top: 1px solid #ffffff1a;
+  border-top: 1px solid #ffffff20;
 }
 .formPanel .error,
 .formPanel .notice,

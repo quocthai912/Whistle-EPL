@@ -24,28 +24,17 @@
   justify-content: space-between;
   gap: 20px;
   padding: 10px 24px;
-  color: white;
-  background: linear-gradient(105deg, #111536, #171032 65%, #311448);
-  isolation: isolate;
-  border-bottom: 1px solid #ffffff26;
-  box-shadow: 0 2px 8px #17213b1a;
+  color: #17213b;
+  background: #f6f8fc;
+  border-bottom: 1px solid var(--line);
+  box-shadow: 0 1px 4px #17213b08;
   z-index: 1;
-}
-.topbar::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background:
-    linear-gradient(100deg, #0b102a80, #15103440 48%, #15103499),
-    url('/images/Whistle-EPL-Background-Header.svg') center / 100% 180px no-repeat;
-  z-index: -1;
-  pointer-events: none;
 }
 .brand {
   display: flex;
   align-items: center;
   gap: 11px;
-  color: white;
+  color: #17213b;
   text-decoration: none;
   font-size: 17px;
   font-weight: 700;
@@ -57,11 +46,12 @@
   border-radius: 50%;
   object-fit: contain;
   background: white;
+  border: 1px solid var(--line);
   padding: 2px;
 }
 .brand small {
   display: block;
-  color: #c3c9db;
+  color: #65718a;
   font-size: 12.5px;
   font-weight: 400;
   margin-top: 2px;
@@ -87,19 +77,19 @@
 .accountName small {
   display: block;
   font-size: 12px;
-  color: #c3c9db;
+  color: #65718a;
 }
-.topbar button {
-  color: white;
-  background: #ffffff0c;
-  border-color: #ffffff1f;
+.topbar .account button {
+  color: #552cb6;
+  background: white;
+  border: 1px solid #ddd6ef;
   min-height: 32px;
   font-size: 13.5px;
 }
-.topbar button:hover:not(:disabled) {
-  color: white;
-  background: #ffffff1f;
-  border-color: #ffffff66;
+.topbar .account button:hover:not(:disabled) {
+  color: #452196;
+  background: #eee8fb;
+  border-color: #c4b4e9;
 }
 .sidebar {
   grid-row: 2 / 4;
@@ -834,16 +824,6 @@
 }
 .accountTable td {
   overflow-wrap: anywhere;
-}
-.topbar .account button {
-  background: #ffffff0c;
-  color: white;
-  border-color: #ffffff24;
-}
-.topbar .account button:hover:not(:disabled) {
-  background: #ffffff1f;
-  color: white;
-  border-color: #ffffff66;
 }
 .permissionCard > .badge {
   justify-self: start;
