@@ -107,6 +107,8 @@ Organizing Committee / Season Manager.
 
 ## UC07
 
+Club discontinuation/resumption follows [D099](../business.md#d099---club-and-stadium-discontinuation-with-controlled-resumption), under the existing shared Club master-management authority.
+
 Create-only XLSX import and authorized master-list export follow [D078](../business.md#d078---xlsx-create-only-import-and-controlled-export).
 
 **Manage clubs**
@@ -624,7 +626,7 @@ Read this with the existing route/DTO map and [shared D096 contract](../design/a
 |---|---|---|
 | UC05 | Create-Season grant for creation; assigned Season Manager for seasonal management and lifecycle proposals; independent assigned Season Manager for close/reopen approval | R for create/close/reopen. Creation returns permitted creation acknowledgement, not automatic seasonal access. D074 readiness/frozen-source checks and D076 no-effective-regulation gates; lifecycle/audit change atomically. |
 | UC06 | Assigned Season Manager prepares/edits; D019-authorized delegated officer may prepare/edit only. Independent assigned Season Manager approves/cancels/replaces | R for approval/cancellation/replacement. Exact submitted version, editor exclusion, current/future slot, freeze/compatibility and D089 due activation checks; no approved-content PATCH. |
-| UC07 | Separately granted shared Club master-management authority | D034-D041, D036/D058/D059/D092 field/correction basis. Current-logo actions use D094 controlled media and D030 final checks; import/export follows D078/D091 same authority, not public bulk access. |
+| UC07 | Separately granted shared Club master-management authority | D034-D041, D036/D058/D059/D092 field/correction basis and D099 discontinuation/resumption. Current-logo actions use D094 controlled media and D030 final checks; import/export follows D078/D091 same authority, not public bulk access. |
 | UC08 | Registration Officer prepares/receives/reviews; independent assigned Season Manager approves the club application or receipt exception | R for approval/exception. Exact immutable received/submitted version, D053 timing/exception, D055 supplementation and case uniqueness; accepted pointer/snapshot/audit commit together. |
 | UC09 | Separately granted shared Player master-management authority | D034-D041/D036/D058/D059/D092 checks; portrait uses D069/D094, not club-management authority. Master update does not silently revise confirmed registration/report facts. |
 | UC10 | Assigned Registration Officer for receipt/validity/ordinary interval/transfer/plans; independent assigned Season Manager for D057 correction and D053 receipt-exception approval | R for validity confirmation, transfer/plan disposition and approved correction/exception. Lock affected seasons/player/clubs; validate every affected interval/quota/shirt, club participation and exact regulation/evidence basis. Paired transfer versions/pointers and audit commit together; no extra manager approval on initial validity. |
