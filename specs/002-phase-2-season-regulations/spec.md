@@ -1,3 +1,7 @@
+<!-- coderabbit-ai-generated:v1 -->
+
+<!-- coderabbit-ai-generated-section:v1:cd1fe2e228bee4f52514b07204b8d425fccdc58b2076b24dc89b0f292915e18b -->
+
 # Feature Specification: PHASE 2 - Seasons, Catalogs, and Regulations
 
 **Feature Branch**: `docs/phase-2-architecture-and-specification`
@@ -463,7 +467,9 @@ Do not build later workflows or fabricate operational readiness.
   identities/references/approved content/snapshots remain intact except authorized changes;
   tested seasonal changes do not affect other seasons.
 - **SC-003**: Every invalid/self-approved/cross-season/stale/failed decision test preserves prior
-  state; concurrent approval/activation leaves at most one waiting/current version and no duplicate effects.
+  state; concurrent approval/activation leaves at most one current version and at most one waiting
+  version per season, independently. One current version and one approved future waiting version
+  may coexist; no duplicate effects occur.
 - **SC-004**: All immediate/future/boundary/missed-scan/restart cases expose the correct basis or
   explicit failure; none commit stale-rule work or silently shift approved effectivity.
 - **SC-005**: At least 10 unauthorized scenarios across screens/direct requests, season/shared
@@ -549,3 +555,5 @@ performed direct PDF comparison. Current Context owners retain policy.
 | FR-039-FR-042 | [D030/D084/D085/D095/D096](../../context/design/architecture.md#d096---api-execution-synchronized-csrf-and-transaction-contracts), [D094 audit](../../context/use-cases/administration.md#audit-access-and-retention---d094); BM-02/BM-04-BM-06 pp.23-24, AT-02-AT-04 p.32 | All stories; SC-002-SC-006/SC-008/SC-009 |
 | FR-043-FR-045 | [Quality](../../context/quality.md): TD-02-TD-04 p.29, TT-01/TT-02/TT-04 pp.19-20, HQ-01/HQ-03; D024/D086/D092 | All stories; SC-001/SC-010/SC-011 |
 | FR-046-FR-048 | [Constitution I-V](../../.specify/memory/constitution.md), [D097](../../context/quality.md#d097-test-season-and-measurement-baseline), D090/D098; [Phase ledger](../../context/progress-checker.md#phase-2---seasons-catalogs-and-regulations) | All stories; SC-001-SC-012 |
+
+<!-- /coderabbit-ai-generated:v1 -->

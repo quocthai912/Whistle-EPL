@@ -1,3 +1,7 @@
+<!-- coderabbit-ai-generated:v1 -->
+
+<!-- coderabbit-ai-generated-section:v1:d221bc72b4f8dd8d1b0c4dc21ab540b834a3e346ee495aecfe0918f27e23d1ec -->
+
 # PHASE 2 REST Contract
 
 **Status**: Contract approved with the Plan on 2026-11-10; no endpoints are implemented by this document.
@@ -121,9 +125,18 @@ Mutation orchestration performs its final due check in the caller-owned season t
 It is accepted on creation and name corrections; it does not widen the editable master fields
 or waive revision and correction requirements.
 If matching names exist without a current acknowledgement, return 409 BASIS_CHANGED with
-permitted candidate labels and the warning, not a successful save. Recheck the candidate set
-at final recording; changed candidates require fresh review. This reserves no identity and
-never permits duplicate codes or automatic merging. No separate preview workflow is added.
+permitted candidate labels and the warning, not a successful save. All Club and Stadium creates
+and renames must acquire a common, mutually exclusive transaction-scoped guard keyed by master type and normalized
+name (using the duplicate-name comparison normalization). Creates lock the destination name;
+renames lock both old and destination names in deterministic key order. Acquire these guards
+in the system/code-creation guard tier before object locks, following the execution contract.
+Even an absent name must have a guard; locking existing candidate rows alone is insufficient.
+Hold guards through commit/rollback. Under Read Committed, query candidates afresh after
+acquiring the guards and recheck the candidate set at final recording; exclude the renamed
+entity itself. Changed candidates require fresh review with 409 BASIS_CHANGED. Thus concurrent
+creates/renames of the same normalized name cannot both bypass duplicate-name review.
+This reserves no identity and never permits duplicate codes or automatic merging.
+No separate preview workflow is added.
 
 ### Logos
 
@@ -159,3 +172,5 @@ UC04 remains administrator metadata search. New business history routes authoriz
 object payloads. Existing admin history must continue to hide business payload/reasons unless
 the viewer also has that object's current read authority. No audit export, bulk data exchange,
 generic permissions CRUD or activation-over-HTTP operator bypass is introduced.
+
+<!-- /coderabbit-ai-generated:v1 -->

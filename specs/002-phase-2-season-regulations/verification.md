@@ -1,3 +1,7 @@
+<!-- coderabbit-ai-generated:v1 -->
+
+<!-- coderabbit-ai-generated-section:v1:37d0bbeb85cff356e21d4c9a6ae59d128fd9f5c8251ed603d9c9a7f286bfa1e0 -->
+
 # PHASE 2 Verification Strategy
 
 **Status**: Required future verification, not executed results. Normative thresholds remain
@@ -12,7 +16,7 @@ No extra coverage percentage or universal TDD is introduced.
 |---|---|---|
 | V01 Season shell/access | FR-001-FR-005; US1; SC-001/002/005/008 | Real create without prior role, no implicit access, independent staffing; invalid/duplicate/stale updates; Closed metadata denial through UI/direct request and closure race. PHASE 2. |
 | V02 Full regulation decisions | FR-006-FR-016; US2; SC-001/003/004 | Incomplete drafts, exact immutable submission/successors, all-editor exclusion, complete scalar/child validation, catalog interpretation, freeze/compatibility cases with declared source facts. PHASE 2; later owners confirm actual consumption. |
-| V03 Effectivity | FR-017-FR-023; US3; SC-003/004/009 | Immediate/future/exact deadline; one waiting/current; atomic cancel/replace; late approval; business blocked vs technical failure; startup/catch-up/request/job race and maintenance. PHASE 2. |
+| V03 Effectivity | FR-017-FR-023; US3; SC-003/004/009 | Immediate/future/exact deadline; at most one current and at most one waiting per season independently, allowing both to coexist; atomic cancel/replace; late approval; business blocked vs technical failure; startup/catch-up/request/job race and maintenance. PHASE 2. |
 | V04 Masters/corrections | FR-024-FR-026; US4/US5; SC-001/002/005/009 | Required fields/code normalization, accent/case name warning and review, correction basis/impact projection, intact references/snapshots, cross-season reuse. PHASE 2; owning later correction flows remain later. |
 | V05 D099 | FR-027-FR-029; US6; SC-002/006/009 | Same-identity discontinue/resume cycles, reasons/atomic audit, no revived outcomes, new-use race vs approved commitment. PHASE 2 tests guard ports; later owners test actual new commitments. |
 | V06 Media/recovery | FR-030-FR-034; US4; SC-005/007/009 | Actual 20-club logos, byte/type/decode/animation/dimension boundaries, owner/read access/current reference/no-store, failed switch/storage, orphans/cleanup/backup races, same-set restoration. PHASE 2 available-data allocation. |
@@ -39,7 +43,12 @@ an inherited seam. Tasks will allocate their creation after Plan review.
 - backend/tests/integration/phase-2-regulations.spec.ts: V02/V03 with real PostgreSQL locks,
   exact version/pointers, waiting-slot constraints, controlled time and final authority.
 - backend/tests/integration/phase-2-masters.spec.ts: V04/V05, concurrent code/review/availability,
-  explicit historical preservation and new-use port synchronization.
+  explicit historical preservation and new-use port synchronization. For both Clubs and Stadiums,
+  use deterministic barriers under Read Committed for create/create, rename/rename and
+  create/rename targeting the same normalized name (including case/accent variants and initially
+  absent candidates). Verify shared name-guard serialization, a fresh candidate query after
+  waiting and final recheck: after one commit, the other cannot save without reviewing the
+  changed candidates; stale acknowledgements return BASIS_CHANGED until fresh review.
 - backend/tests/integration/phase-2-media.spec.ts: V06, actual protected files/reference/audit,
   authorized bytes, failed switch and cleanup/retained-set coordination.
 - backend/tests/integration/phase-2-security.spec.ts: V08 receipt/action schemas, creation replay,
@@ -127,3 +136,5 @@ when execution occurs, not prefilled with invented passes by this Plan.
 Full D090 600-player, 10-season/3,800-match, TD-01 5-users x 4-trials, XLSX >=100-record,
 integrated reporting and complete BM-07 recovery remain with owning later Phases. PHASE 2
 retains applicable current targets and its contribution; this allocation waives none of them.
+
+<!-- /coderabbit-ai-generated:v1 -->

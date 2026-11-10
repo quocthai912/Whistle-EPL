@@ -1,3 +1,7 @@
+<!-- coderabbit-ai-generated:v1 -->
+
+<!-- coderabbit-ai-generated-section:v1:519bea94c4487b9fb74f19466675294349b84c7fb9b62dc42b576ac3d9e73678 -->
+
 # PHASE 2 Validation Guide
 
 **Status**: Future validation/run guide after approved Tasks are implemented. No checks below
@@ -34,8 +38,28 @@ already exist, but their new PHASE 2 suite/schema behavior is an implementation 
 pnpm install --frozen-lockfile
 pnpm db:validate
 pnpm db:generate
-pnpm db:migrate
-pnpm db:status
+# Supply $isolatedRestoreDatabaseUrl from protected configuration for the separate
+# isolated restore target; TEST_DATABASE_URL and E2E_TEST_DATABASE_URL are distinct.
+$originalDatabaseUrl = $env:DATABASE_URL
+try {
+  $env:DATABASE_URL = $env:TEST_DATABASE_URL
+  pnpm db:migrate
+  pnpm db:status
+  $env:DATABASE_URL = $env:E2E_TEST_DATABASE_URL
+  pnpm db:migrate
+  pnpm db:status
+  $env:DATABASE_URL = $isolatedRestoreDatabaseUrl
+  pnpm db:migrate
+  pnpm db:status
+} finally {
+  if ($null -eq $originalDatabaseUrl) {
+    Remove-Item Env:DATABASE_URL -ErrorAction SilentlyContinue
+  } else {
+    $env:DATABASE_URL = $originalDatabaseUrl
+  }
+}
+# DATABASE_URL is now restored/unset before any tests. The isolation guard must
+# validate TEST_DATABASE_URL/E2E_TEST_DATABASE_URL against the operational target.
 pnpm verify:native
 pnpm verify:client
 pnpm lint
@@ -142,3 +166,5 @@ passing report from this guide or mark later integrated/BM-07 criteria complete.
 Plan review must precede Tasks generation. Final approved Tasks receive exactly one GitHub
 Issue each under the issue-tracker conventions, after cross-artifact analysis. Application
 implementation, commit/push/PR and PHASE 3 remain unauthorized at this stage.
+
+<!-- /coderabbit-ai-generated:v1 -->
