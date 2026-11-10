@@ -6,6 +6,8 @@ Current UC flows retain source codes/pages and incorporate explicitly approved r
 
 ## UC12
 
+Stadium discontinuation/resumption follows [D099](../business.md#d099---club-and-stadium-discontinuation-with-controlled-resumption), under the existing shared Stadium master-management authority. UC14 retains ownership of postponement and stadium changes.
+
 Create-only XLSX import and authorized stadium-list export follow [D078](../business.md#d078---xlsx-create-only-import-and-controlled-export).
 
 **Manage stadiums**
@@ -315,7 +317,7 @@ Read this with the existing route/DTO map and [shared D096 contract](../design/a
 
 | UC | Authority and permitted action family | Final state/scope checks and atomic effects |
 |---|---|---|
-| UC12 | Separately granted shared Stadium master-management authority | D034/D036/D058/D059/D092; preserve historical references. Dates/occupancy remain UC13/UC14 scope. |
+| UC12 | Separately granted shared Stadium master-management authority | D034/D036/D058/D059/D092 and D099 discontinuation/resumption; preserve historical references. Dates/occupancy remain UC13/UC14 scope. |
 | UC13 | Assigned Scheduling Officer prepares/submits; independent assigned Season Manager approves initial schedule | R for initial approval. D093 Draft-only regeneration/whole replacement, D060 structure and D061 cross-season conflict checks. Create stable Match records/initial revisions, publish complete schedule and audit in one transaction; no delegated initial approval. |
 | UC14 | Assigned Scheduling Officer prepares adjustment/postponement/return; independent assigned Season Manager or valid D019 delegated Scheduling Officer approves | R for approval/application. Exact proposal/current schedule revision, all-preparer/editor exclusion, not-started basis, D061 allocations and D067 return rules; apply entire affected set or none and retain Match UUIDs. |
 | UC15 | Public Viewer for published schedule/results; internal draft work uses its owning authorized UC13/UC14 routes | GET projections only. D032/D067 field/status/timing boundaries; unapproved proposals and unofficial scores never become public; no write endpoint or occupancy reservation. |

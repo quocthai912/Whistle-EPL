@@ -7,6 +7,13 @@ logo and background remain the artwork sources. This record describes the curren
 working tree on `refactor/phase-1-ui-refinement` and supplements the historical
 PHASE 1 acceptance evidence.
 
+**Current visual selection (2026-11-09):** Administration uses a solid light
+header matching its existing footer (`#f6f8fc`), with navy text and purple
+actions. Both authentication headers/footers use approved panel-derived gradient
+B with subtly darkened ends (blue `#1f3e67`, indigo `#262857`, purple `#5c3a8b`). Authentication panel/button artwork is retained. This
+supersedes all artwork-header crop selections recorded below; see the final
+color-selection evidence at the end of this document.
+
 Local preview readiness was verified on 2026-11-08 (Asia/Bangkok). PostgreSQL,
 backend and web were running, and `/login` and `/api/v1/ready` returned HTTP 200.
 The temporary test containers, databases, network, CA trust and credential-bearing
@@ -14,7 +21,7 @@ profiles were removed after verification.
 
 | Reference area | Delivered behavior | Executed verification |
 |---|---|---|
-| Shared administration frame | Purple navigation, artwork header, readable typography, sticky desktop sidebar/header, white content cards and footer | Desktop/tablet/mobile visual checks and navigation/access E2E |
+| Shared administration frame | Purple navigation, solid light header matching the footer, readable typography, sticky desktop sidebar/header and white content cards | Desktop/tablet/mobile visual checks and navigation/access E2E |
 | MH08 list and creation | Personnel/name/username search, live-role and status filters, refresh, advanced sorting, pagination, creation and cancellation | Real account creation, literal-search/role-filter integration, Chrome/Edge search and dropdown checks |
 | MH08 account drawer | Four tabs, profile metadata, real last successful login, edit, lock/unlock and temporary password reset | Chrome/Edge profile actions and conflict recovery |
 | MH08 seasonal roles | Season selector, four role cards, assignment and revocation, self-expansion guards | Chrome/Edge assignment/revocation and current-account safeguards |
@@ -181,7 +188,7 @@ preview was rebuilt; the existing backend/database and user data were preserved.
 
 ## Administration header artwork — 2026-11-08
 
-The Team Leader selected the original artwork for the shared administration
+At this historical milestone, the Team Leader selected the original artwork for the shared administration
 header, initially as JPEG and now as `frontend/public/images/Whistle-EPL-Background.svg`
 under the application-wide vector update below. It covers the full header width with the selected option B (right/28%, 120% image width), showing the cyan
 curves on the left and purple arcs on the right. A light darkening gradient keeps
@@ -399,3 +406,77 @@ the changed test file with zero findings. Ignored logs:
 `.verification/ui-review/audit-request-window-tests.log` and
 `.verification/ui-review/coderabbit-audit-request-window.jsonl`.
 Application code and PHASE 1 acceptance/status remain unchanged.
+
+### Expanded administration header artwork — option D, 2026-11-08
+
+The user selected option D from the expanded-artwork preview. The shared
+administration header at that milestone used `Whistle-EPL-Background-Header.svg`, derived from
+the existing artwork with `preserveAspectRatio="none"`, centered at `100% 180px`.
+This intentionally compresses the artwork vertically to show more of its curves
+inside the existing 64 px desktop header. The original SVG and authentication
+styles remain unchanged. This selection supersedes the earlier crop selections.
+
+Frontend build, formatting and whitespace checks passed. Mocked-API browser
+checks passed all 40 page/viewport combinations across Chrome and Edge for
+accounts, delegations, audit, login and password change at 1536, 1366, 1440 and
+360 px widths. Checks verified the new administration artwork and positioning,
+the original authentication artwork, no horizontal page overflow, authentication
+footers and the own-account password-change interaction. Screenshots and results
+are retained under ignored `.verification/ui-review/header-d/`; the build log is
+`.verification/ui-review/header-d-build.log`. No production data was accessed or
+changed; PHASE 1 acceptance/status is unchanged.
+
+### Approved solid header colors — 2026-11-09
+
+At this milestone, the Team Leader approved the light administration header preview and option C
+from the darker authentication palette. Accounts, delegations and audit now
+share a solid `#f6f8fc` header matching the unchanged administration footer. The
+header uses navy branding/account text, muted secondary text and a white logout
+button with purple text, border and hover treatment. Duplicate dark-header logout
+overrides and the artwork pseudo-element were removed.
+
+Login and password change at this milestone used solid `#44305f` headers/footers, white primary text,
+`#e9e2f2` secondary/footer text and `#624c7b` borders. Logout hover/focus styling
+is scoped to authentication so it remains readable on the dark header. The
+original illustration, primary-button backgrounds and layout are unchanged.
+
+After removing its only runtime reference,
+`frontend/public/images/Whistle-EPL-Background-Header.svg` was deleted. The image
+directory now contains only the retained logo PNG and original background SVG;
+both still have application references. Earlier asset references in this document
+record historical verification, not current runtime dependencies.
+
+Frontend build, formatting and whitespace checks passed. Browser checks with
+mocked APIs passed 40 page/viewport combinations across Chrome and Edge on the
+five screens at widths 1536, 1366, 1440 and 360 px. Computed styles verified the
+approved solid colors, purple administration logout text and preserved
+authentication artwork, including primary-button hover. Checks also covered
+page overflow, desktop authentication footer visibility and own-account password
+change navigation. Screenshots/results are under ignored
+`.verification/ui-review/approved-header-colors/`; the build log is
+`.verification/ui-review/approved-header-colors-build.log`. This CSS/asset-only
+change does not alter business behavior or PHASE 1 acceptance/status. No commit,
+push or merge was performed.
+
+### Final authentication gradient selection — 2026-11-09
+
+The Team Leader approved panel-derived option B with both ends slightly darker,
+superseding the solid authentication palette above. Login and password change
+now share a two-layer CSS background on their header and footer: a 110-degree
+gradient from sampled blue `#1f3e67` through indigo `#262857` at 35% to purple
+`#5c3a8b`, plus a 90-degree black edge overlay (`#0000001f`) fading to transparent
+at 22% and returning after 78%. Secondary/footer text uses `#e1e3f0`; primary
+text remains white. No new image asset is needed. The original authentication
+illustration and primary-button artwork remain unchanged.
+
+The approved light administration header, unchanged administration footer and
+deletion of the unused header-only SVG remain part of the same uncommitted
+change set. Frontend build, formatting and whitespace checks passed. The final
+mocked-API Chrome/Edge verification passed all 40 page/viewport combinations,
+checking identical authentication header/footer gradients and edge shading,
+retained illustration/button artwork, light administration colors, page
+overflow, desktop footer visibility and account-detail password-change
+navigation. Screenshots/results are under ignored
+`.verification/ui-review/final-auth-gradient/`; the build log is
+`.verification/ui-review/final-auth-gradient-build.log`. PHASE 1 acceptance and
+business behavior are unchanged. No commit, push or merge was performed.

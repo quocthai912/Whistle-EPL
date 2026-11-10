@@ -134,6 +134,17 @@ The rules below are the authoritative current policy for this domain. The UC flo
 
 - **New business work:** Recheck affected eligibility using corrected information when processing new business operations; do not rely on outdated validation results. For example, correcting a birth date may require review of prior U21 registration without automatically rewriting its official historical decision.
 
+### D099 - Club and stadium discontinuation with controlled resumption
+
+**Status:** CONFIRMED by the Team Leader, PHASE 2 preparation Q1-A and Q2-A, followed by final shared-understanding confirmation. **Date:** 2026-11-10 (Asia/Bangkok). [Approval, alternatives and rationale](../docs/adr/0009-stable-identities-and-selective-business-snapshots.md#d099---club-and-stadium-discontinuation-and-resumption).
+
+- **Source and scope:** TH-04 and TH-06, PDF pp.13-14; AT-04, p.32; UC07 pp.82-84 and UC12 pp.97-99. This approved refinement applies only to Club and Stadium masters. D046 retains ownership of goal/card catalog withdrawal; no Player lifecycle policy is added.
+- **Authority and timing:** The holder of the corresponding shared master-management permission may discontinue or resume use, with a required reason, operator, successful recording instant and before/after history. Apply existing D030/D084/D096 final authorization, revision, locking and atomic audit rules. Each transition takes effect on successful recording, without backdating; no additional approval role is introduced.
+- **New use:** Discontinuation blocks new selections/references. Draft or pending work must recheck current master availability when progressing and cannot establish a new commitment using a discontinued master. An earlier draft selection does not reserve eligibility.
+- **Existing commitments:** Already approved commitments remain processable through their corresponding UCs under all existing checks. Discontinuation does not automatically cancel or change applications, registrations, schedules, results or permissions. Keeping a historical reference is distinct from selecting a discontinued master for new use. Discontinuing a stadium is not a postponement or stadium-change operation; use UC14 for those actions.
+- **History and corrections:** Preserve identity, business code, references and official snapshots. Historical lookup and authorized error correction remain available through their existing workflows; discontinuation is not destructive deletion or an automatic sporting consequence.
+- **Resumption:** Resume the same master identity and code, retaining every discontinuation/resumption transition. Subsequent new work must pass all current checks. Resumption neither changes earlier decisions nor automatically restores rejected/cancelled work, approves drafts or recreates permissions.
+
 ### D058 - Stable business codes, duplicate review and temporal shirt-number uniqueness
 
 **Confirmed policy.** [Approval, source and rationale](../docs/adr/0009-stable-identities-and-selective-business-snapshots.md#d058-english-evidence).

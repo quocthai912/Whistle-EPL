@@ -322,6 +322,8 @@ All independently identified model rows have id and createdAt unless a row below
 
 ### Registry and registration dictionary
 
+For Club and Stadium only, [D099](../business.md#d099---club-and-stadium-discontinuation-with-controlled-resumption) owns discontinuation/resumption semantics. Their discontinuedAt records the current discontinued period's successful recording instant; resumption clears this current marker while D094 audit retains every transition, operator, reason and before/after values. The marker is not a substitute for lifecycle history. Do not infer a Player lifecycle rule from this clarification.
+
 | Model | Columns beyond the common definitions | Keys, constraints and milestone |
 |---|---|---|
 | Position | code text PK, displayName text, catalogVersion text | Exactly D092's 13 codes; no first-version catalog CRUD. |
