@@ -29,7 +29,9 @@ retain approved optional Internet-storage configuration without assuming it is s
 Playwright, k6 and Python operations tests under D097/D098.
 **Target Platform**: Existing same-origin HTTPS Compose reference deployment and browser UI.
 **Project Type**: Modular layered monolithic backend plus SPA in existing pnpm workspace.
-**Performance Goals**: Existing HQ-01/D097 club lookup threshold; no new write/generation SLA.
+**Performance Goals**: SC-010 partial internal club master-list benchmark using the existing
+HQ-01/D097 timing threshold; full public lookup acceptance remains in PHASE 6. No new
+write/generation SLA.
 **Constraints**: No new architecture/library choice, operational seeds, later-Phase workflows,
 implementation code or Tasks/Issues in this stage.
 **Scale/Scope**: Seven stories, 48 FRs, 12 SCs; 20-club reference dataset, two-season isolation;

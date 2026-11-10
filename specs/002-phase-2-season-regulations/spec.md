@@ -478,9 +478,12 @@ Do not build later workflows or fabricate operational readiness.
 - **SC-009**: Every successful important change has permitted inspectable actor/time/object,
   before/after/required reason/effectivity; induced failures/concurrency cause no partial state
   or silent overwritten change.
-- **SC-010**: Club lookup meets HQ-01: at least 95% within 2 seconds with one-season data and
-  20 concurrent users under D097. HQ-03's same threshold at 10 seasons/3,800 matches remains
-  required in owning historical integration Phases; no new write/generation target is introduced.
+- **SC-010**: The internal club master list achieves at least 95% of lookups within 2 seconds
+  with one-season/20-club data and 20 concurrent users under D097. This PHASE 2 measurement is
+  a partial benchmark, not evidence of HQ-01 public club lookup acceptance. HQ-01 acceptance
+  remains in PHASE 6 with D097's full one-season baseline of 20 clubs, 380 matches and at least
+  600 player profiles. HQ-03's same threshold at 10 seasons/3,800 matches remains required in
+  owning historical integration Phases; no new write/generation target is introduced.
 - **SC-011**: Actual Chrome/Edge journeys pass with recorded versions; applicable lookup/media
   is usable at 360x800, 768x1024 and 1366x768 with unobscured controls. Lists over 20 records
   preserve complete results and Vietnamese diacritics.

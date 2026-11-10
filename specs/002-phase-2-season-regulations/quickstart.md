@@ -102,6 +102,8 @@ k6 run tests/performance/phase-2-club-lookup.js
 Supply the declared isolated target/session configuration expected by the script without
 logging credentials. Expected: 20 concurrent users, 1-minute warm-up/10-minute measurement,
 at least 95% club lookups <=2 seconds per measured group under recorded D097 machine/profile.
+This is SC-010's partial internal master-list benchmark. HQ-01 public club lookup acceptance
+remains in PHASE 6 with D097's 20 clubs, 380 matches and at least 600 player profiles.
 Retain existing authentication load regression; no new write-latency threshold is implied.
 
 On the isolated Linux reference host, existing command names remain:
@@ -109,12 +111,21 @@ On the isolated Linux reference host, existing command names remain:
 ```sh
 pnpm test:ops
 pnpm ops:backup
-pnpm ops:verify
-pnpm ops:restore
+pnpm ops:verify '<selected-isolated-set-id>'
+pnpm ops:restore '<selected-isolated-set-id>' 'RESTORE:<isolated-database-name>:<selected-isolated-set-id>'
 ```
 
 Operator commands require their existing explicit configuration, target/operation controls
 and confirmations; these examples do not bypass CLI guards or supply secrets/default targets.
+Replace the placeholders with the selected complete set ID and the configured isolated
+OPS_DB_NAME; use the same set ID in both restore arguments. Select the set ID printed by the
+immediately preceding successful `ops:backup`, not an arbitrary older retained set. Exclude
+unrelated backup/retention runs in this isolated drill until restore completes. `ops:verify`
+itself creates and restores a separate verification set after validating the selected set;
+its backup runs retention, which keeps the seven newest verified sets, so the just-created
+selected set remains available for the explicit restore. The PHASE 2 extension preserves
+the existing retention safeguards as required by the [media recovery contract](contracts/media-recovery.md#backup-set-extension).
+Run only against the explicit isolated loopback test target required by the script.
 After extension, the completed set must be version 2 with nonempty verified media inventory.
 Verify corrupt/incomplete/wrong-schema sets are rejected before restore; restore database and
 content from the same valid set into the separate target. Interrupt midway and prove continued

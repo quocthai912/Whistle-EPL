@@ -95,13 +95,15 @@ enforced on supplied draft values and as a complete set at submission/approval. 
 chooses arbitrary rule formulas. SCHEDULED requires a future instant at final decision;
 an instant already reached is a conflict, not automatic IMMEDIATE conversion.
 
-### Read-time due activation
+### Read-time effective-basis checks
 
-GET itself is not an activation command. Before reading an effective basis, the protected
-query orchestration may invoke the separately admitted owning due-work processor (also used
-by startup/timer), then acquire its normal current-scope/read boundary and recheck basis.
-If a due boundary is reached during that processing, retry bounded basis resolution or return
-503; never label stale content current. No caller can select a version or override trusted time.
+GET query orchestration is read-only for business state: it never invokes the due-work
+processor or records activation or ACTIVATION_BLOCKED. The independently admitted job
+handles startup/timer due-work processing. Within the normal current-scope/read boundary,
+check the effective basis against trusted time; if a due boundary is reached, recheck the
+persisted basis with bounded read-only retries or return 503 when the correct basis remains
+unavailable. Never label stale content current. No caller can select a version or override
+trusted time.
 Mutation orchestration performs its final due check in the caller-owned season transaction.
 
 ## UC07/UC12 - Shared masters and D099
@@ -111,11 +113,13 @@ Mutation orchestration performs its final due check in the caller-owned season t
 | GET /clubs; GET /stadiums | Corresponding shared/master-read responsibility; search, availability ACTIVE/DISCONTINUED/ALL, pagination; sort name/code/id | Management list can retain discontinued records. New-use selector calls filter ACTIVE; the final owning command still rechecks. |
 | POST /clubs; POST /stadiums | Corresponding live shared grant; Club code/name/abbreviation; Stadium code/name/location?; duplicateReview? | 201 id/revision; no seasonal application. Stable normalized code conflicts always fail. |
 | GET /clubs/{clubId}; GET /stadiums/{stadiumId} | Current object-read responsibility | Master/revision/current availability, permitted logo application URL, safe capabilities. |
-| PATCH /clubs/{clubId}; PATCH /stadiums/{stadiumId} | Matching shared grant; expectedRevision, editable name/abbreviation or name/location, correctionReason/correctionBasis where correcting source information | Preserve identity/references/snapshots; identify affected work; no indirect match/registration edits. |
+| PATCH /clubs/{clubId}; PATCH /stadiums/{stadiumId} | Matching shared grant; expectedRevision, editable name/abbreviation or name/location, correctionReason/correctionBasis where correcting source information; duplicateReview? | Preserve identity/references/snapshots; identify affected work; no indirect match/registration edits. |
 | POST /clubs/{clubId}/{discontinue,resume}; POST /stadiums/{stadiumId}/{discontinue,resume} | Matching shared grant; expectedRevision, nonempty reason | Exact explicit action; state/revision conflict rejects repeats. Authority, trusted recording instant, marker/revision and required audit commit together. |
 | GET /clubs/{clubId}/history; GET /stadiums/{stadiumId}/history | Corresponding current object-read authority | Searchable bounded D094 before/after and complete D099 cycles; no unredacted global audit grant. |
 
 `duplicateReview` is `{acknowledged:true,candidateIds,reason}` for a genuinely distinct entity.
+It is accepted on creation and name corrections; it does not widen the editable master fields
+or waive revision and correction requirements.
 If matching names exist without a current acknowledgement, return 409 BASIS_CHANGED with
 permitted candidate labels and the warning, not a successful save. Recheck the candidate set
 at final recording; changed candidates require fresh review. This reserves no identity and

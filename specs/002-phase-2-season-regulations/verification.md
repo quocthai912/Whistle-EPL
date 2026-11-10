@@ -53,7 +53,10 @@ an inherited seam. Tasks will allocate their creation after Plan review.
 - tests/performance/phase-2-club-lookup.js: explicit isolated HTTPS target, synthetic accounts/
   declared cookies, 20 concurrent users, 1-minute warm-up plus 10 minutes measured. Measure
   >=95% club lookups <=2 seconds per group; record server 4-vCPU/8-GiB/SSD baseline or actual
-  deviation. Do not average fast groups into slow ones. Existing authentication.js remains.
+  deviation. This measures the internal master list as SC-010's partial PHASE 2 benchmark;
+  it does not establish HQ-01 public lookup acceptance in PHASE 6, which requires D097's
+  20-club/380-match/at-least-600-player-profile baseline. Do not average fast groups into slow
+  ones. Existing authentication.js remains.
 - ops/backup/tests/test_set_format.py and test_schedule.py (existing): preserve foundation
   tests and add v2 nonempty media/incomplete/corrupt/traversal/wrong-scope/schema cases.
   Extend actual isolated available-data recovery drill and maintenance release verification.

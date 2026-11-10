@@ -107,8 +107,9 @@ and obey existing 30-day diagnostic retention.
 Mutation callers holding the season lock invoke the resolver in the same transaction before
 depending on current rules. If the later mutation fails, its activation changes roll back too;
 timer/request recovery can process them again without claiming a prior successful activation.
-Read orchestration follows [REST due-resolution rules](rest.md#read-time-due-activation).
-An unrecoverable technical outcome returns 503, never old-current data as if fresh.
+Read orchestration follows [REST read-only basis checks](rest.md#read-time-effective-basis-checks)
+without invoking due-work processing or recording activation/ACTIVATION_BLOCKED. An unavailable
+correct basis returns 503, never old-current data as if fresh.
 
 ## Exact approval bases
 
