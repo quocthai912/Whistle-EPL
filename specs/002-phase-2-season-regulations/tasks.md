@@ -6,10 +6,10 @@
 
 **Status**: T001-T030 approved by the Team Leader on 2026-11-10 (Asia/Bangkok).
 
-**Post-approval documentation review**: See the [audit and proposed Issue reconciliation](documentation-audit.md).
-The clarified criteria in T013/T024/T027 and the earlier T014 reconciliation are pending separate
-review before updating the published Issues. Original approval and publication evidence below
-applies to the historical package.
+**Post-approval documentation review**: The Team Leader authorized reconciliation after the
+amendment was published at [4f2c893](https://github.com/quocthai912/Whistle-EPL/commit/4f2c89373ec3d33af7d44c75cfae207a07969e63). The [audit and Issue reconciliation](documentation-audit.md#proposed-github-reconciliation)
+records the verified updates to #84, #85, #95 and #98. The original approval links, Issue identities,
+states, labels and blocking relationships were preserved.
 
 **Approval evidence**: After the 30-Task breakdown and read-only cross-artifact analysis
 (48 FRs/12 SCs covered; no reported findings) were presented, the Team Leader answered

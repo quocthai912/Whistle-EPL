@@ -3,7 +3,9 @@
 **Status**: T001–T028 approved by the Team Leader on 2026-11-12 (Asia/Bangkok).  
 **Approval evidence**: The Team Leader answered "Tôi đồng ý phê duyệt." after reviewing the revised 28 Tasks and the read-only analysis of the seven corrections. This approves one GitHub Issue per Task. The PHASE 2 execution gate still applies.  
 
-**Issue publication, 2026-11-12 (Asia/Bangkok):** Published and read back 28 unique open Issues, [#103](https://github.com/quocthai912/Whistle-EPL/issues/103) through [#130](https://github.com/quocthai912/Whistle-EPL/issues/130), each labelled `ready-for-agent`. The Issue bodies contain all 51 approved internal blocking links and the PHASE 2 execution gate. Native GitHub `blocked by` relationships remain pending because authenticated CLI writes were unavailable and the connected GitHub tool exposes no dependency mutation.
+**Issue publication, 2026-11-12 (Asia/Bangkok):** Published and read back 28 unique open Issues, [#103](https://github.com/quocthai912/Whistle-EPL/issues/103) through [#130](https://github.com/quocthai912/Whistle-EPL/issues/130), each labelled `ready-for-agent`. The Issue bodies contain all 51 approved internal blocking links and the PHASE 2 execution gate. Native GitHub `blocked by` relationships were pending at publication.
+
+**Native dependency reconciliation:** After the Team Leader authorized synchronization and restored GitHub CLI authentication, all 51 approved internal `blocked by` relationships were read back across the 28 Issues and matched this file exactly. T001 still requires accepted PHASE 2 evidence as its external execution gate. All Task checkboxes remain unchecked.
 
 **Source publication verified, 2026-11-12 (Asia/Bangkok):** The approved PHASE 3 package is published at [428b4ed](https://github.com/quocthai912/Whistle-EPL/commit/428b4ed4f67ba3dd679eae4ffde18dc19fe1df7b). The remote branch and all 13 checked source blobs match the published revision. All 28 Issues link to the pinned Spec, Plan, Tasks and verification documents. Read-back confirmed the Issue states, labels, acceptance criteria and all 51 blocking links in the bodies.
 

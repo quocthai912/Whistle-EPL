@@ -2,7 +2,7 @@
 
 **Baseline:** Clean `docs/phase-3-architecture-and-specification` at `69617826653c194fe25d30e1d9d314980e7e87ab`, matching its remote. Local and remote `development` were `3e9c615fff04c10af8a1d22bff82e0a89729d0be`, the merge base. The working branch was four commits ahead and zero behind. Retain this branch to preserve the full PHASE 3 package and unrelated committed UI work.
 
-**Status:** Local post-approval documentation corrections for review. Original approvals and pinned Issue source revisions remain historical evidence. PHASE 2 and PHASE 3 remain NOT_STARTED. No remote Issue changes or software verification are recorded here.
+**Status:** Post-approval amendment published at [4f2c893](https://github.com/quocthai912/Whistle-EPL/commit/4f2c89373ec3d33af7d44c75cfae207a07969e63). Original approvals and pinned Issue source revisions remain historical evidence. PHASE 2 and PHASE 3 remain NOT_STARTED. The reconciliation below records documentation and tracker evidence only.
 
 ## Audit findings
 
@@ -26,13 +26,15 @@ The review covered UC05 and UC06 lifecycle, rule preparation, decisions and effe
 | C / closing boundary | Verification allocation only. FR-026, execution and T024 already distinguish before/equal/after and unspecified end. | Verification now distinguishes PHASE 2 isolated guard evidence from PHASE 3 real registration facts. T001 still requires accepted PHASE 2. No PHASE 3 Issue amendment. |
 | D / D097 | No change. PHASE 3 SC-006/T027 already separate API/UI and specify the timing method in their own lookup scope. | Keep PHASE 3 thresholds, Task and Issue pins. No duplication of PHASE 6 acceptance. |
 | E / T014 cancellation | No change. PHASE 3 consumes accepted exact effectivity history and does not own cancellation/replacement of regulation versions. | Reconcile only Issue #85. |
-| F / publication record | No change. PHASE 3 package remains pinned to `428b4ed`; its publication record correctly notes 51 body links and native dependencies pending. | Preserve PHASE 3 ledger/checklist and Issue links. |
+| F / publication record | At audit baseline, PHASE 3 was pinned to `428b4ed` with 51 body links and native dependencies pending. Subsequent authorized reconciliation verified all 51 native relationships. | The [PHASE 3 Task ledger](../003-phase-3-player-registration/tasks.md) records the result. Issue identities and original pins were preserved. |
 
 Season Open/Closed restrictions, Club/Stadium availability and history, D052/D075 protected registration facts, D100 BM1 corrections, D056/D057 and FR-020, caller-owned locking/audit, and the logo-to-portrait recovery seam keep their approved semantics. A change in any accepted PHASE 2 interface remains subject to the PHASE 3 T001 comparison before execution.
 
 ## Proposed GitHub reconciliation
 
-Requires separate authorization after the reviewed amendments have a published revision. Preserve the original pinned approval links and hashes. Add a separately labelled amendment link pinned to the verified amendment commit for the affected PHASE 2 Issues below. Preserve canonical IDs, labels, states, existing dependency edges and unaffected acceptance text. After editing, read back exact Issue bodies and link targets. PHASE 3 Issues #103–#130 keep their historical `428b4ed` pins. Creating their 51 native dependencies is a separate pending operation.
+**Outcome:** The Team Leader authorized the four Issue updates after publication. Read-back confirmed #84, #85, #95 and #98 contain the criteria below and separate amendment links pinned to [4f2c893](https://github.com/quocthai912/Whistle-EPL/commit/4f2c89373ec3d33af7d44c75cfae207a07969e63). Original approval pins, canonical IDs, titles, states, labels and dependencies were preserved.
+
+The approved reconciliation below preserves the original pinned approval links and hashes. A separately labelled amendment link identifies the verified amendment commit on each affected PHASE 2 Issue. PHASE 3 Issues #103–#130 retain their historical `428b4ed` pins.
 
 - [#84 / T013](https://github.com/quocthai912/Whistle-EPL/issues/84): Replace “without treating GET as a caller-selected activation command” with “without invoking due processing from GET”. Append: GET may only recheck persisted state with bounded read-only retries and returns 503 if the current basis is unresolved. With the job paused at a due boundary, verify GET leaves version state, current pointer, activation audit/history and receipts unchanged. Process due work separately, then verify GET returns the correct basis without an additional business write.
 - [#85 / T014](https://github.com/quocthai912/Whistle-EPL/issues/85): Replace the first criterion with “Exact same-season waiting target and required reason. CANCEL requires no replacement and an independent approver outside the request's preparers/editors. REPLACE requires an exact immutable same-season SUBMITTED replacement, an independent approver outside the union of request/replacement preparers/editors and a one-waiting-slot swap. Both actions require atomic receipt/audit.” Add “successful CANCEL without a replacement” to the existing test criterion.
