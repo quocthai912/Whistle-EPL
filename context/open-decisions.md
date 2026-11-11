@@ -1,8 +1,10 @@
 # Unresolved decisions
 
-This register contains only unresolved work. O identifiers retain their source provenance; each row is OPEN for the remaining scope shown, not for already confirmed policy. Use the [decision index](design/README.md#confirmed-decisions) for [D001](design/architecture.md#d001---modular-layered-monolithic-backend)-[D099](business.md#d099---club-and-stadium-discontinuation-with-controlled-resumption) and the owning documents for current rules. D098 and D099 were approved separately after Q98. Contract elaboration does not automatically require another business approval.
+This register contains only unresolved work. O identifiers retain their source provenance. Each row is OPEN for the remaining scope shown. Use the [decision index](design/README.md#confirmed-decisions) and the owning documents for current rules, including [D100](use-cases/registration.md#d100---correction-of-approved-club-participation-applications). Contract elaboration does not automatically require another business approval.
 
 The separately approved [D099 PHASE 2 preparation extension](README.md#phase-2-preparation-approval---d099), 2026-11-10, resolves club/stadium discontinuation and resumption. It is indexed with the confirmed decisions and is not remaining open work; operational inputs and unexecuted evidence below remain open.
+
+The [D100 PHASE 3 preparation extension](README.md#phase-3-preparation-approval---d100) resolves the correction path for descriptive errors in an approved BM1 application. Its technical mapping and execution evidence remain future work.
 
 ## Actual inputs and unexecuted preparation
 

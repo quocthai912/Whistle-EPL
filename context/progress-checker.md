@@ -177,6 +177,8 @@ PHASE 2 owns actual season/regulation workflows and their D089 activation/catch-
 
 ## PHASE 3 - Profiles and player registration
 
+**Approved preparation extension:** [D100](use-cases/registration.md#d100---correction-of-approved-club-participation-applications), 2026-11-11. Verify correction of proven BM1 descriptive errors through independent approval, including outside the intake window while Open. Verify preservation of the original receipt and approved version, rejection of stale or unauthorized decisions and preservation of dependent sporting records.
+
 **Confirmed media/API scope:** UC09 owns managed portraits for hundreds of player profiles; club/shirt associations remain seasonal. Verify portrait validation, authorized changes, failure preservation and current-image history behavior under [D069](design/media.md#d069---managed-player-portraits-with-current-image-display). See [media policy](design/media.md) and [INT-01](design/integrations.md). This adds scope/evidence requirements, not progress.
 
 **Implementation Status:** `NOT_STARTED`.
