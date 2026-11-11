@@ -34,8 +34,9 @@ Playwright, k6 and Python operations tests under D097/D098.
 **Target Platform**: Existing same-origin HTTPS Compose reference deployment and browser UI.
 **Project Type**: Modular layered monolithic backend plus SPA in existing pnpm workspace.
 **Performance Goals**: SC-010 partial internal club master-list benchmark using the existing
-HQ-01/D097 timing threshold; full public lookup acceptance remains in PHASE 6. No new
-write/generation SLA.
+HQ-01/D097 timing threshold, with one-minute warm-up, ten-minute measurement and results
+per lookup group. Record environment/workload and keep API measurements separate from
+browser/UI evidence. Full public lookup acceptance remains in PHASE 6. No new write/generation SLA.
 **Constraints**: No new architecture/library choice, operational seeds, later-Phase workflows,
 implementation code or Tasks/Issues in this stage.
 **Scale/Scope**: Seven stories, 48 FRs, 12 SCs; 20-club reference dataset, two-season isolation;
@@ -125,6 +126,9 @@ ops/backup/; ops/compose.yaml; .env.example            media-aware set format an
 no apps/packages reorganization, separate worker, new service, broker or alternate data store.
 Domain collaborators receive the caller TransactionContext. AppModule wires typed providers;
 registration, fixture-scheduling, results and reporting workflows remain in their owning Phases.
+Current-basis GETs use bounded read-only resolution or 503. Job/operator and dependent-write
+execution retain their existing mutation paths. The lifecycle owner evaluates interval ends
+against the trusted final close instant using current facts from the registration owner.
 
 ## Design and delivery sequence
 

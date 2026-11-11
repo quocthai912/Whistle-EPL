@@ -146,7 +146,9 @@ replacement/cancellation, catch-up, incompatibility, technical failure and concu
    revision/resubmission rather than silent immediate approval.
 4. **Given** delayed processing/restart, **When** due work or dependent operations execute,
    **Then** they resolve the correct basis or explicitly fail, never commit using stale rules
-   or shift the approved effective instant.
+   or shift the approved effective instant. A GET that needs a current basis reads persisted
+   state only. If a bounded recheck cannot establish the correct basis, it returns an explicit
+   temporary failure without activating a version or recording a business outcome.
 5. **Given** business incompatibility, **When** activation is checked, **Then** terminal
    Activation blocked records reasons, retains the prior effective version if any and frees
    the waiting slot; resolving it requires a new proposal.
@@ -232,8 +234,11 @@ Do not build later workflows or fabricate operational readiness.
 
 1. **Given** a pending lifecycle proposal, **When** its preparer/editor approves, **Then** it
    fails; pending work and the scheduled end date change no state.
-2. **Given** absent/stale summary, other pending seasonal work, waiting approved effects or
-   unended/future playing intervals, **When** closure is approved, **Then** it fails with blockers.
+2. **Given** an absent/stale summary, other pending seasonal work, waiting approved effects,
+   an unresolved future plan or a playing interval with no end or an end after the closing
+   instant, **When** closure is approved, **Then** it fails with blockers. A finite end
+   before or exactly at that instant satisfies the interval condition. Recheck after any wait
+   for competing writes and decide using the facts at final recording.
 3. **Given** all prerequisites still hold, **When** an independent manager approves, **Then**
    closure/history record together without cancelling registrations, revoking roles, logging
    everyone out or invalidating an unchanged confirmed summary.
@@ -292,9 +297,12 @@ Do not build later workflows or fabricate operational readiness.
   regulations to independent assigned managers, excluding every preparer/editor, including former editors.
 - **FR-007**: Versions MUST represent full seasonal configuration, distinct from technical edit
   revisions. Incomplete drafts MAY persist; submission/approval MUST identify missing/invalid content.
-- **FR-008**: Submission/withdrawal/return/rejection/independent approval MUST preserve submitted
-  content and current effective rules; revisions after return/withdrawal MUST retain successor/
-  predecessor/editor history. Approval MUST target the exact reviewed version and current basis.
+- **FR-008**: Submission/withdrawal/return/rejection MUST preserve submitted content and the
+  current effective version. Revisions after return/withdrawal MUST retain successor/predecessor/
+  editor history. Independent approval MUST target the exact reviewed version and current basis.
+  The current version remains in effect until a valid transition under FR-017–FR-023. A valid
+  immediate approval makes the successor effective at successful recording and preserves the
+  former version, its content and its historical effective interval.
 - **FR-009**: Full content MUST include squad/non-homegrown limits, homegrown seasons/months/age
   range, U21 cutoff, separate intake calendars, supported count/format/legs, duration/buffers,
   goal/card types, points/ranking priority and Q/R under their approved owners. Missing real
@@ -342,7 +350,9 @@ Do not build later workflows or fabricate operational readiness.
   or rewrite historical decisions.
 - **FR-022**: PHASE 2 operations relying on current rules MUST resolve due activation consistently;
   writes MUST not use stale rules and reads MUST return the correct basis or explicit failure.
-  Later owners MUST have the same protection available without building their workflows here.
+  Reads MUST NOT invoke due processing or write activation, activation-blocked outcomes or
+  related business history. Later owners MUST have the same protection available without
+  building their workflows here.
 - **FR-023**: Technical failure MUST roll back without false activation/business-blocking; later
   scheduled/authorized operator recovery MUST remain possible and persistent failure visible.
   Concurrent/repeated processing MUST not duplicate successful effects/history.
@@ -393,9 +403,11 @@ Do not build later workflows or fabricate operational readiness.
   exact-version approval. Approval MUST be nondelegable and exclude every preparer/editor;
   pending requests MUST leave current state unchanged.
 - **FR-036**: Closing MUST recheck a current valid confirmed summary, no other pending seasonal
-  requests/approved effects awaiting activation, and every playing interval ended by closure
-  without unresolved future intervals. Missing facts MUST block with reasons, not fabricate
-  readiness/cancel registrations. The deciding lifecycle request is not itself another pending request.
+  requests/approved effects awaiting activation, and all playing intervals against the trusted
+  final closing instant. A finite end at or before that instant satisfies the interval gate.
+  A later or unspecified end or unresolved future interval MUST block closure. Missing facts
+  MUST block with reasons. Closing MUST NOT fabricate readiness or cancel registrations.
+  The deciding lifecycle request is not itself another pending request.
 - **FR-037**: Closed state MUST enforce D074 regulation/registration/schedule/report/result/
   ranking-resolution/summary write gates while preserving authorized reading/export and separate
   master/media authority. Close/reopen MUST not revoke roles/force logout. PHASE 8's news
@@ -485,8 +497,10 @@ Do not build later workflows or fabricate operational readiness.
   before/after/required reason/effectivity; induced failures/concurrency cause no partial state
   or silent overwritten change.
 - **SC-010**: The internal club master list achieves at least 95% of lookups within 2 seconds
-  with one-season/20-club data and 20 concurrent users under D097. This PHASE 2 measurement is
-  a partial benchmark, not evidence of HQ-01 public club lookup acceptance. HQ-01 acceptance
+  in each measured group with one-season/20-club data and 20 concurrent users under D097.
+  Use a one-minute warm-up and ten minutes of measurement, record the environment/workload,
+  and keep API measurements separate from applicable browser/UI evidence. This PHASE 2
+  measurement is a partial benchmark, not evidence of HQ-01 public club lookup acceptance. HQ-01 acceptance
   remains in PHASE 6 with D097's full one-season baseline of 20 clubs, 380 matches and at least
   600 player profiles. HQ-03's same threshold at 10 seasons/3,800 matches remains required in
   owning historical integration Phases; no new write/generation target is introduced.

@@ -148,6 +148,8 @@ PHASE 2 owns actual season/regulation workflows and their D089 activation/catch-
 
 **Approved preparation extension:** [D099](business.md#d099---club-and-stadium-discontinuation-with-controlled-resumption), 2026-11-10. PHASE 2 verifies authorized club/stadium discontinuation/resumption, reasons and complete transition history, preserved identity/references, save-failure rollback and concurrent final checks under D084/D096. PHASE 3/PHASE 4/PHASE 5 verify their new-use versus existing-approved-commitment gates; PHASE 6/PHASE 7/PHASE 10 verify applicable lookup/report/integrated preservation. Include draft/pending selections invalidated before approval and resumption without automatic restoration of prior outcomes. This allocates future verification, not completion evidence; statuses and checklist states are unchanged.
 
+**Source publication and post-approval audit:** The approved Issue source links point to [5bb438b](https://github.com/quocthai912/Whistle-EPL/commit/5bb438b7b16df0fb0c406a830cf8b0d01e6c8d90). The earlier pending-publication note above describes the initial Issue-publication milestone. See the [documentation audit](../specs/002-phase-2-season-regulations/documentation-audit.md) for later local clarifications and proposed remote reconciliation. No execution evidence is recorded by that audit.
+
 **Confirmed media/API scope:** UC07 owns managed club logos and all approved LOGO-01 file, reference, failure and audit behavior. See [media policy](design/media.md) and [INT-01](design/integrations.md). This adds scope/evidence requirements, not progress.
 
 **Implementation Status:** `NOT_STARTED`.

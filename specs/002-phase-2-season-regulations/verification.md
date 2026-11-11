@@ -16,11 +16,11 @@ No extra coverage percentage or universal TDD is introduced.
 |---|---|---|
 | V01 Season shell/access | FR-001-FR-005; US1; SC-001/002/005/008 | Real create without prior role, no implicit access, independent staffing; invalid/duplicate/stale updates; Closed metadata denial through UI/direct request and closure race. PHASE 2. |
 | V02 Full regulation decisions | FR-006-FR-016; US2; SC-001/003/004 | Incomplete drafts, exact immutable submission/successors, all-editor exclusion, complete scalar/child validation, catalog interpretation, freeze/compatibility cases with declared source facts. PHASE 2; later owners confirm actual consumption. |
-| V03 Effectivity | FR-017-FR-023; US3; SC-003/004/009 | Immediate/future/exact deadline; at most one current and at most one waiting per season independently, allowing both to coexist; atomic cancel/replace; late approval; business blocked vs technical failure; startup/catch-up/request/job race and maintenance. PHASE 2. |
+| V03 Effectivity | FR-017-FR-023; US3; SC-003/004/009 | Immediate/future/exact deadline; at most one current and at most one waiting per season independently, allowing both to coexist; atomic cancel/replace; late approval; business blocked vs technical failure; startup/catch-up/request/job race and maintenance. GET at an unresolved due boundary returns 503 without a business write. GET after separate processing returns the resolved basis. PHASE 2. |
 | V04 Masters/corrections | FR-024-FR-026; US4/US5; SC-001/002/005/009 | Required fields/code normalization, accent/case name warning and review, correction basis/impact projection, intact references/snapshots, cross-season reuse. PHASE 2; owning later correction flows remain later. |
 | V05 D099 | FR-027-FR-029; US6; SC-002/006/009 | Same-identity discontinue/resume cycles, reasons/atomic audit, no revived outcomes, new-use race vs approved commitment. PHASE 2 tests guard ports; later owners test actual new commitments. |
 | V06 Media/recovery | FR-030-FR-034; US4; SC-005/007/009 | Actual 20-club logos, byte/type/decode/animation/dimension boundaries, owner/read access/current reference/no-store, failed switch/storage, orphans/cleanup/backup races, same-set restoration. PHASE 2 available-data allocation. |
-| V07 Lifecycle | FR-035-FR-038; US7; SC-008/009 | Typed persisted summary fixture, independent approval, exact readiness basis, pending/future/open intervals, concurrent prerequisite changes, no role/logout side effects, reopen preserves freezes/summary. PHASE 2; operational readiness still needs later sources. |
+| V07 Lifecycle | FR-035-FR-038; US7; SC-008/009 | Typed persisted summary fixture, independent approval, exact readiness basis, pending requests and unresolved future plans, finite ends before/at/after close and unspecified ends, concurrent prerequisite changes, no role/logout side effects, reopen preserves freezes/summary. PHASE 2; operational readiness still needs later sources. |
 | V08 Shared security/atomicity | FR-039-FR-042; all stories; SC-002/003/005/009 | At least 10 unauthorized cases, CSRF/origin/session/revocation and scope; independent committed-state checks after induced failures; receipts/replay/unknown outcome; per-object audit payload redaction/history. PHASE 2 plus inherited regression. |
 | V09 UX/lookup | FR-043-FR-045; all stories; SC-001/010/011 | Vietnamese valid-entry preservation/field errors, confirmation/cancel, Loading/Empty/Error, paging >20, actual Chrome/Edge, three viewports and measured club lookup. PHASE 2. |
 | V10 Evidence/regression | FR-046-FR-048; SC-012 | Root checks on both required OS lanes, full existing PHASE 1 regression plus new suites; reproducible fixtures/clocks/races, reviewer report and open input/defect classification. PHASE 2 acceptance. |
@@ -65,7 +65,9 @@ an inherited seam. Tasks will allocate their creation after Plan review.
   deviation. This measures the internal master list as SC-010's partial PHASE 2 benchmark;
   it does not establish HQ-01 public lookup acceptance in PHASE 6, which requires D097's
   20-club/380-match/at-least-600-player-profile baseline. Do not average fast groups into slow
-  ones. Existing authentication.js remains.
+  ones. Record endpoint/group mix, dataset and API results separately from applicable UI timing
+  and browser behavior. Browser evidence is not pooled with or replaced by API samples.
+  Existing authentication.js remains.
 - ops/backup/tests/test_set_format.py and test_schedule.py (existing): preserve foundation
   tests and add v2 nonempty media/incomplete/corrupt/traversal/wrong-scope/schema cases.
   Extend actual isolated available-data recovery drill and maintenance release verification.
@@ -109,9 +111,16 @@ state, not sleeps as proof. Cover:
    remains business-blocked only for actual incompatibility; technical failure rolls back.
    Replacement approval must exclude the union of request/replacement editors, including an
    approver who edited only replacement content. A different latest draft cannot be approved.
+   Pause the job before a due GET, then verify committed pointers, version processing states,
+   activation audit/history and receipts are unchanged. Run the admitted job separately and
+   verify a later GET returns the correct basis without an additional business write.
 4. Closing while readiness/metadata requests compete. Known source changes require re-review;
    a newly confirmed summary after CLOSE submission must cause BASIS_CHANGED without silently
-   replacing summaryVersionId. Pending reopen never admits a metadata edit.
+   replacing summaryVersionId. Under controlled time, a finite end before or exactly at final
+   close passes the interval check. A later or missing end, unresolved future plan or pending
+   request blocks it. Race a readiness change after submission and while approval waits.
+   If the final facts fail, verify unchanged season state, no successful CLOSE audit/receipt
+   and no registration edits. Pending reopen never admits a metadata edit.
 5. Master discontinuation versus new-use writer under the same resource lock. Existing approved
    work stays intact; resume never revives old rejected/cancelled work.
 6. Failure after staged file storage, after reference SQL and during required audit; verify old

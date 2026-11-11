@@ -96,7 +96,9 @@ by the guarded suite/global-setup helper; no new production HTTP reset endpoint 
    every preparer/editor's self-approval. Approve only with an independent current manager.
 3. Use a controlled test clock for immediate/future rules. Inspect current/waiting/history,
    cancel/replace before the deadline and test the exact cutoff. Restart/catch up and run
-   concurrent request/job processing. Compare business-blocked and technical-failed outcomes.
+   concurrent dependent-write/job processing. Before a separate job resolves due work, verify
+   GET returns 503 if the correct basis is unresolved and does not change version state, current
+   pointer, activation audit/history or receipts. Compare business-blocked and technical-failed outcomes.
 4. Create/search/correct clubs/stadiums. Review same-name warnings with explicit reason,
    reject duplicate normalized codes, retain references and inspect permitted before/after.
 5. Upload/replace/remove each actual club logo. Check real bytes, old-reference denial,
@@ -105,7 +107,9 @@ by the guarded suite/global-setup helper; no new production HTTP reset endpoint 
    approved commitments/history survive. Repeated cycles preserve identity/code/reasons;
    previously rejected/cancelled work and permissions never revive automatically.
 7. Against declared typed summary/readiness fixtures, propose/approve closure independently.
-   Vary every blocker and race. Verify Closed metadata cannot be edited through UI/direct
+   Test finite ends before, equal to and after the trusted closing instant, an unspecified end,
+   unresolved future plans, pending requests and readiness changing during approval. Verify
+   Closed metadata cannot be edited through UI/direct
    requests or pending reopen, then approve reopen and check retained freeze/history rules.
 
 These steps exercise PHASE 2 workflows. Simulated later-fact adapters and summary fixtures
@@ -128,7 +132,8 @@ logging credentials. Expected: 20 concurrent users, 1-minute warm-up/10-minute m
 at least 95% club lookups <=2 seconds per measured group under recorded D097 machine/profile.
 This is SC-010's partial internal master-list benchmark. HQ-01 public club lookup acceptance
 remains in PHASE 6 with D097's 20 clubs, 380 matches and at least 600 player profiles.
-Retain existing authentication load regression; no new write-latency threshold is implied.
+Record the actual machine/profile, workload and per-group API timings. Keep the applicable
+browser/UI evidence separate and retain authentication load regression. No new write-latency threshold is implied.
 
 On the isolated Linux reference host, existing command names remain:
 

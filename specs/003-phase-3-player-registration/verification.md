@@ -2,6 +2,8 @@
 
 This matrix defines required future evidence for the [approved Specification](spec.md). PHASE 3 implementation and verification are gated by the accepted PHASE 2 capabilities in the [Plan](plan.md#dependency-and-delivery-strategy).
 
+For upstream acceptance references, see the [PHASE 2 audit reconciliation](../002-phase-2-season-regulations/documentation-audit.md#phase-3-impact). PHASE 2 fixture-based guard evidence supports T001. T024 supplies integrated evidence from real PHASE 3 registration records and preserves the ownership of the other closure prerequisites.
+
 | Requirements and outcomes | Verification and required evidence |
 | --- | --- |
 | FR-001–003, FR-010–011; SC-001/003/005 | Integration and browser coverage for BM1 completeness, same-case uniqueness, exact immutable versions, every documented transition, wrong-season references, exact window edges, timely processing after close and new receipt on supplementation. A granted exception stays on its version. Distinct staff approve. An earlier editor with both roles cannot approve. Verify persisted official snapshot, receipt and audit. |

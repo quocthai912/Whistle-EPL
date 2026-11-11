@@ -51,4 +51,6 @@ The pre-research review applies to this documentation stage. Spec Kit internal P
 
 **Execution gate:** Before starting any PHASE 3 implementation, verify the recorded PHASE 2 acceptance and accepted source revision against these contracts and record the result. If any dependency is unimplemented, unaccepted, absent or changed, keep implementation blocked, identify affected FRs/artifacts and bring material deviations back for approval. Operational rules/assets remain explicit inputs at their owning gates. Fixtures can exercise isolated checks and provide no production fallback or dependency sign-off.
 
+For T001, use the [cross-phase audit reconciliation](../002-phase-2-season-regulations/documentation-audit.md#phase-3-impact) to locate the upstream evidence for immediate effectivity, read-only basis resolution and the exact closing boundary. The accepted PHASE 2 revision remains the execution baseline.
+
 After the gate is satisfied, establish schema, guards and live fact providers (T002–T004) before exposing owning writers. Then deliver Player/profile and club intake, registration and eligibility, temporal operations, and both correction paths. Verify the providers against real records in T024 and complete the remaining integrated verification. See [Tasks](tasks.md#dependencies-and-implementation-strategy) for the exact order.
