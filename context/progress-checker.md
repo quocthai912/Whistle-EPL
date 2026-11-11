@@ -177,7 +177,15 @@ PHASE 2 owns actual season/regulation workflows and their D089 activation/catch-
 
 ## PHASE 3 - Profiles and player registration
 
+**Specification approval evidence, 2026-11-12 (Asia/Bangkok):** The Team Leader answered "Tôi phê duyệt." after reviewing the [PHASE 3 Specification](../specs/003-phase-3-player-registration/spec.md), FR-020 clarification and 16/16 requirements checklist. This approves the Specification and progression to Planning. PHASE 3 remains `NOT_STARTED`. Its implementation requires the applicable PHASE 2 capabilities to be implemented and accepted.
+
+**Plan approval evidence, 2026-11-12 (Asia/Bangkok):** The Team Leader answered "Tôi phê duyệt." after reviewing the [PHASE 3 Plan](../specs/003-phase-3-player-registration/plan.md) and supporting design and verification artifacts. This approves progression to Task generation. Final Tasks approval, publication and implementation evidence remain separate.
+
+**Task approval and Issue publication evidence, 2026-11-12 (Asia/Bangkok):** The Team Leader answered "Tôi đồng ý phê duyệt." after reviewing the final 28 Tasks and the follow-up analysis. [tasks.md](../specs/003-phase-3-player-registration/tasks.md) records the 28 verified Issue links and the publication evidence. All 51 approved internal dependencies are recorded in the Issue bodies. Native GitHub dependencies and source publication remain pending. No execution or acceptance evidence was recorded.
+
 **Approved preparation extension:** [D100](use-cases/registration.md#d100---correction-of-approved-club-participation-applications), 2026-11-11. Verify correction of proven BM1 descriptive errors through independent approval, including outside the intake window while Open. Verify preservation of the original receipt and approved version, rejection of stale or unauthorized decisions and preservation of dependent sporting records.
+
+The [PHASE 3 verification matrix](../specs/003-phase-3-player-registration/verification.md) maps the existing D056/D057, D074, D038–D041, media/recovery and D097 rules to planned acceptance cases. Use the rule owners for policy and this matrix for the PHASE 3 allocation of verification.
 
 **Confirmed media/API scope:** UC09 owns managed portraits for hundreds of player profiles; club/shirt associations remain seasonal. Verify portrait validation, authorized changes, failure preservation and current-image history behavior under [D069](design/media.md#d069---managed-player-portraits-with-current-image-display). See [media policy](design/media.md) and [INT-01](design/integrations.md). This adds scope/evidence requirements, not progress.
 
@@ -193,8 +201,8 @@ PHASE 2 owns actual season/regulation workflows and their D089 activation/catch-
 
 ### Progress Checklist
 
-- [ ] The profiles, registration, and approval-conditions Specification is approved.
-- [ ] The seasonal-registration Implementation Plan is completed.
+- [x] The profiles, registration, and approval-conditions Specification is approved.
+- [x] The seasonal-registration Implementation Plan is completed.
 - [ ] Tasks and dependencies are approved and linked to Issues under the conventions.
 - [ ] UC08/UC09 manage profiles and supplementation/review/approval/rejection with correct permissions.
 - [ ] UC10/UC11 check 25/17 limits, homegrown criteria, U21, deadlines, and active registrations.
