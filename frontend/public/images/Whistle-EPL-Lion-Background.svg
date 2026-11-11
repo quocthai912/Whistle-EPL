@@ -1,0 +1,70 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2048 1152" preserveAspectRatio="none">
+  <title>Whistle-EPL lion and sweeping ribbons</title>
+  <desc>Vector reconstruction of the supplied red background. The auth fragment exposes a soft blue and purple motif over a transparent field.</desc>
+  <defs>
+    <linearGradient id="auth-tint" x1="0" x2="1" y1="0" y2="0" gradientUnits="objectBoundingBox">
+      <stop stop-color="#424d91"/>
+      <stop offset=".52" stop-color="#584f9d"/>
+      <stop offset="1" stop-color="#8051ac"/>
+    </linearGradient>
+    <linearGradient id="auth-lion-fade" x2="0" y2="1">
+      <stop stop-color="#465095" stop-opacity=".39"/>
+      <stop offset=".65" stop-color="#545b9d" stop-opacity=".33"/>
+      <stop offset="1" stop-color="#5c62a2" stop-opacity=".23"/>
+    </linearGradient>
+    <linearGradient id="auth-top-fade" x2="0" y2="1">
+      <stop stop-color="#6665aa" stop-opacity=".27"/>
+      <stop offset="1" stop-color="#6665aa" stop-opacity=".14"/>
+    </linearGradient>
+    <linearGradient id="auth-bottom-fade" x2="0" y2="1">
+      <stop stop-color="#8c61b4" stop-opacity=".31"/>
+      <stop offset="1" stop-color="#8c61b4" stop-opacity=".12"/>
+    </linearGradient>
+  </defs>
+  <style>
+    .auth-composition { display: none; }
+    #auth:target ~ .field, #auth:target ~ .motif { display: none; }
+    #auth:target ~ .auth-composition { display: inline; }
+  </style>
+  <g id="auth"/>
+  <path class="field" fill="#ff0058" d="M0 0h2048v1152H0z"/>
+  <g class="motif" fill="#300637">
+    <g>
+      <path d="M138 0h50c-42 53-76 105-108 159l14-1c-37 67-55 131-45 189 5 31 16 61 28 78 4 7-3 10-7 4-47-56-61-135-16-262l-15 2C58 112 98 46 138 0z"/>
+      <path d="M471 0h49c-66 61-113 116-156 165l11 4c-66 87-117 180-107 275 2 9-5 12-7 3-20-94 19-190 81-275l-13-1C363 114 418 53 471 0z"/>
+      <path d="M808 0h74C775 74 671 151 602 222l7 2C511 311 451 400 432 488c-2 10-9 7-5-3 16-94 69-180 147-263l-9-3C631 144 726 60 808 0z"/>
+      <path d="M1176 0h126c-61 26-115 52-174 78l12 13C1006 152 871 230 759 318l7 6C660 408 577 494 530 581c-4 6-7 3-4-4 43-90 117-177 212-261l-5-6c108-91 229-172 361-250l-11-9z"/>
+      <path d="M2048 64v123c-121-10-237-1-353 13l-8-21c-158 22-299 55-423 97l5 13q2 4-8 7c-141 42-277 96-398 175l2 7C760 542 679 605 617 676c-4 5-7 2-2-4 63-77 139-144 231-215l-2-6c124-84 251-152 390-209l-7-15c129-53 277-102 434-137l10 21c135-29 259-42 377-47z"/>
+      <path d="M2048 388v129c-106-20-205-27-310-29v-24c-148 1-292 15-433 38l2 13q0 7-12 10c-144 29-274 68-408 125l-2 6C775 704 687 757 602 834c-3 3-6 1-2-3 76-77 167-146 274-202l1-5c131-71 271-126 416-166l-2-12q0-6 9-9c137-40 285-64 439-76l4 24c101-7 202-7 307 3z"/>
+      <path d="M2048 716v185c-127-40-241-67-351-78l7-28c-151-23-300-31-440-24l-4 12q-3 10-17 12c-150 8-287 33-416 70l-5 8c-107 35-203 84-294 141-5 4-6 0-1-4 90-73 193-132 302-180l4-7c140-59 285-102 439-125l3-13q2-9 17-12c147-23 296-30 447-23l-4 27c108 5 211 17 313 39z"/>
+      <path d="M2048 1135v17h-626c-109-32-204-47-311-61l-13 18q-5 9-15 9c-148-15-287-14-414 8l-7 8q-5 5-14 7l-54 11h-86c58-29 119-50 182-68l9-11c140-45 291-68 453-72l7-15q5-10 16-11c153-6 307 3 460 29q10 2 5 10l-10 20c148 24 282 54 418 101z"/>
+    </g>
+    <g id="lion">
+      <path d="M150 652l-30-57 44 26-9-55 60 40 22-57 33 51 51-51 2 54 37-34-15 61c-67-18-130-8-195 22z"/>
+      <path d="M162 661c42-21 96-32 134-22 16 4 29 14 40 27l-6-25c27 5 52 19 74 37l14 42c-26-21-45-34-67-44l-7 24c-29-23-47-31-59-28-24 6-45 15-66 28l11 10c-13 4-25 11-37 22l22 5c-2 19 18 38 45 40l75 4c-8-13-21-25-33-34-24 2-46-1-70-15 15-9 26-14 41-17 11 2 22 7 36 15l21-8-9 14c12 17 25 29 35 40 25-7 43-7 62-3l-19-21-8-4-21-24 23 11 15-8 11 13-12 8 11 17 11-8c36 45 52 87 54 131 2 31-3 58-14 82l-20-22c-11 63-38 105-90 139l-7-30c-53 35-122 49-194 15 10-38 14-80 1-130-20 31-45 55-73 76-21-41-26-89-15-144l-42 12c4-44 21-82 50-116l-26-4c22-39 46-65 76-85-10 26-4 50 21 63-9-13-13-30-8-45 7-22 30-29 54-12-5-12-17-21-35-26zM286 831c11 20 20 35 30 47 24-4 50-16 69-31l2-37-24-14c-28 6-53 19-77 35zM404 814l-2 32 26 29c11-22 13-50 1-77zM327 902l18 27c13 0 25-7 38-16l3 33c17-14 28-29 31-49-9-22-27-32-44-20-16 10-31 19-46 25z" fill-rule="evenodd"/>
+    </g>
+    <g class="initials">
+      <path d="M423 683l67-49 22 40c13 24 5 41-12 50-20 9-36-6-44-32l-23 17zM467 681c7 21 16 29 27 21 10-8 8-18 0-36z" fill-rule="evenodd"/>
+      <path d="M459 767l74-53 12 18-60 43 22 41-19 3z"/>
+    </g>
+  </g>
+  <!-- Coordinates match the content area in the authentication design reference. -->
+  <svg class="auth-composition" width="2048" height="1152" viewBox="5 154 1664 695" preserveAspectRatio="none">
+    <g>
+      <g fill="url(#auth-top-fade)">
+        <path d="M150 154h31C124 211 77 285 51 365c3-73 50-157 99-211z"/>
+        <path d="M314 154h35C269 211 202 279 157 358c17-70 89-152 157-204z"/>
+        <path d="M563 154h48C466 207 330 283 235 384c72-95 214-180 328-230z"/>
+        <path d="M863 154h95C798 187 646 227 516 291c93-62 233-106 347-137z"/>
+      </g>
+      <g fill="url(#auth-tint)">
+        <path opacity=".19" d="M1669 150v57c-164 1-312 10-462 36l-1-11c-163 30-321 72-465 124 112-60 269-111 450-149l1-10c149-29 302-44 477-47z"/>
+        <path opacity=".21" d="M1669 373v57c-134-37-237-55-349-58-143-12-298-12-438 5 151-39 292-56 434-56 113-4 203 2 293 23l-3 17z"/>
+        <path opacity=".20" d="M1669 595v62c-113-45-233-73-363-90-163-23-321-27-467-16 142-37 311-48 474-33 134 14 249 42 356 77z"/>
+        <path opacity=".17" d="M118 785C178 753 249 724 322 703c95-24 186-38 283-42-97 13-187 32-280 58-86 26-149 55-207 66z"/>
+      </g>
+      <path fill="url(#auth-bottom-fade)" d="M370 842c146-43 325-72 497-70l151 5 8-13c116 9 228 33 338 76-130-34-246-48-367-51-225-7-438 14-627 53z"/>
+      <use href="#lion" transform="translate(21 75) scale(.54 .57)" fill="url(#auth-lion-fade)"/>
+    </g>
+  </svg>
+</svg>

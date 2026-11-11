@@ -93,6 +93,11 @@
   align-items: center;
   justify-content: center;
   padding: 24px;
+  background:
+    url('/images/Whistle-EPL-Lion-Background.svg#auth') left center / max(100%, 1050px) 100%
+      no-repeat,
+    radial-gradient(ellipse at 48% 47%, #f8f8fc 26%, transparent 77%),
+    linear-gradient(110deg, #e5e8f6, #f4f3fc 46%, #ede6f8);
 }
 .card {
   display: grid;
