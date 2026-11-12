@@ -76,6 +76,12 @@ The Team Leader accepted the final summary and expressly required that no Specs 
 
 This is an extension of the evolving English v2 package, not retroactive Q98 approval. Authorization covers the minimal decision-document updates and consistency verification only. PHASE 2 remains NOT_STARTED; Phase statuses, checkboxes and historical approvals are preserved. No Specifications, Plans, Tasks, Issues, implementation code, commit, push or PR are authorized by this approval.
 
+## PHASE 3 preparation approval - D100
+
+**Status:** APPROVED. **Approver:** Team Leader. **Date:** 2026-11-11 (Asia/Bangkok). Local PHASE 3 preparation Q1-A, Q2-A and final confirmation approve [D100](use-cases/registration.md#d100---correction-of-approved-club-participation-applications). [ADR 0009](../docs/adr/0009-stable-identities-and-selective-business-snapshots.md#d100---correction-of-approved-club-participation-applications) records the actual confirmations and rationale.
+
+This approval extends the English Context Package after Q98 and authorizes the decision documentation. PHASE 3 remains `NOT_STARTED` and retains its PHASE 1 and PHASE 2 dependencies.
+
 ## Constitution v1.0.0 ratification
 
 **Status:** RATIFIED. **Approver:** Team Leader. **Date:** 2026-10-28 (Asia/Bangkok). After Q104A (risk-based testing), Q105C (agent review permitted, no mandatory human-review merge gate), Q106A (Team Leader amendment authority) and review clarifications for approved CLI/fixture controls and the dynamic decision index, the Team Leader explicitly stated: "tôi chính thức phê duyệt bản hiến chương này". [The Constitution](../.specify/memory/constitution.md) owns the adopted governance; this record establishes separate approval provenance, not a new architecture decision or retroactive Q98 approval.

@@ -175,7 +175,7 @@ The rules below are the authoritative current policy for this domain. The UC flo
 
 - **Homegrown evidence:** A positive finding requires qualifying-seasons/months branch, qualifying value, evidence summary and reference. Retain verifier/time/regulation version through the system. Upload functionality is not mandatory. Notes are optional; do not add personal identity papers.
 
-- **Club snapshot:** At club-application approval preserve the approved version's club name/abbreviation, coach, home ground, representative details and proposed player list.
+- **Club snapshot:** At club-application approval preserve the approved version's club name/abbreviation, coach, home ground, representative details and proposed player list. Corrections to an approved snapshot follow [D100](use-cases/registration.md#d100---correction-of-approved-club-participation-applications).
 
 - **Player snapshot:** At validity confirmation preserve name, birth date, nationality, position, shirt number, classifications and regulation/verification basis. Approved corrections create a successor record while retaining the old one.
 

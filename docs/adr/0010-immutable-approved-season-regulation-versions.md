@@ -14,6 +14,18 @@ Allow controlled changes to squad limits, homegrown and U21 conditions during a 
 
 Freezing these conditions from the first approved registration was considered. The Team Leader chose QĐ6.2 flexibility without mass revocation or grandfathering incompatible current registrations, accepting impact checks and changes/supplementation for pending work. Exact homegrown/U21 values, calendar/deadline exceptions, record lifecycle and technical contracts remain open. This selects the policy for player conditions/limits, not deadline assessment, and adds no extra UC10 approver. See [Context v2 D052](../../context/use-cases/registration.md#d052---compatible-registration-rule-changes-and-revalidation-of-pending-records).
 
+### PHASE 2 approval of the D052 compatibility scope
+
+On 2026-11-10 (Asia/Bangkok), the Team Leader approved the PHASE 2 Specification with
+"Tôi đồng ý phê duyệt." The [Phase ledger](../../context/progress-checker.md#phase-2---seasons-catalogs-and-regulations)
+records the approval. The published baseline at commit `5bb438b7b16df0fb0c406a830cf8b0d01e6c8d90`
+contains [FR-015](../../specs/002-phase-2-season-regulations/spec.md#functional-requirements).
+FR-015 explicitly includes confirmed future registration plans alongside protected approved
+registrations and lists in the compatibility checks at regulation approval and effectivity.
+This later Specification approval records the scope used by [D052](../../context/use-cases/registration.md#d052---compatible-registration-rule-changes-and-revalidation-of-pending-records)
+and [D075](../../context/use-cases/registration.md#d075---prospective-registration-plan-changes-and-interval-quota-checks).
+The Q52 entry above retains its original scope and date.
+
 ## Controlled cancellation, replacement and activation
 
 **Status:** accepted. **Approver:** Team Leader. **Date:** 2026-10-25 (Asia/Bangkok). **Interview:** grouped Q51, option A; Context decision [D051](../../context/use-cases/registration.md#d051---controlled-cancellation-replacement-and-activation-of-waiting-regulations).

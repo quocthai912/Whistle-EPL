@@ -24,6 +24,20 @@ For Q1, alternatives were rejecting discontinuation until all outstanding commit
 
 This is a separately approved extension to the evolving v2 package, not retroactive Q98 approval. PHASE 2 owns master transitions; PHASE 3/PHASE 4/PHASE 5 verify their downstream use gates and preservation, and PHASE 6/PHASE 7/PHASE 10 verify lookup/report/integrated history as applicable. Documentation approval is not implementation or acceptance and changes no Phase status or checkbox. No Specifications, Plans, Tasks, Issues, implementation code, commit, push or PR are authorized by this record.
 
+## D100 - Correction of approved club participation applications
+
+**Status:** accepted. **Approver:** Team Leader. **Date:** 2026-11-11 (Asia/Bangkok). **Interview:** local PHASE 3 preparation Q1-A and Q2-A with final shared-understanding confirmation. [Current rule owner](../../context/use-cases/registration.md#d100---correction-of-approved-club-participation-applications).
+
+D035/D036 require an authorized path for correcting official business information, and D059 preserves approved BM1 facts. D055 describes pre-approval intake and review. D057 covers validated player registrations. BM1 and UC08 provide the source context (PDF p.6 and pp.85-88). The post-approval workflow is a separately approved refinement.
+
+The Team Leader chose an independently approved successor to correct proven descriptive errors in the same club-season case. This preserves the original application and its receipt history while giving subsequent work the corrected official basis. Keeping the approved version permanently current would leave known errors in seasonal lookup or home-ground suggestions. The selected approach requires evidence, an independent decision and review of affected references. Scheduled venue changes still follow UC14.
+
+The Team Leader also chose to allow these corrections outside the intake windows while the season is Open. Applying D053 again would require an extra exception even when contemporaneous evidence proves a recording error. The correction has its own decision time and the original receipt retains its own basis.
+
+- Q1-A, independently approved correction of proven descriptive errors: "Tôi đồng ý chọn A."
+- Q2-A, Open-season correction outside the intake window without a receipt exception: "Tôi chọn A."
+- Final confirmation of the summarized scope, authority, history, timing and downstream boundaries: "Tôi xác nhận."
+
 ## Registration snapshot fields and seasonal lookup
 
 **Status:** accepted. **Approver:** Team Leader. **Date:** 2026-10-25 (Asia/Bangkok). **Interview:** grouped Q59, option A; Context decision [D059](../../context/business.md#d059---required-registration-data-and-official-snapshot-milestones).

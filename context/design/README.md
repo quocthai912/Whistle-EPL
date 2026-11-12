@@ -136,6 +136,7 @@ D099 is a separately approved PHASE 2 preparation extension on 2026-11-10. See [
 | D097 | [Pnpm toolchain/development/operations](architecture.md#d097---pnpm-toolchain-development-quality-and-reference-operations); [fixture/measurement baseline](../quality.md#d097-test-season-and-measurement-baseline) | [0002](../../docs/adr/0002-approved-technology-stack.md#q97---compatible-baseline-and-pnpm-development-contract) |
 | D098 | [Required CI and protected integration branches](architecture.md#d098---required-ci-and-protected-integration-branches) | [0025](../../docs/adr/0025-required-ci-and-protected-branches.md) |
 | D099 | [Club/stadium discontinuation and resumption](../business.md#d099---club-and-stadium-discontinuation-with-controlled-resumption) | [0009](../../docs/adr/0009-stable-identities-and-selective-business-snapshots.md#d099---club-and-stadium-discontinuation-and-resumption) |
+| D100 | [Correction of approved club participation applications](../use-cases/registration.md#d100---correction-of-approved-club-participation-applications) | [0009](../../docs/adr/0009-stable-identities-and-selective-business-snapshots.md#d100---correction-of-approved-club-participation-applications) |
 
 ## Other confirmed instructions
 

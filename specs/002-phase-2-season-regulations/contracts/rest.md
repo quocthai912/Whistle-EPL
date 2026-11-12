@@ -51,6 +51,10 @@ summary. A draft may exist before readiness, but submission reports missing summ
 instead of manufacturing a basis. Approval must compare the same summary is still current,
 valid and based on unchanged sources; otherwise return BASIS_CHANGED and require a revised
 successor/resubmission. Never overwrite a submitted summary reference at approval.
+At final CLOSE approval, recheck current readiness under the lifecycle lock using the trusted
+closing instant. A finite playing interval end after that instant blocks even when the interval
+has a recorded end. Ends at or before that instant satisfy the interval check. Missing ends,
+unresolved future plans and other D074 blockers remain disqualifying.
 
 `submittedVersionId` is the exact immutable version being decided. The successful lifecycle
 acknowledgement does not remove roles or invalidate sessions. Missing confirmed summary or

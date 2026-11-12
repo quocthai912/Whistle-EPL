@@ -73,7 +73,7 @@ independent transaction, remote HTTP, duplicated sporting fact table or generic 
 | ReferencedCatalogUsage | Results: every referenced type including draft reports and historical exact versions | Protect code/meaning even if currently disabled; unknown source never means unused. |
 | MasterImpactReader | Existing registration/scheduling/result/read sources for changed master | Return permitted affected record references, never silently rewrite them. |
 | PublicMediaScope | Public Queries/registration basis: current D032 public eligibility | Missing/unavailable means not public; current authenticated profile-read path remains separately checked. |
-| SeasonClosingReadiness | Existing summary source plus registration/scheduling/result/request owners | Require current confirmed summary, no review flag, valid current basis, no other unresolved requests/waiting effects, ended intervals and no unresolved future plans. Never return ready on absent summary/provider error. |
+| SeasonClosingReadiness | Existing summary source plus registration/scheduling/result/request owners | Require current confirmed summary, no review flag, valid current basis, no other unresolved requests/waiting effects, exact playing interval ends and unresolved future-plan facts. At final close, use the trusted closing instant after acquiring the full lock set. A finite end at or before that instant satisfies the interval check. A later or missing end or unresolved future plan blocks closure. Never return ready on absent summary/provider error. |
 
 Status union: KNOWN with actual source revision/facts; VERIFIED_NOT_INTRODUCED only when the
 source relations are absent and owning runtime writers/routes are not installed; UNAVAILABLE
@@ -107,7 +107,7 @@ and obey existing 30-day diagnostic retention.
 Mutation callers holding the season lock invoke the resolver in the same transaction before
 depending on current rules. If the later mutation fails, its activation changes roll back too;
 timer/request recovery can process them again without claiming a prior successful activation.
-Read orchestration follows [REST read-only basis checks](rest.md#read-time-effective-basis-checks)
+Read orchestration, including a season detail that presents a current rule basis, follows [REST read-only basis checks](rest.md#read-time-effective-basis-checks)
 without invoking due-work processing or recording activation/ACTIVATION_BLOCKED. An unavailable
 correct basis returns 503, never old-current data as if fresh.
 
