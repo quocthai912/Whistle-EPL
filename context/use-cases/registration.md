@@ -494,7 +494,7 @@ The rules below are the authoritative current policy for this domain. The UC flo
 
 - **Source:** O01/O02/O07/O12; QĐ6.2, UC06/UC10/UC11; [D036](../business.md#d036---correct-erroneous-master-data-with-separate-review-of-affected-business-records)/[D042](registration.md#d042---immutable-approved-versions-of-seasonal-regulations)/[D043](registration.md#d043---immediate-or-future-regulation-effectivity-without-backdating)/[D051](registration.md#d051---controlled-cancellation-replacement-and-activation-of-waiting-regulations).
 
-- **Decision:** Permit controlled mid-season changes to squad limits, homegrown and U21 conditions only if compatible with protected approved registrations/lists and confirmed future registration plans. Check impact at approval and at effectivity under D051 and D075. Block an incompatible change. [PHASE 2 FR-015](../../specs/002-phase-2-season-regulations/spec.md#functional-requirements) records this approved scope.
+- **Decision:** Permit controlled mid-season changes to squad limits, homegrown and U21 conditions only if compatible with protected approved registrations/lists and confirmed future registration plans. Check impact at approval and at effectivity under D051 and D075. Block an incompatible change. See the [PHASE 2 approval record for FR-015](../../docs/adr/0010-immutable-approved-season-regulation-versions.md#phase-2-approval-of-the-d052-compatibility-scope).
 
 - **Existing decisions:** Do not automatically cancel registrations, remove players or rewrite approved decisions to force compliance with new rules. Preserve the original regulation-version basis of historical decisions.
 
