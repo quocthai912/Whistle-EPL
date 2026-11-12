@@ -10,19 +10,21 @@ const policies = {
   ACCOUNT_LOCKED: ['state', 'sessionsInvalidated'],
   ACCOUNT_UNLOCKED: ['state'],
   PASSWORD_RESET: ['mustChangePassword', 'sessionsInvalidated'],
-  PASSWORD_CHANGED: ['sessionsInvalidated'],
+  PASSWORD_CHANGED: ['mustChangePassword', 'sessionsInvalidated'],
   LOGIN_SUCCEEDED: [],
   LOGOUT_SUCCEEDED: [],
   SESSIONS_INVALIDATED: ['sessionsInvalidated', 'cause'],
-  SYSTEM_ROLE_GRANTED: ['assignmentId', 'roleCode'],
-  SYSTEM_ROLE_REVOKED: ['assignmentId', 'roleCode'],
-  SEASON_ROLE_GRANTED: ['assignmentId', 'roleCode', 'seasonId'],
-  SEASON_ROLE_REVOKED: ['assignmentId', 'roleCode', 'seasonId'],
-  SHARED_GRANT_GRANTED: ['grantId', 'masterKind'],
-  SHARED_GRANT_ENDED: ['grantId', 'masterKind'],
-  CREATE_SEASON_GRANTED: ['grantId'],
-  CREATE_SEASON_REVOKED: ['grantId'],
+  SYSTEM_ROLE_GRANTED: ['assignmentId', 'roleCode', 'granted'],
+  SYSTEM_ROLE_REVOKED: ['assignmentId', 'roleCode', 'granted'],
+  SEASON_ROLE_GRANTED: ['assignmentId', 'roleCode', 'seasonId', 'granted'],
+  SEASON_ROLE_REVOKED: ['assignmentId', 'roleCode', 'seasonId', 'granted'],
+  SHARED_GRANT_GRANTED: ['grantId', 'masterKind', 'granted'],
+  SHARED_GRANT_ENDED: ['grantId', 'masterKind', 'granted'],
+  CREATE_SEASON_GRANTED: ['grantId', 'granted'],
+  CREATE_SEASON_REVOKED: ['grantId', 'granted'],
   DELEGATION_DRAFTED: [
+    'state',
+    'reason',
     'versionId',
     'versionNumber',
     'recipientId',
@@ -32,6 +34,8 @@ const policies = {
     'endsAt',
   ],
   DELEGATION_EDITED: [
+    'state',
+    'reason',
     'versionId',
     'versionNumber',
     'recipientId',
@@ -44,14 +48,23 @@ const policies = {
   DELEGATION_RETURNED: ['versionId', 'state'],
   DELEGATION_REJECTED: ['versionId', 'state'],
   DELEGATION_CANCELLED: ['versionId', 'state'],
-  DELEGATION_GRANTED: ['grantId', 'versionId', 'recipientId', 'actionCode', 'startsAt', 'endsAt'],
+  DELEGATION_GRANTED: [
+    'grantId',
+    'versionId',
+    'recipientId',
+    'actionCode',
+    'startsAt',
+    'endsAt',
+    'state',
+  ],
   DELEGATION_REVOKED: ['grantId', 'state', 'sessionsInvalidated', 'effectiveAt'],
   DELEGATION_TERMINATED: ['grantId', 'state', 'sessionsInvalidated', 'effectiveAt'],
-  DELEGATION_STARTED: ['grantId', 'sessionsInvalidated', 'effectiveAt'],
-  DELEGATION_EXPIRED: ['grantId', 'sessionsInvalidated', 'effectiveAt'],
+  DELEGATION_STARTED: ['grantId', 'state', 'sessionsInvalidated', 'effectiveAt'],
+  DELEGATION_EXPIRED: ['grantId', 'state', 'sessionsInvalidated', 'effectiveAt'],
 } as const;
 export type AuditAction = keyof typeof policies;
 
+/** Recognizes only actions with an explicitly owned audit payload policy. */
 export function isAuditAction(value: string): value is AuditAction {
   return Object.hasOwn(policies, value);
 }
@@ -73,6 +86,7 @@ export function auditChangeSummary(action: AuditAction, payload: Prisma.JsonValu
   return Object.keys(summary).length ? summary : null;
 }
 
+/** Validates primitive, bounded values against the action allowlist before audit append. */
 export function auditPayload(action: AuditAction, value: unknown): Prisma.InputJsonObject {
   const allowed: readonly string[] = policies[action];
   if (

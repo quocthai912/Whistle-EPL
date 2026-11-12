@@ -3,6 +3,44 @@ import { administrationHarness, fixturePassword } from '../fixtures/admin-http';
 
 describe('protected audit lookup', () => {
   const harness = administrationHarness();
+  it('searches readable names across all pages without searching private payloads or widening object scope', async () => {
+    const { accounts } = await harness.fixtures();
+    const admin = await harness.login(accounts[0].username);
+    const name = 'Đối tượng tra cứu riêng';
+    await harness.observer.account.update({
+      where: { id: accounts[1].id },
+      data: { fullName: name },
+    });
+    const row = {
+      actorKind: 'ACCOUNT',
+      actorId: accounts[0].id,
+      occurredAt: new Date('2026-11-05T03:00:00Z'),
+      actionCode: 'ACCOUNT_UPDATED',
+      objectKind: 'Account',
+      objectId: accounts[1].id,
+      outcome: 'SUCCESS',
+      reason: 'private-search-sentinel',
+    };
+    await harness.observer.auditRecord.createMany({
+      data: [
+        ...Array.from({ length: 25 }, () => ({ ...row })),
+        { ...row, objectKind: 'DelegationCase' },
+      ],
+    });
+    const before = await harness.observer.auditRecord.count();
+    const path = '/audit-logs?search=' + encodeURIComponent(name);
+    const first = (await admin.get(path).expect(200)).body.data;
+    const second = (await admin.get(path + '&page=2').expect(200)).body.data;
+    expect(first.total).toBe(25);
+    expect(first.items).toHaveLength(20);
+    expect(second.items).toHaveLength(5);
+    expect(
+      (await admin.get('/audit-logs?search=private-search-sentinel').expect(200)).body.data.total,
+    ).toBe(0);
+    expect((await admin.get('/audit-logs?search=%25').expect(200)).body.data.total).toBe(0);
+    expect(await harness.observer.auditRecord.count()).toBe(before);
+    await (await harness.login(accounts[2].username)).get(path).expect(403);
+  });
 
   it('requires an administrator and projects only currently permitted audit metadata and changes', async () => {
     const { accounts } = await harness.fixtures();

@@ -18,10 +18,12 @@ const actionByBoundary = {
 } as const;
 
 const live = { revokedAt: null, terminatedAt: null };
+/** Matches grants where the account is either recipient or originating proposer. */
 const participant = (accountId: string): Prisma.DelegationGrantWhereInput => ({
   OR: [{ recipientId: accountId }, { approvedVersion: { case: { proposerId: accountId } } }],
 });
 
+/** Discovers recipient locks for live grants affected by a participant's authority change. */
 export async function dependentRecipientLocks(db: Prisma.TransactionClient, accountId: string) {
   const grants = await db.delegationGrant.findMany({
     where: { ...live, ...participant(accountId) },
@@ -41,6 +43,7 @@ export function grantState(grant: DelegationGrant, now: Date) {
 export class DelegationBoundaryService {
   private readonly audit = new AuditWriterService();
 
+  /** Finds unrecorded start/expiry boundaries in deterministic effective-time order. */
   async due(db: Prisma.TransactionClient, recipientId: string, now: Date) {
     const grants = await db.delegationGrant.findMany({
       where: {
@@ -117,11 +120,29 @@ export class DelegationBoundaryService {
       reason,
       requestId,
       outcome: 'SUCCESS',
+      before: {
+        grantId: grant.id,
+        state:
+          kind === 'START'
+            ? immediate
+              ? 'GRANTED'
+              : 'SCHEDULED'
+            : kind === 'EXPIRY'
+              ? 'ACTIVE'
+              : grantState(grant, at),
+      },
       after: {
         grantId: grant.id,
         sessionsInvalidated,
         effectiveAt: at.toISOString(),
-        ...(!timed && { state: kind === 'REVOCATION' ? 'REVOKED' : 'TERMINATED' }),
+        state:
+          kind === 'START'
+            ? 'ACTIVE'
+            : kind === 'EXPIRY'
+              ? 'EXPIRED'
+              : kind === 'REVOCATION'
+                ? 'REVOKED'
+                : 'TERMINATED',
       },
     });
   }

@@ -6,6 +6,8 @@
 
 **Approved extension:** D098 and PHASE 1 preparation clarifications, Q99-Q103 and final shared-understanding approval, Team Leader, 2026-10-28 (Asia/Bangkok). See [the extension record](#phase-1-preparation-approval---q99-q103); Q98 is not retroactive approval of this extension.
 
+**Approved PHASE 2 preparation extension:** D099, club/stadium discontinuation and resumption, Team Leader, 2026-11-10 (Asia/Bangkok). See [the extension record](#phase-2-preparation-approval---d099); no Phase status or checkbox changes.
+
 **Q98 documentation verification:** COMPLETE after relocation, three independent reviews and final integrity checks at that milestone. This is not software implementation or acceptance.
 
 **Historical implementation snapshot (2026-10-29):** PHASE 1 was `IN_PROGRESS`. T001–T014 are published on `feat/phase-1-core-foundation` at `892f172f9ec539d5789a31a2f8046480afe15772`; T015–T022 are implemented, verified and published at [`7ac09e6`](https://github.com/quocthai912/Whistle-EPL/commit/7ac09e6cec9fb434248c82db142ab04695961823) on `feat/phase-1-operations-recovery` (review base `30506e3`). The live remote ref and all 68 manifest entries match the published commit. See [operator evidence](../docs/verification/phase-1/operator-foundation.md). T023–T026 are implemented, verified and published at [`5cfa666`](https://github.com/quocthai912/Whistle-EPL/commit/5cfa666a7550c9b1d06cc21926dba7e2f27c1a26) on `feat/phase-1-authentication-backend` (review base `7e28810`); the live remote ref and all 28 authentication manifest entries match that commit (see [authentication evidence](../docs/verification/phase-1/authentication.md)); T027–T048 and Phase acceptance were pending at that milestone. The [Progress Checker](progress-checker.md#phase-1-execution-evidence---2026-10-29) owns statuses, checkboxes and evidence. Historical approvals remain unchanged; this is not a new Context version or Phase acceptance.
@@ -29,6 +31,8 @@ One evolving, English-only Context Package is maintained in this directory for h
 | Technical/design topics or [D001](design/architecture.md#d001---modular-layered-monolithic-backend)-[D097](design/architecture.md#d097---pnpm-toolchain-development-quality-and-reference-operations) | [Design navigation and index](design/README.md) |
 | Media or future external APIs | [Media](design/media.md), [integration](design/integrations.md) |
 | Quality, acceptance or Phase selection | [Quality](quality.md), [Progress Checker](progress-checker.md) |
+| Current administration/authentication UI and search/filter verification | [UI refinement evidence](../docs/verification/phase-1/ui-refinement.md), [REST contract](../specs/001-phase-1-operational-foundation/contracts/rest.md) |
+| Implemented PHASE 1 audit before/after fields and latest regression | [Audit field catalog](../specs/001-phase-1-operational-foundation/contracts/rest.md#phase-1-audit-change-summaries), [2026-11-08 regression](../docs/verification/phase-1/ui-refinement.md#audit-completeness-and-full-regression--2026-11-08) |
 | CI/merge policy or PHASE 1 preparation readiness | [D098](design/architecture.md#d098---required-ci-and-protected-integration-branches), [readiness](progress-checker.md#phase-1-specification-readiness-and-foundation-verification) |
 | Unresolved work | [Open decisions](open-decisions.md) |
 | Citations and approval evidence | [Sources](sources.md) |
@@ -65,6 +69,18 @@ The Team Leader authorized the same English-only package to live directly under 
 This is an extension of one evolving package, not a new version copy or a change to Q98's historical scope. D001-D097, source thresholds, Phase implementation statuses and checkboxes are preserved. No new business glossary term or umbrella PHASE 1 ADR is introduced.
 
 The Team Leader accepted the final summary and expressly required that no Specs be created. Authorization covers the minimal English decision-document updates only. It does not authorize Specifications, Plans, Tasks, Issues, application/database/CI workflow implementation, GitHub branch-settings changes, commit or push. Constitution ratification was handled through the separate governance approval below. Requirements readiness does not establish a passing build, configured protection or software acceptance.
+
+## PHASE 2 preparation approval - D099
+
+**Status:** APPROVED. **Approver:** Team Leader. **Date:** 2026-11-10 (Asia/Bangkok). Local preparation Q1-A and Q2-A, followed by explicit final shared-understanding confirmation, approve [D099](business.md#d099---club-and-stadium-discontinuation-with-controlled-resumption). [ADR 0009](../docs/adr/0009-stable-identities-and-selective-business-snapshots.md#d099---club-and-stadium-discontinuation-and-resumption) preserves the actual confirmations, alternatives and rationale. These local question labels do not renumber the historical package interview.
+
+This is an extension of the evolving English v2 package, not retroactive Q98 approval. Authorization covers the minimal decision-document updates and consistency verification only. PHASE 2 remains NOT_STARTED; Phase statuses, checkboxes and historical approvals are preserved. No Specifications, Plans, Tasks, Issues, implementation code, commit, push or PR are authorized by this approval.
+
+## PHASE 3 preparation approval - D100
+
+**Status:** APPROVED. **Approver:** Team Leader. **Date:** 2026-11-11 (Asia/Bangkok). Local PHASE 3 preparation Q1-A, Q2-A and final confirmation approve [D100](use-cases/registration.md#d100---correction-of-approved-club-participation-applications). [ADR 0009](../docs/adr/0009-stable-identities-and-selective-business-snapshots.md#d100---correction-of-approved-club-participation-applications) records the actual confirmations and rationale.
+
+This approval extends the English Context Package after Q98 and authorizes the decision documentation. PHASE 3 remains `NOT_STARTED` and retains its PHASE 1 and PHASE 2 dependencies.
 
 ## Constitution v1.0.0 ratification
 

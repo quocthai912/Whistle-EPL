@@ -8,6 +8,8 @@ This is the current Phase ledger for one evolving package, not a Spec/Plan/Task.
 
 **Latest implementation update** 2026-11-06 (Asia/Bangkok). T038–T048 have recorded verification and T048 reviewer approval. See the [audit and verification evidence](#phase-1-audit-and-verification-evidence---2026-11-06). PHASE 1 is `COMPLETED` for the accepted foundation scope. PHASE 2–PHASE 10 remain `NOT_STARTED`.
 
+**Post-acceptance regression** 2026-11-08 (Asia/Bangkok). Account confirmation and PHASE 1 audit before/after refinements passed 45 unit, 90 PostgreSQL integration, 32 Chrome/Edge E2E and five backup/scheduler tests, plus the baseline/negative authentication load checks. See the [dated refinement evidence](../docs/verification/phase-1/ui-refinement.md#audit-completeness-and-full-regression--2026-11-08) for scope, reproduction targets and limits. The accepted Phase status, checklist and historical approval remain unchanged; future-Phase audit actions are not claimed implemented or verified.
+
 The latest confirmed scope includes managed club/player media, with independent core acceptance before API research/selection under [INT-01](design/integrations.md#int-01---acceptance-before-api-research-and-integration). External integration is not a mandatory prerequisite to first-version core acceptance and creates no new mandatory Phase. Documented decisions do not establish implementation or acceptance.
 
 ## Status and evidence
@@ -138,6 +140,16 @@ PHASE 2 owns actual season/regulation workflows and their D089 activation/catch-
 
 ## PHASE 2 - Seasons, catalogs, and regulations
 
+**Specification approval evidence, 2026-11-10 (Asia/Bangkok):** The Team Leader explicitly answered "Tôi đồng ý phê duyệt." after the [PHASE 2 Specification](../specs/002-phase-2-season-regulations/spec.md), completed clarification and 16/16 requirements-quality checklist were presented for approval before Plan. This establishes Specification approval only; Plan review, final Tasks/Issues, implementation and acceptance remain separate gates. Implementation Status remains NOT_STARTED.
+
+**Plan approval evidence, 2026-11-10 (Asia/Bangkok):** After the [Implementation Plan](../specs/002-phase-2-season-regulations/plan.md) and its supporting artifacts were presented for review, the Team Leader explicitly answered "Tôi đồng ý phê duyệt." to proceed with Task preparation. This establishes completed reviewed planning, not final Tasks/Issues approval or implementation. Those gates and actual verification/acceptance evidence remain required; Implementation Status stays NOT_STARTED.
+
+**Task approval and Issue publication evidence, 2026-11-10 (Asia/Bangkok):** The Team Leader answered "Tôi đồng ý." after reviewing the 30 Tasks and read-only Spec/Plan/Tasks analysis to approve the final Task set and one Issue per Task. [tasks.md](../specs/002-phase-2-season-regulations/tasks.md) records 30/30 unique Issues, [#72](https://github.com/quocthai912/Whistle-EPL/issues/72) through [#101](https://github.com/quocthai912/Whistle-EPL/issues/101). Remote read-back verified exact approved acceptance criteria, current ready-for-agent labels and all 44 native blocking relationships, with no duplicate canonical Task. Source documents still await authorized human publication; this does not authorize agent commit/push. All Task execution checkboxes and implementation/acceptance criteria remain uncompleted; Implementation Status remains NOT_STARTED.
+
+**Approved preparation extension:** [D099](business.md#d099---club-and-stadium-discontinuation-with-controlled-resumption), 2026-11-10. PHASE 2 verifies authorized club/stadium discontinuation/resumption, reasons and complete transition history, preserved identity/references, save-failure rollback and concurrent final checks under D084/D096. PHASE 3/PHASE 4/PHASE 5 verify their new-use versus existing-approved-commitment gates; PHASE 6/PHASE 7/PHASE 10 verify applicable lookup/report/integrated preservation. Include draft/pending selections invalidated before approval and resumption without automatic restoration of prior outcomes. This allocates future verification, not completion evidence; statuses and checklist states are unchanged.
+
+**Source publication and post-approval audit:** The original Issue source links point to [5bb438b](https://github.com/quocthai912/Whistle-EPL/commit/5bb438b7b16df0fb0c406a830cf8b0d01e6c8d90). The earlier pending-publication note above describes the initial milestone. The amendment was published at [4f2c893](https://github.com/quocthai912/Whistle-EPL/commit/4f2c89373ec3d33af7d44c75cfae207a07969e63). After Team Leader authorization, read-back verified the reconciled criteria and pinned amendment links in #84, #85, #95 and #98. Original approval links and Issue identities, states, labels and dependencies were preserved. See the [documentation audit](../specs/002-phase-2-season-regulations/documentation-audit.md#proposed-github-reconciliation). No execution evidence was recorded.
+
 **Confirmed media/API scope:** UC07 owns managed club logos and all approved LOGO-01 file, reference, failure and audit behavior. See [media policy](design/media.md) and [INT-01](design/integrations.md). This adds scope/evidence requirements, not progress.
 
 **Implementation Status:** `NOT_STARTED`.
@@ -152,9 +164,9 @@ PHASE 2 owns actual season/regulation workflows and their D089 activation/catch-
 
 ### Progress Checklist
 
-- [ ] The season, catalog, and regulations Specification is approved.
-- [ ] The Implementation Plan is completed against settled effectivity/approval decisions.
-- [ ] Tasks and dependencies are approved and linked to Issues under the conventions.
+- [x] The season, catalog, and regulations Specification is approved.
+- [x] The Implementation Plan is completed against settled effectivity/approval decisions.
+- [x] Tasks and dependencies are approved and linked to Issues under the conventions.
 - [ ] UC05/UC07/UC12 manage seasons, club master records, and stadiums with valid constraints.
 - [ ] UC06 validates, approves, and applies regulations at the correct effective time and records history.
 - [ ] Configuration, points ordering, catalog discontinuation, and two-season preservation tests pass.
@@ -166,6 +178,18 @@ PHASE 2 owns actual season/regulation workflows and their D089 activation/catch-
 **Verification Evidence:** CRUD/approval/effectivity/invalid-data scenarios, before/after history samples, two-season and referenced-data comparisons; configuration checks and regression as later Phases use it.
 
 ## PHASE 3 - Profiles and player registration
+
+**Specification approval evidence, 2026-11-12 (Asia/Bangkok):** The Team Leader answered "Tôi phê duyệt." after reviewing the [PHASE 3 Specification](../specs/003-phase-3-player-registration/spec.md), FR-020 clarification and 16/16 requirements checklist. This approves the Specification and progression to Planning. PHASE 3 remains `NOT_STARTED`. Its implementation requires the applicable PHASE 2 capabilities to be implemented and accepted.
+
+**Plan approval evidence, 2026-11-12 (Asia/Bangkok):** The Team Leader answered "Tôi phê duyệt." after reviewing the [PHASE 3 Plan](../specs/003-phase-3-player-registration/plan.md) and supporting design and verification artifacts. This approves progression to Task generation. Final Tasks approval, publication and implementation evidence remain separate.
+
+**Task approval and Issue publication evidence, 2026-11-12 (Asia/Bangkok):** The Team Leader answered "Tôi đồng ý phê duyệt." after reviewing the final 28 Tasks and the follow-up analysis. [tasks.md](../specs/003-phase-3-player-registration/tasks.md) records the 28 verified Issue links and publication evidence. The approved source package was published at [428b4ed](https://github.com/quocthai912/Whistle-EPL/commit/428b4ed4f67ba3dd679eae4ffde18dc19fe1df7b). All 28 Issue bodies were verified with source links pinned to that revision and all 51 approved internal dependencies recorded as links. Native GitHub dependencies were pending at publication.
+
+**Native Issue dependencies verified:** After Team Leader authorization, GitHub read-back confirmed all 51 internal `blocked by` relationships across Issues #103–#130 match [tasks.md](../specs/003-phase-3-player-registration/tasks.md). The Task-linking checklist item is complete. T001 still requires accepted PHASE 2 evidence, and PHASE 3 remains `NOT_STARTED`.
+
+**Approved preparation extension:** [D100](use-cases/registration.md#d100---correction-of-approved-club-participation-applications), 2026-11-11. Verify correction of proven BM1 descriptive errors through independent approval, including outside the intake window while Open. Verify preservation of the original receipt and approved version, rejection of stale or unauthorized decisions and preservation of dependent sporting records.
+
+The [PHASE 3 verification matrix](../specs/003-phase-3-player-registration/verification.md) maps the existing D056/D057, D074, D038–D041, media/recovery and D097 rules to planned acceptance cases. Use the rule owners for policy and this matrix for the PHASE 3 allocation of verification.
 
 **Confirmed media/API scope:** UC09 owns managed portraits for hundreds of player profiles; club/shirt associations remain seasonal. Verify portrait validation, authorized changes, failure preservation and current-image history behavior under [D069](design/media.md#d069---managed-player-portraits-with-current-image-display). See [media policy](design/media.md) and [INT-01](design/integrations.md). This adds scope/evidence requirements, not progress.
 
@@ -181,9 +205,9 @@ PHASE 2 owns actual season/regulation workflows and their D089 activation/catch-
 
 ### Progress Checklist
 
-- [ ] The profiles, registration, and approval-conditions Specification is approved.
-- [ ] The seasonal-registration Implementation Plan is completed.
-- [ ] Tasks and dependencies are approved and linked to Issues under the conventions.
+- [x] The profiles, registration, and approval-conditions Specification is approved.
+- [x] The seasonal-registration Implementation Plan is completed.
+- [x] Tasks and dependencies are approved and linked to Issues under the conventions.
 - [ ] UC08/UC09 manage profiles and supplementation/review/approval/rejection with correct permissions.
 - [ ] UC10/UC11 check 25/17 limits, homegrown criteria, U21, deadlines, and active registrations.
 - [ ] Boundary, insufficient-basis, not-applicable, and conflicting-registration cases return correct results.

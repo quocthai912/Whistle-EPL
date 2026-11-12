@@ -51,6 +51,14 @@ describe('delegation time boundaries', () => {
         select: { boundaryKind: true },
       }),
     ).toEqual([{ boundaryKind: 'TERMINATION' }]);
+    expect(
+      await harness.observer.auditRecord.findFirstOrThrow({
+        where: { objectId: grant.relatedId, actionCode: 'DELEGATION_TERMINATED' },
+      }),
+    ).toMatchObject({
+      beforeData: { grantId: grant.relatedId, state: 'SCHEDULED' },
+      afterData: expect.objectContaining({ state: 'TERMINATED' }),
+    });
   });
   it('processes both boundaries after downtime and keeps subsequent logins valid', async () => {
     const { accounts, seasons } = await harness.fixtures();
@@ -95,5 +103,22 @@ describe('delegation time boundaries', () => {
         select: { boundaryKind: true },
       }),
     ).toEqual([{ boundaryKind: 'START' }, { boundaryKind: 'EXPIRY' }]);
+    const history = await harness.observer.auditRecord.findMany({
+      where: { objectId: grant.relatedId },
+    });
+    expect(history).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          actionCode: 'DELEGATION_STARTED',
+          beforeData: expect.objectContaining({ state: 'SCHEDULED' }),
+          afterData: expect.objectContaining({ state: 'ACTIVE' }),
+        }),
+        expect.objectContaining({
+          actionCode: 'DELEGATION_EXPIRED',
+          beforeData: expect.objectContaining({ state: 'ACTIVE' }),
+          afterData: expect.objectContaining({ state: 'EXPIRED' }),
+        }),
+      ]),
+    );
   });
 });

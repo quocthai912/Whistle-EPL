@@ -3,6 +3,7 @@ import { useState, type FormEvent } from 'react';
 import { HttpFailure } from '../../shared/http/client';
 import { useSession } from '../../shared/http/use-session';
 import css from './Administration.module.css';
+import { AdminSelect } from './AdminSelect';
 
 type Values = Record<string, string>;
 type Basis = { revision: string; versionId?: string; description: string };
@@ -49,10 +50,26 @@ export function AdminDialog({
   const conflict = failure instanceof HttpFailure && failure.status === 409;
   const uncertain = failure instanceof HttpFailure && failure.unknownOutcome;
 
+  /** Clears dependent choices when another field changes their available options. */
+  function changeField(name: string, value: string) {
+    const next = { ...values, [name]: value };
+    const available =
+      typeof command.fields === 'function' ? command.fields(next) : (command.fields ?? []);
+    for (const field of available) {
+      if (field.options && !field.options.some((option) => option.value === next[field.name]))
+        next[field.name] = '';
+    }
+    setValues(next);
+  }
+
   /** Sends the confirmed intent, retaining the original key only when a critical command needs outcome recovery. */
   async function submit(event: FormEvent) {
     event.preventDefault();
     if (busy || conflict || (uncertain && !unknown)) return;
+    if (fields.some((field) => field.required !== false && !values[field.name])) {
+      setFailure(new Error('Vui lòng điền đầy đủ các trường bắt buộc.'));
+      return;
+    }
     setBusy(true);
     setFailure(undefined);
     const intent = unknown ?? {
@@ -106,6 +123,10 @@ export function AdminDialog({
   return (
     <Modal
       open
+      centered
+      width={460}
+      className={css.dialog}
+      styles={{ mask: { backdropFilter: 'blur(3px)' } }}
       title={command.title}
       onCancel={onClose}
       footer={null}
@@ -124,27 +145,32 @@ export function AdminDialog({
             disabled: busy || !!unknown,
             onChange: (
               event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>,
-            ) => setValues({ ...values, [field.name]: event.target.value }),
+            ) => changeField(field.name, event.target.value),
           };
+          if (field.options)
+            return (
+              <AdminSelect
+                key={field.name}
+                label={field.label + (field.required !== false ? ' *' : '')}
+                hideLabel={false}
+                required={shared.required}
+                value={shared.value}
+                disabled={shared.disabled}
+                onChange={(value) => changeField(field.name, value)}
+                options={[{ value: '', label: 'Chọn…' }, ...field.options]}
+              />
+            );
           return (
             <label key={field.name}>
               {field.label}
               {field.required !== false && ' *'}
-              {field.options ? (
-                <select {...shared}>
-                  <option value="">Chọn…</option>
-                  {field.options.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
-              ) : field.type === 'textarea' ? (
+              {field.type === 'textarea' ? (
                 <textarea {...shared} rows={3} maxLength={2000} />
               ) : (
                 <input
                   {...shared}
                   type={field.type ?? 'text'}
+                  placeholder={'Nhập ' + field.label.toLocaleLowerCase('vi-VN')}
                   autoComplete={field.type === 'password' ? 'new-password' : undefined}
                 />
               )}
@@ -181,7 +207,7 @@ export function AdminDialog({
                     setFailure(undefined);
                   }}
                 >
-                  Dùng phiên bản đã xem
+                  Dùng thông tin đã xem
                 </button>
               </>
             )}

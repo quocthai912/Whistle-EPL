@@ -4,7 +4,39 @@ Current package approval: [Q98 approved v2](../../context/README.md#q98---whole-
 
 **Scope supersession, 2026-10-26:** [LS-01 / ADR 0017](0017-live-score-excluded-from-first-version.md) excludes Live Score from the first version and cancels its interview/design/acceptance work. Earlier mentions below are historical, not an active backlog or future implementation commitment. The independent-core acceptance gate remains for media APIs only.
 
-This ADR records decisions and rationale; authoritative current rules are owned by [D035](../../context/business.md#d035---stable-master-identity-with-selective-snapshots-of-official-business-information), [D036](../../context/business.md#d036---correct-erroneous-master-data-with-separate-review-of-affected-business-records), [D058](../../context/business.md#d058---stable-business-codes-duplicate-review-and-temporal-shirt-number-uniqueness), [D059](../../context/business.md#d059---required-registration-data-and-official-snapshot-milestones). Historical open-point notes do not reopen subsequently confirmed policy.
+This ADR records decisions and rationale; authoritative current rules are owned by [D035](../../context/business.md#d035---stable-master-identity-with-selective-snapshots-of-official-business-information), [D036](../../context/business.md#d036---correct-erroneous-master-data-with-separate-review-of-affected-business-records), [D058](../../context/business.md#d058---stable-business-codes-duplicate-review-and-temporal-shirt-number-uniqueness), [D059](../../context/business.md#d059---required-registration-data-and-official-snapshot-milestones) and [D099](../../context/business.md#d099---club-and-stadium-discontinuation-with-controlled-resumption). Historical open-point notes do not reopen subsequently confirmed policy. D099 is a separately approved extension dated 2026-11-10, outside Q98's historical scope.
+
+## D099 - Club and stadium discontinuation and resumption
+
+**Status:** accepted. **Approver:** Team Leader. **Date:** 2026-11-10 (Asia/Bangkok). **Interview:** local PHASE 2 preparation Q1-A and Q2-A, followed by final shared-understanding confirmation. These local question labels are distinct from the historical package interview sequence. Current rule owner: [D099](../../context/business.md#d099---club-and-stadium-discontinuation-with-controlled-resumption).
+
+TH-04/TH-06 (PDF pp.13-14), AT-04 (p.32), UC07 (pp.82-84) and UC12 (pp.97-99) require discontinuation and preserved references, but did not determine the treatment of approved future commitments or resumption. D095 already includes discontinuedAt on Club/Stadium; a timestamp alone did not settle those business semantics.
+
+Choose discontinuation that blocks new use while allowing already approved commitments to proceed through their owning UCs, and permit controlled resumption of the same master identity. Existing shared-master authority records either transition with reason and full history, effective on successful recording. Draft/pending selections must be rechecked before establishing new commitments. Neither transition automatically changes sporting decisions or permissions; authorized corrections and historical lookup retain their existing workflows. This refinement is limited to clubs/stadiums and does not change D046 catalog semantics or introduce Player lifecycle rules.
+
+For Q1, alternatives were rejecting discontinuation until all outstanding commitments finish, or immediately blocking execution of existing commitments. The chosen option permits timely master administration without stranding approved schedules/registrations; its cost is an explicit distinction between new use and processing an existing approved commitment. Stadium unavailability requiring postponement or relocation still uses UC14. For Q2, permanent discontinuation was considered; same-identity resumption avoids fragmenting one real entity into duplicate masters, accepting the need to retain every transition and revalidate subsequent work rather than revive old outcomes.
+
+### Approval evidence
+
+- Q1 proposed option A with the complete new-use/existing-commitment, authority, timing, history and correction boundaries. The Team Leader answered: "Tôi đồng ý Phương Án A."
+- Q2 proposed same-identity resumption, reason/history, successful-recording effectivity, no backdating and no automatic restoration/approval of previous work. The Team Leader answered: "Tôi đồng ý phương án A."
+- The final summary restated both decisions, Club/Stadium-only scope and updates to this ADR and authoritative Context references. The Team Leader confirmed: "Tôi xác nhận."
+
+This is a separately approved extension to the evolving v2 package, not retroactive Q98 approval. PHASE 2 owns master transitions; PHASE 3/PHASE 4/PHASE 5 verify their downstream use gates and preservation, and PHASE 6/PHASE 7/PHASE 10 verify lookup/report/integrated history as applicable. Documentation approval is not implementation or acceptance and changes no Phase status or checkbox. No Specifications, Plans, Tasks, Issues, implementation code, commit, push or PR are authorized by this record.
+
+## D100 - Correction of approved club participation applications
+
+**Status:** accepted. **Approver:** Team Leader. **Date:** 2026-11-11 (Asia/Bangkok). **Interview:** local PHASE 3 preparation Q1-A and Q2-A with final shared-understanding confirmation. [Current rule owner](../../context/use-cases/registration.md#d100---correction-of-approved-club-participation-applications).
+
+D035/D036 require an authorized path for correcting official business information, and D059 preserves approved BM1 facts. D055 describes pre-approval intake and review. D057 covers validated player registrations. BM1 and UC08 provide the source context (PDF p.6 and pp.85-88). The post-approval workflow is a separately approved refinement.
+
+The Team Leader chose an independently approved successor to correct proven descriptive errors in the same club-season case. This preserves the original application and its receipt history while giving subsequent work the corrected official basis. Keeping the approved version permanently current would leave known errors in seasonal lookup or home-ground suggestions. The selected approach requires evidence, an independent decision and review of affected references. Scheduled venue changes still follow UC14.
+
+The Team Leader also chose to allow these corrections outside the intake windows while the season is Open. Applying D053 again would require an extra exception even when contemporaneous evidence proves a recording error. The correction has its own decision time and the original receipt retains its own basis.
+
+- Q1-A, independently approved correction of proven descriptive errors: "Tôi đồng ý chọn A."
+- Q2-A, Open-season correction outside the intake window without a receipt exception: "Tôi chọn A."
+- Final confirmation of the summarized scope, authority, history, timing and downstream boundaries: "Tôi xác nhận."
 
 ## Registration snapshot fields and seasonal lookup
 

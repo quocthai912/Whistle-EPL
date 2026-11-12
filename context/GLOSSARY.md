@@ -14,6 +14,10 @@ One business context with a single English-only glossary in the sole current Con
 
 **Stadium**: A match venue with managed information and usage status; multiple clubs may use it (p.37; QĐ2.5).
 
+**Club/stadium discontinuation**: Withdrawal of a club or stadium master from new use while preserving its identity, history and existing approved commitments ([D099](business.md#d099---club-and-stadium-discontinuation-with-controlled-resumption)).
+
+**Club/stadium resumption**: Return of a discontinued club or stadium master to availability for new use under the same identity, distinct from restoring earlier cancelled or rejected business records ([D099](business.md#d099---club-and-stadium-discontinuation-with-controlled-resumption)).
+
 **Home ground**: The stadium registered in a club's seasonal application, used by default when the club is the home team unless the Organizing Committee approves a change (BM1, QĐ2.3).
 
 **Seasonal regulation version**: A distinct full set of regulations for one season whose approved content is retained unchanged as a business reference; changing approved content requires a newly approved version ([D042](use-cases/registration.md#d042---immutable-approved-versions-of-seasonal-regulations), confirmed 2026-10-25).

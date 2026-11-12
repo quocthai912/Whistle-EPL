@@ -1,0 +1,14 @@
+# PHASE 3 Design Research
+
+**Scope**: Spec Kit internal Phase 0. Decisions below elaborate the approved Specification and Context. PHASE 2 contracts describe planned interfaces.
+
+| Topic | Selected design and rationale | Alternative considered |
+| --- | --- | --- |
+| Runtime seam | Extend the D079 Registry & Registration module and existing platform admission, transaction, command receipt and audit seams. The accepted foundation establishes the shared protocol. Confirm the accepted PHASE 2 composition before implementation. | A second service or independent commit would duplicate rule/identity ownership and break atomic transfer or due activation. |
+| Rule resolution | Resolve exact receipt, decision and historical effective bases through Season & Regulations. Use approved half-open boundaries. Preserve receipt basis on an exact version, recheck pending work at decision and evaluate D057 historical segments under FR-020. | Current-rule-only or receipt-rule-only validation would alter historical meaning or assess new work on a stale basis. |
+| Quota and intervals | Sweep affected boundaries of current validated plans, including future boundaries, under the agreed lock scope. Separate eligibility verdicts, official pointers and playing effectivity. Apply D075 paired updates and explicit dependencies. | A count of currently active players misses future or cross-season conflicts. |
+| Corrections | D100 uses an immutable successor and an explicit accepted baseline in the existing BM1 case. D057 uses the typed correction case and proposed registration version under D095. Keep past decisions and return precise review references. | Updating the current version in place obscures exact approvals and downstream references. |
+| PHASE 2 facts | Bind the existing typed ports to real sources when introduced. Use ordered locks and the caller transaction. A known empty source is different from an unavailable source. | Treating missing facts as empty could authorize incompatible rules, closure or public media. |
+| Media | Reuse the managed-media contract with a Player-specific authorization and current-reference check. Immutable staging allows cleanup and same-set recovery. | Public or browser-signed storage URLs would bypass current scope checks. |
+
+Primary project references: [D095/D096](../../context/design/architecture.md), [registration decisions](../../context/use-cases/registration.md), [media policy](../../context/design/media.md), [PHASE 2 execution](../002-phase-2-season-regulations/contracts/execution.md), and [accepted PHASE 1 evidence](../../context/progress-checker.md#phase-1-audit-and-verification-evidence---2026-11-06). Confirm physical paths and schema against the accepted PHASE 2 revision. No upstream technology upgrade or new business choice is required by this design.

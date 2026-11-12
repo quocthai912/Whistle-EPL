@@ -4,6 +4,8 @@ Package metadata/approval: [current Context](../README.md). D001-D097 are confir
 
 D098 is a separately approved extension on 2026-10-28, not part of Q98's historical approval. See [the extension approval](../README.md#phase-1-preparation-approval---q99-q103).
 
+D099 is a separately approved PHASE 2 preparation extension on 2026-11-10. See [the extension approval](../README.md#phase-2-preparation-approval---d099); Q98's historical scope remains unchanged.
+
 ## Read by topic
 
 | Topic | Owner |
@@ -133,6 +135,8 @@ D098 is a separately approved extension on 2026-10-28, not part of Q98's histori
 | D096 | [API execution/security/lock contracts](architecture.md#d096---api-execution-synchronized-csrf-and-transaction-contracts); per-UC execution matrices in owning UC files | [0023](../../docs/adr/0023-shared-rest-contract.md#q96---execution-security-and-concurrency-contracts) |
 | D097 | [Pnpm toolchain/development/operations](architecture.md#d097---pnpm-toolchain-development-quality-and-reference-operations); [fixture/measurement baseline](../quality.md#d097-test-season-and-measurement-baseline) | [0002](../../docs/adr/0002-approved-technology-stack.md#q97---compatible-baseline-and-pnpm-development-contract) |
 | D098 | [Required CI and protected integration branches](architecture.md#d098---required-ci-and-protected-integration-branches) | [0025](../../docs/adr/0025-required-ci-and-protected-branches.md) |
+| D099 | [Club/stadium discontinuation and resumption](../business.md#d099---club-and-stadium-discontinuation-with-controlled-resumption) | [0009](../../docs/adr/0009-stable-identities-and-selective-business-snapshots.md#d099---club-and-stadium-discontinuation-and-resumption) |
+| D100 | [Correction of approved club participation applications](../use-cases/registration.md#d100---correction-of-approved-club-participation-applications) | [0009](../../docs/adr/0009-stable-identities-and-selective-business-snapshots.md#d100---correction-of-approved-club-participation-applications) |
 
 ## Other confirmed instructions
 

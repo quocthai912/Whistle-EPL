@@ -14,6 +14,18 @@ Allow controlled changes to squad limits, homegrown and U21 conditions during a 
 
 Freezing these conditions from the first approved registration was considered. The Team Leader chose QĐ6.2 flexibility without mass revocation or grandfathering incompatible current registrations, accepting impact checks and changes/supplementation for pending work. Exact homegrown/U21 values, calendar/deadline exceptions, record lifecycle and technical contracts remain open. This selects the policy for player conditions/limits, not deadline assessment, and adds no extra UC10 approver. See [Context v2 D052](../../context/use-cases/registration.md#d052---compatible-registration-rule-changes-and-revalidation-of-pending-records).
 
+### PHASE 2 approval of the D052 compatibility scope
+
+On 2026-11-10 (Asia/Bangkok), the Team Leader approved the PHASE 2 Specification with
+"Tôi đồng ý phê duyệt." The [Phase ledger](../../context/progress-checker.md#phase-2---seasons-catalogs-and-regulations)
+records the approval. The published baseline at commit `5bb438b7b16df0fb0c406a830cf8b0d01e6c8d90`
+contains [FR-015](../../specs/002-phase-2-season-regulations/spec.md#functional-requirements).
+FR-015 explicitly includes confirmed future registration plans alongside protected approved
+registrations and lists in the compatibility checks at regulation approval and effectivity.
+This later Specification approval records the scope used by [D052](../../context/use-cases/registration.md#d052---compatible-registration-rule-changes-and-revalidation-of-pending-records)
+and [D075](../../context/use-cases/registration.md#d075---prospective-registration-plan-changes-and-interval-quota-checks).
+The Q52 entry above retains its original scope and date.
+
 ## Controlled cancellation, replacement and activation
 
 **Status:** accepted. **Approver:** Team Leader. **Date:** 2026-10-25 (Asia/Bangkok). **Interview:** grouped Q51, option A; Context decision [D051](../../context/use-cases/registration.md#d051---controlled-cancellation-replacement-and-activation-of-waiting-regulations).
@@ -299,6 +311,14 @@ Current policy owner: [D052](../../context/use-cases/registration.md#d052---comp
 ## Q72 follow-up - Ranking-position parameter freeze
 
 [D072](../../context/use-cases/registration.md#d072---seasonal-qualification-and-relegation-counts) explicitly extends D045's first-Official-Result freeze milestone to seasonal qualification/relegation counts Q/R. Approval evidence and the configuration trade-off are recorded in [ADR 0014](0014-shared-ranks-and-individual-awards.md#q72---seasonal-qualification-and-relegation-counts); existing approved-version/cancellation/activation rules remain unchanged.
+
+## PHASE 2 Specification clarification - Closed-season metadata
+
+**Status:** accepted clarification of D074. **Approver:** Team Leader. **Date:** 2026-11-10 (Asia/Bangkok). Current rule owner: [D074](../../context/use-cases/registration.md#d074---independently-approved-season-closure-and-reopening).
+
+D074 named the Closed-season gates for official seasonal records but did not explicitly address UC05's own descriptive fields and dates. During [PHASE 2 Specification clarification](../../specs/002-phase-2-season-regulations/spec.md#session-2026-11-10), the Team Leader answered "Tôi chọn A." to the options: A, make all listed metadata read-only until independent reopening; B, permit all metadata edits while Closed with authority/validation/history; or C, permit descriptive edits but require reopening for date changes. Option A preserves stable Closed-season information and reuses the existing independently approved reopening process, accepting the extra reopening step for a metadata correction. It introduces no new approval role or unlocking of frozen milestones.
+
+The approved fields are season name, competition display information and start/end dates. State is checked at final recording, not only when a screen opens; a pending reopening does not permit editing. Reopening preserves the existing authority, revision, validation and history requirements. This clarification is separately approved after Q98 and does not approve the entire draft Specification, Plan, Tasks or implementation, or change Phase statuses/checklists.
 
 ## Q74 - Season closure and reopening
 

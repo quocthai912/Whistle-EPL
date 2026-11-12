@@ -4,6 +4,14 @@ Current owner documents incorporate approved refinements. The v1 review/migratio
 
 The [Q99-Q103 PHASE 1 preparation extension](README.md#phase-1-preparation-approval---q99-q103) was separately approved on 2026-10-28 (Asia/Bangkok), after Q98. [ADR 0025](../docs/adr/0025-required-ci-and-protected-branches.md#approval-evidence) records the actual confirmations and rationale for D098 and the foundation verification clarifications. Historical Q98 verification counts below describe that milestone, not the later extension or executable software evidence.
 
+## PHASE 3 preparation approval - 2026-11-11
+
+[D100](use-cases/registration.md#d100---correction-of-approved-club-participation-applications) extends BM1/QĐ1.1 and QĐ1.6 (PDF pp.6-7) and UC08 (pp.85-88) with an independently approved correction path for descriptive recording errors after approval. The correction workflow and its intake-window boundary come from [Team Leader approval](README.md#phase-3-preparation-approval---d100), with the interview evidence in [ADR 0009](../docs/adr/0009-stable-identities-and-selective-business-snapshots.md#d100---correction-of-approved-club-participation-applications).
+
+## PHASE 2 preparation approval - 2026-11-10
+
+[D099](business.md#d099---club-and-stadium-discontinuation-with-controlled-resumption) refines TH-04/TH-06 (PDF pp.13-14), AT-04 (p.32), UC07 (pp.82-84) and UC12 (pp.97-99). Source requirements establish discontinuation and history preservation; treatment of outstanding approved commitments and same-identity resumption is a separately approved Team Leader refinement, not a claim that the PDF specified these choices. Local PHASE 2 preparation Q1-A, Q2-A and final confirmation are preserved in [ADR 0009](../docs/adr/0009-stable-identities-and-selective-business-snapshots.md#d099---club-and-stadium-discontinuation-and-resumption). [The extension record](README.md#phase-2-preparation-approval---d099) preserves the authorization boundary. Historical approvals, source files and Phase evidence remain unchanged; this review does not supply executable software evidence.
+
 ## PHASE 1 preparation review - 2026-10-28
 
 The review used the clean docs/phase-1-architecture-decisions checkout at e911899ec0b1e7dd8e8a68919a435b930cfb3731, identical to local main; a GitHub connector read also confirmed remote main at that commit. The Team Leader explicitly authorized using the current checkout. Repository inventory found no application manifests/source, migrations, functional test suite or CI workflow; the Constitution still contained placeholders. These are observed preparation gaps, not missing replacements for D001-D097.

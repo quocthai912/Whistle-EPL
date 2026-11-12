@@ -107,6 +107,8 @@ Organizing Committee / Season Manager.
 
 ## UC07
 
+Club discontinuation/resumption follows [D099](../business.md#d099---club-and-stadium-discontinuation-with-controlled-resumption), under the existing shared Club master-management authority.
+
 Create-only XLSX import and authorized master-list export follow [D078](../business.md#d078---xlsx-create-only-import-and-controlled-export).
 
 **Manage clubs**
@@ -158,7 +160,7 @@ UC07 includes upload, replace and removal-to-fallback under the separately assig
 
 ## UC08
 
-Current rules: [D055](registration.md#d055---versioned-club-application-and-player-registration-workflows).
+Current rules: [D055](#d055---versioned-club-application-and-player-registration-workflows) and [D100](#d100---correction-of-approved-club-participation-applications).
 
 **Manage club registration applications**
 
@@ -202,6 +204,7 @@ Registration Officer; Organizing Committee / Season Manager.
 
 1. Incomplete application: record a supplementation-required status under the agreed business process.
 2. Further review required: retain an unapproved status.
+3. Error in an approved BM1 application: use the separately approved correction flow under D100.
 
 **Exceptions:**
 
@@ -381,6 +384,7 @@ The rules below are the authoritative current policy for this domain. The UC flo
 - **Playing-registration prerequisite:** All of the season's playing-effective intervals must end no later than the closing instant, with no unresolved future registration intervals. Staff resolve them through UC10 and its existing validation/correction rules before closing. Closure does not itself cancel or silently edit registrations.
 - **Closed-season write gate:** Block new/edited seasonal regulations, registrations, schedules, reports, results, ranking resolutions and summaries while Closed. Viewing, lookup and export remain available under permissions. Shared master-record/logo/portrait management retains its separate authority; LOGO-01/D069 current-image display still applies. [D077](publication.md#d077---season-scoped-versioned-news-publication) separately permits authorized seasonal news management while Closed, without changing these official records.
 - **Reopening:** Only successful approval reopens the season for changes through their corresponding UCs. Reopening does not itself change records, bypass D044/D045/D072 frozen milestones or restore expired/revoked permissions.
+- **Season metadata while Closed:** Season name, competition display information and start/end dates are read-only until successful independently approved reopening. Enforce this at the final server-side write decision, including edits started before closure; a pending reopening request is insufficient. After reopening, existing authority, revision, validation and history checks still apply. This is the Team Leader's separately approved PHASE 2 Specification clarification, 2026-11-10 (Asia/Bangkok), not retroactive Q98 approval. [Clarification and approval evidence](../../docs/adr/0010-immutable-approved-season-regulation-versions.md#phase-2-specification-clarification---closed-season-metadata).
 - **Corrections and reclosing:** Apply D071/D073 when valid changes affect ranking-resolution or summary bases. Close again only after all closing conditions hold. Reopening alone does not invalidate an otherwise unchanged summary.
 - **Access/session boundary:** Closing/reopening does not itself remove roles or force global logout. At the final write decision, check the season state alongside current permission/session validation under D030. This is an additional business-lifecycle condition, not a permission revocation.
 
@@ -490,7 +494,7 @@ The rules below are the authoritative current policy for this domain. The UC flo
 
 - **Source:** O01/O02/O07/O12; QĐ6.2, UC06/UC10/UC11; [D036](../business.md#d036---correct-erroneous-master-data-with-separate-review-of-affected-business-records)/[D042](registration.md#d042---immutable-approved-versions-of-seasonal-regulations)/[D043](registration.md#d043---immediate-or-future-regulation-effectivity-without-backdating)/[D051](registration.md#d051---controlled-cancellation-replacement-and-activation-of-waiting-regulations).
 
-- **Decision:** Permit controlled mid-season changes to squad limits, homegrown and U21 conditions only if they do not invalidate approved registrations/lists currently in effect. Check impact at approval and at effectivity; block an incompatible change.
+- **Decision:** Permit controlled mid-season changes to squad limits, homegrown and U21 conditions only if compatible with protected approved registrations/lists and confirmed future registration plans. Check impact at approval and at effectivity under D051 and D075. Block an incompatible change. See the [PHASE 2 approval record for FR-015](../../docs/adr/0010-immutable-approved-season-regulation-versions.md#phase-2-approval-of-the-d052-compatibility-scope).
 
 - **Existing decisions:** Do not automatically cancel registrations, remove players or rewrite approved decisions to force compliance with new rules. Preserve the original regulation-version basis of historical decisions.
 
@@ -547,6 +551,15 @@ The rules below are the authoritative current policy for this domain. The UC flo
 - **Dependency:** Prepare and check player lists while club approval is pending, but confirm a player's registration as valid only after the club participation application is approved. Club approval does not automatically validate every player registration; UC10 must still check and confirm.
 
 - **Temporal boundary:** Validity confirmation remains distinct from playing effectivity, termination and club transfer, which are governed by [D056](#d056---playing-effective-intervals-and-consistent-club-transfers).
+
+### D100 - Correction of approved club participation applications
+
+**Status:** CONFIRMED by the Team Leader on 2026-11-11 (Asia/Bangkok), PHASE 3 preparation Q1-A and Q2-A with final confirmation. [Approval and rationale](../../docs/adr/0009-stable-identities-and-selective-business-snapshots.md#d100---correction-of-approved-club-participation-applications).
+
+- **Scope:** In UC08, correct a proven recording error in the descriptive content of an approved BM1 application, such as the coach, representative, contact details or registered home ground. Evidence must establish the error in the original information as recorded. Later changes in circumstances, changes to the proposed player list and withdrawal or replacement of a participating club are outside this correction flow.
+- **Authority and history:** The assigned Registration Officer proposes a successor version in the same club-season case, identifying the exact approved version, reason, evidence, before/after values and related records needing review. An assigned Season Manager who did not prepare or edit the proposal approves independently. Keep the approved version as the official basis until successful correction approval. Retain both versions and the decision history. Recheck authority, the exact approved basis and season state at the final write. Record the decision, accepted version and required audit together under D084/D096.
+- **Timing:** Handle corrections only while the season is Open, including after reopening under D074. A correction may be approved outside the intake window without a D053 receipt exception. Preserve the original receipt instant, basis and decision. Record the correction decision at its own successful recording instant.
+- **Related records:** Use the approved correction for subsequent work that reads the official UC08 basis. Preserve existing registrations, schedules, results and statistics under their owning workflows. Flag related records for review where applicable. A change to a scheduled match venue follows [UC14](scheduling.md#uc14).
 
 ### D056 - Playing-effective intervals and consistent club transfers
 
@@ -609,7 +622,7 @@ Shared master exchange uses POST /data-exchange/{dataset}/preview and POST /data
 | UC05 | POST /seasons; GET/PATCH /seasons/{seasonId}; POST /seasons/{seasonId}/lifecycle-requests; POST /season-lifecycle-requests/{requestId}/approve | Season code/name/startDate/endDate; expectedRevision for edits; lifecycle request action/reason and exact submitted version. | D059/D074/D076; create-only global right differs from seasonal management; closure/reopening requires independent approval. |
 | UC06 | GET/POST /seasons/{seasonId}/regulation-versions; PATCH /regulation-versions/{versionId}; POST /regulation-versions/{versionId}/{action} | Draft full regulation content, proposed effectivity and current basis; allowlisted submit/approve/withdraw/return/reject commands. Cancellation/replacement proposals identify the exact waiting version, replacement version and reason. | D042-D054/D072/D076; no approved-content PATCH; concrete nested content/required source fields remain in the regulation owner. |
 | UC07 | GET/POST /clubs; GET/PATCH /clubs/{clubId}; POST /clubs/{clubId}/logo; POST /clubs/{clubId}/logo/remove | Club master fields under D059, expectedRevision and required change basis; logo upload has validated file input, removal identifies the current reference. | D034/D036/LOGO-01/D078; import/export uses the shared data-exchange contract below. |
-| UC08 | GET/POST /seasons/{seasonId}/club-applications; PATCH /club-applications/{caseId}/draft; POST /club-applications/{caseId}/{action} | Club, seasonal coach/home ground/representative/contact fields, proposed players; explicit receive/submit/approve/return/reject/withdraw/cancel commands identify version/revision and reasons as required. | D053/D055/D059; independent club approval, immutable submitted versions and receipt deadlines. |
+| UC08 | GET/POST /seasons/{seasonId}/club-applications; PATCH /club-applications/{caseId}/draft; POST /club-applications/{caseId}/{action} | Club, seasonal coach/home ground/representative/contact fields, proposed players; explicit receive/submit/approve/return/reject/withdraw/cancel commands identify version/revision and reasons as required. D100 correction commands target the exact approved basis. | D053/D055/D059/D100; independent approval, immutable submitted versions and separate intake and correction gates. |
 | UC09 | GET/POST /players; GET/PATCH /players/{playerId}; POST /players/{playerId}/portrait; POST /players/{playerId}/portrait/remove | Player code/name/birthDate/nationality/position under D059/[D092](../business.md#d092---shared-field-validation-identifiers-and-reference-catalogs), expectedRevision and correction basis; portrait file/removal input is separate from profile fields. | D034/D036/D058/D059/D069/D078; no automatic registration from master creation. |
 | UC10 | GET/POST /seasons/{seasonId}/player-registrations; PATCH /player-registrations/{caseId}/draft; POST /player-registrations/{caseId}/{action} | Player/club, shirtNumber, classification/evidence basis, playing start/end; explicit receive/validate/confirm-valid/terminate/transfer/plan-change/plan-cancel/correction commands with exact versions and reasons. | D053-D057/D075; ordinary operations and independently approved error corrections remain separate. |
 | UC11 | Internal validation through UC10; no independent public eligibility service | UC10 validation returns permitted eligibility conclusions/reasons, rule-version basis and affected field errors. | Source include relationship and D054; a successful precheck does not reserve quota or bypass final confirmation. |
@@ -624,8 +637,8 @@ Read this with the existing route/DTO map and [shared D096 contract](../design/a
 |---|---|---|
 | UC05 | Create-Season grant for creation; assigned Season Manager for seasonal management and lifecycle proposals; independent assigned Season Manager for close/reopen approval | R for create/close/reopen. Creation returns permitted creation acknowledgement, not automatic seasonal access. D074 readiness/frozen-source checks and D076 no-effective-regulation gates; lifecycle/audit change atomically. |
 | UC06 | Assigned Season Manager prepares/edits; D019-authorized delegated officer may prepare/edit only. Independent assigned Season Manager approves/cancels/replaces | R for approval/cancellation/replacement. Exact submitted version, editor exclusion, current/future slot, freeze/compatibility and D089 due activation checks; no approved-content PATCH. |
-| UC07 | Separately granted shared Club master-management authority | D034-D041, D036/D058/D059/D092 field/correction basis. Current-logo actions use D094 controlled media and D030 final checks; import/export follows D078/D091 same authority, not public bulk access. |
-| UC08 | Registration Officer prepares/receives/reviews; independent assigned Season Manager approves the club application or receipt exception | R for approval/exception. Exact immutable received/submitted version, D053 timing/exception, D055 supplementation and case uniqueness; accepted pointer/snapshot/audit commit together. |
+| UC07 | Separately granted shared Club master-management authority | D034-D041, D036/D058/D059/D092 field/correction basis and D099 discontinuation/resumption. Current-logo actions use D094 controlled media and D030 final checks; import/export follows D078/D091 same authority, not public bulk access. |
+| UC08 | Registration Officer prepares/receives/reviews or proposes a D100 correction; independent assigned Season Manager approves the application, receipt exception or correction | R for approval/exception/correction approval. Exact immutable received/submitted version, D053 timing/exception for intake, D055 supplementation and case uniqueness, and D100 exact correction basis and Open-season gate; accepted pointer/snapshot/audit commit together. |
 | UC09 | Separately granted shared Player master-management authority | D034-D041/D036/D058/D059/D092 checks; portrait uses D069/D094, not club-management authority. Master update does not silently revise confirmed registration/report facts. |
 | UC10 | Assigned Registration Officer for receipt/validity/ordinary interval/transfer/plans; independent assigned Season Manager for D057 correction and D053 receipt-exception approval | R for validity confirmation, transfer/plan disposition and approved correction/exception. Lock affected seasons/player/clubs; validate every affected interval/quota/shirt, club participation and exact regulation/evidence basis. Paired transfer versions/pointers and audit commit together; no extra manager approval on initial validity. |
 | UC11 | Internal validation invoked by authorized UC10 processing | No independent public eligibility endpoint. Returns only permitted findings/reasons/basis; precheck reserves no quota and never replaces final in-transaction validation. |

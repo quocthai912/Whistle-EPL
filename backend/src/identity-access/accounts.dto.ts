@@ -17,11 +17,15 @@ export const permissionKinds = [
 ] as const;
 export type PermissionKind = (typeof permissionKinds)[number];
 
+/** Builds the safe invalid-input error used by administration validators. */
 export const invalid = (message = 'Vui lòng kiểm tra dữ liệu đã nhập.') =>
   new ApplicationError(400, 'VALIDATION_FAILED', message);
+/** Builds an access-denied error without exposing restricted object data. */
 export const denied = () =>
   new ApplicationError(403, 'ACCESS_DENIED', 'Bạn không có quyền thực hiện thao tác này.');
+/** Builds the same not-found response for absent and concealed administration objects. */
 export const missing = () => new ApplicationError(404, 'NOT_FOUND', 'Không tìm thấy dữ liệu.');
+/** Builds a revision, state or authority conflict with safe user-facing feedback. */
 export const conflict = (
   code = 'STATE_CONFLICT',
   message = 'Dữ liệu đã thay đổi. Vui lòng tải lại.',
@@ -76,6 +80,10 @@ export function businessText(input: string, field: 'name' | 'reason', required =
   )
     throw invalid();
   return value;
+}
+/** Normalizes a literal list search and escapes PostgreSQL LIKE wildcards. */
+export function listSearch(value: string | undefined): string {
+  return value === undefined ? '' : businessText(value, 'name', false).replace(/[\\%_]/g, '\\$&');
 }
 /** Rejects a stale edit using decimal-string comparison so bigint revisions keep their full precision. */
 export function assertRevision(current: bigint, expected: string): void {

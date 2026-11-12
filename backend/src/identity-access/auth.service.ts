@@ -124,6 +124,7 @@ export class AuthService {
       throw new ApplicationError(401, 'LOGIN_FAILED', 'Tên đăng nhập hoặc mật khẩu không hợp lệ.');
     return result;
   }
+  /** Projects or logs out the current live session, requiring CSRF protection for logout. */
   async current(token?: string, csrfToken?: string, logout = false, requestId?: string) {
     const candidate = await this.sessions.candidate(token);
     if (!candidate) this.sessions.missing();
@@ -155,9 +156,11 @@ export class AuthService {
       },
     );
   }
+  /** Releases the service's database resources during application shutdown. */
   async onModuleDestroy(): Promise<void> {
     await this.database?.close();
   }
+  /** Requires a full live session and validates its CSRF token for a protected mutation. */
   async authorize(token?: string, csrfToken?: string, mutation = false): Promise<void> {
     const candidate = await this.sessions.candidate(token);
     if (!candidate) this.sessions.missing();
@@ -177,6 +180,7 @@ export class AuthService {
       },
     );
   }
+  /** Verifies the current credential and atomically changes it while revoking every session. */
   async changePassword(
     token: string | undefined,
     csrfToken: string | undefined,
@@ -238,7 +242,8 @@ export class AuthService {
           objectId: basis.id,
           requestId,
           outcome: 'SUCCESS',
-          after: { sessionsInvalidated: invalidated.count },
+          before: { mustChangePassword: live.account.mustChangePassword },
+          after: { mustChangePassword: false, sessionsInvalidated: invalidated.count },
         });
         return { acknowledged: true };
       },
