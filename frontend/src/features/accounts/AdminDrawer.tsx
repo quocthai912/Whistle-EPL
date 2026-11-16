@@ -21,6 +21,7 @@ export function AdminDrawer({
       open
       onClose={onClose}
       size="min(560px, 100vw)"
+      styles={{ wrapper: { maxWidth: '100vw' } }}
       className={css.drawer}
       closeIcon={<span aria-hidden="true">×</span>}
       title={

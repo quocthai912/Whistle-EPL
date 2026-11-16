@@ -19,8 +19,11 @@ export async function selectOption(page: Page, label: string | RegExp, option: s
   const list = await openOptions(page, label);
   const target = list.getByRole('option', { name: option, exact: true });
   if ((await target.getAttribute('aria-selected')) === 'true') {
-    await control.locator('..').click();
-  } else await target.click();
+    await control.press('Escape');
+  } else {
+    await target.hover();
+    await target.click();
+  }
   await expect(control).toHaveAttribute('aria-expanded', 'false');
   await expect(list).toBeHidden();
 }

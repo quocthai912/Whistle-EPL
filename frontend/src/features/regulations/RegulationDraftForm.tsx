@@ -1,6 +1,10 @@
+import { isValidElement } from 'react';
+import { AdminSelect } from '../accounts/AdminSelect';
 import { useEffect, useMemo, useState, type FormEvent, type ReactNode } from 'react';
 import { HttpFailure } from '../../shared/http/client';
 import { useSession } from '../../shared/http/use-session';
+import { SeasonDatePicker, SeasonDateTimePicker } from '../seasons/SeasonDatePicker';
+import { parseSeasonDate } from '../seasons/season-model';
 import type { FieldErrorDetail } from '../../shared/http/client';
 import {
   applySourceProposedValues,
@@ -180,7 +184,7 @@ function validate(values: RegulationFormValues): FieldErrors {
     errors.clubCount = 'Số câu lạc bộ phải là số chẵn từ 4 đến 20.';
   if (values.legs !== null && values.legs !== 2) errors.legs = 'Thể thức hiện hỗ trợ 2 lượt.';
   if (values.u21Cutoff !== null && !validCalendarDate(values.u21Cutoff))
-    errors.u21Cutoff = 'Nhập ngày hợp lệ theo định dạng YYYY-MM-DD.';
+    errors.u21Cutoff = 'Nhập ngày hợp lệ theo định dạng DD/MM/YYYY.';
   if (values.effectiveMode === 'IMMEDIATE' && values.proposedEffectiveAt)
     errors.proposedEffectiveAt = 'Đề xuất hiệu lực ngay không nhận thời điểm do người dùng chọn.';
   if (
@@ -291,13 +295,14 @@ function Field({
   hint?: string;
   children: ReactNode;
 }) {
+  const Container = isValidElement(children) && children.type === AdminSelect ? 'div' : 'label';
   return (
-    <label className={css.field}>
+    <Container className={css.field}>
       <span>{label}</span>
       {children}
       {hint && <small>{hint}</small>}
       {error && <small className={css.fieldError}>{error}</small>}
-    </label>
+    </Container>
   );
 }
 
@@ -305,6 +310,7 @@ export function RegulationDraftForm({ detail, canEdit, onSaved, onDirtyChange }:
   const { client } = useSession();
   const initialValues = useMemo(() => formValuesFromContent(detail.content), [detail.content]);
   const [values, setValues] = useState(initialValues);
+  const [dateReset, setDateReset] = useState(0);
   const [baseline, setBaseline] = useState<Baseline>(() => ({
     revision: detail.revision,
     values: cloneValues(initialValues),
@@ -325,8 +331,15 @@ export function RegulationDraftForm({ detail, canEdit, onSaved, onDirtyChange }:
     onDirtyChange(dirty.length > 0);
   }, [dirty.length, onDirtyChange]);
 
-  function change<K extends FormField>(key: K, value: RegulationFormValues[K]) {
-    setValues((current) => ({ ...current, [key]: value }));
+  function change<K extends FormField>(
+    key: K,
+    value:
+      RegulationFormValues[K] | ((previous: RegulationFormValues[K]) => RegulationFormValues[K]),
+  ) {
+    setValues((current) => ({
+      ...current,
+      [key]: typeof value === 'function' ? value(current[key]) : value,
+    }));
     setSuccess(undefined);
     setFormError(undefined);
     setErrors((current) => {
@@ -342,10 +355,11 @@ export function RegulationDraftForm({ detail, canEdit, onSaved, onDirtyChange }:
     field: 'intakeKind' | 'opensAt' | 'closesAt',
     value: string,
   ) {
-    const rows = values.registrationWindows.map((window, itemIndex) =>
-      itemIndex === index ? { ...window, [field]: value } : window,
+    change('registrationWindows', (windows) =>
+      windows.map((window, itemIndex) =>
+        itemIndex === index ? { ...window, [field]: value } : window,
+      ),
     );
-    change('registrationWindows', rows);
   }
 
   async function save(event: FormEvent<HTMLFormElement>) {
@@ -419,6 +433,7 @@ export function RegulationDraftForm({ detail, canEdit, onSaved, onDirtyChange }:
       (rebased as Record<FormField, unknown>)[field] = conflict.attemptedValues[field];
     }
     setValues(rebased);
+    setDateReset((value) => value + 1);
     setBaseline({ revision: conflict.latest.revision, values: cloneValues(conflict.latestValues) });
     setInspectedLatest(undefined);
     setConflict(null);
@@ -428,6 +443,7 @@ export function RegulationDraftForm({ detail, canEdit, onSaved, onDirtyChange }:
   }
 
   function discardLocalChanges() {
+    setDateReset((value) => value + 1);
     const latest = inspectedLatest;
     if (latest) {
       const latestValues = formValuesFromContent(latest.content);
@@ -537,33 +553,33 @@ export function RegulationDraftForm({ detail, canEdit, onSaved, onDirtyChange }:
         </div>
         <div className={css.fieldGrid}>
           <Field label="Cách đề xuất hiệu lực" error={errors.effectiveMode}>
-            <select
-              aria-label="Cách đề xuất hiệu lực"
+            <AdminSelect
+              label="Cách đề xuất hiệu lực"
               value={values.effectiveMode ?? ''}
               disabled={!editable}
-              onChange={(event) => {
-                const mode = (event.target.value || null) as EffectiveMode | null;
+              onChange={(value) => {
+                const mode = (value || null) as EffectiveMode | null;
                 change('effectiveMode', mode);
                 if (mode === 'IMMEDIATE') change('proposedEffectiveAt', '');
               }}
-            >
-              <option value="">Chưa chọn</option>
-              <option value="IMMEDIATE">Hiệu lực ngay sau khi được duyệt</option>
-              <option value="SCHEDULED">Hiệu lực tại thời điểm đã chọn</option>
-            </select>
+
+              options={[
+                { value: '', label: 'Chưa chọn' },
+                { value: 'IMMEDIATE', label: 'Hiệu lực ngay sau khi được duyệt' },
+                { value: 'SCHEDULED', label: 'Hiệu lực tại thời điểm đã chọn' },
+              ]}
+            />
           </Field>
           <Field
             label="Thời điểm hiệu lực dự kiến"
             error={errors.proposedEffectiveAt}
             hint="Chỉ nhập cho đề xuất có thời điểm hiệu lực trong tương lai."
           >
-            <input
-              aria-label="Thời điểm hiệu lực dự kiến"
-              type="datetime-local"
-              step="0.001"
+            <SeasonDateTimePicker
+              label="Thời điểm hiệu lực dự kiến"
               value={values.proposedEffectiveAt}
               disabled={!editable || values.effectiveMode !== 'SCHEDULED'}
-              onChange={(event) => change('proposedEffectiveAt', event.target.value)}
+              onChange={(value) => change('proposedEffectiveAt', value)}
             />
           </Field>
         </div>
@@ -599,14 +615,18 @@ export function RegulationDraftForm({ detail, canEdit, onSaved, onDirtyChange }:
           <Field
             label="Ngày sinh giới hạn U21"
             error={errors.u21Cutoff}
-            hint="Ngày lịch YYYY-MM-DD; không tự suy ra từ tuổi hiện tại."
+            hint="Nhập hoặc chọn ngày theo định dạng DD/MM/YYYY."
           >
-            <input
-              aria-label="Ngày sinh giới hạn U21"
-              type="date"
-              value={values.u21Cutoff ?? ''}
+            <SeasonDatePicker
+              key={dateReset}
+              label="Ngày sinh giới hạn U21"
+              initialDate={values.u21Cutoff}
               disabled={!editable}
-              onChange={(event) => change('u21Cutoff', event.target.value || null)}
+              invalid={!!errors.u21Cutoff}
+              onDateTextChange={(text) => {
+                const date = text ? parseSeasonDate(text) : null;
+                if (editable && !saving && date !== values.u21Cutoff) change('u21Cutoff', date);
+              }}
             />
           </Field>
         </div>
@@ -632,30 +652,30 @@ export function RegulationDraftForm({ detail, canEdit, onSaved, onDirtyChange }:
             onChange={(value) => change('clubCount', value)}
           />
           <Field label="Thể thức" error={errors.formatCode}>
-            <select
-              aria-label="Thể thức"
+            <AdminSelect
+              label="Thể thức"
               value={values.formatCode ?? ''}
               disabled={!editable}
-              onChange={(event) =>
-                change('formatCode', event.target.value ? 'DOUBLE_ROUND_ROBIN' : null)
-              }
-            >
-              <option value="">Chưa chọn</option>
-              <option value="DOUBLE_ROUND_ROBIN">Vòng tròn hai lượt</option>
-            </select>
+              onChange={(value) => change('formatCode', value ? 'DOUBLE_ROUND_ROBIN' : null)}
+
+              options={[
+                { value: '', label: 'Chưa chọn' },
+                { value: 'DOUBLE_ROUND_ROBIN', label: 'Vòng tròn hai lượt' },
+              ]}
+            />
           </Field>
           <Field label="Số lượt" error={errors.legs} hint="Thể thức hiện chỉ hỗ trợ hai lượt.">
-            <select
-              aria-label="Số lượt"
-              value={values.legs ?? ''}
+            <AdminSelect
+              label="Số lượt"
+              value={values.legs?.toString() ?? ''}
               disabled={!editable}
-              onChange={(event) =>
-                change('legs', event.target.value ? Number(event.target.value) : null)
-              }
-            >
-              <option value="">Chưa chọn</option>
-              <option value="2">Hai lượt</option>
-            </select>
+              onChange={(value) => change('legs', value ? Number(value) : null)}
+
+              options={[
+                { value: '', label: 'Chưa chọn' },
+                { value: '2', label: 'Hai lượt' },
+              ]}
+            />
           </Field>
           {numberFields.slice(8, 11).map((item) => (
             <NumberField
@@ -691,11 +711,8 @@ export function RegulationDraftForm({ detail, canEdit, onSaved, onDirtyChange }:
                     type="button"
                     className={css.linkButton}
                     onClick={() =>
-                      change(
-                        'registrationWindows',
-                        values.registrationWindows.filter(
-                          (_item, itemIndex) => itemIndex !== index,
-                        ),
+                      change('registrationWindows', (windows) =>
+                        windows.filter((_item, itemIndex) => itemIndex !== index),
                       )
                     }
                   >
@@ -708,40 +725,38 @@ export function RegulationDraftForm({ detail, canEdit, onSaved, onDirtyChange }:
                   label="Nhóm tiếp nhận"
                   error={errors[`registrationWindows[${index}].intakeKind`]}
                 >
-                  <select
-                    aria-label={`Nhóm tiếp nhận đợt ${index + 1}`}
+                  <AdminSelect
+                    label={`Nhóm tiếp nhận đợt ${index + 1}`}
                     value={window.intakeKind}
                     disabled={!editable}
-                    onChange={(event) => updateWindow(index, 'intakeKind', event.target.value)}
-                  >
-                    <option value="CLUB_APPLICATION">{intakeKindLabels.CLUB_APPLICATION}</option>
-                    <option value="PLAYER_CHANGE">{intakeKindLabels.PLAYER_CHANGE}</option>
-                  </select>
+                    onChange={(value) => updateWindow(index, 'intakeKind', value)}
+
+                    options={[
+                      { value: 'CLUB_APPLICATION', label: intakeKindLabels.CLUB_APPLICATION },
+                      { value: 'PLAYER_CHANGE', label: intakeKindLabels.PLAYER_CHANGE },
+                    ]}
+                  />
                 </Field>
                 <Field
                   label="Mở từ (giờ Việt Nam)"
                   error={errors[`registrationWindows[${index}].opensAt`]}
                 >
-                  <input
-                    aria-label={`Mở từ đợt ${index + 1}`}
-                    type="datetime-local"
-                    step="0.001"
+                  <SeasonDateTimePicker
+                    label={`Mở từ đợt ${index + 1}`}
                     value={window.opensAt}
                     disabled={!editable}
-                    onChange={(event) => updateWindow(index, 'opensAt', event.target.value)}
+                    onChange={(value) => updateWindow(index, 'opensAt', value)}
                   />
                 </Field>
                 <Field
                   label="Đóng trước (giờ Việt Nam)"
                   error={errors[`registrationWindows[${index}].closesAt`]}
                 >
-                  <input
-                    aria-label={`Đóng trước đợt ${index + 1}`}
-                    type="datetime-local"
-                    step="0.001"
+                  <SeasonDateTimePicker
+                    label={`Đóng trước đợt ${index + 1}`}
                     value={window.closesAt}
                     disabled={!editable}
-                    onChange={(event) => updateWindow(index, 'closesAt', event.target.value)}
+                    onChange={(value) => updateWindow(index, 'closesAt', value)}
                   />
                 </Field>
               </div>
@@ -752,8 +767,8 @@ export function RegulationDraftForm({ detail, canEdit, onSaved, onDirtyChange }:
           <button
             type="button"
             onClick={() =>
-              change('registrationWindows', [
-                ...values.registrationWindows,
+              change('registrationWindows', (windows) => [
+                ...windows,
                 { intakeKind: 'CLUB_APPLICATION', opensAt: '', closesAt: '' },
               ])
             }
@@ -826,12 +841,12 @@ export function RegulationDraftForm({ detail, canEdit, onSaved, onDirtyChange }:
           {values.rankingPriority.map((item, index) => (
             <div className={css.rankingRow} key={`rank-${index}`}>
               <strong>Ưu tiên {index + 1}</strong>
-              <select
-                aria-label={`Tiêu chí ưu tiên ${index + 1}`}
+              <AdminSelect
+                label={`Tiêu chí ưu tiên ${index + 1}`}
                 value={item.criterionCode}
                 disabled={!editable}
-                onChange={(event) => {
-                  const selected = event.target.value as RankingCriterion;
+                onChange={(value) => {
+                  const selected = value as RankingCriterion;
                   change(
                     'rankingPriority',
                     values.rankingPriority.map((row, itemIndex) =>
@@ -839,19 +854,15 @@ export function RegulationDraftForm({ detail, canEdit, onSaved, onDirtyChange }:
                     ),
                   );
                 }}
-              >
-                {criteria.map((criterion) => (
-                  <option
-                    key={criterion}
-                    value={criterion}
-                    disabled={values.rankingPriority.some(
-                      (row, itemIndex) => itemIndex !== index && row.criterionCode === criterion,
-                    )}
-                  >
-                    {rankingCriterionLabels[criterion]}
-                  </option>
-                ))}
-              </select>
+
+                options={criteria.map((criterion) => ({
+                  value: criterion,
+                  label: rankingCriterionLabels[criterion],
+                  disabled: values.rankingPriority.some(
+                    (row, itemIndex) => itemIndex !== index && row.criterionCode === criterion,
+                  ),
+                }))}
+              />
               {editable && (
                 <button
                   type="button"
@@ -1060,42 +1071,42 @@ function CatalogEditor(
                   />
                 </Field>
                 <Field label="Bàn phản lưới nhà">
-                  <select
-                    aria-label={`Bàn phản lưới nhà ${index + 1}`}
+                  <AdminSelect
+                    label={`Bàn phản lưới nhà ${index + 1}`}
                     value={row.isOwnGoal ? 'true' : 'false'}
                     disabled={disabled}
-                    onChange={(event) =>
+                    onChange={(value) =>
                       onChange(
                         rows.map((item, rowIndex) =>
-                          rowIndex === index
-                            ? { ...item, isOwnGoal: event.target.value === 'true' }
-                            : item,
+                          rowIndex === index ? { ...item, isOwnGoal: value === 'true' } : item,
                         ),
                       )
                     }
-                  >
-                    <option value="false">Không</option>
-                    <option value="true">Có</option>
-                  </select>
+
+                    options={[
+                      { value: 'false', label: 'Không' },
+                      { value: 'true', label: 'Có' },
+                    ]}
+                  />
                 </Field>
                 <Field label="Cho phép chọn">
-                  <select
-                    aria-label={`Cho phép chọn loại bàn thắng ${index + 1}`}
+                  <AdminSelect
+                    label={`Cho phép chọn loại bàn thắng ${index + 1}`}
                     value={row.enabled ? 'true' : 'false'}
                     disabled={disabled}
-                    onChange={(event) =>
+                    onChange={(value) =>
                       onChange(
                         rows.map((item, rowIndex) =>
-                          rowIndex === index
-                            ? { ...item, enabled: event.target.value === 'true' }
-                            : item,
+                          rowIndex === index ? { ...item, enabled: value === 'true' } : item,
                         ),
                       )
                     }
-                  >
-                    <option value="true">Có</option>
-                    <option value="false">Không</option>
-                  </select>
+
+                    options={[
+                      { value: 'true', label: 'Có' },
+                      { value: 'false', label: 'Không' },
+                    ]}
+                  />
                 </Field>
               </div>
             </div>
@@ -1174,42 +1185,42 @@ function CatalogEditor(
                 />
               </Field>
               <Field label="Ý nghĩa" error={errors[`cardTypes[${index}].meaning`]}>
-                <select
-                  aria-label={`Ý nghĩa loại thẻ ${index + 1}`}
+                <AdminSelect
+                  label={`Ý nghĩa loại thẻ ${index + 1}`}
                   value={row.meaning}
                   disabled={disabled}
-                  onChange={(event) =>
+                  onChange={(value) =>
                     onChange(
                       rows.map((item, rowIndex) =>
-                        rowIndex === index
-                          ? { ...item, meaning: event.target.value as CardMeaning }
-                          : item,
+                        rowIndex === index ? { ...item, meaning: value as CardMeaning } : item,
                       ),
                     )
                   }
-                >
-                  <option value="YELLOW">Thẻ vàng</option>
-                  <option value="RED">Thẻ đỏ</option>
-                </select>
+
+                  options={[
+                    { value: 'YELLOW', label: 'Thẻ vàng' },
+                    { value: 'RED', label: 'Thẻ đỏ' },
+                  ]}
+                />
               </Field>
               <Field label="Cho phép chọn">
-                <select
-                  aria-label={`Cho phép chọn loại thẻ ${index + 1}`}
+                <AdminSelect
+                  label={`Cho phép chọn loại thẻ ${index + 1}`}
                   value={row.enabled ? 'true' : 'false'}
                   disabled={disabled}
-                  onChange={(event) =>
+                  onChange={(value) =>
                     onChange(
                       rows.map((item, rowIndex) =>
-                        rowIndex === index
-                          ? { ...item, enabled: event.target.value === 'true' }
-                          : item,
+                        rowIndex === index ? { ...item, enabled: value === 'true' } : item,
                       ),
                     )
                   }
-                >
-                  <option value="true">Có</option>
-                  <option value="false">Không</option>
-                </select>
+
+                  options={[
+                    { value: 'true', label: 'Có' },
+                    { value: 'false', label: 'Không' },
+                  ]}
+                />
               </Field>
             </div>
           </div>

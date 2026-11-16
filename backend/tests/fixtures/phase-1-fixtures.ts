@@ -86,7 +86,7 @@ export async function createPhase1Fixtures(databaseUrl: string) {
       });
       // Return safe identifiers, never the reusable fixture credential/hash.
       return {
-        accounts: accounts.map((a) => ({ id: a.id, username: a.username })),
+        accounts: accounts.map((a) => ({ id: a.id, username: a.username, fullName: a.fullName })),
         seasons: seasons.map((s) => ({ id: s.id, code: s.code, name: s.name })),
       };
     });

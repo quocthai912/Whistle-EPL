@@ -186,18 +186,14 @@ test(
     ).toBeVisible();
     expect(within(drawer).getByText('Tên cũ')).toBeVisible();
     expect(within(drawer).getByText('Mùa mới')).toBeVisible();
-    fireEvent.change(within(drawer).getByLabelText('Loại thao tác'), {
-      target: { value: 'SEASON_UPDATED' },
+    fireEvent.mouseDown(within(drawer).getByRole('combobox', { name: 'Loại thao tác' }));
+    fireEvent.click(await screen.findByRole('option', { name: 'Cập nhật mùa giải' }));
+    fireEvent.change(within(drawer).getByLabelText('Từ thời điểm'), {
+      target: { value: '16/08/2028 06:00' },
     });
-    fireEvent.change(within(drawer).getByLabelText('Từ thời điểm (bao gồm, giờ thiết bị)'), {
-      target: { value: '2028-08-16T06:00' },
+    fireEvent.change(within(drawer).getByLabelText('Đến trước thời điểm'), {
+      target: { value: '17/08/2028 06:00' },
     });
-    fireEvent.change(
-      within(drawer).getByLabelText('Đến trước thời điểm (không bao gồm, giờ thiết bị)'),
-      {
-        target: { value: '2028-08-17T06:00' },
-      },
-    );
     fireEvent.click(within(drawer).getByRole('button', { name: 'Áp dụng bộ lọc' }));
     await waitFor(
       () => expect(historyRequests.at(-1)?.searchParams.get('actionCode')).toBe('SEASON_UPDATED'),

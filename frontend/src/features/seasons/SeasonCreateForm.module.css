@@ -191,7 +191,7 @@
   font-weight: 500;
 }
 
-.field input {
+.field > input {
   width: 100%;
   min-height: 42px;
   padding: 8px 11px;
@@ -202,19 +202,25 @@
   font: inherit;
 }
 
-.field input[aria-invalid='true'] {
+.field > input[aria-invalid='true'] {
   border-color: #ba1a1a;
 }
 
-.field input:focus-visible,
+.field > input:focus-visible,
 .form button:focus-visible {
   outline: 2px solid #8663d8;
   outline-offset: 2px;
 }
 
-.field input:disabled {
+.field > input:disabled {
   color: #65718a;
   background: #f6f8fc;
+}
+
+.datePicker {
+  width: 100%;
+  min-height: 42px;
+  border-radius: 8px;
 }
 
 .preview {

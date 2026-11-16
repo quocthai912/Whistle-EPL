@@ -1,3 +1,15 @@
+import type { SessionView } from '../../shared/http/session-store';
+
+export const seasonDateFormat = 'DD/MM/YYYY';
+
+export function parseSeasonDate(value: string): string {
+  const match = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(value.trim());
+  if (!match || match[3] === '0000') return '';
+  const iso = `${match[3]}-${match[2]}-${match[1]}`;
+  const date = new Date(`${iso}T00:00:00Z`);
+  return Number.isFinite(date.getTime()) && date.toISOString().slice(0, 10) === iso ? iso : '';
+}
+
 export type SeasonState = 'OPEN' | 'CLOSED';
 
 export type SeasonListItem = {
@@ -75,11 +87,27 @@ export function formatSeasonInstant(value: string | null): string {
   if (!value || !Number.isFinite(Date.parse(value))) return '—';
   return new Intl.DateTimeFormat('vi-VN', {
     timeZone: 'Asia/Ho_Chi_Minh',
-    dateStyle: 'short',
-    timeStyle: 'short',
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
   }).format(new Date(value));
 }
 
 export function normalizeSeasonText(value: string): string {
   return value.normalize('NFC').trim().replace(/\s+/gu, ' ');
+}
+
+/** Session hints for navigation. The API checks current authority for every season. */
+export function regulationSeasonScope(session: SessionView | undefined | null): Set<string> {
+  const ids = new Set(session?.seasonManagerIds ?? []);
+  for (const capability of [
+    ...(session?.preparationCapabilities?.direct ?? []),
+    ...(session?.preparationCapabilities?.delegated ?? []),
+  ]) {
+    if (capability.actionCode === 'PREPARE_REGULATION_CHANGE') ids.add(capability.seasonId);
+  }
+  return ids;
 }

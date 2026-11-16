@@ -189,7 +189,11 @@ function historyItem(
 }
 
 function open(fetcher: typeof fetch) {
-  vi.stubGlobal('fetch', fetcher);
+  vi.stubGlobal('fetch', (input: RequestInfo | URL, init?: RequestInit) =>
+    pathOf(input) === '/api/v1/regulation-seasons'
+      ? Promise.resolve(envelope({ items: [season] }))
+      : fetcher(input, init),
+  );
   render(
     <MemoryRouter initialEntries={[`/workspace/seasons/${seasonId}/regulations`]}>
       <App />
@@ -322,7 +326,7 @@ test('draft creation stays empty until confirmed source values are applied', asy
   });
   open(fetcher);
 
-  expect(await screen.findByText(/MG-2028-2029/, undefined, wait)).toBeVisible();
+  expect(await screen.findByText(season.name, undefined, wait)).toBeVisible();
   fireEvent.click(screen.getByRole('button', { name: 'Tạo bản nháp quy định' }));
   expect(await screen.findByRole('heading', { name: 'Phiên bản 1' }, wait)).toBeVisible();
   expect(screen.getByLabelText('Giới hạn danh sách cầu thủ')).toHaveValue(null);
@@ -416,18 +420,19 @@ test('typed draft fields use UTC instants, date-only values, and ID-free replace
   open(fetcher);
 
   expect(await screen.findByLabelText('Cách đề xuất hiệu lực', undefined, wait)).toBeVisible();
-  fireEvent.change(screen.getByLabelText('Cách đề xuất hiệu lực'), {
-    target: { value: 'SCHEDULED' },
-  });
+  fireEvent.mouseDown(screen.getByRole('combobox', { name: 'Cách đề xuất hiệu lực' }));
+  fireEvent.click(await screen.findByRole('option', { name: 'Hiệu lực tại thời điểm đã chọn' }));
   fireEvent.change(screen.getByLabelText('Thời điểm hiệu lực dự kiến'), {
-    target: { value: '2028-08-15T09:30' },
+    target: { value: '15/08/2028 09:30' },
   });
   fireEvent.change(screen.getByLabelText('Ngày sinh giới hạn U21'), {
-    target: { value: '2029-01-01' },
+    target: { value: '01/01/2029' },
   });
   fireEvent.change(screen.getByLabelText('Số câu lạc bộ'), { target: { value: '20' } });
-  fireEvent.change(screen.getByLabelText('Thể thức'), { target: { value: 'DOUBLE_ROUND_ROBIN' } });
-  fireEvent.change(screen.getByLabelText('Số lượt'), { target: { value: '2' } });
+  fireEvent.mouseDown(screen.getByRole('combobox', { name: 'Thể thức' }));
+  fireEvent.click(await screen.findByRole('option', { name: 'Vòng tròn hai lượt' }));
+  fireEvent.mouseDown(screen.getByRole('combobox', { name: 'Số lượt' }));
+  fireEvent.click(await screen.findByRole('option', { name: 'Hai lượt' }));
   expect(screen.getByLabelText('Số vị trí xuống hạng (R)')).toHaveValue(null);
   fireEvent.click(screen.getByRole('button', { name: 'Xem và xác nhận giá trị đề xuất R = 3' }));
   const relegationConfirmation = await screen.findByRole(
@@ -442,19 +447,19 @@ test('typed draft fields use UTC instants, date-only values, and ID-free replace
   expect(screen.getByLabelText('Số vị trí xuống hạng (R)')).toHaveValue(3);
   expect(screen.getByLabelText('Số vị trí giành quyền tham dự (Q)')).toHaveValue(null);
 
-  expect(screen.getByLabelText('Mở từ đợt 1')).toHaveValue('2028-08-01T07:00:05.678');
-  expect(screen.getByLabelText('Đóng trước đợt 1')).toHaveValue('2028-08-01T08:00:06.123');
-  expect(screen.getByLabelText('Mở từ đợt 2')).toHaveValue('2028-08-02T07:00:00.001');
-  expect(screen.getByLabelText('Đóng trước đợt 2')).toHaveValue('2028-08-02T07:00:00.999');
+  expect(screen.getByLabelText('Mở từ đợt 1')).toHaveValue('01/08/2028 07:00:05.678');
+  expect(screen.getByLabelText('Đóng trước đợt 1')).toHaveValue('01/08/2028 08:00:06.123');
+  expect(screen.getByLabelText('Mở từ đợt 2')).toHaveValue('02/08/2028 07:00:00.001');
+  expect(screen.getByLabelText('Đóng trước đợt 2')).toHaveValue('02/08/2028 07:00:00.999');
   fireEvent.change(screen.getByLabelText('Đóng trước đợt 1'), {
-    target: { value: '2028-08-01T08:00:00.000' },
+    target: { value: '01/08/2028 08:00:00.000' },
   });
   fireEvent.click(screen.getByRole('button', { name: 'Thêm đợt tiếp nhận' }));
   fireEvent.change(screen.getByLabelText('Mở từ đợt 3'), {
-    target: { value: '2028-08-01T08:00' },
+    target: { value: '01/08/2028 08:00' },
   });
   fireEvent.change(screen.getByLabelText('Đóng trước đợt 3'), {
-    target: { value: '2028-08-01T09:00' },
+    target: { value: '01/08/2028 09:00' },
   });
   expect(screen.queryByText(/Khoảng thời gian bị trùng/)).not.toBeInTheDocument();
   fireEvent.click(screen.getByRole('button', { name: 'Thêm tiêu chí xếp hạng' }));
@@ -577,23 +582,24 @@ test('versions are paged by API metadata while overview uses persisted pointers'
   });
   open(fetcher);
 
+  fireEvent.click(await screen.findByRole('tab', { name: 'Phiên bản và phê duyệt' }, wait));
   expect(await screen.findByRole('heading', { name: 'Phiên bản 21' }, wait)).toBeVisible();
+  expect(screen.getByText(/Phiên bản 19 chờ hiệu lực/)).toBeVisible();
+  fireEvent.click(screen.getByRole('tab', { name: 'Quy định hiện hành' }));
   expect(screen.getByRole('region', { name: 'Quy định đang hiệu lực' })).toHaveTextContent(
     'Phiên bản 18',
   );
-  expect(screen.getByRole('region', { name: 'Quy định chờ hiệu lực' })).toHaveTextContent(
-    'Phiên bản 19',
-  );
+  fireEvent.click(screen.getByRole('tab', { name: 'Phiên bản và phê duyệt' }));
   expect(listRequests).toContainEqual({ page: '1', pageSize: '20', sort: 'versionNumber:desc' });
 
   fireEvent.click(screen.getByRole('button', { name: 'Phiên bản cũ hơn' }));
   expect(await screen.findByRole('heading', { name: 'Phiên bản 1' }, wait)).toBeVisible();
+  expect(screen.getByText(/Phiên bản 19 chờ hiệu lực/)).toBeVisible();
+  fireEvent.click(screen.getByRole('tab', { name: 'Quy định hiện hành' }));
   expect(screen.getByRole('region', { name: 'Quy định đang hiệu lực' })).toHaveTextContent(
     'Phiên bản 18',
   );
-  expect(screen.getByRole('region', { name: 'Quy định chờ hiệu lực' })).toHaveTextContent(
-    'Phiên bản 19',
-  );
+  fireEvent.click(screen.getByRole('tab', { name: 'Phiên bản và phê duyệt' }));
   expect(listRequests).toContainEqual({ page: '2', pageSize: '20', sort: 'versionNumber:desc' });
   expect(screen.getByText('Trang 2 / 2')).toBeVisible();
 }, 15_000);
@@ -631,15 +637,19 @@ test('revision conflict keeps draft values and requires review before rebasing a
   });
   open(fetcher);
 
-  expect(await screen.findByLabelText('Ngày sinh giới hạn U21', undefined, wait)).toBeVisible();
-  fireEvent.change(screen.getByLabelText('Ngày sinh giới hạn U21'), {
-    target: { value: '2029-01-01' },
+  const cutoff = await screen.findByLabelText('Ngày sinh giới hạn U21', undefined, wait);
+  expect(cutoff).toBeVisible();
+  fireEvent.focus(cutoff);
+  fireEvent.change(cutoff, {
+    target: { value: '01/01/2029' },
   });
+  fireEvent.blur(cutoff);
+  expect(screen.getByRole('button', { name: 'Lưu bản nháp' })).toBeEnabled();
   fireEvent.click(screen.getByRole('button', { name: 'Lưu bản nháp' }));
   expect(await screen.findByRole('alert', undefined, wait)).toHaveTextContent(
     /đã được cập nhật ở nơi khác/i,
   );
-  expect(screen.getByLabelText('Ngày sinh giới hạn U21')).toHaveValue('2029-01-01');
+  expect(screen.getByLabelText('Ngày sinh giới hạn U21')).toHaveValue('01/01/2029');
   expect(patches).toHaveLength(1);
 
   fireEvent.click(screen.getByRole('button', { name: 'Tải lại và so sánh' }));
@@ -650,7 +660,7 @@ test('revision conflict keeps draft values and requires review before rebasing a
 
   fireEvent.click(within(review).getByRole('button', { name: 'Tiếp tục với thay đổi đã xem xét' }));
   expect(screen.getByLabelText('Số câu lạc bộ')).toHaveValue(18);
-  expect(screen.getByLabelText('Ngày sinh giới hạn U21')).toHaveValue('2029-01-01');
+  expect(screen.getByLabelText('Ngày sinh giới hạn U21')).toHaveValue('01/01/2029');
   fireEvent.click(screen.getByRole('button', { name: 'Lưu bản nháp' }));
   await waitFor(
     () =>
@@ -896,7 +906,13 @@ test('incomplete submission shows localized field feedback without losing its re
 test('submission and withdrawal lock the exact version and require an explicit successor', async () => {
   const successorId = '00000000-0000-4000-8000-000000000093';
   let current = detail({ ...blankContent, squadLimit: 25 }, '1', {
-    editors: [{ accountId: account.id, firstEditedAt: '2028-06-30T00:00:00.000Z' }],
+    editors: [
+      {
+        accountId: account.id,
+        fullName: account.fullName,
+        firstEditedAt: '2028-06-30T00:00:00.000Z',
+      },
+    ],
     capabilities: { canSubmit: true },
   });
   let successor: RegulationVersionDetail | undefined;

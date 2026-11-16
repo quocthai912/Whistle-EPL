@@ -138,7 +138,7 @@ export type RegulationVersionDetail = {
   activeFrom: string | null;
   activeUntil: string | null;
   preparedBy: { id: string; fullName: string };
-  editors: { accountId: string; firstEditedAt: string }[];
+  editors: { accountId: string; fullName: string; firstEditedAt: string }[];
   content: RegulationContent;
   capabilities: {
     canEditDraft: boolean;

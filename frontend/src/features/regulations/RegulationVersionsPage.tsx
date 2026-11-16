@@ -3,11 +3,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } fro
 import { useParams } from 'react-router';
 import { HttpFailure } from '../../shared/http/client';
 import { useSession } from '../../shared/http/use-session';
-import {
-  formatSeasonDate,
-  formatSeasonInstant,
-  type SeasonDetailRecord,
-} from '../seasons/season-model';
+import { formatSeasonInstant } from '../seasons/season-model';
 import { ListFeedback } from '../accounts/AdminLists';
 import { useAdminList } from '../accounts/use-admin-list';
 import { RegulationDraftForm } from './RegulationDraftForm';
@@ -26,6 +22,7 @@ import {
 import css from './RegulationVersionsPage.module.css';
 import { RegulationActionPreview, RegulationReadView, RegulationReview } from './RegulationReview';
 import { RegulationChangeReview } from './RegulationChangeReview';
+import { useRegulationReviewContent } from './use-regulation-review-content';
 
 type RegulationAction = 'submit' | 'withdraw' | 'return' | 'reject' | 'approve';
 
@@ -125,12 +122,17 @@ function defaultSelection(items: readonly RegulationVersionSummary[]): string | 
   );
 }
 
-export function RegulationVersionsPage() {
+export function RegulationVersionsPage({
+  season,
+  onDirtyChange,
+}: {
+  season?: { code: string; name: string };
+  onDirtyChange: (dirty: boolean) => void;
+}) {
   const { seasonId } = useParams();
   const { client, session, epoch } = useSession();
   const [attempt, setAttempt] = useState(0);
-  const [season, setSeason] = useState<SeasonDetailRecord>();
-  const [seasonError, setSeasonError] = useState<string>();
+  const [tab, setTab] = useState<'current' | 'versions'>();
   const [createError, setCreateError] = useState<string>();
   const [creating, setCreating] = useState(false);
   const [actionBusy, setActionBusy] = useState(false);
@@ -173,6 +175,15 @@ export function RegulationVersionsPage() {
   const detail = matchingDetail?.data;
   const detailError = matchingDetail?.error;
   const detailLoading = !!effectiveSelectedId && !matchingDetail;
+  const currentEffective = list.data?.overview.currentEffective;
+  const activeTab = tab ?? (!currentEffective && list.data?.items.length ? 'versions' : 'current');
+  const currentRead = useRegulationReviewContent(
+    activeTab === 'current' && detail?.id !== currentEffective?.id
+      ? currentEffective?.id
+      : undefined,
+  );
+  const currentContent =
+    detail?.id === currentEffective?.id ? detail?.content : currentRead?.detail?.content;
 
   const dismissAction = useCallback(() => {
     actionDialogSequence.current += 1;
@@ -184,27 +195,13 @@ export function RegulationVersionsPage() {
     setActionUnknown(false);
   }, []);
 
-  useEffect(() => {
-    if (!seasonId) return;
-    let active = true;
-    void client
-      .request<SeasonDetailRecord>(`/seasons/${encodeURIComponent(seasonId)}`)
-      .then(({ data }) => {
-        if (active) {
-          setSeason(data);
-          setSeasonError(undefined);
-        }
-      })
-      .catch((error: unknown) => {
-        if (active)
-          setSeasonError(error instanceof Error ? error.message : 'Không thể tải mùa giải.');
-      });
-    return () => {
-      active = false;
-    };
-  }, [client, seasonId]);
-
-  const onFormDirtyChange = useCallback((dirty: boolean) => setFormDirty(dirty), []);
+  const onFormDirtyChange = useCallback(
+    (dirty: boolean) => {
+      setFormDirty(dirty);
+      onDirtyChange(dirty);
+    },
+    [onDirtyChange],
+  );
 
   function requestSelection(versionId: string) {
     if (actionUnknown) return;
@@ -313,7 +310,6 @@ export function RegulationVersionsPage() {
     );
 
   const versions = list.data?.items ?? [];
-  const currentEffective = list.data?.overview.currentEffective;
   const waiting = list.data?.overview.waiting;
   const selectedSummary = versions.find((item) => item.id === effectiveSelectedId);
   const canCreateDraft = !!list.data?.capabilities.canCreateDraft;
@@ -470,43 +466,49 @@ export function RegulationVersionsPage() {
   }
 
   return (
-    <section className={css.page} aria-label="Quản lý quy định mùa giải">
-      <header className={css.pageHeader}>
-        <div>
-          <p className={css.eyebrow}>MÙA GIẢI / QUY ĐỊNH</p>
-          <h1>Quản lý quy định mùa giải</h1>
-          {season ? (
-            <p>
-              {season.code} · {season.name} · {formatSeasonDate(season.startDate)} –{' '}
-              {formatSeasonDate(season.endDate)}
-            </p>
-          ) : seasonError ? (
-            <p className={css.subtle}>{seasonError}</p>
-          ) : (
-            <p className={css.subtle}>Đang tải thông tin mùa giải…</p>
-          )}
-        </div>
-        <div className={css.headerActions}>
-          {season && (
-            <span
-              className={`${css.seasonState} ${season.state === 'OPEN' ? css.open : css.closed}`}
-            >
-              {season.state === 'OPEN' ? 'Đang mở' : 'Đã đóng'}
-            </span>
-          )}
-          {canCreateDraft && !visibleDetail?.capabilities.canCreateSuccessor && (
-            <button
-              className={css.primary}
-              type="button"
-              disabled={creating}
-              onClick={() => void createDraft()}
-            >
-              {creating ? 'Đang tạo…' : 'Tạo bản nháp quy định'}
-            </button>
-          )}
-        </div>
-      </header>
-
+    <div className={css.workspaceBody}>
+      <div
+        className={css.ruleTabs}
+        role="tablist"
+        aria-label="Nội dung quy định"
+        onKeyDown={(event) => {
+          if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
+          event.preventDefault();
+          const next =
+            event.key === 'Home'
+              ? 'current'
+              : event.key === 'End'
+                ? 'versions'
+                : activeTab === 'current'
+                  ? 'versions'
+                  : 'current';
+          setTab(next);
+          event.currentTarget.querySelector<HTMLButtonElement>(`#regulation-tab-${next}`)?.focus();
+        }}
+      >
+        <button
+          type="button"
+          role="tab"
+          id="regulation-tab-current"
+          aria-controls="regulation-panel-current"
+          aria-selected={activeTab === 'current'}
+          tabIndex={activeTab === 'current' ? 0 : -1}
+          onClick={() => setTab('current')}
+        >
+          Quy định hiện hành
+        </button>
+        <button
+          type="button"
+          role="tab"
+          id="regulation-tab-versions"
+          aria-controls="regulation-panel-versions"
+          aria-selected={activeTab === 'versions'}
+          tabIndex={activeTab === 'versions' ? 0 : -1}
+          onClick={() => setTab('versions')}
+        >
+          Phiên bản và phê duyệt
+        </button>
+      </div>
       {notice && (
         <p className={css.formSuccess} role="status">
           {notice}
@@ -518,272 +520,310 @@ export function RegulationVersionsPage() {
         </p>
       )}
 
-      <div className={css.overviewGrid}>
-        <section className={css.overviewCard} aria-label="Quy định đang hiệu lực">
-          <div className={css.overviewIcon}>01</div>
-          <div>
-            <span>QUY ĐỊNH HIỆU LỰC</span>
-            {currentEffective ? (
-              <strong>Phiên bản {currentEffective.versionNumber}</strong>
-            ) : list.loading ? (
-              <strong>Đang tải trạng thái đã lưu…</strong>
-            ) : list.error ? (
-              <strong>Chưa xác định được quy định hiệu lực</strong>
-            ) : (
-              <strong>Chưa có quy định hiệu lực</strong>
+      <div
+        id="regulation-panel-current"
+        role="tabpanel"
+        aria-labelledby="regulation-tab-current"
+        hidden={activeTab !== 'current'}
+      >
+        <section className={css.currentPane} aria-label="Quy định đang hiệu lực">
+          <div className={css.effectiveBanner}>
+            <div>
+              <span>Mã phiên bản áp dụng</span>
+              <strong>
+                {currentEffective ? `Phiên bản ${currentEffective.versionNumber}` : '—'}
+              </strong>
+            </div>
+            <div>
+              <span>Ngày bắt đầu hiệu lực</span>
+              <strong>
+                {currentEffective ? formatSeasonInstant(currentEffective.activeFrom) : '—'}
+              </strong>
+            </div>
+            <div>
+              <span>Trạng thái</span>
+              <strong className={currentEffective ? `${css.seasonState} ${css.open}` : undefined}>
+                {currentEffective
+                  ? 'Đang có hiệu lực'
+                  : list.loading
+                    ? 'Đang tải…'
+                    : list.error
+                      ? 'Chưa xác định được quy định hiệu lực'
+                      : 'Chưa có quy định hiệu lực'}
+              </strong>
+            </div>
+            {canCreateDraft && !visibleDetail?.capabilities.canCreateSuccessor && (
+              <button
+                className={css.primary}
+                type="button"
+                disabled={creating}
+                onClick={() => {
+                  setTab('versions');
+                  void createDraft();
+                }}
+              >
+                {creating
+                  ? 'Đang tạo…'
+                  : currentEffective
+                    ? 'Tạo đề xuất thay đổi'
+                    : 'Tạo bản nháp quy định'}
+              </button>
             )}
-            <small>
-              {currentEffective
-                ? `Từ ${formatSeasonInstant(currentEffective.activeFrom)}`
-                : list.loading
-                  ? 'Đang đọc chỉ báo từ máy chủ.'
-                  : 'Chỉ trạng thái đã lưu mới xuất hiện tại đây.'}
-            </small>
           </div>
-        </section>
-        <section className={css.overviewCard} aria-label="Quy định chờ hiệu lực">
-          <div className={css.overviewIcon}>02</div>
-          <div>
-            <span>ĐÃ DUYỆT, CHỜ HIỆU LỰC</span>
-            {waiting ? (
-              <strong>Phiên bản {waiting.versionNumber}</strong>
-            ) : list.loading ? (
-              <strong>Đang tải trạng thái đã lưu…</strong>
-            ) : list.error ? (
-              <strong>Chưa xác định được phiên bản chờ</strong>
+          {list.error && (
+            <ListFeedback
+              loading={list.loading}
+              error={list.error}
+              onRetry={() => setAttempt((value) => value + 1)}
+            />
+          )}
+          {currentEffective &&
+            (currentContent ? (
+              <>
+                <h2 className={css.officialHeading}>5 nhóm quy định kỹ thuật chính thức</h2>
+                <RegulationReadView content={currentContent} summary />
+              </>
+            ) : currentRead?.error ? (
+              <p role="alert">{currentRead.error}</p>
             ) : (
-              <strong>Chưa có phiên bản chờ</strong>
-            )}
-            <small>
-              {waiting
-                ? `Dự kiến ${formatSeasonInstant(waiting.proposedEffectiveAt)}`
-                : list.loading
-                  ? 'Đang đọc chỉ báo từ máy chủ.'
-                  : 'Không suy ra phiên bản chờ từ số thứ tự.'}
-            </small>
-          </div>
-        </section>
-        <section className={css.overviewCard} aria-label="Tổng số phiên bản">
-          <div className={css.overviewIcon}>03</div>
-          <div>
-            <span>TỔNG SỐ PHIÊN BẢN</span>
-            {list.meta ? (
-              <strong>{list.meta.total} phiên bản</strong>
-            ) : list.loading ? (
-              <strong>Đang tải…</strong>
-            ) : (
-              <strong>Chưa có dữ liệu</strong>
-            )}
-            <small>Danh sách lịch sử được chia thành từng trang.</small>
-          </div>
+              <p role="status">Đang tải nội dung đang áp dụng…</p>
+            ))}
         </section>
       </div>
 
-      {seasonId && list.data?.capabilities.canManageChanges !== undefined && (
-        <RegulationChangeReview
-          key={`${seasonId}:${epoch}`}
-          seasonId={seasonId}
-          waitingId={waiting?.id}
-          canManage={list.data.capabilities.canManageChanges}
-          versions={list.data.items}
-          onChanged={() => {
-            setAttempt((value) => value + 1);
-            setDetailAttempt((value) => value + 1);
-            setHistoryRefresh((value) => value + 1);
-          }}
-        />
-      )}
-
-      <div className={css.contentGrid}>
-        <aside className={css.versionPanel} aria-label="Danh sách phiên bản">
-          <div className={css.panelHeading}>
-            <div>
-              <h2>Phiên bản</h2>
-              <p>Trạng thái phản ánh dữ liệu đã lưu.</p>
-            </div>
-            <button
-              type="button"
-              aria-label="Làm mới danh sách phiên bản"
-              onClick={() => setAttempt((value) => value + 1)}
-            >
-              Làm mới
-            </button>
+      <div
+        id="regulation-panel-versions"
+        role="tabpanel"
+        aria-labelledby="regulation-tab-versions"
+        hidden={activeTab !== 'versions'}
+      >
+        <div className={css.versionsToolbar}>
+          <div>
+            <strong>{list.meta ? `${list.meta.total} phiên bản` : 'Danh sách phiên bản'}</strong>
+            <small>
+              {waiting
+                ? `Phiên bản ${waiting.versionNumber} chờ hiệu lực từ ${formatSeasonInstant(waiting.proposedEffectiveAt)}`
+                : 'Chưa có phiên bản chờ'}
+            </small>
           </div>
-          <ListFeedback
-            loading={list.loading}
-            error={list.error}
-            empty={!!list.data && versions.length === 0}
-            onRetry={() => setAttempt((value) => value + 1)}
+          {canCreateDraft && !visibleDetail?.capabilities.canCreateSuccessor && (
+            <button
+              className={css.primary}
+              type="button"
+              disabled={creating}
+              onClick={() => void createDraft()}
+            >
+              {creating ? 'Đang tạo…' : 'Tạo bản nháp quy định'}
+            </button>
+          )}
+        </div>
+        {seasonId && list.data?.capabilities.canManageChanges !== undefined && (
+          <RegulationChangeReview
+            key={`${seasonId}:${epoch}`}
+            seasonId={seasonId}
+            waitingId={waiting?.id}
+            canManage={list.data.capabilities.canManageChanges}
+            versions={list.data.items}
+            onChanged={() => {
+              setAttempt((value) => value + 1);
+              setDetailAttempt((value) => value + 1);
+              setHistoryRefresh((value) => value + 1);
+            }}
           />
-          {versions.length > 0 && (
-            <div className={css.versionList}>
-              {versions.map((version) => (
+        )}
+
+        <div className={css.contentGrid}>
+          <aside className={css.versionPanel} aria-label="Danh sách phiên bản">
+            <div className={css.panelHeading}>
+              <div>
+                <h2>Phiên bản</h2>
+                <p>Trạng thái phản ánh dữ liệu đã lưu.</p>
+              </div>
+              <button
+                type="button"
+                aria-label="Làm mới danh sách phiên bản"
+                onClick={() => setAttempt((value) => value + 1)}
+              >
+                Làm mới
+              </button>
+            </div>
+            <ListFeedback
+              loading={list.loading}
+              error={list.error}
+              empty={!!list.data && versions.length === 0}
+              onRetry={() => setAttempt((value) => value + 1)}
+            />
+            {versions.length > 0 && (
+              <div className={css.versionList}>
+                {versions.map((version) => (
+                  <button
+                    type="button"
+                    key={version.id}
+                    className={`${css.versionItem} ${effectiveSelectedId === version.id ? css.selectedVersion : ''}`}
+                    aria-current={effectiveSelectedId === version.id ? 'true' : undefined}
+                    onClick={() => {
+                      setNotice(undefined);
+                      requestSelection(version.id);
+                    }}
+                  >
+                    <span className={css.versionTitle}>Phiên bản {version.versionNumber}</span>
+                    <span className={`${css.stateBadge} ${stateClass(version.state)}`}>
+                      {regulationStateLabels[version.state]}
+                    </span>
+                    <span className={css.versionMeta}>
+                      {version.preparedBy.fullName} ·{' '}
+                      {version.effectiveMode === 'SCHEDULED'
+                        ? 'Có lịch hiệu lực'
+                        : version.effectiveMode === 'IMMEDIATE'
+                          ? 'Đề xuất hiệu lực ngay'
+                          : 'Chưa chọn cách hiệu lực'}
+                    </span>
+                    {version.isCurrentEffective && (
+                      <span className={css.pointerBadge}>Đang hiệu lực</span>
+                    )}
+                    {version.isCurrentDraft && (
+                      <span className={css.pointerBadge}>Bản nháp hiện tại</span>
+                    )}
+                  </button>
+                ))}
+              </div>
+            )}
+            {list.meta && (
+              <p className={css.listMeta}>
+                Hiển thị {versions.length} trong {list.meta.total} phiên bản · Trang{' '}
+                {list.meta.page}.
+              </p>
+            )}
+            {list.meta && list.meta.total > list.meta.pageSize && (
+              <div className={css.versionPagination} aria-label="Phân trang phiên bản">
                 <button
                   type="button"
-                  key={version.id}
-                  className={`${css.versionItem} ${effectiveSelectedId === version.id ? css.selectedVersion : ''}`}
-                  aria-current={effectiveSelectedId === version.id ? 'true' : undefined}
-                  onClick={() => {
-                    setNotice(undefined);
-                    requestSelection(version.id);
-                  }}
+                  disabled={list.loading || formDirty || list.meta.page <= 1}
+                  onClick={() => setVersionsPage((page) => Math.max(1, page - 1))}
                 >
-                  <span className={css.versionTitle}>Phiên bản {version.versionNumber}</span>
-                  <span className={`${css.stateBadge} ${stateClass(version.state)}`}>
-                    {regulationStateLabels[version.state]}
-                  </span>
-                  <span className={css.versionMeta}>
-                    {version.preparedBy.fullName} ·{' '}
-                    {version.effectiveMode === 'SCHEDULED'
-                      ? 'Có lịch hiệu lực'
-                      : version.effectiveMode === 'IMMEDIATE'
-                        ? 'Đề xuất hiệu lực ngay'
-                        : 'Chưa chọn cách hiệu lực'}
-                  </span>
-                  {version.isCurrentEffective && (
-                    <span className={css.pointerBadge}>Đang hiệu lực</span>
-                  )}
-                  {version.isCurrentDraft && (
-                    <span className={css.pointerBadge}>Bản nháp hiện tại</span>
-                  )}
+                  Phiên bản mới hơn
                 </button>
-              ))}
-            </div>
-          )}
-          {list.meta && (
-            <p className={css.listMeta}>
-              Hiển thị {versions.length} trong {list.meta.total} phiên bản · Trang {list.meta.page}.
-            </p>
-          )}
-          {list.meta && list.meta.total > list.meta.pageSize && (
-            <div className={css.versionPagination} aria-label="Phân trang phiên bản">
-              <button
-                type="button"
-                disabled={list.loading || formDirty || list.meta.page <= 1}
-                onClick={() => setVersionsPage((page) => Math.max(1, page - 1))}
-              >
-                Phiên bản mới hơn
-              </button>
-              <span>
-                Trang {list.meta.page} / {Math.ceil(list.meta.total / list.meta.pageSize)}
-              </span>
-              <button
-                type="button"
-                disabled={
-                  list.loading ||
-                  formDirty ||
-                  list.meta.page * list.meta.pageSize >= list.meta.total
-                }
-                onClick={() => setVersionsPage((page) => page + 1)}
-              >
-                Phiên bản cũ hơn
-              </button>
-              {formDirty && <small>Lưu hoặc bỏ thay đổi trước khi chuyển trang.</small>}
-            </div>
-          )}
-          {!canCreateDraft && !versions.some((item) => item.isCurrentDraft) && (
-            <p className={css.scopeNote}>Không có quyền tạo bản nháp ở trạng thái hiện tại.</p>
-          )}
-        </aside>
-
-        <section className={css.detailPanel} aria-label="Chi tiết phiên bản quy định">
-          {!effectiveSelectedId ? (
-            <EmptyRegulationDetail
-              canCreateDraft={canCreateDraft}
-              onCreate={() => void createDraft()}
-            />
-          ) : detailLoading && !visibleDetail ? (
-            <p role="status" className={css.loading}>
-              Đang tải phiên bản…
-            </p>
-          ) : detailError ? (
-            <div className={css.errorPanel}>
-              <p role="alert">{detailError}</p>
-              <button type="button" onClick={() => setDetailAttempt((value) => value + 1)}>
-                Thử tải lại
-              </button>
-            </div>
-          ) : visibleDetail ? (
-            <>
-              <div className={css.detailHeading}>
-                <div>
-                  <p className={css.eyebrow}>
-                    {selectedSummary?.isCurrentEffective
-                      ? 'ĐANG HIỆU LỰC'
-                      : visibleDetail.capabilities.canEditDraft
-                        ? 'BẢN NHÁP CÓ THỂ SỬA'
-                        : 'CHI TIẾT PHIÊN BẢN'}
-                  </p>
-                  <h2>Phiên bản {visibleDetail.versionNumber}</h2>
-                  <p>
-                    {regulationStateLabels[visibleDetail.state]} · Chuẩn bị bởi{' '}
-                    {visibleDetail.preparedBy.fullName}
-                  </p>
-                </div>
-                <div className={css.dateMetadata}>
-                  {visibleDetail.approvedAt && (
-                    <span>
-                      <small>Thời điểm phê duyệt</small>
-                      <strong>{formatSeasonInstant(visibleDetail.approvedAt)}</strong>
-                    </span>
-                  )}
-                  {visibleDetail.activeFrom && (
-                    <span>
-                      <small>Hiệu lực từ</small>
-                      <strong>{formatSeasonInstant(visibleDetail.activeFrom)}</strong>
-                    </span>
-                  )}
-                  {visibleDetail.activationProcessedAt && (
-                    <span>
-                      <small>Thời điểm xử lý kích hoạt</small>
-                      <strong>{formatSeasonInstant(visibleDetail.activationProcessedAt)}</strong>
-                    </span>
-                  )}
-                  {visibleDetail.activeUntil && (
-                    <span>
-                      <small>Hiệu lực đến</small>
-                      <strong>{formatSeasonInstant(visibleDetail.activeUntil)}</strong>
-                    </span>
-                  )}
-                </div>
+                <span>
+                  Trang {list.meta.page} / {Math.ceil(list.meta.total / list.meta.pageSize)}
+                </span>
+                <button
+                  type="button"
+                  disabled={
+                    list.loading ||
+                    formDirty ||
+                    list.meta.page * list.meta.pageSize >= list.meta.total
+                  }
+                  onClick={() => setVersionsPage((page) => page + 1)}
+                >
+                  Phiên bản cũ hơn
+                </button>
+                {formDirty && <small>Lưu hoặc bỏ thay đổi trước khi chuyển trang.</small>}
               </div>
-              <RegulationVersionWorkflow
-                detail={visibleDetail}
-                seasonCode={season?.code}
-                busy={creating}
-                disabled={formDirty}
-                onAction={openAction}
-                onCreateSuccessor={() => void createSuccessor(visibleDetail)}
+            )}
+            {!canCreateDraft && !versions.some((item) => item.isCurrentDraft) && (
+              <p className={css.scopeNote}>Không có quyền tạo bản nháp ở trạng thái hiện tại.</p>
+            )}
+          </aside>
+
+          <section className={css.detailPanel} aria-label="Chi tiết phiên bản quy định">
+            {!effectiveSelectedId ? (
+              <EmptyRegulationDetail
+                canCreateDraft={canCreateDraft}
+                onCreate={() => void createDraft()}
               />
-              {selectedSummary?.capabilities.canEditDraft &&
-              visibleDetail.capabilities.canEditDraft ? (
-                <RegulationDraftForm
-                  key={`${visibleDetail.id}:${visibleDetail.revision}`}
+            ) : detailLoading && !visibleDetail ? (
+              <p role="status" className={css.loading}>
+                Đang tải phiên bản…
+              </p>
+            ) : detailError ? (
+              <div className={css.errorPanel}>
+                <p role="alert">{detailError}</p>
+                <button type="button" onClick={() => setDetailAttempt((value) => value + 1)}>
+                  Thử tải lại
+                </button>
+              </div>
+            ) : visibleDetail ? (
+              <>
+                <div className={css.detailHeading}>
+                  <div>
+                    <p className={css.eyebrow}>
+                      {selectedSummary?.isCurrentEffective
+                        ? 'ĐANG HIỆU LỰC'
+                        : visibleDetail.capabilities.canEditDraft
+                          ? 'BẢN NHÁP CÓ THỂ SỬA'
+                          : 'CHI TIẾT PHIÊN BẢN'}
+                    </p>
+                    <h2>Phiên bản {visibleDetail.versionNumber}</h2>
+                    <p>
+                      {regulationStateLabels[visibleDetail.state]} · Chuẩn bị bởi{' '}
+                      {visibleDetail.preparedBy.fullName}
+                    </p>
+                  </div>
+                  <div className={css.dateMetadata}>
+                    {visibleDetail.approvedAt && (
+                      <span>
+                        <small>Thời điểm phê duyệt</small>
+                        <strong>{formatSeasonInstant(visibleDetail.approvedAt)}</strong>
+                      </span>
+                    )}
+                    {visibleDetail.activeFrom && (
+                      <span>
+                        <small>Hiệu lực từ</small>
+                        <strong>{formatSeasonInstant(visibleDetail.activeFrom)}</strong>
+                      </span>
+                    )}
+                    {visibleDetail.activationProcessedAt && (
+                      <span>
+                        <small>Thời điểm xử lý kích hoạt</small>
+                        <strong>{formatSeasonInstant(visibleDetail.activationProcessedAt)}</strong>
+                      </span>
+                    )}
+                    {visibleDetail.activeUntil && (
+                      <span>
+                        <small>Hiệu lực đến</small>
+                        <strong>{formatSeasonInstant(visibleDetail.activeUntil)}</strong>
+                      </span>
+                    )}
+                  </div>
+                </div>
+                <RegulationVersionWorkflow
                   detail={visibleDetail}
-                  canEdit
-                  onDirtyChange={onFormDirtyChange}
-                  onSaved={() => {
-                    setNotice(
-                      'Đã lưu bản nháp. Nội dung chưa được gửi thẩm định và chưa có hiệu lực.',
-                    );
-                    setAttempt((value) => value + 1);
-                    setDetailAttempt((value) => value + 1);
-                  }}
+                  seasonCode={season?.code}
+                  busy={creating}
+                  disabled={formDirty}
+                  onAction={openAction}
+                  onCreateSuccessor={() => void createSuccessor(visibleDetail)}
                 />
-              ) : (
-                <RegulationReadView content={visibleDetail.content} />
-              )}
-              <RegulationVersionHistory
-                key={`${visibleDetail.id}:${historyRefresh}`}
-                versionId={visibleDetail.id}
-              />
-            </>
-          ) : (
-            <p role="status" className={css.loading}>
-              Đang tải phiên bản…
-            </p>
-          )}
-        </section>
+                {selectedSummary?.capabilities.canEditDraft &&
+                visibleDetail.capabilities.canEditDraft ? (
+                  <RegulationDraftForm
+                    key={`${visibleDetail.id}:${visibleDetail.revision}`}
+                    detail={visibleDetail}
+                    canEdit
+                    onDirtyChange={onFormDirtyChange}
+                    onSaved={() => {
+                      setNotice(
+                        'Đã lưu bản nháp. Nội dung chưa được gửi thẩm định và chưa có hiệu lực.',
+                      );
+                      setAttempt((value) => value + 1);
+                      setDetailAttempt((value) => value + 1);
+                    }}
+                  />
+                ) : (
+                  <RegulationReadView content={visibleDetail.content} />
+                )}
+                <RegulationVersionHistory
+                  key={`${visibleDetail.id}:${historyRefresh}`}
+                  versionId={visibleDetail.id}
+                />
+              </>
+            ) : (
+              <p role="status" className={css.loading}>
+                Đang tải phiên bản…
+              </p>
+            )}
+          </section>
+        </div>
       </div>
       {pendingSelection && (
         <div className={css.modalBackdrop}>
@@ -974,12 +1014,7 @@ export function RegulationVersionsPage() {
             </form>
           </Modal>
         )}
-      {seasonError && (
-        <p className={css.scopeNote} role="status">
-          Thông tin tiêu đề mùa giải chưa tải được; dữ liệu phiên bản vẫn được tải theo phạm vi API.
-        </p>
-      )}
-    </section>
+    </div>
   );
 }
 
@@ -1066,7 +1101,8 @@ function RegulationVersionWorkflow({
               <ul>
                 {detail.editors.map((editor) => (
                   <li key={editor.accountId}>
-                    {editor.accountId} · lần đầu {formatSeasonInstant(editor.firstEditedAt)}
+                    {editor.fullName || 'Không rõ tên'} · lần đầu{' '}
+                    {formatSeasonInstant(editor.firstEditedAt)}
                   </li>
                 ))}
               </ul>

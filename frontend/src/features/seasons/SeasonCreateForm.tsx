@@ -3,6 +3,8 @@ import { useState, type FormEvent } from 'react';
 import { HttpFailure } from '../../shared/http/client';
 import { useSession } from '../../shared/http/use-session';
 import { AdminIcon } from '../accounts/AdminIcon';
+import { parseSeasonDate, seasonDateFormat } from './season-model';
+import { SeasonDatePicker } from './SeasonDatePicker';
 import css from './SeasonCreateForm.module.css';
 
 type SeasonFields = {
@@ -27,12 +29,15 @@ const fieldNames: readonly FieldName[] = [
 ];
 const UUID4 = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const CODE = /^[A-Z0-9][A-Z0-9_-]{0,31}$/;
-const emptyFields: SeasonFields = {
+const dateFields = [
+  { field: 'startDate', id: 'season-create-start', label: 'Ngày bắt đầu' },
+  { field: 'endDate', id: 'season-create-end', label: 'Ngày kết thúc' },
+] as const;
+type TextField = Exclude<FieldName, (typeof dateFields)[number]['field']>;
+const emptyFields: Record<TextField, string> = {
   code: '',
   name: '',
   competitionName: '',
-  startDate: '',
-  endDate: '',
 };
 
 function normalizedName(value: string): string {
@@ -57,8 +62,8 @@ function normalizeCommand(values: SeasonFields): SeasonCreateCommand {
     code: normalizedCode(values.code),
     name: normalizedName(values.name),
     competitionName: normalizedName(values.competitionName),
-    startDate: values.startDate,
-    endDate: values.endDate,
+    startDate: parseSeasonDate(values.startDate),
+    endDate: parseSeasonDate(values.endDate),
   };
 }
 
@@ -75,11 +80,12 @@ function validate(values: SeasonFields): FieldErrors {
     if (length < 1) errors[field] = `${label} là thông tin bắt buộc.`;
     else if (length > 200) errors[field] = `${label} không được vượt quá 200 ký tự.`;
   }
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(values.startDate))
-    errors.startDate = 'Ngày bắt đầu là thông tin bắt buộc.';
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(values.endDate))
-    errors.endDate = 'Ngày kết thúc là thông tin bắt buộc.';
-  if (!errors.startDate && !errors.endDate && values.startDate > values.endDate)
+  for (const { field, label } of dateFields) {
+    if (!values[field].trim()) errors[field] = `${label} là thông tin bắt buộc.`;
+    else if (!normalized[field])
+      errors[field] = `${label} phải là ngày hợp lệ theo dạng ${seasonDateFormat}.`;
+  }
+  if (!errors.startDate && !errors.endDate && normalized.startDate > normalized.endDate)
     errors.endDate = 'Ngày kết thúc phải sau hoặc bằng ngày bắt đầu.';
   return errors;
 }
@@ -126,8 +132,12 @@ export function SeasonCreateForm({
     setFailure(undefined);
   }
 
-  function change(field: FieldName, value: string) {
+  function change(field: TextField, value: string) {
     setValues((previous) => ({ ...previous, [field]: value }));
+    clearFeedback(field);
+  }
+
+  function clearFeedback(field: FieldName) {
     setErrors((previous) => ({ ...previous, [field]: undefined }));
     setFailure(undefined);
   }
@@ -135,13 +145,24 @@ export function SeasonCreateForm({
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (busy) return;
+    const form = event.currentTarget;
+    // Read the displayed text as the picker can retain an invalid manual edit after a valid selection.
+    const readDate = (id: string) => {
+      const input = form.elements.namedItem(id);
+      return input instanceof HTMLInputElement ? input.value : '';
+    };
+    const fields = {
+      ...values,
+      startDate: readDate(dateFields[0].id),
+      endDate: readDate(dateFields[1].id),
+    };
     if (!unknownIntent) {
-      const nextErrors = validate(values);
+      const nextErrors = validate(fields);
       setErrors(nextErrors);
       if (Object.keys(nextErrors).length) return;
     }
 
-    const intent = unknownIntent ?? { body: normalizeCommand(values), key: crypto.randomUUID() };
+    const intent = unknownIntent ?? { body: normalizeCommand(fields), key: crypto.randomUUID() };
     const unresolvedIntent = unknownIntent;
     setBusy(true);
     setFailure(undefined);
@@ -214,6 +235,7 @@ export function SeasonCreateForm({
         </span>
       }
       onCancel={close}
+      destroyOnHidden
       footer={null}
       closable={!busy && !unknownIntent}
       mask={{ closable: false }}
@@ -289,53 +311,32 @@ export function SeasonCreateForm({
           )}
         </label>
         <p className={css.dateHint} id="season-create-date-format">
-          Ngày được lưu theo dạng YYYY-MM-DD.
+          Nhập hoặc chọn ngày theo định dạng DD/MM/YYYY.
         </p>
         <div className={css.dates}>
-          <label className={css.field} htmlFor="season-create-start">
-            <span>Ngày bắt đầu *</span>
-            <input
-              id="season-create-start"
-              type="date"
-              value={values.startDate}
-              required
-              disabled={busy || !!unknownIntent}
-              aria-invalid={!!errors.startDate}
-              aria-describedby={
-                errors.startDate
-                  ? 'season-create-start-error season-create-date-format'
-                  : 'season-create-date-format'
-              }
-              onChange={(event) => change('startDate', event.target.value)}
-            />
-            {errors.startDate && (
-              <span className={css.fieldError} id="season-create-start-error" role="alert">
-                {errors.startDate}
-              </span>
-            )}
-          </label>
-          <label className={css.field} htmlFor="season-create-end">
-            <span>Ngày kết thúc *</span>
-            <input
-              id="season-create-end"
-              type="date"
-              value={values.endDate}
-              required
-              disabled={busy || !!unknownIntent}
-              aria-invalid={!!errors.endDate}
-              aria-describedby={
-                errors.endDate
-                  ? 'season-create-end-error season-create-date-format'
-                  : 'season-create-date-format'
-              }
-              onChange={(event) => change('endDate', event.target.value)}
-            />
-            {errors.endDate && (
-              <span className={css.fieldError} id="season-create-end-error" role="alert">
-                {errors.endDate}
-              </span>
-            )}
-          </label>
+          {dateFields.map(({ field, id, label }) => (
+            <div className={css.field} key={field}>
+              <label htmlFor={id}>{label} *</label>
+              <SeasonDatePicker
+                id={id}
+                className={css.datePicker}
+                disabled={busy || !!unknownIntent}
+                required
+                invalid={!!errors[field]}
+                describedBy={
+                  errors[field]
+                    ? `${id}-error season-create-date-format`
+                    : 'season-create-date-format'
+                }
+                onDateTextChange={() => clearFeedback(field)}
+              />
+              {errors[field] && (
+                <span className={css.fieldError} id={`${id}-error`} role="alert">
+                  {errors[field]}
+                </span>
+              )}
+            </div>
+          ))}
         </div>
         {failure && (
           <p className={css.error} role="alert">

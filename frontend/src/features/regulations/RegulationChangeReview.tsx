@@ -1,3 +1,4 @@
+import { AdminSelect } from '../accounts/AdminSelect';
 import { Modal } from 'antd';
 import { useEffect, useState, type FormEvent } from 'react';
 import { useSession } from '../../shared/http/use-session';
@@ -96,6 +97,7 @@ export function RegulationChangeReview({
       Array.from(normalized).length > 2000 ||
       busy ||
       conflict ||
+      (creating?.action === 'REPLACE' && !replacement) ||
       (replacementId && !replacementContent?.detail && !unknown)
     )
       return;
@@ -264,22 +266,22 @@ export function RegulationChangeReview({
             )}
           </dl>
           {creating?.action === 'REPLACE' && (
-            <label>
-              Phiên bản thay thế
-              <select
-                required
-                value={replacement}
-                onChange={(event) => setReplacement(event.target.value)}
-                disabled={busy}
-              >
-                <option value="">Chọn phiên bản đã gửi</option>
-                {candidates.map((item) => (
-                  <option key={item.id} value={item.id}>
-                    Phiên bản {item.versionNumber} · {item.id}
-                  </option>
-                ))}
-              </select>
-            </label>
+            <AdminSelect
+              hideLabel={false}
+              label="Phiên bản thay thế"
+              required
+              value={replacement}
+              onChange={(value) => setReplacement(value)}
+              disabled={busy}
+
+              options={[
+                { value: '', label: 'Chọn phiên bản đã gửi' },
+                ...candidates.map((item) => ({
+                  value: item.id,
+                  label: 'Phiên bản ' + item.versionNumber + ' · ' + item.id,
+                })),
+              ]}
+            />
           )}
           {replacementId &&
             (replacementContent?.detail ? (
@@ -330,6 +332,7 @@ export function RegulationChangeReview({
                 busy ||
                 conflict ||
                 !reason.trim() ||
+                (creating?.action === 'REPLACE' && !replacement) ||
                 Boolean(replacementId && !replacementContent?.detail && !unknown)
               }
             >

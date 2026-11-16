@@ -122,7 +122,9 @@ test('creation previews normalized fields and sends only the minimal receipt-bea
 
   fireEvent.click(await screen.findByRole('button', { name: 'Tạo mùa giải' }, wait));
   const dialog = await screen.findByRole('dialog', undefined, wait);
-  expect(within(dialog).getByText('Ngày được lưu theo dạng YYYY-MM-DD.')).toBeInTheDocument();
+  expect(
+    within(dialog).getByText('Nhập hoặc chọn ngày theo định dạng DD/MM/YYYY.'),
+  ).toBeInTheDocument();
   fireEvent.change(screen.getByLabelText(/Mã mùa giải/i), {
     target: { value: '  mg-2028-2029  ' },
   });
@@ -132,8 +134,8 @@ test('creation previews normalized fields and sends only the minimal receipt-bea
   fireEvent.change(screen.getByLabelText(/Tên giải đấu/i), {
     target: { value: '  Giải   Ngoại hạng  ' },
   });
-  fireEvent.change(screen.getByLabelText(/Ngày bắt đầu/i), { target: { value: '2028-08-15' } });
-  fireEvent.change(screen.getByLabelText(/Ngày kết thúc/i), { target: { value: '2029-05-23' } });
+  fireEvent.change(screen.getByLabelText(/Ngày bắt đầu/i), { target: { value: '15/08/2028' } });
+  fireEvent.change(screen.getByLabelText(/Ngày kết thúc/i), { target: { value: '23/05/2029' } });
 
   expect(screen.getByText('Mã sẽ lưu: MG-2028-2029')).toBeInTheDocument();
   expect(screen.getByText('Tên mùa giải sẽ lưu: Mùa giải 2028/2029')).toBeInTheDocument();
@@ -203,10 +205,10 @@ test('creation accepts 200 astral code points for both normalized names', async 
     target: { value: 'MG-ASTRAL' },
   });
   fireEvent.change(within(dialog).getByLabelText(/Ngày bắt đầu/i), {
-    target: { value: '2028-08-15' },
+    target: { value: '15/08/2028' },
   });
   fireEvent.change(within(dialog).getByLabelText(/Ngày kết thúc/i), {
-    target: { value: '2029-05-23' },
+    target: { value: '23/05/2029' },
   });
   fireEvent.click(within(dialog).getByRole('button', { name: 'Xác nhận tạo mùa giải' }));
 
@@ -257,10 +259,18 @@ test('date order is checked locally and invalid values remain available for corr
     target: { value: 'Giải Ngoại hạng' },
   });
   fireEvent.change(within(dialog).getByLabelText(/Ngày bắt đầu/i), {
-    target: { value: '2029-05-23' },
+    target: { value: '31/02/2029' },
   });
   fireEvent.change(within(dialog).getByLabelText(/Ngày kết thúc/i), {
-    target: { value: '2028-08-15' },
+    target: { value: '15/08/2028' },
+  });
+  fireEvent.click(within(dialog).getByRole('button', { name: 'Xác nhận tạo mùa giải' }));
+  expect(
+    await within(dialog).findByText('Ngày bắt đầu phải là ngày hợp lệ theo dạng DD/MM/YYYY.'),
+  ).toBeInTheDocument();
+  expect(within(dialog).getByLabelText(/^Ngày bắt đầu \*/)).toHaveValue('31/02/2029');
+  fireEvent.change(within(dialog).getByLabelText(/Ngày bắt đầu/i), {
+    target: { value: '23/05/2029' },
   });
   fireEvent.click(within(dialog).getByRole('button', { name: 'Xác nhận tạo mùa giải' }));
 
@@ -271,8 +281,8 @@ test('date order is checked locally and invalid values remain available for corr
       wait,
     ),
   ).toBeInTheDocument();
-  expect(within(dialog).getByLabelText(/^Ngày bắt đầu \*/)).toHaveValue('2029-05-23');
-  expect(within(dialog).getByLabelText(/^Ngày kết thúc \*/)).toHaveValue('2028-08-15');
+  expect(within(dialog).getByLabelText(/^Ngày bắt đầu \*/)).toHaveValue('23/05/2029');
+  expect(within(dialog).getByLabelText(/^Ngày kết thúc \*/)).toHaveValue('15/08/2028');
   expect(fetcher.mock.calls.map(([path]) => path)).toEqual(['/api/v1/auth/session']);
 });
 
@@ -291,10 +301,10 @@ test.each(['ß', 'ſ'])(
       target: { value: 'Giải kiểm thử' },
     });
     fireEvent.change(within(dialog).getByLabelText(/Ngày bắt đầu/i), {
-      target: { value: '2028-08-15' },
+      target: { value: '15/08/2028' },
     });
     fireEvent.change(within(dialog).getByLabelText(/Ngày kết thúc/i), {
-      target: { value: '2029-05-23' },
+      target: { value: '23/05/2029' },
     });
     fireEvent.click(within(dialog).getByRole('button', { name: 'Xác nhận tạo mùa giải' }));
 
@@ -342,10 +352,10 @@ test('localized backend field errors stay attached to the field and keep entered
     target: { value: 'Giải Ngoại hạng' },
   });
   fireEvent.change(within(dialog).getByLabelText(/Ngày bắt đầu/i), {
-    target: { value: '2028-08-15' },
+    target: { value: '15/08/2028' },
   });
   fireEvent.change(within(dialog).getByLabelText(/Ngày kết thúc/i), {
-    target: { value: '2029-05-23' },
+    target: { value: '23/05/2029' },
   });
   fireEvent.click(within(dialog).getByRole('button', { name: 'Xác nhận tạo mùa giải' }));
 
@@ -389,10 +399,10 @@ test('unknown create outcome retries only the same body with the original idempo
     target: { value: 'Giải Ngoại hạng' },
   });
   fireEvent.change(within(dialog).getByLabelText(/Ngày bắt đầu/i), {
-    target: { value: '2028-08-15' },
+    target: { value: '15/08/2028' },
   });
   fireEvent.change(within(dialog).getByLabelText(/Ngày kết thúc/i), {
-    target: { value: '2029-05-23' },
+    target: { value: '23/05/2029' },
   });
   fireEvent.click(within(dialog).getByRole('button', { name: 'Xác nhận tạo mùa giải' }));
 
@@ -467,10 +477,10 @@ test('a pre-receipt retry denial keeps the original unknown create intent pinned
     target: { value: 'Giải Ngoại hạng' },
   });
   fireEvent.change(within(dialog).getByLabelText(/Ngày bắt đầu/i), {
-    target: { value: '2028-08-15' },
+    target: { value: '15/08/2028' },
   });
   fireEvent.change(within(dialog).getByLabelText(/Ngày kết thúc/i), {
-    target: { value: '2029-05-23' },
+    target: { value: '23/05/2029' },
   });
   fireEvent.click(within(dialog).getByRole('button', { name: 'Xác nhận tạo mùa giải' }));
   expect(await within(dialog).findByRole('status', undefined, wait)).toHaveTextContent(

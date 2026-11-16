@@ -120,6 +120,8 @@
   font-weight: 500;
   text-decoration: none;
   font-size: 13.5px;
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 .nav svg {
   flex-shrink: 0;
@@ -161,7 +163,8 @@
   gap: 16px;
   margin-bottom: 24px;
 }
-.sectionHeader h1 {
+.sectionHeader h1,
+.pageTitle {
   margin: 0;
   font-size: 22px;
   line-height: 1.45;
@@ -876,6 +879,10 @@
   border-radius: 7px;
   padding: 10px 12px;
   font-size: 13.5px;
+}
+.selectPopup :global(.ant-select-item-option-content) {
+  white-space: normal;
+  overflow-wrap: anywhere;
 }
 .selectPopup :global(.ant-select-item-option-active) {
   background: #f5f1fc;

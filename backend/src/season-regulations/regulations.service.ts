@@ -70,7 +70,7 @@ const versionDetailRelations = {
   preparer: { select: { id: true, fullName: true } },
   decider: { select: { id: true, fullName: true } },
   editors: {
-    select: { accountId: true, firstEditedAt: true },
+    select: { accountId: true, firstEditedAt: true, account: { select: { fullName: true } } },
     orderBy: [{ firstEditedAt: 'asc' }, { accountId: 'asc' }],
   },
   successors: { select: { id: true }, take: 1 },
@@ -234,6 +234,20 @@ export class RegulationsService {
     private readonly decisions: RegulationDecisionService,
     private readonly activation: RegulationActivationService,
   ) {}
+
+  async seasons(request: Request) {
+    return this.execution.read(
+      request,
+      { locks: [], authorize: async () => undefined },
+      async (context, accountId) => ({
+        items: await context.db.season.findMany({
+          where: this.preparationSeasonFilter(accountId, await context.now()),
+          select: { id: true, code: true, name: true, state: true },
+          orderBy: [{ startDate: 'desc' }, { code: 'asc' }],
+        }),
+      }),
+    );
+  }
 
   async list(request: Request, seasonId: string, query: Record<string, unknown>) {
     try {
@@ -966,34 +980,34 @@ export class RegulationsService {
     seasonId: string,
     now: Date,
   ): Promise<boolean> {
-    const manager = await context.db.seasonRoleAssignment.findFirst({
-      where: { accountId, seasonId, roleCode: 'SEASON_MANAGER', revokedAt: null },
-      select: { id: true },
-    });
-    if (manager) return true;
-
-    const eligibleRole = await context.db.seasonRoleAssignment.findFirst({
-      where: {
-        accountId,
-        seasonId,
-        roleCode: { in: delegationRoles.PREPARE_REGULATION_CHANGE },
-        revokedAt: null,
-      },
-      select: { id: true },
-    });
-    if (!eligibleRole) return false;
-    return !!(await context.db.delegationGrant.findFirst({
-      where: {
-        recipientId: accountId,
-        seasonId,
-        actionCode: 'PREPARE_REGULATION_CHANGE',
-        startsAt: { lte: now },
-        endsAt: { gt: now },
-        revokedAt: null,
-        terminatedAt: null,
-      },
+    return !!(await context.db.season.findFirst({
+      where: { id: seasonId, ...this.preparationSeasonFilter(accountId, now) },
       select: { id: true },
     }));
+  }
+
+  private preparationSeasonFilter(accountId: string, now: Date): Prisma.SeasonWhereInput {
+    const assignment = { accountId, revokedAt: null };
+    return {
+      OR: [
+        { roles: { some: { ...assignment, roleCode: 'SEASON_MANAGER' } } },
+        {
+          roles: {
+            some: { ...assignment, roleCode: { in: delegationRoles.PREPARE_REGULATION_CHANGE } },
+          },
+          grants: {
+            some: {
+              recipientId: accountId,
+              actionCode: 'PREPARE_REGULATION_CHANGE',
+              startsAt: { lte: now },
+              endsAt: { gt: now },
+              revokedAt: null,
+              terminatedAt: null,
+            },
+          },
+        },
+      ],
+    };
   }
 
   private async hasManagerAuthority(
@@ -1074,6 +1088,7 @@ export class RegulationsService {
       preparedBy: version.preparer,
       editors: version.editors.map((editor) => ({
         accountId: editor.accountId,
+        fullName: editor.account.fullName,
         firstEditedAt: editor.firstEditedAt.toISOString(),
       })),
       content: projectRegulationContent(version),

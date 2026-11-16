@@ -10,7 +10,7 @@ import shared from '../accounts/Administration.module.css';
 import { SeasonCreateForm } from './SeasonCreateForm';
 import { SeasonDetail } from './SeasonDetail';
 import type { SeasonList, SeasonPageMeta } from './season-model';
-import { formatSeasonDate, formatSeasonInstant } from './season-model';
+import { formatSeasonDate, formatSeasonInstant, regulationSeasonScope } from './season-model';
 import css from './SeasonsPage.module.css';
 
 const sortOptions = [
@@ -40,6 +40,7 @@ export function SeasonsPage() {
 
 function SeasonListPage({ canCreate }: { canCreate: boolean }) {
   const { session } = useSession();
+  const regulationSeasons = regulationSeasonScope(session);
   const [searchDraft, setSearchDraft] = useState('');
   const search = useSearchTerm(searchDraft);
   const [filters, setFilters] = useState({ state: '', sort: 'code:asc', pageSize: '20', page: 1 });
@@ -135,7 +136,7 @@ function SeasonListPage({ canCreate }: { canCreate: boolean }) {
       />
 
       {!!data?.items.length && (
-        <div className={shared.scroll}>
+        <div className={shared.scroll} role="region" aria-label="Danh sách mùa giải" tabIndex={0}>
           <table className={`${shared.table} ${css.seasonTable}`}>
             <thead>
               <tr>
@@ -185,17 +186,7 @@ function SeasonListPage({ canCreate }: { canCreate: boolean }) {
                       <button type="button" onClick={() => setSelectedSeasonId(season.id)}>
                         Chi tiết
                       </button>
-                      {(session?.seasonManagerIds?.includes(season.id) ||
-                        session?.preparationCapabilities?.direct.some(
-                          (item) =>
-                            item.seasonId === season.id &&
-                            item.actionCode === 'PREPARE_REGULATION_CHANGE',
-                        ) ||
-                        session?.preparationCapabilities?.delegated.some(
-                          (item) =>
-                            item.seasonId === season.id &&
-                            item.actionCode === 'PREPARE_REGULATION_CHANGE',
-                        )) && (
+                      {regulationSeasons.has(season.id) && (
                         <Link to={`/workspace/seasons/${season.id}/regulations`}>Quy định</Link>
                       )}
                     </div>

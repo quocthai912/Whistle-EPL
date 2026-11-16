@@ -11,18 +11,20 @@ export function AdminSelect({
   disabled,
   required,
   hideLabel = true,
+  className,
 }: {
   label: string;
   value: string;
-  options: { value: string; label: string }[];
+  options: { value: string; label: string; disabled?: boolean }[];
   onChange: (value: string) => void;
   disabled?: boolean;
   required?: boolean;
   hideLabel?: boolean;
+  className?: string;
 }) {
   const id = useId();
   return (
-    <div className={css.selectField}>
+    <div className={className ? `${css.selectField} ${className}` : css.selectField}>
       <label htmlFor={id} className={hideLabel ? css.srOnly : undefined}>
         {label}
       </label>
@@ -37,7 +39,11 @@ export function AdminSelect({
         virtual={false}
         className={css.select}
         classNames={{ popup: { root: css.selectPopup } }}
-        styles={{ popup: { root: { minWidth: 220, maxWidth: 'calc(100vw - 24px)' } } }}
+        styles={{
+          popup: {
+            root: { minWidth: 'min(220px, calc(100vw - 24px))', maxWidth: 'calc(100vw - 24px)' },
+          },
+        }}
         showSearch={false}
         notFoundContent="Không có lựa chọn phù hợp"
       />

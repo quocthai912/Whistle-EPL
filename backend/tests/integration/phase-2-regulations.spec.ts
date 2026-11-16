@@ -1025,7 +1025,18 @@ describe('PHASE 2 regulation submission and successor HTTP contract', () => {
     await grantSeasonRole(manager.account.id, seasonId, 'SEASON_MANAGER');
     await grantSeasonRole(otherManager.account.id, seasonId, 'SEASON_MANAGER');
     await grantSeasonRole(officer.account.id, seasonId, 'REGISTRATION_OFFICER');
+    const selectable = (token: string) =>
+      request(app.getHttpServer())
+        .get('/api/v1/regulation-seasons')
+        .set('Cookie', `${SESSION_COOKIE}=${token}`)
+        .expect(200);
+    expect((await selectable(officer.tokens.token)).body.data.items).toEqual([]);
     await grantPreparationDelegation(manager.account.id, officer.account.id, seasonId);
+    for (const actor of [manager, officer]) {
+      expect((await selectable(actor.tokens.token)).body.data.items).toEqual([
+        expect.objectContaining({ id: seasonId, state: 'OPEN', name: expect.any(String) }),
+      ]);
+    }
     const created = await createDraft(manager, seasonId).expect(201);
     const versionId = created.body.data.id as string;
     await authenticatedMutation(
@@ -1071,9 +1082,18 @@ describe('PHASE 2 regulation submission and successor HTTP contract', () => {
       preparedBy: { id: officer.account.id },
       content: { squadLimit: 27, nonHomegrownLimit: 17, winPoints: 3 },
     });
-    expect(
-      successorDetail.body.data.editors.map((editor: { accountId: string }) => editor.accountId),
-    ).toEqual(expect.arrayContaining([manager.account.id, officer.account.id]));
+    expect(successorDetail.body.data.editors).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          accountId: manager.account.id,
+          fullName: manager.account.fullName,
+        }),
+        expect.objectContaining({
+          accountId: officer.account.id,
+          fullName: officer.account.fullName,
+        }),
+      ]),
+    );
     expect(
       await database.client.regulationVersion.findUniqueOrThrow({ where: { id: versionId } }),
     ).toMatchObject({ state: 'WITHDRAWN', revision: 4n, squadLimit: 26 });

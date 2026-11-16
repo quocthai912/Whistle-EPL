@@ -1,5 +1,9 @@
+import { AdminSelect } from '../accounts/AdminSelect';
+import formCss from './SeasonCreateForm.module.css';
 import { useState, type FormEvent } from 'react';
+import { Link } from 'react-router';
 import { AdminDrawer } from '../accounts/AdminDrawer';
+import { SeasonDatePicker, SeasonDateTimePicker } from './SeasonDatePicker';
 import { AdminIcon } from '../accounts/AdminIcon';
 import { ListFeedback, Pagination, StateBadge } from '../accounts/AdminLists';
 import { formatVietnamTime } from '../accounts/administration-model';
@@ -13,7 +17,13 @@ import type {
   SeasonHistoryItem,
   SeasonHistoryMeta,
 } from './season-model';
-import { formatSeasonDate, formatSeasonInstant, normalizeSeasonText } from './season-model';
+import {
+  formatSeasonDate,
+  formatSeasonInstant,
+  normalizeSeasonText,
+  parseSeasonDate,
+  regulationSeasonScope,
+} from './season-model';
 import css from './SeasonsPage.module.css';
 
 type EditableFields = Pick<
@@ -84,9 +94,9 @@ function validate(values: EditableFields): { normalized: EditableFields; errors:
     else if (length > 200) errors[field] = `${fieldLabels[field]} không được vượt quá 200 ký tự.`;
   }
   if (!validCalendarDate(normalized.startDate))
-    errors.startDate = 'Ngày bắt đầu phải là ngày hợp lệ theo định dạng YYYY-MM-DD.';
+    errors.startDate = 'Ngày bắt đầu phải là ngày hợp lệ theo định dạng DD/MM/YYYY.';
   if (!validCalendarDate(normalized.endDate))
-    errors.endDate = 'Ngày kết thúc phải là ngày hợp lệ theo định dạng YYYY-MM-DD.';
+    errors.endDate = 'Ngày kết thúc phải là ngày hợp lệ theo định dạng DD/MM/YYYY.';
   if (!errors.startDate && !errors.endDate && normalized.startDate > normalized.endDate)
     errors.endDate = 'Ngày kết thúc phải bằng hoặc sau ngày bắt đầu.';
   return { normalized, errors };
@@ -113,7 +123,7 @@ export function SeasonDetail({
   onClose: () => void;
   onUpdated: () => void;
 }) {
-  const { client } = useSession();
+  const { client, session } = useSession();
   const detail = useAdminList<SeasonDetailRecord>(`/seasons/${encodeURIComponent(seasonId)}`);
   const season = detail.error ? undefined : detail.data;
   const [tab, setTab] = useState<'details' | 'history'>('details');
@@ -368,6 +378,11 @@ export function SeasonDetail({
 
               <section className={css.regulationSummary} aria-label="Tình trạng quy định mùa giải">
                 <h3>Tình trạng quy định mùa giải</h3>
+                {!editing && regulationSeasonScope(session).has(season.id) && (
+                  <Link to={`/workspace/seasons/${season.id}/regulations`}>
+                    Xem quy định mùa giải
+                  </Link>
+                )}
                 <dl>
                   <div>
                     <dt>Phiên bản đang có hiệu lực</dt>
@@ -504,10 +519,10 @@ export function SeasonDetail({
                 <form className={css.editForm} noValidate onSubmit={(event) => void save(event)}>
                   <h3>Chỉnh sửa thông tin mùa giải</h3>
                   <p className={shared.notice}>
-                    Mã mùa giải không thể thay đổi. Ngày được lưu theo dạng YYYY-MM-DD.
+                    Mã mùa giải không thể thay đổi. Nhập hoặc chọn ngày theo định dạng DD/MM/YYYY.
                   </p>
                   {(['name', 'competitionName'] as const).map((field) => (
-                    <label key={field} htmlFor={`season-edit-${field}`}>
+                    <label className={formCss.field} key={field} htmlFor={`season-edit-${field}`}>
                       <span>{fieldLabels[field]} *</span>
                       <input
                         id={`season-edit-${field}`}
@@ -537,16 +552,14 @@ export function SeasonDetail({
                     {(['startDate', 'endDate'] as const).map((field) => (
                       <label key={field} htmlFor={`season-edit-${field}`}>
                         <span>{fieldLabels[field]} *</span>
-                        <input
+                        <SeasonDatePicker
                           id={`season-edit-${field}`}
-                          type="date"
-                          value={values[field]}
+                          initialDate={values[field]}
+                          required
                           disabled={busy || reloadRequired || detail.loading}
-                          aria-invalid={!!errors[field]}
-                          aria-describedby={
-                            errors[field] ? `season-edit-${field}-error` : undefined
-                          }
-                          onChange={(event) => change(field, event.target.value)}
+                          invalid={!!errors[field]}
+                          describedBy={errors[field] ? `season-edit-${field}-error` : undefined}
+                          onDateTextChange={(text) => change(field, parseSeasonDate(text))}
                         />
                         {errors[field] && (
                           <span
@@ -604,6 +617,7 @@ function SeasonHistoryTab({ seasonId }: { seasonId: string }) {
     occurredBefore: '',
   });
   const [filters, setFilters] = useState(draftFilters);
+  const [filterError, setFilterError] = useState(false);
   const pageSize = 20;
   const query = new URLSearchParams({ page: String(page), pageSize: String(pageSize) });
   if (filters.actionCode) query.set('actionCode', filters.actionCode);
@@ -624,6 +638,11 @@ function SeasonHistoryTab({ seasonId }: { seasonId: string }) {
 
   function applyFilters(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    const invalid = [draftFilters.occurredFrom, draftFilters.occurredBefore].some(
+      (value) => value !== '' && !utcInstant(value),
+    );
+    setFilterError(invalid);
+    if (invalid) return;
     setFilters(draftFilters);
     setPage(1);
   }
@@ -632,40 +651,44 @@ function SeasonHistoryTab({ seasonId }: { seasonId: string }) {
     <>
       <h3>Lịch sử thay đổi</h3>
       <form className={css.historyFilters} onSubmit={applyFilters}>
+        <AdminSelect
+          hideLabel={false}
+          label="Loại thao tác"
+          value={draftFilters.actionCode}
+          onChange={(value) => setDraftFilters((current) => ({ ...current, actionCode: value }))}
+
+          options={[
+            { value: '', label: 'Tất cả thao tác' },
+            { value: 'SEASON_CREATED', label: 'Tạo mùa giải' },
+            { value: 'SEASON_UPDATED', label: 'Cập nhật mùa giải' },
+          ]}
+        />
         <label>
-          <span>Loại thao tác</span>
-          <select
-            value={draftFilters.actionCode}
-            onChange={(event) =>
-              setDraftFilters((current) => ({ ...current, actionCode: event.target.value }))
-            }
-          >
-            <option value="">Tất cả thao tác</option>
-            <option value="SEASON_CREATED">Tạo mùa giải</option>
-            <option value="SEASON_UPDATED">Cập nhật mùa giải</option>
-          </select>
-        </label>
-        <label>
-          <span>Từ thời điểm (bao gồm, giờ thiết bị)</span>
-          <input
-            type="datetime-local"
+          <span>Từ thời điểm</span>
+          <SeasonDateTimePicker
+            label="Từ thời điểm"
             value={draftFilters.occurredFrom}
-            onChange={(event) =>
-              setDraftFilters((current) => ({ ...current, occurredFrom: event.target.value }))
+            onChange={(value) =>
+              setDraftFilters((current) => ({ ...current, occurredFrom: value }))
             }
           />
         </label>
         <label>
-          <span>Đến trước thời điểm (không bao gồm, giờ thiết bị)</span>
-          <input
-            type="datetime-local"
+          <span>Đến trước thời điểm</span>
+          <SeasonDateTimePicker
+            label="Đến trước thời điểm"
             value={draftFilters.occurredBefore}
-            onChange={(event) =>
-              setDraftFilters((current) => ({ ...current, occurredBefore: event.target.value }))
+            onChange={(value) =>
+              setDraftFilters((current) => ({ ...current, occurredBefore: value }))
             }
           />
         </label>
         <button type="submit">Áp dụng bộ lọc</button>
+        {filterError && (
+          <p className={css.fieldError} role="alert">
+            Nhập thời điểm hợp lệ theo dạng DD/MM/YYYY HH:mm.
+          </p>
+        )}
       </form>
       <ListFeedback
         loading={history.loading}
@@ -719,7 +742,7 @@ function historyEntries(value: Record<string, unknown> | null) {
 }
 
 function utcInstant(value: string): string | undefined {
-  if (!value) return undefined;
+  if (!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(?::\d{2}(?:\.\d{1,3})?)?$/.test(value)) return undefined;
   const time = new Date(value).getTime();
   return Number.isFinite(time) ? new Date(time).toISOString() : undefined;
 }

@@ -27,6 +27,11 @@ const versionActionRoutes = ['submit', 'withdraw', 'return', 'reject', 'approve'
 export class RegulationsController {
   constructor(@Inject(RegulationsService) private readonly regulations: RegulationsService) {}
 
+  @Get('regulation-seasons')
+  seasons(@Req() request: Request) {
+    return this.regulations.seasons(request);
+  }
+
   @Get('seasons/:seasonId/regulation-versions')
   list(
     @Req() request: Request,

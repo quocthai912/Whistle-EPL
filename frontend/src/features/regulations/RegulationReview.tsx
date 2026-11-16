@@ -133,30 +133,26 @@ export function RegulationActionPreview({
   );
 }
 
-export function RegulationReadView({ content }: { content: RegulationContent }) {
+export function RegulationReadView({
+  content,
+  summary = false,
+}: {
+  content: RegulationContent;
+  summary?: boolean;
+}) {
   const number = (value: number | null | undefined) =>
     value === null || value === undefined ? '—' : String(value);
   return (
-    <div className={css.readGroups}>
-      <ReadGroup title="Điều kiện đăng ký" number="01">
-        <ReadPair label="Giới hạn danh sách cầu thủ" value={number(content.squadLimit)} />
-        <ReadPair
-          label="Cầu thủ không thuộc diện đào tạo trong nước"
-          value={number(content.nonHomegrownLimit)}
-        />
-        <ReadPair label="Số mùa đào tạo" value={number(content.homegrownSeasons)} />
-        <ReadPair label="Số tháng đào tạo" value={number(content.homegrownMonths)} />
-        <ReadPair
-          label="Độ tuổi đào tạo"
-          value={
-            content.homegrownAgeStart === null || content.homegrownAgeEnd === null
-              ? '—'
-              : `${content.homegrownAgeStart}–${content.homegrownAgeEnd}`
-          }
-        />
-        <ReadPair label="Ngày sinh giới hạn U21" value={formatRegulationDate(content.u21Cutoff)} />
-      </ReadGroup>
-      <ReadGroup title="Cấu trúc và kế hoạch" number="02">
+    <div className={summary ? css.officialGroups : css.readGroups}>
+      <ReadGroup
+        title={summary ? 'Thể thức thi đấu' : 'Cấu trúc và kế hoạch'}
+        number="01"
+        summary={
+          summary
+            ? `${number(content.clubCount)} câu lạc bộ, thi đấu vòng tròn ${number(content.legs)} lượt.`
+            : undefined
+        }
+      >
         <ReadPair label="Số câu lạc bộ" value={number(content.clubCount)} />
         <ReadPair
           label="Thể thức"
@@ -167,7 +163,15 @@ export function RegulationReadView({ content }: { content: RegulationContent }) 
         <ReadPair label="Thời gian chuẩn bị" value={minutes(content.preparationMinutes)} />
         <ReadPair label="Thời gian nghỉ sau trận" value={minutes(content.releaseMinutes)} />
       </ReadGroup>
-      <ReadGroup title="Điểm và xếp hạng" number="03">
+      <ReadGroup
+        title={summary ? 'Điểm số và xếp hạng' : 'Điểm và xếp hạng'}
+        number="02"
+        summary={
+          summary
+            ? `Thắng ${number(content.winPoints)} điểm, hòa ${number(content.drawPoints)} điểm, thua ${number(content.lossPoints)} điểm.`
+            : undefined
+        }
+      >
         <ReadPair
           label="Điểm thắng / hòa / thua"
           value={`${number(content.winPoints)} / ${number(content.drawPoints)} / ${number(content.lossPoints)}`}
@@ -186,7 +190,39 @@ export function RegulationReadView({ content }: { content: RegulationContent }) 
           }
         />
       </ReadGroup>
-      <ReadGroup title="Các đợt tiếp nhận" number="04">
+      <ReadGroup
+        title={summary ? 'Điều kiện đăng ký cầu thủ' : 'Điều kiện đăng ký'}
+        number="03"
+        summary={
+          summary
+            ? `Tối đa ${number(content.squadLimit)} cầu thủ, trong đó tối đa ${number(content.nonHomegrownLimit)} cầu thủ không thuộc diện đào tạo trong nước.`
+            : undefined
+        }
+      >
+        <ReadPair label="Giới hạn danh sách cầu thủ" value={number(content.squadLimit)} />
+        <ReadPair
+          label="Cầu thủ không thuộc diện đào tạo trong nước"
+          value={number(content.nonHomegrownLimit)}
+        />
+        <ReadPair label="Số mùa đào tạo" value={number(content.homegrownSeasons)} />
+        <ReadPair label="Số tháng đào tạo" value={number(content.homegrownMonths)} />
+        <ReadPair
+          label="Độ tuổi đào tạo"
+          value={
+            content.homegrownAgeStart === null || content.homegrownAgeEnd === null
+              ? '—'
+              : `${content.homegrownAgeStart}–${content.homegrownAgeEnd}`
+          }
+        />
+        <ReadPair label="Ngày sinh giới hạn U21" value={formatRegulationDate(content.u21Cutoff)} />
+      </ReadGroup>
+      <ReadGroup
+        title={summary ? 'Thời gian tiếp nhận đăng ký' : 'Các đợt tiếp nhận'}
+        number="04"
+        summary={
+          summary ? `${content.registrationWindows.length} đợt tiếp nhận đăng ký.` : undefined
+        }
+      >
         {content.registrationWindows.length ? (
           content.registrationWindows.map((window, index) => (
             <ReadPair
@@ -199,7 +235,15 @@ export function RegulationReadView({ content }: { content: RegulationContent }) 
           <ReadPair label="Trạng thái" value="Chưa có đợt tiếp nhận được lưu." />
         )}
       </ReadGroup>
-      <ReadGroup title="Danh mục sự kiện" number="05">
+      <ReadGroup
+        title={summary ? 'Loại sự kiện trận đấu' : 'Danh mục sự kiện'}
+        number="05"
+        summary={
+          summary
+            ? `${content.goalTypes.length} loại bàn thắng và ${content.cardTypes.length} loại thẻ.`
+            : undefined
+        }
+      >
         <div className={css.catalogRead}>
           <ReadCatalog title="Loại bàn thắng" items={content.goalTypes} />
           <ReadCatalog title="Loại thẻ" items={content.cardTypes} />
@@ -213,10 +257,12 @@ function ReadGroup({
   title,
   number,
   children,
+  summary,
 }: {
   title: string;
   number: string;
   children: React.ReactNode;
+  summary?: string;
 }) {
   return (
     <section className={css.readGroup}>
@@ -226,7 +272,17 @@ function ReadGroup({
           <h3>{title}</h3>
         </div>
       </div>
-      <dl>{children}</dl>
+      {summary ? (
+        <>
+          <p>{summary}</p>
+          <details>
+            <summary aria-label={`Xem chi tiết ${title.toLowerCase()}`}>Xem chi tiết</summary>
+            <dl>{children}</dl>
+          </details>
+        </>
+      ) : (
+        <dl>{children}</dl>
+      )}
     </section>
   );
 }
