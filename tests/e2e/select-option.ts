@@ -15,10 +15,12 @@ export async function openOptions(page: Page, label: string | RegExp, keyboard =
 
 /** Selects a visible custom-dropdown option through the same interaction as a user. */
 export async function selectOption(page: Page, label: string | RegExp, option: string) {
+  const control = page.getByRole('combobox', { name: label, exact: true });
   const list = await openOptions(page, label);
   const target = list.getByRole('option', { name: option, exact: true });
   if ((await target.getAttribute('aria-selected')) === 'true') {
-    await page.getByRole('combobox', { name: label, exact: true }).press('Escape');
+    await control.locator('..').click();
   } else await target.click();
+  await expect(control).toHaveAttribute('aria-expanded', 'false');
   await expect(list).toBeHidden();
 }

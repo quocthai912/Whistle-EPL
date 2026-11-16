@@ -19,6 +19,8 @@ export const actionNames = {
 export const stateNames: Record<string, string> = {
   ACTIVE: 'Đang hoạt động',
   LOCKED: 'Đã khóa',
+  OPEN: 'Đang mở',
+  CLOSED: 'Đã đóng',
   DRAFT: 'Nháp',
   PENDING: 'Chờ xử lý',
   RETURNED: 'Trả lại',

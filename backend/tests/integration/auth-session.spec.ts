@@ -13,6 +13,9 @@ import { Pool } from 'pg';
 import { waitForBlockedBy } from '../fixtures/test-clock';
 import { AuthGuard } from '../../src/identity-access/auth.guard';
 import { AuthService } from '../../src/identity-access/auth.service';
+import { SessionService } from '../../src/identity-access/session.service';
+import type { Account, Session } from '../../src/generated/prisma/client';
+import type { TransactionContext } from '../../src/platform/transaction-context';
 
 @Controller('api/v1/guard-probe')
 @UseGuards(AuthGuard)
@@ -243,11 +246,93 @@ describe('authentication HTTP contract', () => {
       .expect(401);
     await request(app.getHttpServer()).get('/api/v1/auth/session').set('Cookie', other).expect(200);
   });
+  it('projects current create, shared, seasonal and delegated preparation hints without grant identifiers', async () => {
+    const accountId = '00000000-0000-4000-8000-000000000021';
+    const seasonId = '00000000-0000-4000-8000-000000000031';
+    const otherSeasonId = '00000000-0000-4000-8000-000000000032';
+    const now = new Date('2026-10-29T03:00:00Z');
+    const db = {
+      systemRoleAssignment: { findMany: jest.fn().mockResolvedValue([]) },
+      seasonRoleAssignment: {
+        findMany: jest.fn().mockResolvedValue([
+          { roleCode: 'SEASON_MANAGER', seasonId },
+          { roleCode: 'REGISTRATION_OFFICER', seasonId },
+          { roleCode: 'SCHEDULING_OFFICER', seasonId: otherSeasonId },
+          { roleCode: 'RESULTS_OFFICER', seasonId: '00000000-0000-4000-8000-000000000033' },
+        ]),
+      },
+      sharedMasterGrant: {
+        findMany: jest.fn().mockResolvedValue([{ masterKind: 'CLUB_MASTER', id: 'grant-secret' }]),
+      },
+      createSeasonGrant: { count: jest.fn().mockResolvedValue(1) },
+      delegationGrant: {
+        findMany: jest.fn().mockResolvedValue([
+          { seasonId: otherSeasonId, actionCode: 'PREPARE_REGULATION_CHANGE', grantId: 'secret' },
+          { seasonId, actionCode: 'PREPARE_OFFICIAL_RESULT_CORRECTION', grantId: 'secret' },
+        ]),
+      },
+    };
+    const context = {
+      db,
+      now: jest.fn().mockResolvedValue(now),
+    } as unknown as TransactionContext;
+    const account = {
+      id: accountId,
+      personnelCode: 'PHASE2_HINTS',
+      fullName: 'Phase Two Hints',
+      username: 'phase2.hints',
+      mustChangePassword: false,
+    } as Account;
+    const data = await new SessionService(database).projection(context, {
+      account,
+      session: {} as Session,
+    });
+
+    expect(data).toMatchObject({
+      createSeason: true,
+      canCreateSeason: true,
+      sharedGrants: [{ masterKind: 'CLUB_MASTER' }],
+      preparationCapabilities: {
+        direct: [{ seasonId, actionCode: 'PREPARE_REGULATION_CHANGE' }],
+        delegated: [{ seasonId: otherSeasonId, actionCode: 'PREPARE_REGULATION_CHANGE' }],
+      },
+    });
+    expect(JSON.stringify(data)).not.toContain('grant-secret');
+    expect(JSON.stringify(data)).not.toContain('PREPARE_OFFICIAL_RESULT_CORRECTION');
+    expect(db.delegationGrant.findMany).toHaveBeenCalledWith({
+      where: {
+        recipientId: accountId,
+        actionCode: { in: ['PREPARE_REGULATION_CHANGE'] },
+        season: {
+          roles: {
+            some: {
+              accountId,
+              revokedAt: null,
+              roleCode: { in: ['REGISTRATION_OFFICER', 'SCHEDULING_OFFICER', 'RESULTS_OFFICER'] },
+            },
+          },
+        },
+        revokedAt: null,
+        terminatedAt: null,
+        startsAt: { lte: now },
+        endsAt: { gt: now },
+      },
+      select: { seasonId: true, actionCode: true },
+      orderBy: [{ seasonId: 'asc' }, { actionCode: 'asc' }],
+    });
+  });
   it('changes a temporary password, invalidates every session and requires personal login again', async () => {
     await createAccount('auth.temporary', true);
     const first = await loginAs('auth.temporary');
     const second = await loginAs('auth.temporary');
     expect(first.body.data.changeRequired).toBe(true);
+    expect(Object.keys(first.body.data).sort()).toEqual([
+      'changeRequired',
+      'fullName',
+      'id',
+      'personnelCode',
+      'username',
+    ]);
     expect(first.body.data.systemRoles).toBeUndefined();
     const cookie = cookieOf(first);
     const csrf = await request(app.getHttpServer())

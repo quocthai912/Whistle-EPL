@@ -15,6 +15,37 @@ import { DelegationsController } from './identity-access/delegations.controller'
 import { DelegationProposalService } from './identity-access/delegation-proposal.service';
 import { AuditController } from './audit/audit.controller';
 import { AuditQueryService } from './audit/audit-query.service';
+import { BusinessHistoryService } from './audit/business-history.service';
+import { AuditWriterService } from './audit/audit-writer.service';
+import { BusinessExecutionService } from './platform/business-execution';
+import { HttpBusinessExecutionAdapter } from './platform/http-business-execution';
+import {
+  registerDependencyModules,
+  SeasonDependenciesService,
+} from './season-regulations/season-dependencies.service';
+import type { DependencyModuleRegistration } from './season-regulations/season-dependencies.port';
+import { SeasonsController } from './season-regulations/seasons.controller';
+import { SeasonsService } from './season-regulations/seasons.service';
+import { RegulationsController } from './season-regulations/regulations.controller';
+import { RegulationsService } from './season-regulations/regulations.service';
+import { RegulationActivationService } from './season-regulations/regulation-activation.service';
+import { RegulationDecisionService } from './season-regulations/regulation-decision.service';
+import { RegulationJobsService } from './season-regulations/regulation-jobs.service';
+import { RegulationChangesController } from './season-regulations/regulation-changes.controller';
+import { RegulationChangeService } from './season-regulations/regulation-change.service';
+
+// Later Phase writer modules remain deliberately absent until their workflows are implemented.
+const installedDependencyModules: readonly DependencyModuleRegistration[] = [];
+
+/** Builds the current static source catalog and checks it when a database is configured. */
+export async function createSeasonDependenciesService(
+  database: DatabaseService | null,
+): Promise<SeasonDependenciesService> {
+  const registration = registerDependencyModules(installedDependencyModules);
+  const dependencies = new SeasonDependenciesService(registration);
+  if (database) await database.client.$transaction((tx) => dependencies.assertStartupCatalog(tx));
+  return dependencies;
+}
 
 @Controller(['health', 'api/v1/health'])
 class HealthController {
@@ -58,8 +89,100 @@ class ReadinessController {
     GrantsController,
     DelegationsController,
     AuditController,
+    SeasonsController,
+    RegulationsController,
+    RegulationChangesController,
   ],
   providers: [
+    {
+      provide: AuditWriterService,
+      useFactory: () => new AuditWriterService(),
+    },
+    {
+      provide: BusinessExecutionService,
+      inject: [DatabaseService],
+      useFactory: (database: DatabaseService | null) =>
+        database ? new BusinessExecutionService(database) : null,
+    },
+    {
+      provide: HttpBusinessExecutionAdapter,
+      inject: [AuthService, BusinessExecutionService],
+      useFactory: (auth: AuthService, execution: BusinessExecutionService | null) =>
+        execution ? new HttpBusinessExecutionAdapter(auth, execution) : null,
+    },
+    {
+      provide: BusinessHistoryService,
+      inject: [DatabaseService, AuthService],
+      useFactory: (database: DatabaseService | null, auth: AuthService) =>
+        database ? new BusinessHistoryService(database, auth) : null,
+    },
+    {
+      provide: SeasonsService,
+      inject: [HttpBusinessExecutionAdapter, AuditWriterService, BusinessHistoryService],
+      useFactory: (
+        execution: HttpBusinessExecutionAdapter,
+        audit: AuditWriterService,
+        history: BusinessHistoryService,
+      ) => new SeasonsService(execution, audit, history),
+    },
+    {
+      provide: RegulationsService,
+      inject: [
+        HttpBusinessExecutionAdapter,
+        AuditWriterService,
+        BusinessHistoryService,
+        RegulationDecisionService,
+        RegulationActivationService,
+      ],
+      useFactory: (
+        execution: HttpBusinessExecutionAdapter,
+        audit: AuditWriterService,
+        history: BusinessHistoryService,
+        decisions: RegulationDecisionService,
+        activation: RegulationActivationService,
+      ) => new RegulationsService(execution, audit, history, decisions, activation),
+    },
+    {
+      provide: RegulationActivationService,
+      inject: [SeasonDependenciesService, AuditWriterService],
+      useFactory: (dependencies: SeasonDependenciesService, audit: AuditWriterService) =>
+        new RegulationActivationService(dependencies, audit),
+    },
+    {
+      provide: RegulationChangeService,
+      inject: [
+        HttpBusinessExecutionAdapter,
+        RegulationActivationService,
+        RegulationDecisionService,
+        AuditWriterService,
+      ],
+      useFactory: (
+        execution: HttpBusinessExecutionAdapter,
+        activation: RegulationActivationService,
+        decisions: RegulationDecisionService,
+        audit: AuditWriterService,
+      ) => new RegulationChangeService(execution, activation, decisions, audit),
+    },
+    {
+      provide: RegulationJobsService,
+      inject: [DatabaseService, BusinessExecutionService, RegulationActivationService],
+      useFactory: (
+        database: DatabaseService | null,
+        execution: BusinessExecutionService | null,
+        activation: RegulationActivationService,
+      ) => new RegulationJobsService(database, execution, activation),
+    },
+    {
+      provide: RegulationDecisionService,
+      inject: [RegulationActivationService, AuditWriterService],
+      useFactory: (activation: RegulationActivationService, audit: AuditWriterService) =>
+        new RegulationDecisionService(activation, audit),
+    },
+    {
+      provide: SeasonDependenciesService,
+      inject: [DatabaseService],
+      useFactory: createSeasonDependenciesService,
+    },
     {
       provide: AuditQueryService,
       inject: [DatabaseService, AuthService],
@@ -109,6 +232,13 @@ class ReadinessController {
           process.env.DATABASE_URL ? new DatabaseService(process.env.DATABASE_URL) : undefined,
         ),
     },
+  ],
+  exports: [
+    AuditWriterService,
+    BusinessExecutionService,
+    HttpBusinessExecutionAdapter,
+    BusinessHistoryService,
+    SeasonDependenciesService,
   ],
 })
 export class AppModule {}

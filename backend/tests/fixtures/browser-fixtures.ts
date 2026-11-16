@@ -66,6 +66,27 @@ export async function browserAccount(temporary = false) {
   }
 }
 
+export async function grantBrowserSeasonManager(
+  accountId: string,
+  seasonId: string,
+  grantedBy: string,
+) {
+  const db = database();
+  try {
+    await db.client.seasonRoleAssignment.create({
+      data: {
+        accountId,
+        seasonId,
+        roleCode: 'SEASON_MANAGER',
+        grantedBy,
+        grantedAt: await db.now(),
+      },
+    });
+  } finally {
+    await db.close();
+  }
+}
+
 export async function changeBrowserBasis(
   accountId: string,
   change: 'idle' | 'absolute' | 'revoke' | 'lock',

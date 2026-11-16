@@ -19,6 +19,11 @@ const shapes = {
       <path d="M3 10a9 9 0 1 1 1 7M3 4v6h6m3-3v5l3 2" />
     </>
   ),
+  season: (
+    <>
+      <path d="M7 4h10v4a5 5 0 0 1-10 0V4Zm0 2H4v1a4 4 0 0 0 4 4m9-5h3v1a4 4 0 0 1-4 4m-4 0v5m-4 0h8m-8 3h8" />
+    </>
+  ),
   user: (
     <>
       <circle cx="12" cy="8" r="3" />

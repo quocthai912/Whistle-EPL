@@ -106,6 +106,22 @@ export class MaintenanceService {
           throw new Error('Foundation constraints missing.');
       if (constraints.some((c) => !c.convalidated))
         throw new Error('Unvalidated relationship/constraint.');
+      const mediaTables = await db.$queryRaw<Array<{ tablename: string }>>`
+        SELECT tablename FROM pg_tables
+        WHERE schemaname='public' AND tablename IN ('club','stadium','media_asset')
+      `;
+      if (mediaTables.length !== 0 && mediaTables.length !== 3)
+        throw new Error('Club/Stadium/media schema is incomplete.');
+      if (mediaTables.length === 3) {
+        const assets = await db.$queryRaw<Array<{ count: bigint }>>`
+          SELECT count(*) AS count FROM media_asset
+        `;
+        const currentLogos = await db.$queryRaw<Array<{ count: bigint }>>`
+          SELECT count(*) AS count FROM club WHERE current_logo_id IS NOT NULL
+        `;
+        if (assets[0].count !== 0n || currentLogos[0].count !== 0n)
+          throw new Error('Nonempty media requires its owning recovery implementation.');
+      }
       if (
         (await db.systemGuard.count({
           where: { key: { in: ['bootstrap', 'last-active-admin', 'maintenance-admission'] } },

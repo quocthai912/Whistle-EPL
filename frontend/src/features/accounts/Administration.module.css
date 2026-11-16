@@ -414,9 +414,14 @@
   background: currentColor;
 }
 .badge[data-state='ACTIVE'],
-.badge[data-state='GRANTED'] {
+.badge[data-state='GRANTED'],
+.badge[data-state='OPEN'] {
   background: #e5f7ef;
   color: #087c4c;
+}
+.badge[data-state='CLOSED'] {
+  background: #edf0f7;
+  color: #5c6478;
 }
 .badge[data-state='LOCKED'],
 .badge[data-state='REVOKED'],

@@ -165,7 +165,8 @@ describe('deployed PostgreSQL foundation schema', () => {
     const season = randomUUID();
     const caseId = randomUUID();
     await db.query(
-      `INSERT INTO season(id,code,name,start_date,end_date) VALUES($1,'TEST_SEASON','Mùa giải kiểm thử','2027-01-01','2027-12-31')`,
+      `INSERT INTO season(id,code,name,competition_name,start_date,end_date)
+       VALUES($1,'TEST_SEASON','Mùa giải kiểm thử','Premier League Schema Fixture','2027-01-01','2027-12-31')`,
       [season],
     );
     await db.query(
@@ -280,5 +281,135 @@ describe('deployed PostgreSQL foundation schema', () => {
     await expect(db.query('DELETE FROM audit_record WHERE id=$1', [audit])).rejects.toMatchObject({
       code: '23514',
     });
+  });
+
+  it('keeps shared Club and Stadium identities stable and constrains Club-owned media metadata', async () => {
+    const accountId = randomUUID();
+    await db.query(
+      `INSERT INTO account(id,personnel_code,full_name,username,password_hash,must_change_password)
+       VALUES($1,'MEDIA_SCHEMA_01','Nhân viên kiểm thử','media.schema.user',
+       '$argon2id$v=19$m=19456,t=2,p=1$fixture$fixture',true)`,
+      [accountId],
+    );
+
+    const clubId = randomUUID();
+    const otherClubId = randomUUID();
+    const stadiumId = randomUUID();
+    const assetId = randomUUID();
+    await db.query(
+      `INSERT INTO club(id,code,name,abbreviation) VALUES
+       ($1,'MEDIA_CLUB_1','Shared Club','SC'),($2,'MEDIA_CLUB_2','Shared Club','SC2')`,
+      [clubId, otherClubId],
+    );
+    await db.query(
+      `INSERT INTO stadium(id,code,name,location) VALUES($1,'MEDIA_STADIUM_1','Shared Stadium',NULL)`,
+      [stadiumId],
+    );
+    await expect(
+      db.query("UPDATE club SET code='CHANGED_CLUB' WHERE id=$1", [clubId]),
+    ).rejects.toMatchObject({ code: '23514' });
+    await expect(
+      db.query('UPDATE club SET id=$1 WHERE id=$2', [randomUUID(), clubId]),
+    ).rejects.toMatchObject({ code: '23514' });
+    await expect(db.query('DELETE FROM club WHERE id=$1', [clubId])).rejects.toMatchObject({
+      code: '23514',
+    });
+    await expect(
+      db.query("UPDATE stadium SET code='CHANGED_STADIUM' WHERE id=$1", [stadiumId]),
+    ).rejects.toMatchObject({ code: '23514' });
+    await expect(
+      db.query('UPDATE stadium SET id=$1 WHERE id=$2', [randomUUID(), stadiumId]),
+    ).rejects.toMatchObject({ code: '23514' });
+    await expect(db.query('DELETE FROM stadium WHERE id=$1', [stadiumId])).rejects.toMatchObject({
+      code: '23514',
+    });
+    await expect(
+      db.query(
+        `INSERT INTO club(id,code,name,abbreviation) VALUES($1,'INVALID CLUB','Name','IC')`,
+        [randomUUID()],
+      ),
+    ).rejects.toMatchObject({ code: '23514' });
+    await expect(
+      db.query(
+        `INSERT INTO club(id,code,name,abbreviation) VALUES($1,'MEDIA_CLUB_3','   ','SC3')`,
+        [randomUUID()],
+      ),
+    ).rejects.toMatchObject({ code: '23514' });
+    await expect(
+      db.query(
+        `INSERT INTO club(id,code,name,abbreviation) VALUES($1,'MEDIA_CLUB_4','Valid Name','   ')`,
+        [randomUUID()],
+      ),
+    ).rejects.toMatchObject({ code: '23514' });
+    await expect(
+      db.query(
+        `INSERT INTO stadium(id,code,name,location) VALUES($1,'MEDIA_STADIUM_2','Name','   ')`,
+        [randomUUID()],
+      ),
+    ).rejects.toMatchObject({ code: '23514' });
+
+    await db.query(
+      `INSERT INTO media_asset(id,club_id,object_key,mime_type,byte_size,width,height,checksum,stored_by)
+       VALUES($1,$2,'clubs/opaque-fixture.webp','image/webp',32,1,1,'fixture-checksum',$3)`,
+      [assetId, clubId, accountId],
+    );
+    await db.query('UPDATE club SET current_logo_id=$1 WHERE id=$2', [assetId, clubId]);
+    await expect(
+      db.query('UPDATE club SET current_logo_id=$1 WHERE id=$2', [assetId, otherClubId]),
+    ).rejects.toMatchObject({ code: '23503' });
+    await expect(
+      db.query(
+        `INSERT INTO media_asset(id,club_id,object_key,mime_type,byte_size,width,height,checksum,stored_by)
+         VALUES($1,$2,'clubs/opaque-fixture.webp','image/webp',32,1,1,'fixture-checksum',$3)`,
+        [randomUUID(), clubId, accountId],
+      ),
+    ).rejects.toMatchObject({ code: '23505' });
+    await expect(
+      db.query(
+        `INSERT INTO media_asset(id,club_id,object_key,mime_type,byte_size,width,height,checksum,stored_by)
+         VALUES($1,$2,'clubs/unsupported','image/png',32,1,1,'fixture-checksum',$3)`,
+        [randomUUID(), clubId, accountId],
+      ),
+    ).rejects.toMatchObject({ code: '23514' });
+    await expect(
+      db.query(
+        `INSERT INTO media_asset(id,club_id,object_key,mime_type,byte_size,width,height,checksum,stored_by)
+         VALUES($1,$2,'clubs/missing-owner.webp','image/webp',32,1,1,'fixture-checksum',$3)`,
+        [randomUUID(), randomUUID(), accountId],
+      ),
+    ).rejects.toMatchObject({ code: '23503' });
+    await expect(
+      db.query(
+        `INSERT INTO media_asset(id,club_id,object_key,mime_type,byte_size,width,height,checksum,stored_by)
+         VALUES($1,$2,'clubs/missing-actor.webp','image/webp',32,1,1,'fixture-checksum',$3)`,
+        [randomUUID(), clubId, randomUUID()],
+      ),
+    ).rejects.toMatchObject({ code: '23503' });
+    await expect(
+      db.query(
+        `INSERT INTO media_asset(id,club_id,object_key,mime_type,byte_size,width,height,checksum,stored_by)
+         VALUES($1,$2,'clubs/oversized.webp','image/webp',2097153,1,1,'fixture-checksum',$3)`,
+        [randomUUID(), clubId, accountId],
+      ),
+    ).rejects.toMatchObject({ code: '23514' });
+    await expect(
+      db.query('UPDATE media_asset SET content_deleted_at=now() WHERE id=$1', [assetId]),
+    ).rejects.toMatchObject({ code: '23514' });
+
+    await db.query('UPDATE club SET current_logo_id=NULL WHERE id=$1', [clubId]);
+    await db.query('UPDATE media_asset SET unreferenced_at=now() WHERE id=$1', [assetId]);
+    await db.query('UPDATE media_asset SET content_deleted_at=now() WHERE id=$1', [assetId]);
+    await expect(
+      db.query("UPDATE media_asset SET checksum='rewritten' WHERE id=$1", [assetId]),
+    ).rejects.toMatchObject({ code: '23514' });
+    await expect(
+      db.query('UPDATE media_asset SET unreferenced_at=NULL WHERE id=$1', [assetId]),
+    ).rejects.toMatchObject({ code: '23514' });
+    await expect(db.query('DELETE FROM media_asset WHERE id=$1', [assetId])).rejects.toMatchObject({
+      code: '23514',
+    });
+
+    const player = await db.query("SELECT to_regclass('player') IS NULL AS absent");
+    expect(player.rows[0].absent).toBe(true);
   });
 });

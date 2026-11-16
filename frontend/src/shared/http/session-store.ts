@@ -3,6 +3,20 @@ export type SessionView = {
   changeRequired: boolean;
   systemAdministrator?: boolean;
   seasonManagerIds?: string[];
+  canCreateSeason?: boolean;
+  sharedMasterKinds?: SharedMasterKind[];
+  seasonRoles?: SeasonRoleHint[];
+  preparationCapabilities?: PreparationCapabilities;
+};
+export type SharedMasterKind = 'CLUB_MASTER' | 'STADIUM_MASTER' | 'PLAYER_MASTER';
+export type SeasonRoleCode =
+  'SEASON_MANAGER' | 'REGISTRATION_OFFICER' | 'SCHEDULING_OFFICER' | 'RESULTS_OFFICER';
+export type SeasonRoleHint = { seasonId: string; roleCode: SeasonRoleCode };
+export type PreparationActionCode = 'PREPARE_REGULATION_CHANGE';
+export type PreparationCapability = { seasonId: string; actionCode: PreparationActionCode };
+export type PreparationCapabilities = {
+  direct: PreparationCapability[];
+  delegated: PreparationCapability[];
 };
 type NoticeTone = 'warning' | 'success';
 export type SessionSnapshot = {

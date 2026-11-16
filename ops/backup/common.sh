@@ -35,4 +35,7 @@ ops_inventory() {
 ops_verify_database() {
   python3 "$OPS_SCRIPT_DIR/set-format.py" database "$OPS_APP_DIR"
 }
+ops_format_profile() {
+  python3 "$OPS_SCRIPT_DIR/set-format.py" profile "$OPS_APP_DIR"
+}
 ops_feedback() { printf '%s %s\n' "$(date -u +%FT%TZ)" "$1" >> "$OPS_STATE_DIR/operations.log"; }
