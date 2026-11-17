@@ -548,7 +548,7 @@
 
 .workflowFacts dt {
   color: #65718a;
-  font-size: 10.5px;
+  font-size: 12px;
   font-weight: 600;
 }
 
@@ -556,7 +556,7 @@
   min-width: 0;
   margin: 0;
   color: #27324a;
-  font-size: 11.5px;
+  font-size: 13px;
   overflow-wrap: anywhere;
 }
 
@@ -912,6 +912,7 @@
 .draftNotice {
   display: grid;
   gap: 3px;
+  font-size: 13px;
   border: 1px solid #dcd1f2;
   color: #4b3880;
   background: #f7f3ff;
@@ -960,7 +961,7 @@
 
 .groupHeading h3 {
   margin: 0;
-  font-size: 14px;
+  font-size: 15px;
   letter-spacing: -0.01em;
 }
 
@@ -968,7 +969,7 @@
   max-width: 420px;
   margin: 0;
   color: #65718a;
-  font-size: 10.5px;
+  font-size: 12px;
   text-align: right;
 }
 
@@ -997,7 +998,7 @@
   gap: 5px;
   min-width: 0;
   color: #334056;
-  font-size: 11.5px;
+  font-size: 13px;
   font-weight: 600;
 }
 
@@ -1011,7 +1012,7 @@
   color: #17213b;
   background: #fff;
   font: inherit;
-  font-size: 13.5px;
+  font-size: 14px;
   font-weight: 400;
 }
 
@@ -1027,14 +1028,14 @@
 
 .field small {
   color: #7b8498;
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 400;
 }
 
 .field .fieldError,
 .fieldError {
   color: #9c263c;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 500;
 }
 
@@ -1063,7 +1064,7 @@
 .repeaterHeading h4,
 .repeaterHeading strong {
   margin: 0;
-  font-size: 12px;
+  font-size: 13px;
 }
 
 .linkButton {
@@ -1080,7 +1081,7 @@
   border-radius: 8px;
   color: #65718a;
   background: #f7f8fb;
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .rankingRow {
@@ -1093,7 +1094,7 @@
   border: 1px solid #e8ebf3;
   border-radius: 8px;
   background: #fafbfe;
-  font-size: 11.5px;
+  font-size: 13px;
 }
 
 .formActions {
@@ -1109,7 +1110,7 @@
 
 .formActions span {
   color: #65718a;
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .conflictReview {

@@ -649,7 +649,6 @@ function SeasonHistoryTab({ seasonId }: { seasonId: string }) {
 
   return (
     <>
-      <h3>Lịch sử thay đổi</h3>
       <form className={css.historyFilters} onSubmit={applyFilters}>
         <AdminSelect
           hideLabel={false}
