@@ -113,6 +113,7 @@ PHASE2_REQUIRED_TRIGGERS = {
         'enabled': 'O',
         'internal': False,
         'hasCondition': False,
+        'updateColumns': [],
     },
     'stadium_identity': {
         'name': 'stadium_identity',
@@ -124,6 +125,7 @@ PHASE2_REQUIRED_TRIGGERS = {
         'enabled': 'O',
         'internal': False,
         'hasCondition': False,
+        'updateColumns': [],
     },
     'media_asset_metadata': {
         'name': 'media_asset_metadata',
@@ -135,6 +137,7 @@ PHASE2_REQUIRED_TRIGGERS = {
         'enabled': 'O',
         'internal': False,
         'hasCondition': False,
+        'updateColumns': [],
     },
     'club_current_logo_lifecycle': {
         'name': 'club_current_logo_lifecycle',
@@ -146,6 +149,7 @@ PHASE2_REQUIRED_TRIGGERS = {
         'enabled': 'O',
         'internal': False,
         'hasCondition': False,
+        'updateColumns': ['current_logo_id'],
     },
     'media_asset_current_logo_lifecycle': {
         'name': 'media_asset_current_logo_lifecycle',
@@ -157,6 +161,7 @@ PHASE2_REQUIRED_TRIGGERS = {
         'enabled': 'O',
         'internal': False,
         'hasCondition': False,
+        'updateColumns': ['unreferenced_at'],
     },
 }
 SHA256 = re.compile(r'^[0-9a-f]{64}$')
@@ -546,7 +551,12 @@ def verify_schema(app, scope):
         "'typeBits', trigger_info.tgtype, "
         "'enabled', trigger_info.tgenabled::text, "
         "'internal', trigger_info.tgisinternal, "
-        "'hasCondition', trigger_info.tgqual IS NOT NULL)::text "
+        "'hasCondition', trigger_info.tgqual IS NOT NULL, "
+        "'updateColumns', (SELECT coalesce(jsonb_agg(attribute.attname::text "
+        "ORDER BY attribute.attname), '[]'::jsonb) "
+        "FROM unnest(trigger_info.tgattr) AS watched(attnum) "
+        "JOIN pg_attribute attribute ON attribute.attrelid=trigger_info.tgrelid "
+        "AND attribute.attnum=watched.attnum))::text "
         "FROM pg_trigger trigger_info "
         "JOIN pg_class table_class ON table_class.oid=trigger_info.tgrelid "
         "JOIN pg_namespace table_namespace ON table_namespace.oid=table_class.relnamespace "

@@ -205,16 +205,19 @@ class SetFormatTest(unittest.TestCase):
                 'name': 'club_identity', 'tableSchema': 'public', 'table': 'club',
                 'functionSchema': 'public', 'function': 'preserve_shared_master_identity',
                 'typeBits': 27, 'enabled': 'O', 'internal': False, 'hasCondition': False,
+                'updateColumns': [],
             },
             {
                 'name': 'stadium_identity', 'tableSchema': 'public', 'table': 'stadium',
                 'functionSchema': 'public', 'function': 'preserve_shared_master_identity',
                 'typeBits': 27, 'enabled': 'O', 'internal': False, 'hasCondition': False,
+                'updateColumns': [],
             },
             {
                 'name': 'media_asset_metadata', 'tableSchema': 'public', 'table': 'media_asset',
                 'functionSchema': 'public', 'function': 'preserve_media_asset_metadata',
                 'typeBits': 27, 'enabled': 'O', 'internal': False, 'hasCondition': False,
+                'updateColumns': [],
             },
         ]
         unique_indexes = module.PHASE2_REQUIRED_UNIQUE_INDEXES.copy()
@@ -238,6 +241,18 @@ class SetFormatTest(unittest.TestCase):
         conditional_trigger[0]['hasCondition'] = True
         with self.assertRaises(ValueError):
             module.validate_phase2_catalog(foreign_keys, unique_indexes, conditional_trigger)
+
+        for name, expected_column in (
+            ('club_current_logo_lifecycle', 'current_logo_id'),
+            ('media_asset_current_logo_lifecycle', 'unreferenced_at'),
+        ):
+            for watched_columns in (['id'], [], [expected_column, 'id']):
+                with self.subTest(trigger=name, updateColumns=watched_columns):
+                    changed = [dict(trigger) for trigger in triggers]
+                    lifecycle = next(trigger for trigger in changed if trigger['name'] == name)
+                    lifecycle['updateColumns'] = watched_columns
+                    with self.assertRaises(ValueError):
+                        module.validate_phase2_catalog(foreign_keys, unique_indexes, changed)
 
         # Expression indexes are omitted by the catalog query, even when the
         # first key is the required code column.
