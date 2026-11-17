@@ -78,10 +78,11 @@ pnpm --filter @whistle-epl/backend exec jest --config jest.integration.config.cj
 pnpm --filter @whistle-epl/backend run typecheck
 ```
 
-The verified source was present as uncommitted worktree changes at base revision
+The tests ran against the working-tree implementation at base revision
 `58fe5cc01eff2abad5c07c561486976bdccd6794` on
-`feat/phase-2-foundation-and-season-regulations`. No commit, push, production database, or
-later-Phase workflow was used.
+`feat/phase-2-foundation-and-season-regulations` using isolated fixtures. T005 and this
+evidence were later published in
+[2406dc8](https://github.com/quocthai912/Whistle-EPL/commit/2406dc8ad5cd2954459b43da163a0e535d65e71e).
 
 ## Rereview follow-up
 

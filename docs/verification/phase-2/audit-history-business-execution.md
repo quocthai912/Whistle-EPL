@@ -67,8 +67,9 @@ commands. `TEMP` and `TMP` pointed to `.verification/phase-2/t007-temp`.
 
 Environment: Windows PowerShell, Node `24.14.0`, pnpm `10.33.2`, Prisma `7.10.1`, TypeScript
 `5.9.3`. Branch `feat/phase-2-foundation-and-season-regulations`, observed `HEAD`
-`58fe5cc01eff2abad5c07c561486976bdccd6794`; implementation and evidence are working-tree
-changes and were not committed or pushed.
+`58fe5cc01eff2abad5c07c561486976bdccd6794`. The tests ran against the working-tree
+implementation. T007 and this evidence were later published in
+[2406dc8](https://github.com/quocthai912/Whistle-EPL/commit/2406dc8ad5cd2954459b43da163a0e535d65e71e).
 
 | Check | Result |
 |---|---|

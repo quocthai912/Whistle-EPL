@@ -21,10 +21,15 @@ Issues, [#72](https://github.com/quocthai912/Whistle-EPL/issues/72) through
 [#101](https://github.com/quocthai912/Whistle-EPL/issues/101), labelled ready-for-agent,
 with exactly 44 native blocked-by relationships matching the approved dependencies. Every
 Task row below records its actual Issue URL. Approval criteria and Task definitions were
-compared against their publication snapshots; all Task checkboxes remain unchecked.
-Spec/Plan/Tasks source links in the Issues explicitly await human publication of the local
-documents. After that publication, verify source links and replace the pending-source note;
-publishing documents alone does not close Issues or complete Tasks.
+compared against their publication snapshots. The original Issue links pin the approved sources
+published at [5bb438b](https://github.com/quocthai912/Whistle-EPL/commit/5bb438b7b16df0fb0c406a830cf8b0d01e6c8d90).
+
+**Implementation and tracker update, 2026-11-17 (Asia/Bangkok):** T001–T015 are complete.
+All 53 Acceptance Criteria in [#72](https://github.com/quocthai912/Whistle-EPL/issues/72)
+through [#86](https://github.com/quocthai912/Whistle-EPL/issues/86) are checked, and the 15
+Issues are closed as completed with the `completed` label. See the [implementation publication
+and remaining scope](../../context/progress-checker.md#phase-2---seasons-catalogs-and-regulations)
+and [regression evidence](../../docs/verification/phase-2/t001-t015-regression.md).
 
 **Input**: [spec.md](spec.md), [plan.md](plan.md), [research.md](research.md),
 [data-model.md](data-model.md), [contracts](contracts/rest.md), [verification.md](verification.md)

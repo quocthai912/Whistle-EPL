@@ -2,7 +2,9 @@
 
 **Current version:** v2 | **Status:** APPROVED | **Whole-package approval:** Q98, Team Leader, 2026-10-26 (Asia/Bangkok)
 
-**Latest implementation publication (2026-11-06)** T038–T048 have recorded verification and T048 reviewer approval. See the [Phase ledger](progress-checker.md#phase-1-audit-and-verification-evidence---2026-11-06) for source and evidence. PHASE 1 is `COMPLETED` for the accepted foundation scope.
+**Latest implementation publication (2026-11-17)** PHASE 2 T001–T015 are published and verified. PHASE 2 is `IN_PROGRESS`. See the [Phase ledger](progress-checker.md#phase-2---seasons-catalogs-and-regulations) for the published revisions, Task completion, and acceptance scope.
+
+**PHASE 1 implementation publication (2026-11-06)** T038–T048 have recorded verification and T048 reviewer approval. See the [Phase ledger](progress-checker.md#phase-1-audit-and-verification-evidence---2026-11-06) for source and evidence. PHASE 1 is `COMPLETED` for the accepted foundation scope.
 
 **Approved extension:** D098 and PHASE 1 preparation clarifications, Q99-Q103 and final shared-understanding approval, Team Leader, 2026-10-28 (Asia/Bangkok). See [the extension record](#phase-1-preparation-approval---q99-q103); Q98 is not retroactive approval of this extension.
 
@@ -74,7 +76,7 @@ The Team Leader accepted the final summary and expressly required that no Specs 
 
 **Status:** APPROVED. **Approver:** Team Leader. **Date:** 2026-11-10 (Asia/Bangkok). Local preparation Q1-A and Q2-A, followed by explicit final shared-understanding confirmation, approve [D099](business.md#d099---club-and-stadium-discontinuation-with-controlled-resumption). [ADR 0009](../docs/adr/0009-stable-identities-and-selective-business-snapshots.md#d099---club-and-stadium-discontinuation-and-resumption) preserves the actual confirmations, alternatives and rationale. These local question labels do not renumber the historical package interview.
 
-This is an extension of the evolving English v2 package, not retroactive Q98 approval. Authorization covers the minimal decision-document updates and consistency verification only. PHASE 2 remains NOT_STARTED; Phase statuses, checkboxes and historical approvals are preserved. No Specifications, Plans, Tasks, Issues, implementation code, commit, push or PR are authorized by this approval.
+This is an extension of the evolving English v2 package, not retroactive Q98 approval. Authorization covers the minimal decision-document updates and consistency verification only. At the time of the extension approval, PHASE 2 was NOT_STARTED. The [Phase ledger](progress-checker.md#phase-2---seasons-catalogs-and-regulations) tracks subsequent implementation. No Specifications, Plans, Tasks, Issues, implementation code, commit, push or PR are authorized by this approval.
 
 ## PHASE 3 preparation approval - D100
 

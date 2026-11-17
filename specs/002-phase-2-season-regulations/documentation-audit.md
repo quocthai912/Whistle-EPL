@@ -2,7 +2,7 @@
 
 **Baseline:** Clean `docs/phase-3-architecture-and-specification` at `69617826653c194fe25d30e1d9d314980e7e87ab`, matching its remote. Local and remote `development` were `3e9c615fff04c10af8a1d22bff82e0a89729d0be`, the merge base. The working branch was four commits ahead and zero behind. Retain this branch to preserve the full PHASE 3 package and unrelated committed UI work.
 
-**Status:** Post-approval amendment published at [4f2c893](https://github.com/quocthai912/Whistle-EPL/commit/4f2c89373ec3d33af7d44c75cfae207a07969e63). Original approvals and pinned Issue source revisions remain historical evidence. PHASE 2 and PHASE 3 remain NOT_STARTED. The reconciliation below records documentation and tracker evidence only.
+**Status:** Post-approval amendment published at [4f2c893](https://github.com/quocthai912/Whistle-EPL/commit/4f2c89373ec3d33af7d44c75cfae207a07969e63). Original approvals and pinned Issue source revisions remain historical evidence. This audit preceded implementation. The [Phase ledger](../../context/progress-checker.md#phase-2---seasons-catalogs-and-regulations) records current implementation progress.
 
 ## Audit findings
 
@@ -13,7 +13,7 @@
 | C | Confirmed boundary gap. An active interval with a finite end later than closing could be mistaken for a completed interval. An approval waiting for locks could use superseded readiness. | State the exact final close instant in FR-036, contracts and T024. Verify before/equal/after, unspecified end, unresolved future plans, pending requests and readiness races. D074/D024/D096. |
 | D | Partly resolved. T027 and the validation guide already specify 20 concurrent users, one-minute warm-up, ten-minute measurement and the 95%/2-second per-group threshold. Mixing API timings with browser evidence could still misstate results. | Make separate API/UI evidence and workload reporting explicit across SC-010, Plan, T027, verification and quickstart. D097. PHASE 6 retains public HQ-01 acceptance. |
 | E | Confirmed pre-existing publication drift. Issue #85 pins the initial T014 text, which describes replacement as required. The current T014 already distinguishes standalone CANCEL from REPLACE. The former wording could block cancellation with no replacement. | Keep current T014 unchanged. Reconcile Issue #85 separately against D051 and the existing T014 text. |
-| F | Confirmed ledger drift. The initial PHASE 2 publication note still describes sources as awaiting publication. All 30 Issue bodies now identify the published source revision. | Add current evidence in the Phase ledger. Preserve the initial milestone text and the published source pins. |
+| F | Confirmed ledger drift. The initial PHASE 2 publication note described sources as awaiting publication. All 30 Issue bodies now identify the published source revision. | Add current evidence in the Phase ledger. Preserve the initial milestone text and the published source pins. |
 
 The review covered UC05 and UC06 lifecycle, rule preparation, decisions and effectivity; UC07 and UC12 master identity, duplicate review, correction and availability; logo authorization, recovery, and inherited security/transaction and verification controls. Current Context and relevant ADRs remain the policy owners. PDF page references rely on the approved Context transcription because the original PDF is outside this checkout.
 
