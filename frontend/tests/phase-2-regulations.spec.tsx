@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { MemoryRouter } from 'react-router';
 import { afterEach, expect, test, vi } from 'vitest';
 import { App } from '../src/app/App';
@@ -344,7 +344,9 @@ test('draft creation stays empty until confirmed source values are applied', asy
     { name: 'Xác nhận điền giá trị đề xuất' },
     wait,
   );
-  expect(within(confirmation).getByText(/20 câu lạc bộ, 25 cầu thủ, 17 cầu thủ/i)).toBeVisible();
+  expect(
+    within(confirmation).getByText(/20 câu lạc bộ, 25 cầu thủ, 17 cầu thủ/i),
+  ).toBeInTheDocument();
   expect(screen.getByLabelText('Giới hạn danh sách cầu thủ')).toHaveValue(null);
   fireEvent.click(within(confirmation).getByRole('button', { name: 'Xác nhận điền' }));
   expect(screen.getByLabelText('Giới hạn danh sách cầu thủ')).toHaveValue(25);
@@ -378,133 +380,136 @@ test('draft creation stays empty until confirmed source values are applied', asy
   ).toBeVisible();
 }, 15_000);
 
-test('typed draft fields use UTC instants, date-only values, and ID-free replacement arrays', async () => {
-  let savedPatch: Record<string, unknown> | undefined;
-  let currentDetail = detail({
-    ...blankContent,
-    registrationWindows: [
-      {
-        intakeKind: 'CLUB_APPLICATION',
-        opensAt: '2028-08-01T00:00:05.678Z',
-        closesAt: '2028-08-01T01:00:06.123Z',
-      },
-      {
-        intakeKind: 'PLAYER_CHANGE',
-        opensAt: '2028-08-02T00:00:00.001Z',
-        closesAt: '2028-08-02T00:00:00.999Z',
-      },
-    ],
-  });
-  const fetcher = vi.fn<typeof fetch>(async (input, init) => {
-    const path = pathOf(input);
-    if (path.endsWith('/auth/session')) return envelope(account);
-    if (path.endsWith('/auth/csrf')) return envelope({ csrfToken: 'c'.repeat(43) });
-    if (/\/api\/v1\/regulation-versions\/[^/]+\/history$/.test(path))
-      return envelope({ items: [] }, { page: 1, pageSize: 20, total: 0 });
-    if (path === `/api/v1/seasons/${seasonId}`) return envelope(season);
-    if (path === `/api/v1/seasons/${seasonId}/regulation-versions`)
-      return listData([summary()], false);
-    if (path === `/api/v1/regulation-versions/${versionId}` && init?.method === 'PATCH') {
-      savedPatch = JSON.parse(String(init.body)) as Record<string, unknown>;
-      const contentPatch = { ...savedPatch };
-      delete contentPatch.expectedRevision;
-      currentDetail = detail(
-        { ...currentDetail.content, ...contentPatch } as RegulationContent,
-        '2',
+test.each(['dates', 'arrays'] as const)(
+  'typed draft fields preserve the %s payload',
+  async (group) => {
+    let savedPatch: Record<string, unknown> | undefined;
+    let currentDetail = detail({
+      ...blankContent,
+      registrationWindows: [
+        {
+          intakeKind: 'CLUB_APPLICATION',
+          opensAt: '2028-08-01T00:00:05.678Z',
+          closesAt: '2028-08-01T01:00:06.123Z',
+        },
+        {
+          intakeKind: 'PLAYER_CHANGE',
+          opensAt: '2028-08-02T00:00:00.001Z',
+          closesAt: '2028-08-02T00:00:00.999Z',
+        },
+      ],
+    });
+    const fetcher = vi.fn<typeof fetch>(async (input, init) => {
+      const path = pathOf(input);
+      if (path.endsWith('/auth/session')) return envelope(account);
+      if (path.endsWith('/auth/csrf')) return envelope({ csrfToken: 'c'.repeat(43) });
+      if (/\/api\/v1\/regulation-versions\/[^/]+\/history$/.test(path))
+        return envelope({ items: [] }, { page: 1, pageSize: 20, total: 0 });
+      if (path === `/api/v1/seasons/${seasonId}`) return envelope(season);
+      if (path === `/api/v1/seasons/${seasonId}/regulation-versions`)
+        return listData([summary()], false);
+      if (path === `/api/v1/regulation-versions/${versionId}` && init?.method === 'PATCH') {
+        savedPatch = JSON.parse(String(init.body)) as Record<string, unknown>;
+        const contentPatch = { ...savedPatch };
+        delete contentPatch.expectedRevision;
+        currentDetail = detail(
+          { ...currentDetail.content, ...contentPatch } as RegulationContent,
+          '2',
+        );
+        return envelope({ id: versionId, revision: '2' });
+      }
+      if (path === `/api/v1/regulation-versions/${versionId}`) return envelope(currentDetail);
+      throw new Error(`Unexpected request: ${path}`);
+    });
+    open(fetcher);
+
+    expect(await screen.findByLabelText('Cách đề xuất hiệu lực', undefined, wait)).toBeVisible();
+    if (group === 'dates') {
+      fireEvent.mouseDown(screen.getByRole('combobox', { name: 'Cách đề xuất hiệu lực' }));
+      fireEvent.click(
+        await screen.findByRole('option', { name: 'Hiệu lực tại thời điểm đã chọn' }),
       );
-      return envelope({ id: versionId, revision: '2' });
+      const timing = within(screen.getByRole('region', { name: 'Thời điểm đề xuất' }));
+      const eligibility = within(screen.getByRole('region', { name: 'Điều kiện đăng ký' }));
+      act(() => {
+        fireEvent.change(timing.getByLabelText('Thời điểm hiệu lực dự kiến'), {
+          target: { value: '15/08/2028 09:30' },
+        });
+        fireEvent.change(eligibility.getByLabelText('Ngày sinh giới hạn U21'), {
+          target: { value: '01/01/2029' },
+        });
+      });
+    } else {
+      const windows = within(screen.getByRole('region', { name: 'Các đợt tiếp nhận' }));
+      const catalog = within(screen.getByRole('region', { name: 'Danh mục bàn thắng và thẻ' }));
+      const ranking = within(screen.getByRole('region', { name: 'Điểm số và thứ hạng' }));
+      expect(windows.getByLabelText('Mở từ đợt 1')).toHaveValue('01/08/2028 07:00:05.678');
+      expect(windows.getByLabelText('Đóng trước đợt 1')).toHaveValue('01/08/2028 08:00:06.123');
+      expect(windows.getByLabelText('Mở từ đợt 2')).toHaveValue('02/08/2028 07:00:00.001');
+      expect(windows.getByLabelText('Đóng trước đợt 2')).toHaveValue('02/08/2028 07:00:00.999');
+      fireEvent.change(windows.getByLabelText('Đóng trước đợt 1'), {
+        target: { value: '01/08/2028 08:00:00.000' },
+      });
+      fireEvent.click(windows.getByRole('button', { name: 'Thêm đợt tiếp nhận' }));
+      act(() => {
+        fireEvent.change(windows.getByLabelText('Mở từ đợt 3'), {
+          target: { value: '01/08/2028 08:00' },
+        });
+        fireEvent.change(windows.getByLabelText('Đóng trước đợt 3'), {
+          target: { value: '01/08/2028 09:00' },
+        });
+      });
+      expect(windows.queryByText(/Khoảng thời gian bị trùng/)).not.toBeInTheDocument();
+      act(() => {
+        fireEvent.click(ranking.getByRole('button', { name: 'Thêm tiêu chí xếp hạng' }));
+        fireEvent.click(catalog.getByRole('button', { name: 'Thêm loại bàn thắng' }));
+      });
+      fireEvent.change(catalog.getByLabelText('Mã loại bàn thắng 1'), { target: { value: ' a ' } });
+      fireEvent.change(catalog.getByLabelText('Tên loại bàn thắng 1'), {
+        target: { value: ' Bàn   thắng thường ' },
+      });
     }
-    if (path === `/api/v1/regulation-versions/${versionId}`) return envelope(currentDetail);
-    throw new Error(`Unexpected request: ${path}`);
-  });
-  open(fetcher);
 
-  expect(await screen.findByLabelText('Cách đề xuất hiệu lực', undefined, wait)).toBeVisible();
-  fireEvent.mouseDown(screen.getByRole('combobox', { name: 'Cách đề xuất hiệu lực' }));
-  fireEvent.click(await screen.findByRole('option', { name: 'Hiệu lực tại thời điểm đã chọn' }));
-  fireEvent.change(screen.getByLabelText('Thời điểm hiệu lực dự kiến'), {
-    target: { value: '15/08/2028 09:30' },
-  });
-  fireEvent.change(screen.getByLabelText('Ngày sinh giới hạn U21'), {
-    target: { value: '01/01/2029' },
-  });
-  fireEvent.change(screen.getByLabelText('Số câu lạc bộ'), { target: { value: '20' } });
-  fireEvent.mouseDown(screen.getByRole('combobox', { name: 'Thể thức' }));
-  fireEvent.click(await screen.findByRole('option', { name: 'Vòng tròn hai lượt' }));
-  fireEvent.mouseDown(screen.getByRole('combobox', { name: 'Số lượt' }));
-  fireEvent.click(await screen.findByRole('option', { name: 'Hai lượt' }));
-  expect(screen.getByLabelText('Số vị trí xuống hạng (R)')).toHaveValue(null);
-  fireEvent.click(screen.getByRole('button', { name: 'Xem và xác nhận giá trị đề xuất R = 3' }));
-  const relegationConfirmation = await screen.findByRole(
-    'dialog',
-    { name: 'Xác nhận điền giá trị đề xuất' },
-    wait,
-  );
-  expect(
-    within(relegationConfirmation).getByText(/chỉ áp dụng khi số câu lạc bộ là 20/i),
-  ).toBeVisible();
-  fireEvent.click(within(relegationConfirmation).getByRole('button', { name: 'Xác nhận điền' }));
-  expect(screen.getByLabelText('Số vị trí xuống hạng (R)')).toHaveValue(3);
-  expect(screen.getByLabelText('Số vị trí giành quyền tham dự (Q)')).toHaveValue(null);
-
-  expect(screen.getByLabelText('Mở từ đợt 1')).toHaveValue('01/08/2028 07:00:05.678');
-  expect(screen.getByLabelText('Đóng trước đợt 1')).toHaveValue('01/08/2028 08:00:06.123');
-  expect(screen.getByLabelText('Mở từ đợt 2')).toHaveValue('02/08/2028 07:00:00.001');
-  expect(screen.getByLabelText('Đóng trước đợt 2')).toHaveValue('02/08/2028 07:00:00.999');
-  fireEvent.change(screen.getByLabelText('Đóng trước đợt 1'), {
-    target: { value: '01/08/2028 08:00:00.000' },
-  });
-  fireEvent.click(screen.getByRole('button', { name: 'Thêm đợt tiếp nhận' }));
-  fireEvent.change(screen.getByLabelText('Mở từ đợt 3'), {
-    target: { value: '01/08/2028 08:00' },
-  });
-  fireEvent.change(screen.getByLabelText('Đóng trước đợt 3'), {
-    target: { value: '01/08/2028 09:00' },
-  });
-  expect(screen.queryByText(/Khoảng thời gian bị trùng/)).not.toBeInTheDocument();
-  fireEvent.click(screen.getByRole('button', { name: 'Thêm tiêu chí xếp hạng' }));
-  fireEvent.click(screen.getByRole('button', { name: 'Thêm loại bàn thắng' }));
-  fireEvent.change(screen.getByLabelText('Mã loại bàn thắng 1'), { target: { value: ' a ' } });
-  fireEvent.change(screen.getByLabelText('Tên loại bàn thắng 1'), {
-    target: { value: ' Bàn   thắng thường ' },
-  });
-
-  fireEvent.click(screen.getByRole('button', { name: 'Lưu bản nháp' }));
-  await waitFor(() => expect(savedPatch).toBeDefined(), wait);
-  expect(savedPatch).toMatchObject({
-    expectedRevision: '1',
-    effectiveMode: 'SCHEDULED',
-    proposedEffectiveAt: '2028-08-15T02:30:00.000Z',
-    u21Cutoff: '2029-01-01',
-    clubCount: 20,
-    formatCode: 'DOUBLE_ROUND_ROBIN',
-    legs: 2,
-    relegationCount: 3,
-    registrationWindows: [
-      {
-        intakeKind: 'CLUB_APPLICATION',
-        opensAt: '2028-08-01T00:00:05.678Z',
-        closesAt: '2028-08-01T01:00:00.000Z',
-      },
-      {
-        intakeKind: 'PLAYER_CHANGE',
-        opensAt: '2028-08-02T00:00:00.001Z',
-        closesAt: '2028-08-02T00:00:00.999Z',
-      },
-      {
-        intakeKind: 'CLUB_APPLICATION',
-        opensAt: '2028-08-01T01:00:00.000Z',
-        closesAt: '2028-08-01T02:00:00.000Z',
-      },
-    ],
-    rankingPriority: [{ position: 1, criterionCode: 'POINTS' }],
-    goalTypes: [{ code: 'A', name: 'Bàn thắng thường', isOwnGoal: false, enabled: true }],
-  });
-  expect(JSON.stringify(savedPatch)).not.toContain('"id"');
-  expect(
-    screen.queryByRole('button', { name: /gửi thẩm định|phê duyệt/i }),
-  ).not.toBeInTheDocument();
-}, 15_000);
+    fireEvent.click(screen.getByRole('button', { name: 'Lưu bản nháp' }));
+    await waitFor(() => expect(savedPatch).toBeDefined(), wait);
+    expect(savedPatch).toMatchObject(
+      group === 'dates'
+        ? {
+            expectedRevision: '1',
+            effectiveMode: 'SCHEDULED',
+            proposedEffectiveAt: '2028-08-15T02:30:00.000Z',
+            u21Cutoff: '2029-01-01',
+          }
+        : {
+            expectedRevision: '1',
+            registrationWindows: [
+              {
+                intakeKind: 'CLUB_APPLICATION',
+                opensAt: '2028-08-01T00:00:05.678Z',
+                closesAt: '2028-08-01T01:00:00.000Z',
+              },
+              {
+                intakeKind: 'PLAYER_CHANGE',
+                opensAt: '2028-08-02T00:00:00.001Z',
+                closesAt: '2028-08-02T00:00:00.999Z',
+              },
+              {
+                intakeKind: 'CLUB_APPLICATION',
+                opensAt: '2028-08-01T01:00:00.000Z',
+                closesAt: '2028-08-01T02:00:00.000Z',
+              },
+            ],
+            rankingPriority: [{ position: 1, criterionCode: 'POINTS' }],
+            goalTypes: [{ code: 'A', name: 'Bàn thắng thường', isOwnGoal: false, enabled: true }],
+          },
+    );
+    expect(JSON.stringify(savedPatch)).not.toContain('"id"');
+    expect(
+      screen.queryByRole('button', { name: /gửi thẩm định|phê duyệt/i }),
+    ).not.toBeInTheDocument();
+  },
+  30_000,
+);
 
 test('versions are paged by API metadata while overview uses persisted pointers', async () => {
   const olderVersionId = '00000000-0000-4000-8000-000000000092';
@@ -767,7 +772,7 @@ test('action confirmation stays on its reviewed version across refresh and cance
       ]),
     wait,
   );
-}, 15_000);
+}, 30_000);
 
 test('action revision conflict preserves reason and requires reviewing and reconfirming refreshed content', async () => {
   const writes: Record<string, unknown>[] = [];

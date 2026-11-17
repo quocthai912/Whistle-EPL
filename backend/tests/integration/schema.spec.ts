@@ -355,6 +355,9 @@ describe('deployed PostgreSQL foundation schema', () => {
     );
     await db.query('UPDATE club SET current_logo_id=$1 WHERE id=$2', [assetId, clubId]);
     await expect(
+      db.query('UPDATE media_asset SET unreferenced_at=now() WHERE id=$1', [assetId]),
+    ).rejects.toMatchObject({ code: '23514' });
+    await expect(
       db.query('UPDATE club SET current_logo_id=$1 WHERE id=$2', [assetId, otherClubId]),
     ).rejects.toMatchObject({ code: '23503' });
     await expect(
@@ -398,6 +401,9 @@ describe('deployed PostgreSQL foundation schema', () => {
 
     await db.query('UPDATE club SET current_logo_id=NULL WHERE id=$1', [clubId]);
     await db.query('UPDATE media_asset SET unreferenced_at=now() WHERE id=$1', [assetId]);
+    await expect(
+      db.query('UPDATE club SET current_logo_id=$1 WHERE id=$2', [assetId, clubId]),
+    ).rejects.toMatchObject({ code: '23514' });
     await db.query('UPDATE media_asset SET content_deleted_at=now() WHERE id=$1', [assetId]);
     await expect(
       db.query("UPDATE media_asset SET checksum='rewritten' WHERE id=$1", [assetId]),

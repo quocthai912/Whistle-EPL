@@ -201,8 +201,8 @@ test(
     );
     const from = historyRequests.at(-1)?.searchParams.get('occurredFrom');
     const before = historyRequests.at(-1)?.searchParams.get('occurredBefore');
-    expect(from).toBe(new Date('2028-08-16T06:00').toISOString());
-    expect(before).toBe(new Date('2028-08-17T06:00').toISOString());
+    expect(from).toBe(new Date('2028-08-16T06:00+07:00').toISOString());
+    expect(before).toBe(new Date('2028-08-17T06:00+07:00').toISOString());
     expect(from).toMatch(/Z$/);
     expect(before).toMatch(/Z$/);
   },

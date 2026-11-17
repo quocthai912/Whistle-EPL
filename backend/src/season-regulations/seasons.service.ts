@@ -111,7 +111,7 @@ function normalizeSeasonPatch(input: UpdateSeasonDto): Partial<NormalizedSeasonI
     patch.competitionName = normalizeName(input.competitionName, 'competitionName');
   if (input.startDate !== undefined) patch.startDate = normalizeDate(input.startDate, 'startDate');
   if (input.endDate !== undefined) patch.endDate = normalizeDate(input.endDate, 'endDate');
-  if (Object.keys(patch).length === 0) invalid();
+  if (Object.keys(patch).length === 0) throw invalid();
   return patch;
 }
 
@@ -489,7 +489,7 @@ export class SeasonsService {
             after.endDate = dateOnly(nextEndDate);
             data.endDate = nextEndDate;
           }
-          if (Object.keys(data).length === 0) invalid();
+          if (Object.keys(data).length === 0) throw invalid();
 
           const updatedAt = await context.now();
           await context.recheckAuthority();

@@ -22,6 +22,7 @@ PHASE2_MIGRATIONS = LEGACY_MIGRATIONS + (
     '202611150001_season_foundation_expansion',
     '202611150002_phase2_relational_schema',
     '202611150003_club_stadium_media_asset',
+    '202611170001_regulation_ranking_and_logo_lifecycle',
 )
 
 FOUNDATION_TABLES = {
@@ -111,6 +112,7 @@ PHASE2_REQUIRED_TRIGGERS = {
         'typeBits': 27,
         'enabled': 'O',
         'internal': False,
+        'hasCondition': False,
     },
     'stadium_identity': {
         'name': 'stadium_identity',
@@ -121,6 +123,7 @@ PHASE2_REQUIRED_TRIGGERS = {
         'typeBits': 27,
         'enabled': 'O',
         'internal': False,
+        'hasCondition': False,
     },
     'media_asset_metadata': {
         'name': 'media_asset_metadata',
@@ -131,6 +134,29 @@ PHASE2_REQUIRED_TRIGGERS = {
         'typeBits': 27,
         'enabled': 'O',
         'internal': False,
+        'hasCondition': False,
+    },
+    'club_current_logo_lifecycle': {
+        'name': 'club_current_logo_lifecycle',
+        'tableSchema': 'public',
+        'table': 'club',
+        'functionSchema': 'public',
+        'function': 'guard_current_club_logo',
+        'typeBits': 23,
+        'enabled': 'O',
+        'internal': False,
+        'hasCondition': False,
+    },
+    'media_asset_current_logo_lifecycle': {
+        'name': 'media_asset_current_logo_lifecycle',
+        'tableSchema': 'public',
+        'table': 'media_asset',
+        'functionSchema': 'public',
+        'function': 'guard_current_logo_lifecycle',
+        'typeBits': 19,
+        'enabled': 'O',
+        'internal': False,
+        'hasCondition': False,
     },
 }
 SHA256 = re.compile(r'^[0-9a-f]{64}$')
@@ -502,6 +528,7 @@ def verify_schema(app, scope):
         "JOIN pg_attribute attribute ON attribute.attrelid=table_class.oid AND attribute.attnum=keys.attnum "
         "WHERE table_namespace.nspname='public' AND index_info.indisunique "
         "AND index_info.indisvalid AND index_info.indisready AND index_info.indpred IS NULL "
+        "AND index_info.indexprs IS NULL "
         "AND keys.ord <= index_info.indnkeyatts "
         "GROUP BY index_class.relname, table_class.relname"
     ).splitlines()
@@ -518,13 +545,15 @@ def verify_schema(app, scope):
         "'function', function_info.proname::text, "
         "'typeBits', trigger_info.tgtype, "
         "'enabled', trigger_info.tgenabled::text, "
-        "'internal', trigger_info.tgisinternal)::text "
+        "'internal', trigger_info.tgisinternal, "
+        "'hasCondition', trigger_info.tgqual IS NOT NULL)::text "
         "FROM pg_trigger trigger_info "
         "JOIN pg_class table_class ON table_class.oid=trigger_info.tgrelid "
         "JOIN pg_namespace table_namespace ON table_namespace.oid=table_class.relnamespace "
         "JOIN pg_proc function_info ON function_info.oid=trigger_info.tgfoid "
         "JOIN pg_namespace function_namespace ON function_namespace.oid=function_info.pronamespace "
-        "WHERE trigger_info.tgname IN ('club_identity', 'stadium_identity', 'media_asset_metadata') "
+        "WHERE trigger_info.tgname IN ('club_identity', 'stadium_identity', 'media_asset_metadata', "
+        "'club_current_logo_lifecycle', 'media_asset_current_logo_lifecycle') "
         "ORDER BY trigger_info.tgname, trigger_info.tgrelid"
     ).splitlines()
     triggers = [json.loads(line) for line in trigger_lines]

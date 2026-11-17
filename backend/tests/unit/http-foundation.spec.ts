@@ -7,6 +7,7 @@ import {
   Logger,
   BadRequestException,
   Res,
+  StreamableFile,
   type INestApplication,
 } from '@nestjs/common';
 import { Readable } from 'node:stream';
@@ -172,8 +173,13 @@ describe('safe HTTP validation and failure interface', () => {
         }),
         getHeader: jest.fn(() => contentType),
       };
-      if (marked)
-        markValidatedFileResponse(response as never, Buffer.from('valid test image'), 'image/jpeg');
+      const markedFile = marked
+        ? markValidatedFileResponse(
+            response as never,
+            Buffer.from('valid test image'),
+            'image/jpeg',
+          )
+        : undefined;
       const context = {
         switchToHttp: () => ({
           getRequest: () => ({ path: '/api/v1/media/current-logo' }),
@@ -182,7 +188,7 @@ describe('safe HTTP validation and failure interface', () => {
       };
       return lastValueFrom(
         new ResponseEnvelopeInterceptor().intercept(context as never, {
-          handle: () => of(payload),
+          handle: () => of(statusCode === 404 ? markedFile : payload),
         }),
       );
     };
@@ -197,9 +203,9 @@ describe('safe HTTP validation and failure interface', () => {
       data: { secret: 'not-bytes' },
       requestId: expect.any(String),
     });
-    const markedFailure = await run(404, Buffer.from('missing'), true);
+    const markedFailure = await run(404, undefined, true);
     expect(markedFailure).toMatchObject({
-      data: Buffer.from('missing'),
+      data: expect.any(StreamableFile),
       requestId: expect.any(String),
     });
   });

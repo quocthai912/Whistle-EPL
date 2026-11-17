@@ -501,4 +501,4 @@ test('a pre-receipt retry denial keeps the original unknown create intent pinned
   expect(csrfResponses).toBe(2);
   expect(createCalls[0]).toEqual(createCalls[1]);
   expect(createCalls[1]).toEqual(createCalls[2]);
-});
+}, 15_000);

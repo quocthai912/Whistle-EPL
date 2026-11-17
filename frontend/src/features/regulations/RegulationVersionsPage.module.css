@@ -1144,43 +1144,6 @@
   overflow-wrap: anywhere;
 }
 
-.modalBackdrop {
-  position: fixed;
-  inset: 0;
-  z-index: 20;
-  display: grid;
-  place-items: center;
-  padding: 20px;
-  background: #11182b66;
-}
-
-.confirmDialog {
-  display: grid;
-  gap: 12px;
-  width: min(100%, 480px);
-  padding: 22px;
-  border: 1px solid #e6eaf3;
-  border-radius: 14px;
-  background: #fff;
-  box-shadow: 0 14px 50px #0d143026;
-}
-
-.confirmDialog h3 {
-  margin: 0;
-  font-size: 17px;
-}
-
-.confirmDialog p {
-  margin: 0;
-  color: #526078;
-  font-size: 13px;
-  line-height: 1.6;
-}
-
-.confirmDialog .toolbar {
-  margin-top: 5px;
-}
-
 .errorPanel {
   color: #9c263c;
 }

@@ -525,6 +525,22 @@ export class RegulationChangeService {
         },
       });
       const updated = await this.moveRequest(context, id, version.id, state, now);
+      await this.audit.append(context, {
+        actor: { kind: 'ACCOUNT', accountId: actor },
+        action: `REGULATION_CHANGE_${state}`,
+        objectKind: 'RegulationChangeRequest',
+        objectId: id,
+        seasonId: row.seasonId,
+        outcome: 'SUCCESS',
+        reason,
+        before: { requestId: id, versionId: version.id, state: version.state },
+        after: {
+          requestId: id,
+          versionId: version.id,
+          versionNumber: version.versionNumber,
+          state,
+        },
+      });
       return this.ack(updated, version.id);
     });
   }

@@ -187,7 +187,12 @@ export function SeasonCreateForm({
       for (const detail of details ?? []) {
         if (isFieldName(detail.field) && detail.message) nextErrors[detail.field] = detail.message;
       }
-      if (unresolvedIntent) {
+      // A retry blocked before receipt lookup cannot resolve the earlier write.
+      if (
+        unresolvedIntent &&
+        error instanceof HttpFailure &&
+        [401, 403, 429].includes(error.status)
+      ) {
         setErrors({});
         setFailure(problem.message);
         setUnknownIntent(unresolvedIntent);

@@ -1642,6 +1642,14 @@ describe('PHASE 2 season creation HTTP contract', () => {
       name: 'Stale overwrite',
     }).expect(409);
     expect(stale.body.error.code).toBe('REVISION_CONFLICT');
+    await updateRequest(manager.tokens, seasonId, { expectedRevision: '2' }).expect(400);
+    await updateRequest(manager.tokens, seasonId, {
+      expectedRevision: '2',
+      name: 'Updated season name',
+    }).expect(400);
+    expect(
+      (await database.client.season.findUniqueOrThrow({ where: { id: seasonId } })).revision,
+    ).toBe(2n);
     const immutableCode = await updateRequest(manager.tokens, seasonId, {
       expectedRevision: '2',
       code: 'CHANGED_CODE',

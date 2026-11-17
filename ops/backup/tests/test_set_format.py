@@ -22,6 +22,7 @@ PHASE2_MIGRATIONS = LEGACY_MIGRATIONS + [
     '202611150001_season_foundation_expansion',
     '202611150002_phase2_relational_schema',
     '202611150003_club_stadium_media_asset',
+    '202611170001_regulation_ranking_and_logo_lifecycle',
 ]
 PHASE2_TABLES = {
     '_prisma_migrations', 'account', 'session', 'prelogin_csrf_context',
@@ -203,20 +204,23 @@ class SetFormatTest(unittest.TestCase):
             {
                 'name': 'club_identity', 'tableSchema': 'public', 'table': 'club',
                 'functionSchema': 'public', 'function': 'preserve_shared_master_identity',
-                'typeBits': 27, 'enabled': 'O', 'internal': False,
+                'typeBits': 27, 'enabled': 'O', 'internal': False, 'hasCondition': False,
             },
             {
                 'name': 'stadium_identity', 'tableSchema': 'public', 'table': 'stadium',
                 'functionSchema': 'public', 'function': 'preserve_shared_master_identity',
-                'typeBits': 27, 'enabled': 'O', 'internal': False,
+                'typeBits': 27, 'enabled': 'O', 'internal': False, 'hasCondition': False,
             },
             {
                 'name': 'media_asset_metadata', 'tableSchema': 'public', 'table': 'media_asset',
                 'functionSchema': 'public', 'function': 'preserve_media_asset_metadata',
-                'typeBits': 27, 'enabled': 'O', 'internal': False,
+                'typeBits': 27, 'enabled': 'O', 'internal': False, 'hasCondition': False,
             },
         ]
         unique_indexes = module.PHASE2_REQUIRED_UNIQUE_INDEXES.copy()
+        triggers.extend(dict(module.PHASE2_REQUIRED_TRIGGERS[name]) for name in (
+            'club_current_logo_lifecycle', 'media_asset_current_logo_lifecycle',
+        ))
 
         module.validate_phase2_catalog(foreign_keys, unique_indexes, triggers)
 
@@ -229,6 +233,18 @@ class SetFormatTest(unittest.TestCase):
         disabled_trigger[0]['enabled'] = 'D'
         with self.assertRaises(ValueError):
             module.validate_phase2_catalog(foreign_keys, unique_indexes, disabled_trigger)
+
+        conditional_trigger = [dict(trigger) for trigger in triggers]
+        conditional_trigger[0]['hasCondition'] = True
+        with self.assertRaises(ValueError):
+            module.validate_phase2_catalog(foreign_keys, unique_indexes, conditional_trigger)
+
+        # Expression indexes are omitted by the catalog query, even when the
+        # first key is the required code column.
+        expression_index = dict(unique_indexes)
+        del expression_index['club_code_key']
+        with self.assertRaises(ValueError):
+            module.validate_phase2_catalog(foreign_keys, expression_index, triggers)
 
     def test_v1_stays_legacy_only_and_rejects_expanded_schema_or_media_claims(self):
         with tempfile.TemporaryDirectory() as directory:

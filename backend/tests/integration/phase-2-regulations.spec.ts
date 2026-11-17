@@ -705,6 +705,11 @@ describe('PHASE 2 regulation submission and successor HTTP contract', () => {
       submittedVersionId: change.versionId,
       reason: 'Submit request.',
     }).expect(200);
+    expect(
+      await database.client.auditRecord.findFirst({
+        where: { objectId: change.id, actionCode: 'REGULATION_CHANGE_SUBMITTED' },
+      }),
+    ).toMatchObject({ seasonId: season.id });
     const decision = {
       expectedRevision: ready.body.data.revision,
       submittedVersionId: change.versionId,

@@ -157,6 +157,7 @@ export function RegulationVersionsPage({
   const [detailAttempt, setDetailAttempt] = useState(0);
   const [notice, setNotice] = useState<string>();
   const [formDirty, setFormDirty] = useState(false);
+  const [dirtyDetail, setDirtyDetail] = useState<RegulationVersionDetail>();
   const [pendingSelection, setPendingSelection] = useState<string>();
 
   const listPath = useMemo(
@@ -166,17 +167,21 @@ export function RegulationVersionsPage({
   );
   const list = useSeasonVersions(listPath, attempt);
   const effectiveSelectedId = useMemo(() => {
+    if (dirtyDetail) return dirtyDetail.id;
     if (!list.data) return selectedId;
     if (selectedId && list.data.items.some((item) => item.id === selectedId)) return selectedId;
     return defaultSelection(list.data.items);
-  }, [list.data, selectedId]);
+  }, [list.data, selectedId, dirtyDetail]);
   const detailRequestKey = `${effectiveSelectedId ?? ''}:${detailAttempt}`;
   const matchingDetail = detailResult?.key === detailRequestKey ? detailResult : undefined;
   const detail = matchingDetail?.data;
   const detailError = matchingDetail?.error;
   const detailLoading = !!effectiveSelectedId && !matchingDetail;
   const currentEffective = list.data?.overview.currentEffective;
-  const activeTab = tab ?? (!currentEffective && list.data?.items.length ? 'versions' : 'current');
+  const activeTab =
+    tab ??
+    (dirtyDetail ? 'versions' : undefined) ??
+    (!currentEffective && list.data?.items.length ? 'versions' : 'current');
   const currentRead = useRegulationReviewContent(
     activeTab === 'current' && detail?.id !== currentEffective?.id
       ? currentEffective?.id
@@ -198,9 +203,10 @@ export function RegulationVersionsPage({
   const onFormDirtyChange = useCallback(
     (dirty: boolean) => {
       setFormDirty(dirty);
+      setDirtyDetail((previous) => (dirty ? (previous ?? detail) : undefined));
       onDirtyChange(dirty);
     },
-    [onDirtyChange],
+    [onDirtyChange, detail],
   );
 
   function requestSelection(versionId: string) {
@@ -214,6 +220,7 @@ export function RegulationVersionsPage({
   function leaveDraftAndSelect() {
     if (pendingSelection) setSelectedId(pendingSelection);
     setPendingSelection(undefined);
+    setDirtyDetail(undefined);
     setFormDirty(false);
   }
 
@@ -313,7 +320,8 @@ export function RegulationVersionsPage({
   const waiting = list.data?.overview.waiting;
   const selectedSummary = versions.find((item) => item.id === effectiveSelectedId);
   const canCreateDraft = !!list.data?.capabilities.canCreateDraft;
-  const visibleDetail = !list.error && detail?.id === effectiveSelectedId ? detail : undefined;
+  const visibleDetail =
+    dirtyDetail ?? (!list.error && detail?.id === effectiveSelectedId ? detail : undefined);
 
   function openAction(action: RegulationAction) {
     if (!visibleDetail || actionBusy) return;
@@ -735,7 +743,7 @@ export function RegulationVersionsPage({
               <p role="status" className={css.loading}>
                 Đang tải phiên bản…
               </p>
-            ) : detailError ? (
+            ) : detailError && !visibleDetail ? (
               <div className={css.errorPanel}>
                 <p role="alert">{detailError}</p>
                 <button type="button" onClick={() => setDetailAttempt((value) => value + 1)}>
@@ -794,8 +802,7 @@ export function RegulationVersionsPage({
                   onAction={openAction}
                   onCreateSuccessor={() => void createSuccessor(visibleDetail)}
                 />
-                {selectedSummary?.capabilities.canEditDraft &&
-                visibleDetail.capabilities.canEditDraft ? (
+                {visibleDetail.capabilities.canEditDraft ? (
                   <RegulationDraftForm
                     key={`${visibleDetail.id}:${visibleDetail.revision}`}
                     detail={visibleDetail}
@@ -825,30 +832,20 @@ export function RegulationVersionsPage({
           </section>
         </div>
       </div>
-      {pendingSelection && (
-        <div className={css.modalBackdrop}>
-          <section
-            className={css.confirmDialog}
-            role="alertdialog"
-            aria-modal="true"
-            aria-labelledby="discard-draft-title"
-          >
-            <h3 id="discard-draft-title">Bỏ thay đổi chưa lưu?</h3>
-            <p>
-              Thay đổi bản nháp hiện tại chưa được lưu. Rời khỏi biểu mẫu sẽ bỏ các thay đổi này;
-              bản nháp đã lưu vẫn được giữ nguyên.
-            </p>
-            <div className={css.toolbar}>
-              <button type="button" onClick={() => setPendingSelection(undefined)}>
-                Tiếp tục chỉnh sửa
-              </button>
-              <button type="button" className={css.primary} onClick={leaveDraftAndSelect}>
-                Rời khỏi và bỏ thay đổi
-              </button>
-            </div>
-          </section>
-        </div>
-      )}
+      <Modal
+        open={pendingSelection !== undefined}
+        centered
+        title="Bỏ thay đổi chưa lưu?"
+        cancelText="Tiếp tục chỉnh sửa"
+        okText="Rời khỏi và bỏ thay đổi"
+        onOk={leaveDraftAndSelect}
+        onCancel={() => setPendingSelection(undefined)}
+      >
+        <p>
+          Thay đổi bản nháp hiện tại chưa được lưu. Rời khỏi biểu mẫu sẽ bỏ các thay đổi này; bản
+          nháp đã lưu vẫn được giữ nguyên.
+        </p>
+      </Modal>
       {actionReview &&
         actionReview.versionId === effectiveSelectedId &&
         actionReview.seasonId === seasonId &&

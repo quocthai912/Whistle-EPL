@@ -1,4 +1,4 @@
-import { parseDisplayDate } from '../../shared/date-format';
+import { isLocalDateTime, parseDisplayDate } from '../../shared/date-format';
 import { AdminSelect } from '../accounts/AdminSelect';
 import formCss from './SeasonCreateForm.module.css';
 import { useState, type FormEvent } from 'react';
@@ -741,9 +741,8 @@ function historyEntries(value: Record<string, unknown> | null) {
 }
 
 function utcInstant(value: string): string | undefined {
-  if (!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(?::\d{2}(?:\.\d{1,3})?)?$/.test(value)) return undefined;
-  const time = new Date(value).getTime();
-  return Number.isFinite(time) ? new Date(time).toISOString() : undefined;
+  if (!isLocalDateTime(value)) return undefined;
+  return new Date(value + '+07:00').toISOString();
 }
 
 function HistorySnapshot({ title, values }: { title: string; values: [string, unknown][] }) {

@@ -304,7 +304,15 @@ function ReadCatalog({ title, items }: { title: string; items: (GoalType | CardT
         <ul>
           {items.map((item, index) => (
             <li key={`${item.code}-${index}`}>
-              <strong>{item.code}</strong> · {item.name} {item.enabled ? '' : '(không cho chọn)'}
+              <strong>{item.code}</strong> · {item.name} ·{' '}
+              {'isOwnGoal' in item
+                ? item.isOwnGoal
+                  ? 'Phản lưới nhà'
+                  : 'Không phải phản lưới nhà'
+                : item.meaning === 'YELLOW'
+                  ? 'Thẻ vàng'
+                  : 'Thẻ đỏ'}{' '}
+              {item.enabled ? '' : '(không cho chọn)'}
             </li>
           ))}
         </ul>

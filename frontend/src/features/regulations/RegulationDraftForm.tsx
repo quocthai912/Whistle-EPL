@@ -1,3 +1,4 @@
+import { Modal } from 'antd';
 import { isValidElement } from 'react';
 import { AdminSelect } from '../accounts/AdminSelect';
 import { useEffect, useMemo, useState, type FormEvent, type ReactNode } from 'react';
@@ -22,7 +23,6 @@ import {
   type RankingCriterion,
   type RegulationFormValues,
   type RegulationVersionDetail,
-  utcInstantToHcmInput,
 } from './regulation-model';
 import css from './RegulationVersionsPage.module.css';
 
@@ -326,6 +326,7 @@ export function RegulationDraftForm({ detail, canEdit, onSaved, onDirtyChange }:
   const dirty = changedFields(baseline.values, values);
   const editable =
     canEdit && detail.capabilities.canEditDraft && detail.state === 'DRAFT' && !conflict;
+  const mutationDisabled = !editable || saving;
 
   useEffect(() => {
     onDirtyChange(dirty.length > 0);
@@ -522,8 +523,8 @@ export function RegulationDraftForm({ detail, canEdit, onSaved, onDirtyChange }:
             conflictReview.changedFields.map((field) => (
               <div className={css.comparison} key={field}>
                 <strong>{fieldLabels[field]}</strong>
-                <span>Hiện tại: {displayValue(conflictReview.latestValues[field])}</span>
-                <span>Đã nhập: {displayValue(conflictReview.attemptedValues[field])}</span>
+                <span>Hiện tại: {displayValue(field, conflictReview.latestValues[field])}</span>
+                <span>Đã nhập: {displayValue(field, conflictReview.attemptedValues[field])}</span>
               </div>
             ))
           )}
@@ -556,7 +557,7 @@ export function RegulationDraftForm({ detail, canEdit, onSaved, onDirtyChange }:
             <AdminSelect
               label="Cách đề xuất hiệu lực"
               value={values.effectiveMode ?? ''}
-              disabled={!editable}
+              disabled={mutationDisabled}
               onChange={(value) => {
                 const mode = (value || null) as EffectiveMode | null;
                 change('effectiveMode', mode);
@@ -578,7 +579,7 @@ export function RegulationDraftForm({ detail, canEdit, onSaved, onDirtyChange }:
             <DateTimePicker
               label="Thời điểm hiệu lực dự kiến"
               value={values.proposedEffectiveAt}
-              disabled={!editable || values.effectiveMode !== 'SCHEDULED'}
+              disabled={mutationDisabled || values.effectiveMode !== 'SCHEDULED'}
               onChange={(value) => change('proposedEffectiveAt', value)}
             />
           </Field>
@@ -597,7 +598,11 @@ export function RegulationDraftForm({ detail, canEdit, onSaved, onDirtyChange }:
           </p>
         </div>
         {editable && (
-          <button type="button" onClick={() => showProposal('source-values')}>
+          <button
+            type="button"
+            disabled={mutationDisabled}
+            onClick={() => showProposal('source-values')}
+          >
             Xem và xác nhận giá trị đề xuất từ nguồn
           </button>
         )}
@@ -608,7 +613,7 @@ export function RegulationDraftForm({ detail, canEdit, onSaved, onDirtyChange }:
               label={item.label}
               value={values[item.key]}
               error={errors[item.key]}
-              disabled={!editable}
+              disabled={mutationDisabled}
               onChange={(value) => change(item.key, value)}
             />
           ))}
@@ -621,7 +626,7 @@ export function RegulationDraftForm({ detail, canEdit, onSaved, onDirtyChange }:
               key={dateReset}
               label="Ngày sinh giới hạn U21"
               initialDate={values.u21Cutoff}
-              disabled={!editable}
+              disabled={mutationDisabled}
               invalid={!!errors.u21Cutoff}
               onDateTextChange={(text) => {
                 const date = text ? parseDisplayDate(text) : null;
@@ -648,14 +653,14 @@ export function RegulationDraftForm({ detail, canEdit, onSaved, onDirtyChange }:
             label="Số câu lạc bộ"
             value={values.clubCount}
             error={errors.clubCount}
-            disabled={!editable}
+            disabled={mutationDisabled}
             onChange={(value) => change('clubCount', value)}
           />
           <Field label="Thể thức" error={errors.formatCode}>
             <AdminSelect
               label="Thể thức"
               value={values.formatCode ?? ''}
-              disabled={!editable}
+              disabled={mutationDisabled}
               onChange={(value) => change('formatCode', value ? 'DOUBLE_ROUND_ROBIN' : null)}
 
               options={[
@@ -668,7 +673,7 @@ export function RegulationDraftForm({ detail, canEdit, onSaved, onDirtyChange }:
             <AdminSelect
               label="Số lượt"
               value={values.legs?.toString() ?? ''}
-              disabled={!editable}
+              disabled={mutationDisabled}
               onChange={(value) => change('legs', value ? Number(value) : null)}
 
               options={[
@@ -683,7 +688,7 @@ export function RegulationDraftForm({ detail, canEdit, onSaved, onDirtyChange }:
               label={item.label}
               value={values[item.key]}
               error={errors[item.key]}
-              disabled={!editable}
+              disabled={mutationDisabled}
               onChange={(value) => change(item.key, value)}
             />
           ))}
@@ -709,6 +714,7 @@ export function RegulationDraftForm({ detail, canEdit, onSaved, onDirtyChange }:
                 {editable && (
                   <button
                     type="button"
+                    disabled={mutationDisabled}
                     className={css.linkButton}
                     onClick={() =>
                       change('registrationWindows', (windows) =>
@@ -728,7 +734,7 @@ export function RegulationDraftForm({ detail, canEdit, onSaved, onDirtyChange }:
                   <AdminSelect
                     label={`Nhóm tiếp nhận đợt ${index + 1}`}
                     value={window.intakeKind}
-                    disabled={!editable}
+                    disabled={mutationDisabled}
                     onChange={(value) => updateWindow(index, 'intakeKind', value)}
 
                     options={[
@@ -744,7 +750,7 @@ export function RegulationDraftForm({ detail, canEdit, onSaved, onDirtyChange }:
                   <DateTimePicker
                     label={`Mở từ đợt ${index + 1}`}
                     value={window.opensAt}
-                    disabled={!editable}
+                    disabled={mutationDisabled}
                     onChange={(value) => updateWindow(index, 'opensAt', value)}
                   />
                 </Field>
@@ -755,7 +761,7 @@ export function RegulationDraftForm({ detail, canEdit, onSaved, onDirtyChange }:
                   <DateTimePicker
                     label={`Đóng trước đợt ${index + 1}`}
                     value={window.closesAt}
-                    disabled={!editable}
+                    disabled={mutationDisabled}
                     onChange={(value) => updateWindow(index, 'closesAt', value)}
                   />
                 </Field>
@@ -766,6 +772,7 @@ export function RegulationDraftForm({ detail, canEdit, onSaved, onDirtyChange }:
         {editable && (
           <button
             type="button"
+            disabled={mutationDisabled}
             onClick={() =>
               change('registrationWindows', (windows) => [
                 ...windows,
@@ -792,14 +799,14 @@ export function RegulationDraftForm({ detail, canEdit, onSaved, onDirtyChange }:
         <CatalogEditor
           kind="goal"
           rows={values.goalTypes}
-          disabled={!editable}
+          disabled={mutationDisabled}
           errors={errors}
           onChange={(rows) => change('goalTypes', rows)}
         />
         <CatalogEditor
           kind="card"
           rows={values.cardTypes}
-          disabled={!editable}
+          disabled={mutationDisabled}
           errors={errors}
           onChange={(rows) => change('cardTypes', rows)}
         />
@@ -822,13 +829,17 @@ export function RegulationDraftForm({ detail, canEdit, onSaved, onDirtyChange }:
               label={item.label}
               value={values[item.key]}
               error={errors[item.key]}
-              disabled={!editable}
+              disabled={mutationDisabled}
               onChange={(value) => change(item.key, value)}
             />
           ))}
         </div>
         {editable && values.clubCount === 20 && values.relegationCount === null && (
-          <button type="button" onClick={() => showProposal('relegation-count')}>
+          <button
+            type="button"
+            disabled={mutationDisabled}
+            onClick={() => showProposal('relegation-count')}
+          >
             Xem và xác nhận giá trị đề xuất R = 3
           </button>
         )}
@@ -844,7 +855,7 @@ export function RegulationDraftForm({ detail, canEdit, onSaved, onDirtyChange }:
               <AdminSelect
                 label={`Tiêu chí ưu tiên ${index + 1}`}
                 value={item.criterionCode}
-                disabled={!editable}
+                disabled={mutationDisabled}
                 onChange={(value) => {
                   const selected = value as RankingCriterion;
                   change(
@@ -866,6 +877,7 @@ export function RegulationDraftForm({ detail, canEdit, onSaved, onDirtyChange }:
               {editable && (
                 <button
                   type="button"
+                  disabled={mutationDisabled}
                   className={css.linkButton}
                   onClick={() =>
                     change(
@@ -885,6 +897,7 @@ export function RegulationDraftForm({ detail, canEdit, onSaved, onDirtyChange }:
         {editable && values.rankingPriority.length < criteria.length && (
           <button
             type="button"
+            disabled={mutationDisabled}
             onClick={() => {
               const criterion = criteria.find(
                 (option) => !values.rankingPriority.some((row) => row.criterionCode === option),
@@ -914,38 +927,29 @@ export function RegulationDraftForm({ detail, canEdit, onSaved, onDirtyChange }:
         )}
       </div>
 
-      {proposal && (
-        <div className={css.modalBackdrop}>
-          <section
-            className={css.confirmDialog}
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="regulation-proposal-title"
-          >
-            <h3 id="regulation-proposal-title">Xác nhận điền giá trị đề xuất</h3>
-            {proposal === 'source-values' ? (
-              <p>
-                Điền 20 câu lạc bộ, 25 cầu thủ, 17 cầu thủ không thuộc diện đào tạo trong nước, tối
-                thiểu 3 mùa đào tạo và 36 tháng đào tạo. Đây là các giá trị đề xuất có thể sửa;
-                chúng không trở thành quy định hiệu lực khi lưu nháp.
-              </p>
-            ) : (
-              <p>
-                Điền R = 3 theo giá trị đề xuất chỉ áp dụng khi số câu lạc bộ là 20. Q vẫn phải được
-                nhập riêng. Giá trị này chưa có hiệu lực khi lưu nháp.
-              </p>
-            )}
-            <div className={css.toolbar}>
-              <button type="button" onClick={() => setProposal(null)}>
-                Quay lại
-              </button>
-              <button type="button" className={css.primary} onClick={confirmProposal}>
-                Xác nhận điền
-              </button>
-            </div>
-          </section>
-        </div>
-      )}
+      <Modal
+        open={proposal !== null}
+        centered
+        title="Xác nhận điền giá trị đề xuất"
+        cancelText="Quay lại"
+        okText="Xác nhận điền"
+        okButtonProps={{ disabled: mutationDisabled }}
+        onOk={confirmProposal}
+        onCancel={() => setProposal(null)}
+      >
+        {proposal === 'source-values' ? (
+          <p>
+            Điền 20 câu lạc bộ, 25 cầu thủ, 17 cầu thủ không thuộc diện đào tạo trong nước, tối
+            thiểu 3 mùa đào tạo và 36 tháng đào tạo. Đây là các giá trị đề xuất có thể sửa; chúng
+            không trở thành quy định hiệu lực khi lưu nháp.
+          </p>
+        ) : (
+          <p>
+            Điền R = 3 theo giá trị đề xuất chỉ áp dụng khi số câu lạc bộ là 20. Q vẫn phải được
+            nhập riêng. Giá trị này chưa có hiệu lực khi lưu nháp.
+          </p>
+        )}
+      </Modal>
     </form>
   );
 }
@@ -1010,6 +1014,7 @@ function CatalogEditor(
           {!disabled && (
             <button
               type="button"
+              disabled={disabled}
               onClick={() =>
                 onChange([...rows, { code: '', name: '', isOwnGoal: false, enabled: true }])
               }
@@ -1030,6 +1035,7 @@ function CatalogEditor(
                 {!disabled && (
                   <button
                     type="button"
+                    disabled={disabled}
                     className={css.linkButton}
                     onClick={() => onChange(rows.filter((_item, rowIndex) => rowIndex !== index))}
                   >
@@ -1124,6 +1130,7 @@ function CatalogEditor(
         {!disabled && (
           <button
             type="button"
+            disabled={disabled}
             onClick={() =>
               onChange([...rows, { code: '', name: '', meaning: 'YELLOW', enabled: true }])
             }
@@ -1144,6 +1151,7 @@ function CatalogEditor(
               {!disabled && (
                 <button
                   type="button"
+                  disabled={disabled}
                   className={css.linkButton}
                   onClick={() => onChange(rows.filter((_item, rowIndex) => rowIndex !== index))}
                 >
@@ -1230,12 +1238,55 @@ function CatalogEditor(
   );
 }
 
-function displayValue(value: unknown): string {
+function displayLocalTime(value: string): string {
+  const [date, time] = value.split('T');
+  return time ? formatRegulationDate(date) + ' ' + time : value;
+}
+
+function displayValue(field: FormField, value: unknown): string {
   if (value === null || value === undefined || value === '') return 'Chưa nhập';
   if (typeof value === 'string' && /^\d{4}-\d\d-\d\d$/.test(value))
     return formatRegulationDate(value);
-  if (typeof value === 'string' && /^\d{4}-\d\d-\d\dT/.test(value))
-    return utcInstantToHcmInput(value).replace('T', ' ');
-  if (Array.isArray(value)) return value.length ? `${value.length} mục` : 'Danh sách rỗng';
+  if (field === 'proposedEffectiveAt' && typeof value === 'string') return displayLocalTime(value);
+  if (Array.isArray(value)) {
+    if (!value.length) return 'Danh sách rỗng';
+    if (field === 'registrationWindows')
+      return (value as RegulationFormValues['registrationWindows'])
+        .map(
+          ({ intakeKind, opensAt, closesAt }) =>
+            intakeKindLabels[intakeKind] +
+            ': ' +
+            displayLocalTime(opensAt) +
+            ' → ' +
+            displayLocalTime(closesAt),
+        )
+        .join('; ');
+    if (field === 'rankingPriority')
+      return (value as RegulationFormValues['rankingPriority'])
+        .map(
+          ({ position, criterionCode }) => position + '. ' + rankingCriterionLabels[criterionCode],
+        )
+        .join('; ');
+    return (
+      value as (
+        RegulationFormValues['goalTypes'][number] | RegulationFormValues['cardTypes'][number]
+      )[]
+    )
+      .map((row) =>
+        [
+          row.code,
+          row.name,
+          'isOwnGoal' in row
+            ? row.isOwnGoal
+              ? 'Phản lưới nhà'
+              : 'Không phải phản lưới nhà'
+            : row.meaning === 'YELLOW'
+              ? 'Thẻ vàng'
+              : 'Thẻ đỏ',
+          row.enabled ? 'Cho phép chọn' : 'Không cho chọn',
+        ].join(' · '),
+      )
+      .join('; ');
+  }
   return String(value);
 }

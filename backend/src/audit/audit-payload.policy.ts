@@ -116,6 +116,10 @@ const businessPolicies = {
   ],
   REGULATION_ACTIVATED: ['versionId', 'state', 'activeFrom', 'processedAt'],
   REGULATION_ACTIVATION_BLOCKED: ['versionId', 'state', 'proposedEffectiveAt', 'blockedAt'],
+  REGULATION_CHANGE_SUBMITTED: ['requestId', 'versionId', 'versionNumber', 'state'],
+  REGULATION_CHANGE_WITHDRAWN: ['requestId', 'versionId', 'versionNumber', 'state'],
+  REGULATION_CHANGE_RETURNED: ['requestId', 'versionId', 'versionNumber', 'state'],
+  REGULATION_CHANGE_REJECTED: ['requestId', 'versionId', 'versionNumber', 'state'],
   REGULATION_CHANGE_APPROVED: [
     'requestId',
     'versionId',
@@ -185,6 +189,10 @@ const objectKindByAction: Partial<Record<AuditAction, BusinessHistoryKind>> = {
   REGULATION_APPROVED: 'RegulationVersion',
   REGULATION_ACTIVATED: 'RegulationVersion',
   REGULATION_ACTIVATION_BLOCKED: 'RegulationVersion',
+  REGULATION_CHANGE_SUBMITTED: 'RegulationChangeRequest',
+  REGULATION_CHANGE_WITHDRAWN: 'RegulationChangeRequest',
+  REGULATION_CHANGE_RETURNED: 'RegulationChangeRequest',
+  REGULATION_CHANGE_REJECTED: 'RegulationChangeRequest',
   REGULATION_CHANGE_APPROVED: 'RegulationChangeRequest',
   SEASON_LIFECYCLE_APPROVED: 'SeasonLifecycleRequest',
   CLUB_CREATED: 'Club',
@@ -251,6 +259,10 @@ const requiredAfterFields: Partial<Record<AuditAction, readonly string[]>> = {
   REGULATION_APPROVED: ['versionId', 'versionNumber', 'effectiveMode', 'effectiveAt'],
   REGULATION_ACTIVATED: ['versionId', 'activeFrom', 'processedAt'],
   REGULATION_ACTIVATION_BLOCKED: ['versionId', 'proposedEffectiveAt', 'blockedAt'],
+  REGULATION_CHANGE_SUBMITTED: ['requestId', 'versionId', 'versionNumber', 'state'],
+  REGULATION_CHANGE_WITHDRAWN: ['requestId', 'versionId', 'versionNumber', 'state'],
+  REGULATION_CHANGE_RETURNED: ['requestId', 'versionId', 'versionNumber', 'state'],
+  REGULATION_CHANGE_REJECTED: ['requestId', 'versionId', 'versionNumber', 'state'],
   REGULATION_CHANGE_APPROVED: [
     'requestId',
     'versionId',
@@ -290,6 +302,10 @@ const reasonRequired = new Set<AuditAction>([
   'REGULATION_REJECTED',
   'REGULATION_ACTIVATION_BLOCKED',
   'REGULATION_APPROVED',
+  'REGULATION_CHANGE_SUBMITTED',
+  'REGULATION_CHANGE_WITHDRAWN',
+  'REGULATION_CHANGE_RETURNED',
+  'REGULATION_CHANGE_REJECTED',
   'REGULATION_CHANGE_APPROVED',
   'SEASON_LIFECYCLE_APPROVED',
   'CLUB_DISCONTINUED',
@@ -309,6 +325,10 @@ const beforeRequired = new Set<AuditAction>([
   'REGULATION_APPROVED',
   'REGULATION_ACTIVATED',
   'REGULATION_ACTIVATION_BLOCKED',
+  'REGULATION_CHANGE_SUBMITTED',
+  'REGULATION_CHANGE_WITHDRAWN',
+  'REGULATION_CHANGE_RETURNED',
+  'REGULATION_CHANGE_REJECTED',
   'REGULATION_CHANGE_APPROVED',
   'SEASON_LIFECYCLE_APPROVED',
   'CLUB_UPDATED',
@@ -605,6 +625,21 @@ export function validateAuditEvent(event: {
         !exactInstant('blockedAt')
       )
         throw new Error('Regulation audit events require exact version and effectivity.');
+      break;
+    case 'REGULATION_CHANGE_SUBMITTED':
+    case 'REGULATION_CHANGE_WITHDRAWN':
+    case 'REGULATION_CHANGE_RETURNED':
+    case 'REGULATION_CHANGE_REJECTED':
+      if (
+        !exactObjectReference('requestId') ||
+        !exactUuid('versionId') ||
+        !Number.isSafeInteger(after.versionNumber) ||
+        Number(after.versionNumber) < 1 ||
+        after.state !== event.action.slice('REGULATION_CHANGE_'.length)
+      )
+        throw new Error(
+          'Change audit events require exact immutable version references and transition state.',
+        );
       break;
     case 'REGULATION_CHANGE_APPROVED':
       if (

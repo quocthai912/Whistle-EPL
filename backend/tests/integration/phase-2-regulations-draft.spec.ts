@@ -280,6 +280,13 @@ describe('PHASE 2 regulation draft HTTP contract', () => {
         effectiveMode: 'IMMEDIATE',
       },
     });
+    await database.client.rankingPriority.createMany({
+      data: (['POINTS', 'GOAL_DIFFERENCE', 'GOALS_FOR'] as const).map((criterionCode, index) => ({
+        versionId: effective.id,
+        criterionCode,
+        position: index + 1,
+      })),
+    });
     await database.client.regulationVersion.update({
       where: { id: effective.id },
       data: { state: 'EFFECTIVE', submittedAt: now, approvedAt: now, activeFrom: now },
@@ -315,6 +322,13 @@ describe('PHASE 2 regulation draft HTTP contract', () => {
         effectiveMode: 'SCHEDULED',
         proposedEffectiveAt: waitingAt,
       },
+    });
+    await database.client.rankingPriority.createMany({
+      data: (['POINTS', 'GOAL_DIFFERENCE', 'GOALS_FOR'] as const).map((criterionCode, index) => ({
+        versionId: waiting.id,
+        criterionCode,
+        position: index + 1,
+      })),
     });
     await database.client.regulationVersion.update({
       where: { id: waiting.id },

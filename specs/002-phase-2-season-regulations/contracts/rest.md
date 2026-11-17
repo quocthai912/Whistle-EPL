@@ -78,7 +78,7 @@ unavailable later readiness returns 409 STATE_CONFLICT or 503 as appropriate, no
 For action families, the handler separately checks authority to return/reject (assigned
 manager), withdraw (authorized preparer of the submitted work) or submit (current preparation
 authority); these do not confer approval. D019 delegates preparation/editing, not manager
-decision powers. Every submitted-content change retains successor/editor history.
+decision powers. The D019 preparation delegation applies to regulation-version drafts. An assigned season manager prepares cancellation and replacement requests. Every submitted-content change retains successor/editor history.
 
 REPLACE also approves the replacement regulation content. Its target must already be exact
 immutable SUBMITTED content in the same season, and the approver must be outside the union
