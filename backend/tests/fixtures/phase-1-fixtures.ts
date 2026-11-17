@@ -42,6 +42,7 @@ export async function createPhase1Fixtures(databaseUrl: string) {
               id,
               code: `TEST_${id.replaceAll('-', '').slice(0, 24).toUpperCase()}`,
               name: `Mùa giải kiểm thử ${i + 1}`,
+              competitionName: 'Premier League Test Fixture',
               startDate: new Date(`${2026 + i}-08-01T00:00:00Z`),
               endDate: new Date(`${2027 + i}-05-31T00:00:00Z`),
             },
@@ -85,7 +86,7 @@ export async function createPhase1Fixtures(databaseUrl: string) {
       });
       // Return safe identifiers, never the reusable fixture credential/hash.
       return {
-        accounts: accounts.map((a) => ({ id: a.id, username: a.username })),
+        accounts: accounts.map((a) => ({ id: a.id, username: a.username, fullName: a.fullName })),
         seasons: seasons.map((s) => ({ id: s.id, code: s.code, name: s.name })),
       };
     });
@@ -106,10 +107,15 @@ export async function resetPhase1Fixtures(
     log: [],
   });
   try {
-    await client.$executeRawUnsafe(`TRUNCATE TABLE public.account,public.season,public.session,public.prelogin_csrf_context,
+    await client.$executeRawUnsafe(`TRUNCATE TABLE public.account,public.season,public.club,public.stadium,public.media_asset,public.session,public.prelogin_csrf_context,
       public.login_throttle_key,public.login_failure,public.system_role_assignment,public.season_role_assignment,
       public.shared_master_grant,public.create_season_grant,public.delegation_case,public.delegation_version,
-      public.delegation_version_editor,public.delegation_grant,public.delegation_boundary,public.audit_record,public.command_receipt`);
+      public.delegation_version_editor,public.delegation_grant,public.delegation_boundary,public.audit_record,public.command_receipt,
+      public.regulation_version_editor,public.regulation_change_version_editor,public.season_lifecycle_version_editor,
+      public.season_summary_version_editor,public.registration_window,public.ranking_priority,public.goal_type,public.card_type,
+      public.regulation_change_version,public.regulation_change_request,public.season_lifecycle_version,
+      public.season_lifecycle_request,public.season_summary_version,public.season_summary_case,
+      public.regulation_version,public.regulation_case`);
   } finally {
     await client.$disconnect();
   }

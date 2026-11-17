@@ -10,39 +10,52 @@ datasource db {
 
 // SQL migrations additionally own CHECKs, live unique indexes and immutable history.
 model Account {
-  id                         String                    @id @default(uuid(4)) @db.Uuid
-  personnelCode              String                    @unique @map("personnel_code")
-  fullName                   String                    @map("full_name")
-  username                   String                    @unique
-  passwordHash               String                    @map("password_hash")
-  state                      String                    @default("ACTIVE")
-  mustChangePassword         Boolean                   @map("must_change_password")
-  temporaryPasswordExpiresAt DateTime?                 @map("temporary_password_expires_at") @db.Timestamptz(6)
-  passwordChangedAt          DateTime?                 @map("password_changed_at") @db.Timestamptz(6)
-  authRevision               BigInt                    @default(1) @map("auth_revision")
-  revision                   BigInt                    @default(1)
-  createdAt                  DateTime                  @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt                  DateTime                  @default(now()) @map("updated_at") @db.Timestamptz(6)
-  sessions                   Session[]
-  systemRoles                SystemRoleAssignment[]    @relation("systemSubject")
-  systemGrants               SystemRoleAssignment[]    @relation("systemGrantor")
-  seasonRoles                SeasonRoleAssignment[]    @relation("seasonSubject")
-  seasonGrants               SeasonRoleAssignment[]    @relation("seasonGrantor")
-  sharedGrants               SharedMasterGrant[]       @relation("sharedSubject")
-  sharedRecorded             SharedMasterGrant[]       @relation("sharedGrantor")
-  createSeasonGrants         CreateSeasonGrant[]       @relation("createSubject")
-  createSeasonRecorded       CreateSeasonGrant[]       @relation("createGrantor")
-  proposals                  DelegationCase[]          @relation("proposer")
-  receivedCases              DelegationCase[]          @relation("recipient")
-  receivedGrants             DelegationGrant[]         @relation("grantRecipient")
-  preparedVersions           DelegationVersion[]       @relation("preparer")
-  decidedVersions            DelegationVersion[]       @relation("decider")
-  editedVersions             DelegationVersionEditor[]
-  recordedDelegations        DelegationGrant[]         @relation("recorder")
-  revokedDelegations         DelegationGrant[]         @relation("revoker")
-  delegationVersionsReceived DelegationVersion[]       @relation("versionRecipient")
-  audits                     AuditRecord[]
-  receipts                   CommandReceipt[]
+  id                               String                          @id @default(uuid(4)) @db.Uuid
+  personnelCode                    String                          @unique @map("personnel_code")
+  fullName                         String                          @map("full_name")
+  username                         String                          @unique
+  passwordHash                     String                          @map("password_hash")
+  state                            String                          @default("ACTIVE")
+  mustChangePassword               Boolean                         @map("must_change_password")
+  temporaryPasswordExpiresAt       DateTime?                       @map("temporary_password_expires_at") @db.Timestamptz(6)
+  passwordChangedAt                DateTime?                       @map("password_changed_at") @db.Timestamptz(6)
+  authRevision                     BigInt                          @default(1) @map("auth_revision")
+  revision                         BigInt                          @default(1)
+  createdAt                        DateTime                        @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt                        DateTime                        @default(now()) @map("updated_at") @db.Timestamptz(6)
+  sessions                         Session[]
+  systemRoles                      SystemRoleAssignment[]          @relation("systemSubject")
+  systemGrants                     SystemRoleAssignment[]          @relation("systemGrantor")
+  seasonRoles                      SeasonRoleAssignment[]          @relation("seasonSubject")
+  seasonGrants                     SeasonRoleAssignment[]          @relation("seasonGrantor")
+  sharedGrants                     SharedMasterGrant[]             @relation("sharedSubject")
+  sharedRecorded                   SharedMasterGrant[]             @relation("sharedGrantor")
+  createSeasonGrants               CreateSeasonGrant[]             @relation("createSubject")
+  createSeasonRecorded             CreateSeasonGrant[]             @relation("createGrantor")
+  proposals                        DelegationCase[]                @relation("proposer")
+  receivedCases                    DelegationCase[]                @relation("recipient")
+  receivedGrants                   DelegationGrant[]               @relation("grantRecipient")
+  preparedVersions                 DelegationVersion[]             @relation("preparer")
+  decidedVersions                  DelegationVersion[]             @relation("decider")
+  editedVersions                   DelegationVersionEditor[]
+  recordedDelegations              DelegationGrant[]               @relation("recorder")
+  revokedDelegations               DelegationGrant[]               @relation("revoker")
+  delegationVersionsReceived       DelegationVersion[]             @relation("versionRecipient")
+  audits                           AuditRecord[]
+  receipts                         CommandReceipt[]
+  regulationPreparedVersions       RegulationVersion[]             @relation("regulationPreparer")
+  regulationDecidedVersions        RegulationVersion[]             @relation("regulationDecider")
+  regulationVersionEdits           RegulationVersionEditor[]       @relation("regulationVersionEditorAccount")
+  regulationChangePreparedVersions RegulationChangeVersion[]       @relation("regulationChangePreparer")
+  regulationChangeDecidedVersions  RegulationChangeVersion[]       @relation("regulationChangeDecider")
+  regulationChangeVersionEdits     RegulationChangeVersionEditor[] @relation("regulationChangeVersionEditorAccount")
+  lifecyclePreparedVersions        SeasonLifecycleVersion[]        @relation("lifecyclePreparer")
+  lifecycleDecidedVersions         SeasonLifecycleVersion[]        @relation("lifecycleDecider")
+  lifecycleVersionEdits            SeasonLifecycleVersionEditor[]  @relation("seasonLifecycleVersionEditorAccount")
+  summaryPreparedVersions          SeasonSummaryVersion[]          @relation("summaryPreparer")
+  summaryDecidedVersions           SeasonSummaryVersion[]          @relation("summaryDecider")
+  summaryVersionEdits              SeasonSummaryVersionEditor[]    @relation("seasonSummaryVersionEditorAccount")
+  storedMediaAssets                MediaAsset[]                    @relation("mediaAssetStoredBy")
 
   @@map("account")
 }
@@ -99,21 +112,424 @@ model LoginFailure {
 }
 
 model Season {
-  id        String                 @id @default(uuid(4)) @db.Uuid
-  code      String                 @unique
-  name      String
-  startDate DateTime               @map("start_date") @db.Date
-  endDate   DateTime               @map("end_date") @db.Date
-  state     String                 @default("OPEN")
-  revision  BigInt                 @default(1)
-  createdAt DateTime               @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt DateTime               @default(now()) @map("updated_at") @db.Timestamptz(6)
-  roles     SeasonRoleAssignment[]
-  cases     DelegationCase[]
-  grants    DelegationGrant[]
-  audits    AuditRecord[]
+  id                         String                    @id @default(uuid(4)) @db.Uuid
+  code                       String                    @unique
+  name                       String
+  competitionName            String                    @map("competition_name")
+  startDate                  DateTime                  @map("start_date") @db.Date
+  endDate                    DateTime                  @map("end_date") @db.Date
+  state                      String                    @default("OPEN")
+  revision                   BigInt                    @default(1)
+  statisticsRevision         BigInt                    @default(0) @map("statistics_revision")
+  currentRegulationVersionId String?                   @map("current_regulation_version_id") @db.Uuid
+  createdAt                  DateTime                  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt                  DateTime                  @default(now()) @map("updated_at") @db.Timestamptz(6)
+  roles                      SeasonRoleAssignment[]
+  cases                      DelegationCase[]
+  grants                     DelegationGrant[]
+  audits                     AuditRecord[]
+  regulationCase             RegulationCase?
+  regulationVersions         RegulationVersion[]       @relation("seasonRegulationVersions")
+  currentRegulationVersion   RegulationVersion?        @relation("seasonCurrentRegulation", fields: [id, currentRegulationVersionId], references: [seasonId, id], onDelete: NoAction, onUpdate: NoAction)
+  regulationChanges          RegulationChangeRequest[]
+  lifecycleRequests          SeasonLifecycleRequest[]
+  summaryCase                SeasonSummaryCase?
 
+  @@unique([id, currentRegulationVersionId])
   @@map("season")
+}
+
+model RegulationCase {
+  id                    String              @id @default(uuid(4)) @db.Uuid
+  seasonId              String              @unique @map("season_id") @db.Uuid
+  season                Season              @relation(fields: [seasonId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  currentDraftVersionId String?             @map("current_draft_version_id") @db.Uuid
+  currentDraftVersion   RegulationVersion?  @relation("regulationCurrentDraft", fields: [id, currentDraftVersionId], references: [caseId, id], onDelete: NoAction, onUpdate: NoAction)
+  versions              RegulationVersion[] @relation("regulationCaseVersions")
+  revision              BigInt              @default(1)
+  createdAt             DateTime            @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt             DateTime            @default(now()) @map("updated_at") @db.Timestamptz(6)
+
+  @@unique([id, currentDraftVersionId])
+  @@unique([seasonId, id])
+  @@map("regulation_case")
+}
+
+model RegulationVersion {
+  id                        String                    @id @default(uuid(4)) @db.Uuid
+  seasonId                  String                    @map("season_id") @db.Uuid
+  season                    Season                    @relation("seasonRegulationVersions", fields: [seasonId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  currentForSeason          Season?                   @relation("seasonCurrentRegulation")
+  caseId                    String                    @map("case_id") @db.Uuid
+  regulationCase            RegulationCase            @relation("regulationCaseVersions", fields: [seasonId, caseId], references: [seasonId, id], onDelete: Restrict, onUpdate: NoAction)
+  currentDraftFor           RegulationCase[]          @relation("regulationCurrentDraft")
+  versionNumber             Int                       @map("version_number")
+  preparedBy                String                    @map("prepared_by") @db.Uuid
+  preparer                  Account                   @relation("regulationPreparer", fields: [preparedBy], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  predecessorVersionId      String?                   @map("predecessor_version_id") @db.Uuid
+  predecessor               RegulationVersion?        @relation("regulationPredecessor", fields: [caseId, predecessorVersionId], references: [caseId, id], onDelete: NoAction, onUpdate: NoAction)
+  successors                RegulationVersion[]       @relation("regulationPredecessor")
+  revision                  BigInt                    @default(1)
+  state                     String                    @default("DRAFT")
+  submittedAt               DateTime?                 @map("submitted_at") @db.Timestamptz(6)
+  decidedAt                 DateTime?                 @map("decided_at") @db.Timestamptz(6)
+  decidedBy                 String?                   @map("decided_by") @db.Uuid
+  decider                   Account?                  @relation("regulationDecider", fields: [decidedBy], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  decisionReason            String?                   @map("decision_reason")
+  effectiveMode             String?                   @map("effective_mode")
+  proposedEffectiveAt       DateTime?                 @map("proposed_effective_at") @db.Timestamptz(6)
+  approvedAt                DateTime?                 @map("approved_at") @db.Timestamptz(6)
+  activationProcessedAt     DateTime?                 @map("activation_processed_at") @db.Timestamptz(6)
+  activeFrom                DateTime?                 @map("active_from") @db.Timestamptz(6)
+  activeUntil               DateTime?                 @map("active_until") @db.Timestamptz(6)
+  squadLimit                Int?                      @map("squad_limit")
+  nonHomegrownLimit         Int?                      @map("non_homegrown_limit")
+  homegrownSeasons          Int?                      @map("homegrown_seasons")
+  homegrownMonths           Int?                      @map("homegrown_months")
+  homegrownAgeStart         Int?                      @map("homegrown_age_start")
+  homegrownAgeEnd           Int?                      @map("homegrown_age_end")
+  u21Cutoff                 DateTime?                 @map("u21_cutoff") @db.Date
+  clubCount                 Int?                      @map("club_count")
+  formatCode                String?                   @map("format_code")
+  legs                      Int?
+  plannedMinutes            Int?                      @map("planned_minutes")
+  preparationMinutes        Int?                      @map("preparation_minutes")
+  releaseMinutes            Int?                      @map("release_minutes")
+  winPoints                 Int?                      @map("win_points")
+  drawPoints                Int?                      @map("draw_points")
+  lossPoints                Int?                      @map("loss_points")
+  qualificationCount        Int?                      @map("qualification_count")
+  relegationCount           Int?                      @map("relegation_count")
+  createdAt                 DateTime                  @default(now()) @map("created_at") @db.Timestamptz(6)
+  editors                   RegulationVersionEditor[]
+  registrationWindows       RegistrationWindow[]
+  rankingPriority           RankingPriority[]
+  goalTypes                 GoalType[]
+  cardTypes                 CardType[]
+  waitingChangeVersions     RegulationChangeVersion[] @relation("changeWaitingVersion")
+  replacementChangeVersions RegulationChangeVersion[] @relation("changeReplacementVersion")
+
+  @@unique([caseId, versionNumber])
+  @@unique([caseId, id])
+  @@unique([seasonId, id])
+  @@index([seasonId, state, proposedEffectiveAt])
+  @@index([preparedBy])
+  @@index([decidedBy])
+  @@map("regulation_version")
+}
+
+model RegulationVersionEditor {
+  versionId     String            @map("version_id") @db.Uuid
+  version       RegulationVersion @relation(fields: [versionId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  accountId     String            @map("account_id") @db.Uuid
+  account       Account           @relation("regulationVersionEditorAccount", fields: [accountId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  firstEditedAt DateTime          @default(now()) @map("first_edited_at") @db.Timestamptz(6)
+
+  @@id([versionId, accountId])
+  @@index([accountId])
+  @@map("regulation_version_editor")
+}
+
+model RegistrationWindow {
+  id                  String            @id @default(uuid(4)) @db.Uuid
+  regulationVersionId String            @map("regulation_version_id") @db.Uuid
+  version             RegulationVersion @relation(fields: [regulationVersionId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  intakeKind          String            @map("intake_kind")
+  opensAt             DateTime          @map("opens_at") @db.Timestamptz(6)
+  closesAt            DateTime          @map("closes_at") @db.Timestamptz(6)
+
+  @@index([regulationVersionId, intakeKind])
+  @@map("registration_window")
+}
+
+model RankingPriority {
+  versionId     String            @map("regulation_version_id") @db.Uuid
+  version       RegulationVersion @relation(fields: [versionId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  position      Int
+  criterionCode String            @map("criterion_code")
+
+  @@id([versionId, position])
+  @@unique([versionId, criterionCode])
+  @@map("ranking_priority")
+}
+
+model GoalType {
+  id                  String            @id @default(uuid(4)) @db.Uuid
+  regulationVersionId String            @map("regulation_version_id") @db.Uuid
+  version             RegulationVersion @relation(fields: [regulationVersionId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  code                String
+  name                String
+  isOwnGoal           Boolean           @map("is_own_goal")
+  enabled             Boolean
+
+  @@unique([regulationVersionId, code])
+  @@map("goal_type")
+}
+
+model CardType {
+  id                  String            @id @default(uuid(4)) @db.Uuid
+  regulationVersionId String            @map("regulation_version_id") @db.Uuid
+  version             RegulationVersion @relation(fields: [regulationVersionId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  code                String
+  name                String
+  meaning             String
+  enabled             Boolean
+
+  @@unique([regulationVersionId, code])
+  @@map("card_type")
+}
+
+model RegulationChangeRequest {
+  id               String                    @id @default(uuid(4)) @db.Uuid
+  seasonId         String                    @map("season_id") @db.Uuid
+  season           Season                    @relation(fields: [seasonId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  state            String                    @default("DRAFT")
+  currentVersionId String?                   @map("current_version_id") @db.Uuid
+  currentVersion   RegulationChangeVersion?  @relation("changeCurrentVersion", fields: [id, currentVersionId], references: [caseId, id], onDelete: NoAction, onUpdate: NoAction)
+  versions         RegulationChangeVersion[] @relation("changeCaseVersions")
+  revision         BigInt                    @default(1)
+  createdAt        DateTime                  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt        DateTime                  @default(now()) @map("updated_at") @db.Timestamptz(6)
+
+  @@unique([id, currentVersionId])
+  @@unique([seasonId, id])
+  @@index([seasonId, state])
+  @@map("regulation_change_request")
+}
+
+model RegulationChangeVersion {
+  id                   String                          @id @default(uuid(4)) @db.Uuid
+  seasonId             String                          @map("season_id") @db.Uuid
+  caseId               String                          @map("case_id") @db.Uuid
+  request              RegulationChangeRequest         @relation("changeCaseVersions", fields: [seasonId, caseId], references: [seasonId, id], onDelete: Restrict, onUpdate: NoAction)
+  currentFor           RegulationChangeRequest[]       @relation("changeCurrentVersion")
+  versionNumber        Int                             @map("version_number")
+  preparedBy           String                          @map("prepared_by") @db.Uuid
+  preparer             Account                         @relation("regulationChangePreparer", fields: [preparedBy], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  predecessorVersionId String?                         @map("predecessor_version_id") @db.Uuid
+  predecessor          RegulationChangeVersion?        @relation("changePredecessor", fields: [caseId, predecessorVersionId], references: [caseId, id], onDelete: NoAction, onUpdate: NoAction)
+  successors           RegulationChangeVersion[]       @relation("changePredecessor")
+  revision             BigInt                          @default(1)
+  state                String                          @default("DRAFT")
+  submittedAt          DateTime?                       @map("submitted_at") @db.Timestamptz(6)
+  decidedAt            DateTime?                       @map("decided_at") @db.Timestamptz(6)
+  decidedBy            String?                         @map("decided_by") @db.Uuid
+  decider              Account?                        @relation("regulationChangeDecider", fields: [decidedBy], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  decisionReason       String?                         @map("decision_reason")
+  action               String
+  waitingVersionId     String                          @map("waiting_version_id") @db.Uuid
+  waitingVersion       RegulationVersion               @relation("changeWaitingVersion", fields: [seasonId, waitingVersionId], references: [seasonId, id], onDelete: Restrict, onUpdate: NoAction)
+  replacementVersionId String?                         @map("replacement_version_id") @db.Uuid
+  replacementVersion   RegulationVersion?              @relation("changeReplacementVersion", fields: [seasonId, replacementVersionId], references: [seasonId, id], onDelete: Restrict, onUpdate: NoAction)
+  reason               String?
+  createdAt            DateTime                        @default(now()) @map("created_at") @db.Timestamptz(6)
+  editors              RegulationChangeVersionEditor[]
+
+  @@unique([caseId, versionNumber])
+  @@unique([caseId, id])
+  @@unique([seasonId, caseId, id])
+  @@index([preparedBy])
+  @@index([decidedBy])
+  @@index([waitingVersionId])
+  @@index([replacementVersionId])
+  @@map("regulation_change_version")
+}
+
+model RegulationChangeVersionEditor {
+  versionId     String                  @map("version_id") @db.Uuid
+  version       RegulationChangeVersion @relation(fields: [versionId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  accountId     String                  @map("account_id") @db.Uuid
+  account       Account                 @relation("regulationChangeVersionEditorAccount", fields: [accountId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  firstEditedAt DateTime                @default(now()) @map("first_edited_at") @db.Timestamptz(6)
+
+  @@id([versionId, accountId])
+  @@index([accountId])
+  @@map("regulation_change_version_editor")
+}
+
+model SeasonLifecycleRequest {
+  id               String                   @id @default(uuid(4)) @db.Uuid
+  seasonId         String                   @map("season_id") @db.Uuid
+  season           Season                   @relation(fields: [seasonId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  currentVersionId String?                  @map("current_version_id") @db.Uuid
+  currentVersion   SeasonLifecycleVersion?  @relation("lifecycleCurrentVersion", fields: [id, currentVersionId], references: [caseId, id], onDelete: NoAction, onUpdate: NoAction)
+  versions         SeasonLifecycleVersion[] @relation("lifecycleCaseVersions")
+  revision         BigInt                   @default(1)
+  createdAt        DateTime                 @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt        DateTime                 @default(now()) @map("updated_at") @db.Timestamptz(6)
+
+  @@unique([id, currentVersionId])
+  @@unique([seasonId, id])
+  @@index([seasonId])
+  @@map("season_lifecycle_request")
+}
+
+model SeasonLifecycleVersion {
+  id                   String                         @id @default(uuid(4)) @db.Uuid
+  seasonId             String                         @map("season_id") @db.Uuid
+  caseId               String                         @map("case_id") @db.Uuid
+  request              SeasonLifecycleRequest         @relation("lifecycleCaseVersions", fields: [seasonId, caseId], references: [seasonId, id], onDelete: Restrict, onUpdate: NoAction)
+  currentFor           SeasonLifecycleRequest[]       @relation("lifecycleCurrentVersion")
+  versionNumber        Int                            @map("version_number")
+  preparedBy           String                         @map("prepared_by") @db.Uuid
+  preparer             Account                        @relation("lifecyclePreparer", fields: [preparedBy], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  predecessorVersionId String?                        @map("predecessor_version_id") @db.Uuid
+  predecessor          SeasonLifecycleVersion?        @relation("lifecyclePredecessor", fields: [caseId, predecessorVersionId], references: [caseId, id], onDelete: NoAction, onUpdate: NoAction)
+  successors           SeasonLifecycleVersion[]       @relation("lifecyclePredecessor")
+  revision             BigInt                         @default(1)
+  state                String                         @default("DRAFT")
+  submittedAt          DateTime?                      @map("submitted_at") @db.Timestamptz(6)
+  decidedAt            DateTime?                      @map("decided_at") @db.Timestamptz(6)
+  decidedBy            String?                        @map("decided_by") @db.Uuid
+  decider              Account?                       @relation("lifecycleDecider", fields: [decidedBy], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  decisionReason       String?                        @map("decision_reason")
+  action               String
+  reason               String?
+  summaryVersionId     String?                        @map("summary_version_id") @db.Uuid
+  summaryVersion       SeasonSummaryVersion?          @relation("lifecycleSummary", fields: [seasonId, summaryVersionId], references: [seasonId, id], onDelete: Restrict, onUpdate: NoAction)
+  createdAt            DateTime                       @default(now()) @map("created_at") @db.Timestamptz(6)
+  editors              SeasonLifecycleVersionEditor[]
+
+  @@unique([caseId, versionNumber])
+  @@unique([caseId, id])
+  @@unique([seasonId, caseId, id])
+  @@index([preparedBy])
+  @@index([decidedBy])
+  @@index([summaryVersionId])
+  @@map("season_lifecycle_version")
+}
+
+model SeasonLifecycleVersionEditor {
+  versionId     String                 @map("version_id") @db.Uuid
+  version       SeasonLifecycleVersion @relation(fields: [versionId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  accountId     String                 @map("account_id") @db.Uuid
+  account       Account                @relation("seasonLifecycleVersionEditorAccount", fields: [accountId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  firstEditedAt DateTime               @default(now()) @map("first_edited_at") @db.Timestamptz(6)
+
+  @@id([versionId, accountId])
+  @@index([accountId])
+  @@map("season_lifecycle_version_editor")
+}
+
+model SeasonSummaryCase {
+  id                        String                 @id @default(uuid(4)) @db.Uuid
+  seasonId                  String                 @unique @map("season_id") @db.Uuid
+  season                    Season                 @relation(fields: [seasonId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  currentConfirmedVersionId String?                @map("current_confirmed_version_id") @db.Uuid
+  currentConfirmedVersion   SeasonSummaryVersion?  @relation("summaryCurrentConfirmed", fields: [id, currentConfirmedVersionId], references: [caseId, id], onDelete: NoAction, onUpdate: NoAction)
+  versions                  SeasonSummaryVersion[] @relation("summaryCaseVersions")
+  needsReconfirmation       Boolean                @default(false) @map("needs_reconfirmation")
+  revision                  BigInt                 @default(1)
+  createdAt                 DateTime               @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt                 DateTime               @default(now()) @map("updated_at") @db.Timestamptz(6)
+
+  @@unique([id, currentConfirmedVersionId])
+  @@unique([seasonId, id])
+  @@map("season_summary_case")
+}
+
+model SeasonSummaryVersion {
+  id                      String                       @id @default(uuid(4)) @db.Uuid
+  seasonId                String                       @map("season_id") @db.Uuid
+  caseId                  String                       @map("case_id") @db.Uuid
+  summaryCase             SeasonSummaryCase            @relation("summaryCaseVersions", fields: [seasonId, caseId], references: [seasonId, id], onDelete: Restrict, onUpdate: NoAction)
+  currentFor              SeasonSummaryCase[]          @relation("summaryCurrentConfirmed")
+  versionNumber           Int                          @map("version_number")
+  preparedBy              String                       @map("prepared_by") @db.Uuid
+  preparer                Account                      @relation("summaryPreparer", fields: [preparedBy], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  predecessorVersionId    String?                      @map("predecessor_version_id") @db.Uuid
+  predecessor             SeasonSummaryVersion?        @relation("summaryPredecessor", fields: [caseId, predecessorVersionId], references: [caseId, id], onDelete: NoAction, onUpdate: NoAction)
+  successors              SeasonSummaryVersion[]       @relation("summaryPredecessor")
+  revision                BigInt                       @default(1)
+  state                   String                       @default("DRAFT")
+  submittedAt             DateTime?                    @map("submitted_at") @db.Timestamptz(6)
+  decidedAt               DateTime?                    @map("decided_at") @db.Timestamptz(6)
+  decidedBy               String?                      @map("decided_by") @db.Uuid
+  decider                 Account?                     @relation("summaryDecider", fields: [decidedBy], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  decisionReason          String?                      @map("decision_reason")
+  basisStatisticsRevision BigInt?                      @map("basis_statistics_revision")
+  sourceSnapshot          Json?                        @map("source_snapshot") @db.JsonB
+  reportDate              DateTime?                    @map("report_date") @db.Date
+  createdAt               DateTime                     @default(now()) @map("created_at") @db.Timestamptz(6)
+  editors                 SeasonSummaryVersionEditor[]
+  lifecycleReferences     SeasonLifecycleVersion[]     @relation("lifecycleSummary")
+
+  @@unique([caseId, versionNumber])
+  @@unique([caseId, id])
+  @@unique([seasonId, id])
+  @@index([preparedBy])
+  @@index([decidedBy])
+  @@map("season_summary_version")
+}
+
+model SeasonSummaryVersionEditor {
+  versionId     String               @map("version_id") @db.Uuid
+  version       SeasonSummaryVersion @relation(fields: [versionId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  accountId     String               @map("account_id") @db.Uuid
+  account       Account              @relation("seasonSummaryVersionEditorAccount", fields: [accountId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  firstEditedAt DateTime             @default(now()) @map("first_edited_at") @db.Timestamptz(6)
+
+  @@id([versionId, accountId])
+  @@index([accountId])
+  @@map("season_summary_version_editor")
+}
+
+model Club {
+  id             String       @id @default(uuid(4)) @db.Uuid
+  code           String       @unique
+  name           String
+  abbreviation   String
+  discontinuedAt DateTime?    @map("discontinued_at") @db.Timestamptz(6)
+  currentLogoId  String?      @map("current_logo_id") @db.Uuid
+  revision       BigInt       @default(1)
+  createdAt      DateTime     @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt      DateTime     @default(now()) @map("updated_at") @db.Timestamptz(6)
+  mediaAssets    MediaAsset[] @relation("clubMediaAssets")
+  currentLogo    MediaAsset?  @relation("clubCurrentLogo", fields: [id, currentLogoId], references: [clubId, id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@unique([id, currentLogoId])
+  @@index([name, id], map: "club_name_id_idx")
+  @@map("club")
+}
+
+model Stadium {
+  id             String    @id @default(uuid(4)) @db.Uuid
+  code           String    @unique
+  name           String
+  location       String?
+  discontinuedAt DateTime? @map("discontinued_at") @db.Timestamptz(6)
+  revision       BigInt    @default(1)
+  createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt      DateTime  @default(now()) @map("updated_at") @db.Timestamptz(6)
+
+  @@index([name, id], map: "stadium_name_id_idx")
+  @@map("stadium")
+}
+
+model MediaAsset {
+  id               String    @id @default(uuid(4)) @db.Uuid
+  clubId           String    @map("club_id") @db.Uuid
+  club             Club      @relation("clubMediaAssets", fields: [clubId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  currentFor       Club?     @relation("clubCurrentLogo")
+  provider         String    @default("LOCAL")
+  objectKey        String    @map("object_key")
+  mimeType         String    @map("mime_type")
+  byteSize         Int       @map("byte_size")
+  width            Int
+  height           Int
+  checksum         String
+  storedBy         String    @map("stored_by") @db.Uuid
+  account          Account   @relation("mediaAssetStoredBy", fields: [storedBy], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  unreferencedAt   DateTime? @map("unreferenced_at") @db.Timestamptz(6)
+  contentDeletedAt DateTime? @map("content_deleted_at") @db.Timestamptz(6)
+  createdAt        DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  @@unique([provider, objectKey])
+  @@unique([clubId, id])
+  @@index([clubId, createdAt])
+  @@index([storedBy])
+  @@index([unreferencedAt])
+  @@map("media_asset")
 }
 
 model SystemRoleAssignment {

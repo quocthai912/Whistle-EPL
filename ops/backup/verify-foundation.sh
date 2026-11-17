@@ -6,7 +6,7 @@ node "$OPS_SCRIPT_DIR/verify-target.cjs" isolated
 "$OPS_SCRIPT_DIR/verify-set.sh" "$1"
 ops_verify_database
 OPS_BASE=$(ops_inventory)
-OPS_RESULT=$("$OPS_SCRIPT_DIR/backup.sh" 'isolated available-foundation verification' | tail -n 1)
+OPS_RESULT=$("$OPS_SCRIPT_DIR/backup.sh" 'isolated available-data verification' | tail -n 1)
 "$OPS_SCRIPT_DIR/verify-set.sh" "$OPS_RESULT"
 "$OPS_SCRIPT_DIR/restore.sh" "$OPS_RESULT" "RESTORE:$OPS_DB_NAME:$OPS_RESULT"
 [[ $(ops_inventory) = "$OPS_BASE" ]] || { echo 'Restored available-data inventory differs.' >&2; exit 1; }
@@ -14,7 +14,7 @@ OPS_RESULT=$("$OPS_SCRIPT_DIR/backup.sh" 'isolated available-foundation verifica
 # Check detection using an isolated copy, never corrupt the retained original.
 OPS_PROBE=$(mktemp -d "$OPS_STATE_DIR/corrupt-probe.XXXXXX")
 trap 'rm -rf -- "$OPS_PROBE"' EXIT
-cp -- "$OPS_BACKUP_DIR/$OPS_RESULT/"* "$OPS_PROBE/"
+cp -a -- "$OPS_BACKUP_DIR/$OPS_RESULT/." "$OPS_PROBE/"
 printf 'corruption probe' >> "$OPS_PROBE/database.dump"
 if python3 "$OPS_SCRIPT_DIR/set-format.py" verify "$OPS_APP_DIR" "$OPS_PROBE" 2>/dev/null; then echo 'Corruption was not detected.' >&2; exit 1; fi
-printf 'Available-foundation persistence, same-set restore, session invalidation and corrupt-set refusal PASS.\n'
+printf 'Available-data persistence, same-set restore, session invalidation and corrupt-set refusal PASS.\n'

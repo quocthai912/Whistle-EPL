@@ -1,4 +1,4 @@
-import { NavLink } from 'react-router';
+import { Link, NavLink, useParams } from 'react-router';
 import { LogoutButton } from '../auth/LogoutButton';
 import { useSession } from '../../shared/http/use-session';
 import { AccountsPage } from './AccountsPage';
@@ -6,17 +6,33 @@ import { DelegationsPage } from './DelegationsPage';
 import { AuditPage } from '../audit/AuditPage';
 import { AdminIcon } from './AdminIcon';
 import css from './Administration.module.css';
+import { SeasonsPage } from '../seasons/SeasonsPage';
+import { regulationSeasonScope } from '../seasons/season-model';
+import { RegulationWorkspace } from '../regulations/RegulationWorkspace';
 
 /** Shows the selected administration page only to sessions with the corresponding role. */
 export default function AdministrationLayout({
   page,
 }: {
-  page: 'accounts' | 'delegations' | 'audit';
+  page: 'accounts' | 'delegations' | 'audit' | 'seasons' | 'regulations';
 }) {
   const { session } = useSession();
+  const { seasonId } = useParams();
   const admin = session?.systemAdministrator;
   const manager = !!session?.seasonManagerIds?.length;
-  const permitted = page === 'delegations' ? admin || manager : admin;
+  const hasSeasonRole = !!session?.seasonRoles?.length || manager;
+  const canCreateSeason = !!session?.canCreateSeason;
+  const regulationSeasonIds = regulationSeasonScope(session);
+  const permitted =
+    page === 'regulations'
+      ? seasonId
+        ? regulationSeasonIds.has(seasonId)
+        : regulationSeasonIds.size > 0
+      : page === 'seasons'
+        ? canCreateSeason || hasSeasonRole
+        : page === 'delegations'
+          ? admin || manager
+          : admin;
   const navigation = (
     <nav className={css.nav} aria-label="Quản trị">
       {admin && (
@@ -37,6 +53,21 @@ export default function AdministrationLayout({
           Nhật ký hoạt động
         </NavLink>
       )}
+      {(canCreateSeason || hasSeasonRole) && (
+        <NavLink to="/workspace/seasons" end aria-label="Quản lý mùa giải">
+          <AdminIcon name="season" />
+          Quản lý mùa giải
+        </NavLink>
+      )}
+      {regulationSeasonIds.size > 0 && (
+        <Link
+          to="/workspace/seasons/regulations"
+          aria-current={page === 'regulations' ? 'page' : undefined}
+        >
+          <AdminIcon name="regulations" />
+          Quản lý quy định mùa giải
+        </Link>
+      )}
     </nav>
   );
   return (
@@ -54,8 +85,14 @@ export default function AdministrationLayout({
           </span>
           <div className={css.accountName}>
             <strong>{session?.account.fullName}</strong>
-            {(admin || manager) && (
-              <small>{admin ? 'Quản trị viên hệ thống' : 'Quản lý mùa giải'}</small>
+            {(admin || hasSeasonRole || regulationSeasonIds.size > 0) && (
+              <small>
+                {admin
+                  ? 'Quản trị viên hệ thống'
+                  : manager
+                    ? 'Quản lý mùa giải'
+                    : 'Nghiệp vụ mùa giải'}
+              </small>
             )}
           </div>
           <LogoutButton />
@@ -71,8 +108,12 @@ export default function AdministrationLayout({
             <AuditPage />
           ) : page === 'accounts' ? (
             <AccountsPage />
-          ) : (
+          ) : page === 'delegations' ? (
             <DelegationsPage />
+          ) : page === 'regulations' ? (
+            <RegulationWorkspace />
+          ) : (
+            <SeasonsPage />
           )
         ) : (
           <section className={css.panel}>

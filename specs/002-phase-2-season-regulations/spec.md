@@ -10,6 +10,10 @@
 
 **Status**: Approved by the Team Leader on 2026-11-10 (Asia/Bangkok)
 
+**Implementation progress**: T001–T015 are complete. See the [Task ledger](tasks.md)
+and [Phase ledger](../../context/progress-checker.md#phase-2---seasons-catalogs-and-regulations)
+for publication, verification, and remaining acceptance scope.
+
 **Approval evidence**: After the completed clarification and 16/16 requirements-quality
 checklist were presented, the Team Leader explicitly answered "Tôi đồng ý phê duyệt." to
 approval of this Specification for speckit-plan. Plan review and final Task approval remain

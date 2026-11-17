@@ -70,7 +70,7 @@ Owns action-scoped delegation under the existing UC03/UC06 responsibilities. Acc
 
 | Delegated operation | Eligible recipient business role in the season | Boundary |
 |---|---|---|
-| Prepare/edit a proposed seasonal regulation change - UC06 | Registration Officer, Scheduling Officer or Results Officer | Does not include regulation approval |
+| Prepare/edit a proposed seasonal regulation change - UC06 | Registration Officer, Scheduling Officer or Results Officer | Covers regulation-version drafts. Assigned Season Managers prepare waiting-version cancellation and replacement requests under D051. |
 | Approve a schedule-adjustment request - UC14 | Scheduling Officer | Cannot approve a submitted version they prepared/edited |
 | Prepare/edit a proposed correction to an official result - UC19 | Results Officer | Cannot directly apply it; another authorized person must approve |
 

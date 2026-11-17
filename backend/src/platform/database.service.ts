@@ -3,7 +3,12 @@ import { PrismaClient, type Prisma } from '../generated/prisma/client';
 import { AdmissionService } from './admission.service';
 import { ClockService } from './clock.service';
 import { ApplicationError } from './application-error';
-import { LockSetChanged, TransactionContext, type LockResource } from './transaction-context';
+import {
+  LockSetChanged,
+  TransactionContext,
+  type LockResource,
+  type TrustedExecutionActor,
+} from './transaction-context';
 
 /** Recognizes failures that establish a rollback and are therefore safe to retry. */
 function knownRollback(error: unknown): boolean {
@@ -42,13 +47,14 @@ export class DatabaseService {
     authority: (context: TransactionContext, now: Date) => Promise<void>,
     execute: (context: TransactionContext) => Promise<T>,
     discover?: (db: Prisma.TransactionClient) => Promise<LockResource[]>,
+    executionActor?: TrustedExecutionActor,
   ): Promise<T> {
     for (let attempt = 1; attempt <= 3; attempt++) {
       try {
         return await this.client.$transaction(
           async (db) => {
             await this.admission.acquire(db);
-            const context = new TransactionContext(db, this.clock, authority);
+            const context = new TransactionContext(db, this.clock, authority, executionActor);
             await context.acquire(locks, discover);
             // clock_timestamp is sampled after all waits, never transaction-start now().
             await context.recheckAuthority();

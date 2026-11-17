@@ -120,6 +120,8 @@
   font-weight: 500;
   text-decoration: none;
   font-size: 13.5px;
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 .nav svg {
   flex-shrink: 0;
@@ -161,7 +163,8 @@
   gap: 16px;
   margin-bottom: 24px;
 }
-.sectionHeader h1 {
+.sectionHeader h1,
+.pageTitle {
   margin: 0;
   font-size: 22px;
   line-height: 1.45;
@@ -414,9 +417,14 @@
   background: currentColor;
 }
 .badge[data-state='ACTIVE'],
-.badge[data-state='GRANTED'] {
+.badge[data-state='GRANTED'],
+.badge[data-state='OPEN'] {
   background: #e5f7ef;
   color: #087c4c;
+}
+.badge[data-state='CLOSED'] {
+  background: #edf0f7;
+  color: #5c6478;
 }
 .badge[data-state='LOCKED'],
 .badge[data-state='REVOKED'],
@@ -872,6 +880,10 @@
   padding: 10px 12px;
   font-size: 13.5px;
 }
+.selectPopup :global(.ant-select-item-option-content) {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
 .selectPopup :global(.ant-select-item-option-active) {
   background: #f5f1fc;
 }
@@ -898,7 +910,8 @@
   box-shadow: none;
   font: inherit;
 }
-.layout :global(.ant-picker-input) > input {
+.layout :global(.ant-picker-input) > input,
+.form :global(.ant-picker-input) > input {
   min-height: 0;
   padding: 0;
   border: 0;

@@ -1,5 +1,7 @@
 import { useState, type FormEvent } from 'react';
 import { DatePicker } from 'antd';
+import { dateFormat } from '../../shared/date-format';
+import { regulationStateLabels } from '../regulations/regulation-model';
 import dayjs from 'dayjs';
 import { AdminSelect } from '../accounts/AdminSelect';
 import { useSearchTerm } from '../accounts/use-search-term';
@@ -16,7 +18,13 @@ import {
 } from '../accounts/administration-model';
 import { useAdminList } from '../accounts/use-admin-list';
 import shared from '../accounts/Administration.module.css';
-import { actions, auditFilters, initialFilters, objectKinds } from './audit-filters';
+import {
+  actions,
+  auditFilters,
+  filterableObjectKinds,
+  initialFilters,
+  objectKinds,
+} from './audit-filters';
 import css from './Audit.module.css';
 
 type Change = Record<string, string | number | boolean | null>;
@@ -77,6 +85,26 @@ const changeLabels: Record<string, string> = {
   startsAt: 'Bắt đầu',
   endsAt: 'Kết thúc',
   effectiveAt: 'Thời điểm hiệu lực',
+  code: 'Mã',
+  name: 'Tên',
+  competitionName: 'Tên giải đấu',
+  startDate: 'Ngày bắt đầu',
+  endDate: 'Ngày kết thúc',
+  revision: 'Lần sửa',
+  effectiveMode: 'Cách áp dụng',
+  proposedEffectiveAt: 'Thời điểm đề xuất hiệu lực',
+  activeFrom: 'Hiệu lực từ',
+  activeUntil: 'Hiệu lực đến',
+  submittedAt: 'Thời điểm gửi thẩm định',
+  decidedAt: 'Thời điểm quyết định',
+  approvedAt: 'Thời điểm phê duyệt',
+  processedAt: 'Thời điểm xử lý',
+  blockedAt: 'Thời điểm chặn',
+  decisionReason: 'Lý do quyết định',
+  requestId: 'Mã đề nghị',
+  waitingVersionId: 'Mã phiên bản chờ',
+  replacementVersionId: 'Mã phiên bản thay thế',
+  action: 'Loại đề nghị',
 };
 /** Uses an own-property display label, preserving unknown historical codes as text. */
 const label = (names: Record<string, string>, key: string) =>
@@ -114,11 +142,34 @@ function changeValue(name: string, value: Change[string], actionCode: string, af
         'DELEGATION_GRANTED',
       ].includes(actionCode)
         ? grantStateNames
-        : stateNames,
+        : actionCode.startsWith('REGULATION_')
+          ? { ...stateNames, ...regulationStateLabels, APPROVED: 'Đã phê duyệt' }
+          : stateNames,
     startMode: { IMMEDIATE: 'Ngay khi cấp quyền', SCHEDULED: 'Theo thời gian chỉ định' },
+    effectiveMode: { IMMEDIATE: 'Hiệu lực ngay', SCHEDULED: 'Hiệu lực theo lịch' },
+    action: {
+      CANCEL: 'Hủy',
+      REPLACE: 'Thay thế',
+      CLOSE: 'Đóng mùa giải',
+      REOPEN: 'Mở lại mùa giải',
+    },
   };
+  if ((name === 'startDate' || name === 'endDate') && /^\d{4}-\d{2}-\d{2}$/.test(value))
+    return value.split('-').reverse().join('/');
   if (Object.hasOwn(names, name)) return label(names[name], value);
-  return ['startsAt', 'endsAt', 'effectiveAt'].includes(name) && Number.isFinite(Date.parse(value))
+  return [
+    'startsAt',
+    'endsAt',
+    'effectiveAt',
+    'activeFrom',
+    'activeUntil',
+    'proposedEffectiveAt',
+    'submittedAt',
+    'decidedAt',
+    'approvedAt',
+    'processedAt',
+    'blockedAt',
+  ].includes(name) && Number.isFinite(Date.parse(value))
     ? time.format(new Date(value))
     : value;
 }
@@ -252,7 +303,7 @@ export function AuditPage() {
             <span className={shared.srOnly}>Từ ngày</span>
             <DatePicker
               aria-label="Từ ngày"
-              format="DD/MM/YYYY"
+              format={dateFormat}
               placeholder="Từ ngày"
               value={draft.from ? dayjs(draft.from) : null}
               onChange={(date) => update('from', date?.format('YYYY-MM-DD') ?? '')}
@@ -262,7 +313,7 @@ export function AuditPage() {
             <span className={shared.srOnly}>Đến ngày</span>
             <DatePicker
               aria-label="Đến ngày"
-              format="DD/MM/YYYY"
+              format={dateFormat}
               placeholder="Đến ngày"
               value={draft.through ? dayjs(draft.through) : null}
               onChange={(date) => update('through', date?.format('YYYY-MM-DD') ?? '')}
@@ -340,7 +391,10 @@ export function AuditPage() {
               onChange={(value) => update('objectKind', value)}
               options={[
                 { value: '', label: 'Tất cả đối tượng' },
-                ...Object.entries(objectKinds).map(([value, label]) => ({ value, label })),
+                ...Object.entries(filterableObjectKinds).map(([value, label]) => ({
+                  value,
+                  label,
+                })),
               ]}
             />
             <AdminSelect

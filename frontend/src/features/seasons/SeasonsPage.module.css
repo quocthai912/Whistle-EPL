@@ -1,0 +1,314 @@
+.seasonTable {
+  min-width: 830px;
+}
+
+.seasonTable th:first-child,
+.seasonTable td:first-child {
+  width: 58px;
+  text-align: center;
+}
+
+.seasonTable th:nth-child(2),
+.seasonTable td:nth-child(2) {
+  min-width: 105px;
+}
+
+.seasonTable th:nth-child(3),
+.seasonTable td:nth-child(3),
+.seasonTable th:nth-child(4),
+.seasonTable td:nth-child(4) {
+  min-width: 125px;
+}
+
+.seasonTable th:nth-child(5),
+.seasonTable td:nth-child(5),
+.seasonTable th:nth-child(6),
+.seasonTable td:nth-child(6) {
+  width: 104px;
+  white-space: nowrap;
+}
+
+.seasonTable th:nth-child(7),
+.seasonTable td:nth-child(7) {
+  min-width: 125px;
+}
+
+.seasonTable th:nth-child(8),
+.seasonTable td:nth-child(8) {
+  min-width: 96px;
+}
+
+.seasonTable th:last-child,
+.seasonTable td:last-child {
+  width: 100px;
+  text-align: center;
+}
+
+.seasonTable td {
+  overflow-wrap: anywhere;
+}
+
+.seasonTable td:last-child a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 29px;
+  padding: 3px 9px;
+  border: 1px solid #e6eaf3;
+  border-radius: 7px;
+  color: #552cb6;
+  background: white;
+  font-size: 12.5px;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.seasonTable td:last-child a:hover {
+  border-color: #bcaaec;
+  background: #f8f6ff;
+}
+
+.historyList {
+  display: grid;
+  gap: 14px;
+  margin-top: 16px;
+}
+
+.historyFilters {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(220px, 100%), 1fr));
+  align-items: end;
+  gap: 10px;
+  margin: 12px 0;
+}
+
+.historyFilters > :first-child {
+  grid-column: 1 / -1;
+}
+
+.historyFilters label {
+  display: grid;
+  gap: 6px;
+  color: #526078;
+  font-size: 13.5px;
+  font-weight: 500;
+}
+
+.historyFilters label > span {
+  min-width: 0;
+}
+
+.historyFilters button {
+  grid-column: 1 / -1;
+  justify-self: start;
+  min-height: 38px;
+}
+
+.conflictReview {
+  display: grid;
+  gap: 10px;
+  margin-top: 14px;
+  border: 1px solid #ead5a6;
+  border-radius: 10px;
+  padding: 14px;
+  background: #fffaf0;
+}
+
+.conflictReview h3,
+.conflictReview p {
+  margin: 0;
+}
+
+.conflictReview h3 {
+  color: #6e4b10;
+  font-size: 14px;
+}
+
+.conflictComparison {
+  min-width: 0;
+  border: 1px solid #e9edf5;
+  border-radius: 8px;
+  padding: 10px;
+  background: #ffffff;
+}
+
+.conflictComparison dl {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+}
+
+.conflictComparison dt {
+  color: #526078;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.conflictComparison dd {
+  display: grid;
+  gap: 3px;
+  margin: 4px 0 0;
+  overflow-wrap: anywhere;
+}
+
+.historyItem {
+  min-width: 0;
+  border: 1px solid #e6eaf3;
+  border-radius: 10px;
+  padding: 14px;
+  background: #ffffff;
+}
+
+.historyHeading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.historyHeading strong {
+  font-size: 13.5px;
+}
+
+.historyHeading time,
+.historyMeta {
+  color: #65718a;
+  font-size: 12px;
+}
+
+.historyMeta {
+  margin: 5px 0 0;
+}
+
+.historyReason {
+  margin: 10px 0 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.historyChanges {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.historyChanges section {
+  min-width: 0;
+  border-radius: 8px;
+  padding: 10px;
+  background: #f6f8fc;
+}
+
+.historyChanges h4 {
+  margin: 0 0 8px;
+  color: #526078;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.historyChanges dl {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+}
+
+.historyChanges dt {
+  color: #65718a;
+  font-size: 11px;
+}
+
+.historyChanges dd {
+  margin: 2px 0 0;
+  font-size: 12.5px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.fieldError {
+  color: #9c263c;
+  font-size: 12.5px;
+  font-weight: 400;
+}
+
+.preview {
+  color: #552cb6;
+  font-size: 12.5px;
+  overflow-wrap: anywhere;
+}
+
+.editForm {
+  display: grid;
+  gap: 14px;
+  margin-top: 14px;
+}
+
+.editForm label {
+  display: grid;
+  gap: 6px;
+  font-weight: 500;
+}
+
+.editForm input {
+  width: 100%;
+}
+
+.dateFields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.drawerActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.regulationSummary {
+  margin-top: 14px;
+}
+
+.regulationSummary dl {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin: 10px 0 0;
+}
+
+.regulationSummary dl > div {
+  min-width: 0;
+  border: 1px solid #e9edf5;
+  border-radius: 9px;
+  padding: 10px;
+}
+
+.regulationSummary dt {
+  color: #65718a;
+  font-size: 11px;
+  text-transform: uppercase;
+}
+
+.regulationSummary dd {
+  margin: 3px 0 0;
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+
+.regulationDate {
+  display: block;
+  margin-top: 3px;
+  color: #65718a;
+  font-size: 11px;
+}
+
+@media (max-width: 580px) {
+  .historyChanges,
+  .dateFields,
+  .regulationSummary dl,
+  .historyFilters {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

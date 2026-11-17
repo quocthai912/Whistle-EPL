@@ -64,20 +64,21 @@ unavailable later readiness returns 409 STATE_CONFLICT or 503 as appropriate, no
 
 | Method/path | Authority/input | Outcome |
 |---|---|---|
+| GET /regulation-seasons | Current assigned season manager or valid regulation-preparation delegation | Season ID, code, name and state for the regulation workspace selector. |
 | GET /seasons/{seasonId}/regulation-versions | Current responsibility-scoped read, state filter/pagination | Safe version summaries, separately labelled current/waiting/draft and effectivity/processing state. |
 | POST /seasons/{seasonId}/regulation-versions | Assigned manager or valid D019 delegated preparer; optional predecessorVersionId and draft content | 201 draft/version acknowledgement; never an approved copy from a template. |
-| GET /regulation-versions/{versionId} | Current source-season responsibility/allowed preparation access | Exact content, revision, editor exclusion/action capabilities and permitted decision basis. |
+| GET /regulation-versions/{versionId} | Current source-season responsibility/allowed preparation access | Exact content, revision, editor exclusion/action capabilities and permitted decision basis. Editor entries include account ID, display name and first edit time. |
 | PATCH /regulation-versions/{versionId} | Authorized preparer; expectedRevision, draft content allowlist | Editable draft only. Resuming returned/withdrawn submitted content creates successor content; no approved-content mutation. |
-| POST /regulation-versions/{versionId}/{action} | Allowlisted submit/withdraw/return/reject/approve; expectedRevision, submittedVersionId for decisions, required reason | approve is R and independent assigned manager only; full completeness/slot/freeze/compatibility/time checks; 200 acknowledgement. |
+| POST /regulation-versions/{versionId}/{action} | Allowlisted submit/withdraw/return/reject/approve; expectedRevision, submittedVersionId for decisions, required reason. Approval also binds the reviewed expectedCurrentVersionId, or null for the first effective version. | approve is R and independent assigned manager only; full completeness/slot/freeze/compatibility/time checks; 200 acknowledgement. |
 | GET /seasons/{seasonId}/regulation-change-requests | Current seasonal responsibility | Cancellation/replacement request summaries with exact waiting/replacement targets. |
 | POST /seasons/{seasonId}/regulation-change-requests | Assigned manager; action CANCEL/REPLACE, waitingVersionId, replacementVersionId only for replacement, reason | Versioned request; pending request does not delay activation. |
 | PATCH /regulation-change-requests/{requestId}/draft | Assigned preparer; expectedRevision, exact target/replacement/reason allowlist | Draft revision or new successor, never edit approved content. |
-| POST /regulation-change-requests/{requestId}/{action} | submit/withdraw/return/reject/approve, exact version/revision/reason | approve is R, independent manager; valid before effectivity only, atomic cancel/replace. |
+| POST /regulation-change-requests/{requestId}/{action} | submit/withdraw/return/reject/approve, exact version/revision/reason. REPLACE approval also binds the reviewed expectedCurrentVersionId, or null when no version is effective. | approve is R, independent manager; valid before effectivity only, atomic cancel/replace. |
 
 For action families, the handler separately checks authority to return/reject (assigned
 manager), withdraw (authorized preparer of the submitted work) or submit (current preparation
 authority); these do not confer approval. D019 delegates preparation/editing, not manager
-decision powers. Every submitted-content change retains successor/editor history.
+decision powers. The D019 preparation delegation applies to regulation-version drafts. An assigned season manager prepares cancellation and replacement requests. Every submitted-content change retains successor/editor history.
 
 REPLACE also approves the replacement regulation content. Its target must already be exact
 immutable SUBMITTED content in the same season, and the approver must be outside the union

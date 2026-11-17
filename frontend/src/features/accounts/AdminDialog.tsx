@@ -1,4 +1,6 @@
 import { Modal } from 'antd';
+import { DateTimePicker } from '../../shared/DatePickers';
+import { dateTimeFormat, isLocalDateTime } from '../../shared/date-format';
 import { useState, type FormEvent } from 'react';
 import { HttpFailure } from '../../shared/http/client';
 import { useSession } from '../../shared/http/use-session';
@@ -68,6 +70,18 @@ export function AdminDialog({
     if (busy || conflict || (uncertain && !unknown)) return;
     if (fields.some((field) => field.required !== false && !values[field.name])) {
       setFailure(new Error('Vui lòng điền đầy đủ các trường bắt buộc.'));
+      return;
+    }
+    const invalidDate = fields.find(
+      (field) =>
+        field.type === 'datetime-local' &&
+        values[field.name] &&
+        !isLocalDateTime(values[field.name]),
+    );
+    if (invalidDate && !unknown) {
+      setFailure(
+        new Error(`${invalidDate.label}: nhập thời điểm hợp lệ theo dạng ${dateTimeFormat}.`),
+      );
       return;
     }
     setBusy(true);
@@ -166,6 +180,14 @@ export function AdminDialog({
               {field.required !== false && ' *'}
               {field.type === 'textarea' ? (
                 <textarea {...shared} rows={3} maxLength={2000} />
+              ) : field.type === 'datetime-local' ? (
+                <DateTimePicker
+                  label={field.label + (shared.required ? ' *' : '')}
+                  value={shared.value}
+                  disabled={shared.disabled}
+                  required={shared.required}
+                  onChange={(value) => changeField(field.name, value)}
+                />
               ) : (
                 <input
                   {...shared}
