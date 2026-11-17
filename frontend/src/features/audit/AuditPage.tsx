@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from 'react';
 import { DatePicker } from 'antd';
+import { dateFormat } from '../../shared/date-format';
 import { regulationStateLabels } from '../regulations/regulation-model';
 import dayjs from 'dayjs';
 import { AdminSelect } from '../accounts/AdminSelect';
@@ -302,7 +303,7 @@ export function AuditPage() {
             <span className={shared.srOnly}>Từ ngày</span>
             <DatePicker
               aria-label="Từ ngày"
-              format="DD/MM/YYYY"
+              format={dateFormat}
               placeholder="Từ ngày"
               value={draft.from ? dayjs(draft.from) : null}
               onChange={(date) => update('from', date?.format('YYYY-MM-DD') ?? '')}
@@ -312,7 +313,7 @@ export function AuditPage() {
             <span className={shared.srOnly}>Đến ngày</span>
             <DatePicker
               aria-label="Đến ngày"
-              format="DD/MM/YYYY"
+              format={dateFormat}
               placeholder="Đến ngày"
               value={draft.through ? dayjs(draft.through) : null}
               onChange={(date) => update('through', date?.format('YYYY-MM-DD') ?? '')}

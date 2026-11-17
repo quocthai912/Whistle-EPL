@@ -1,9 +1,10 @@
+import { parseDisplayDate } from '../../shared/date-format';
 import { AdminSelect } from '../accounts/AdminSelect';
 import formCss from './SeasonCreateForm.module.css';
 import { useState, type FormEvent } from 'react';
 import { Link } from 'react-router';
 import { AdminDrawer } from '../accounts/AdminDrawer';
-import { SeasonDatePicker, SeasonDateTimePicker } from './SeasonDatePicker';
+import { DateOnlyPicker, DateTimePicker } from '../../shared/DatePickers';
 import { AdminIcon } from '../accounts/AdminIcon';
 import { ListFeedback, Pagination, StateBadge } from '../accounts/AdminLists';
 import { formatVietnamTime } from '../accounts/administration-model';
@@ -21,7 +22,6 @@ import {
   formatSeasonDate,
   formatSeasonInstant,
   normalizeSeasonText,
-  parseSeasonDate,
   regulationSeasonScope,
 } from './season-model';
 import css from './SeasonsPage.module.css';
@@ -552,14 +552,14 @@ export function SeasonDetail({
                     {(['startDate', 'endDate'] as const).map((field) => (
                       <label key={field} htmlFor={`season-edit-${field}`}>
                         <span>{fieldLabels[field]} *</span>
-                        <SeasonDatePicker
+                        <DateOnlyPicker
                           id={`season-edit-${field}`}
                           initialDate={values[field]}
                           required
                           disabled={busy || reloadRequired || detail.loading}
                           invalid={!!errors[field]}
                           describedBy={errors[field] ? `season-edit-${field}-error` : undefined}
-                          onDateTextChange={(text) => change(field, parseSeasonDate(text))}
+                          onDateTextChange={(text) => change(field, parseDisplayDate(text))}
                         />
                         {errors[field] && (
                           <span
@@ -664,7 +664,7 @@ function SeasonHistoryTab({ seasonId }: { seasonId: string }) {
         />
         <label>
           <span>Từ thời điểm</span>
-          <SeasonDateTimePicker
+          <DateTimePicker
             label="Từ thời điểm"
             value={draftFilters.occurredFrom}
             onChange={(value) =>
@@ -674,7 +674,7 @@ function SeasonHistoryTab({ seasonId }: { seasonId: string }) {
         </label>
         <label>
           <span>Đến trước thời điểm</span>
-          <SeasonDateTimePicker
+          <DateTimePicker
             label="Đến trước thời điểm"
             value={draftFilters.occurredBefore}
             onChange={(value) =>

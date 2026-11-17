@@ -910,7 +910,8 @@
   box-shadow: none;
   font: inherit;
 }
-.layout :global(.ant-picker-input) > input {
+.layout :global(.ant-picker-input) > input,
+.form :global(.ant-picker-input) > input {
   min-height: 0;
   padding: 0;
   border: 0;

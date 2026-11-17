@@ -2,27 +2,28 @@ import { DatePicker } from 'antd';
 import vietnameseCalendar from 'antd/es/date-picker/locale/vi_VN';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
-import { parseSeasonDate, seasonDateFormat } from './season-model';
+import { dateFormat, dateTimeFormat, isLocalDateTime, parseDisplayDate } from './date-format';
 
 dayjs.extend(utc);
 
-const minuteFormat = `${seasonDateFormat} HH:mm`;
+const minuteFormat = dateTimeFormat;
 const secondFormat = `${minuteFormat}:ss`;
 const millisecondFormat = `${secondFormat}.SSS`;
 
-export function SeasonDateTimePicker({
+export function DateTimePicker({
   label,
   value,
   disabled,
+  required,
   onChange,
 }: {
   label: string;
   value: string;
   disabled?: boolean;
+  required?: boolean;
   onChange: (value: string) => void;
 }) {
-  const isIsoLocal = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(?::\d{2}(?:\.\d{1,3})?)?$/.test(value);
-  const dateTime = isIsoLocal ? dayjs.utc(value) : null;
+  const dateTime = isLocalDateTime(value) ? dayjs.utc(value) : null;
   const displayFormat = dateTime?.millisecond()
     ? millisecondFormat
     : dateTime?.second()
@@ -37,7 +38,7 @@ export function SeasonDateTimePicker({
         const match = /^(\d{2}\/\d{2}\/\d{4}) (\d{2}:\d{2}(?::\d{2}(?:\.\d{1,3})?)?)$/.exec(
           text.trim(),
         );
-        const date = match ? parseSeasonDate(match[1]) : '';
+        const date = match ? parseDisplayDate(match[1]) : '';
         if (!date || !match) {
           onChange(text);
           return;
@@ -50,6 +51,7 @@ export function SeasonDateTimePicker({
     >
       <DatePicker
         aria-label={label}
+        aria-required={required}
         locale={vietnameseCalendar}
         value={dateTime?.isValid() ? dateTime : null}
         placeholder={minuteFormat}
@@ -67,7 +69,7 @@ export function SeasonDateTimePicker({
   );
 }
 
-export function SeasonDatePicker({
+export function DateOnlyPicker({
   id,
   label,
   initialDate,
@@ -102,8 +104,8 @@ export function SeasonDatePicker({
           initialDate && /^\d{4}-\d{2}-\d{2}$/.test(initialDate) ? dayjs(initialDate) : null
         }
         locale={vietnameseCalendar}
-        format={seasonDateFormat}
-        placeholder={seasonDateFormat}
+        format={dateFormat}
+        placeholder={dateFormat}
         preserveInvalidOnBlur
         disabled={disabled}
         status={invalid ? 'error' : undefined}

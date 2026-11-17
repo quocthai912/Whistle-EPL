@@ -3,8 +3,8 @@ import { AdminSelect } from '../accounts/AdminSelect';
 import { useEffect, useMemo, useState, type FormEvent, type ReactNode } from 'react';
 import { HttpFailure } from '../../shared/http/client';
 import { useSession } from '../../shared/http/use-session';
-import { SeasonDatePicker, SeasonDateTimePicker } from '../seasons/SeasonDatePicker';
-import { parseSeasonDate } from '../seasons/season-model';
+import { DateOnlyPicker, DateTimePicker } from '../../shared/DatePickers';
+import { parseDisplayDate } from '../../shared/date-format';
 import type { FieldErrorDetail } from '../../shared/http/client';
 import {
   applySourceProposedValues,
@@ -575,7 +575,7 @@ export function RegulationDraftForm({ detail, canEdit, onSaved, onDirtyChange }:
             error={errors.proposedEffectiveAt}
             hint="Chỉ nhập cho đề xuất có thời điểm hiệu lực trong tương lai."
           >
-            <SeasonDateTimePicker
+            <DateTimePicker
               label="Thời điểm hiệu lực dự kiến"
               value={values.proposedEffectiveAt}
               disabled={!editable || values.effectiveMode !== 'SCHEDULED'}
@@ -617,14 +617,14 @@ export function RegulationDraftForm({ detail, canEdit, onSaved, onDirtyChange }:
             error={errors.u21Cutoff}
             hint="Nhập hoặc chọn ngày theo định dạng DD/MM/YYYY."
           >
-            <SeasonDatePicker
+            <DateOnlyPicker
               key={dateReset}
               label="Ngày sinh giới hạn U21"
               initialDate={values.u21Cutoff}
               disabled={!editable}
               invalid={!!errors.u21Cutoff}
               onDateTextChange={(text) => {
-                const date = text ? parseSeasonDate(text) : null;
+                const date = text ? parseDisplayDate(text) : null;
                 if (editable && !saving && date !== values.u21Cutoff) change('u21Cutoff', date);
               }}
             />
@@ -741,7 +741,7 @@ export function RegulationDraftForm({ detail, canEdit, onSaved, onDirtyChange }:
                   label="Mở từ (giờ Việt Nam)"
                   error={errors[`registrationWindows[${index}].opensAt`]}
                 >
-                  <SeasonDateTimePicker
+                  <DateTimePicker
                     label={`Mở từ đợt ${index + 1}`}
                     value={window.opensAt}
                     disabled={!editable}
@@ -752,7 +752,7 @@ export function RegulationDraftForm({ detail, canEdit, onSaved, onDirtyChange }:
                   label="Đóng trước (giờ Việt Nam)"
                   error={errors[`registrationWindows[${index}].closesAt`]}
                 >
-                  <SeasonDateTimePicker
+                  <DateTimePicker
                     label={`Đóng trước đợt ${index + 1}`}
                     value={window.closesAt}
                     disabled={!editable}

@@ -3,8 +3,8 @@ import { useState, type FormEvent } from 'react';
 import { HttpFailure } from '../../shared/http/client';
 import { useSession } from '../../shared/http/use-session';
 import { AdminIcon } from '../accounts/AdminIcon';
-import { parseSeasonDate, seasonDateFormat } from './season-model';
-import { SeasonDatePicker } from './SeasonDatePicker';
+import { parseDisplayDate, dateFormat } from '../../shared/date-format';
+import { DateOnlyPicker } from '../../shared/DatePickers';
 import css from './SeasonCreateForm.module.css';
 
 type SeasonFields = {
@@ -62,8 +62,8 @@ function normalizeCommand(values: SeasonFields): SeasonCreateCommand {
     code: normalizedCode(values.code),
     name: normalizedName(values.name),
     competitionName: normalizedName(values.competitionName),
-    startDate: parseSeasonDate(values.startDate),
-    endDate: parseSeasonDate(values.endDate),
+    startDate: parseDisplayDate(values.startDate),
+    endDate: parseDisplayDate(values.endDate),
   };
 }
 
@@ -83,7 +83,7 @@ function validate(values: SeasonFields): FieldErrors {
   for (const { field, label } of dateFields) {
     if (!values[field].trim()) errors[field] = `${label} là thông tin bắt buộc.`;
     else if (!normalized[field])
-      errors[field] = `${label} phải là ngày hợp lệ theo dạng ${seasonDateFormat}.`;
+      errors[field] = `${label} phải là ngày hợp lệ theo dạng ${dateFormat}.`;
   }
   if (!errors.startDate && !errors.endDate && normalized.startDate > normalized.endDate)
     errors.endDate = 'Ngày kết thúc phải sau hoặc bằng ngày bắt đầu.';
@@ -317,7 +317,7 @@ export function SeasonCreateForm({
           {dateFields.map(({ field, id, label }) => (
             <div className={css.field} key={field}>
               <label htmlFor={id}>{label} *</label>
-              <SeasonDatePicker
+              <DateOnlyPicker
                 id={id}
                 className={css.datePicker}
                 disabled={busy || !!unknownIntent}

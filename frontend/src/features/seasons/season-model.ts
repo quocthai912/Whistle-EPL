@@ -1,15 +1,5 @@
 import type { SessionView } from '../../shared/http/session-store';
 
-export const seasonDateFormat = 'DD/MM/YYYY';
-
-export function parseSeasonDate(value: string): string {
-  const match = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(value.trim());
-  if (!match || match[3] === '0000') return '';
-  const iso = `${match[3]}-${match[2]}-${match[1]}`;
-  const date = new Date(`${iso}T00:00:00Z`);
-  return Number.isFinite(date.getTime()) && date.toISOString().slice(0, 10) === iso ? iso : '';
-}
-
 export type SeasonState = 'OPEN' | 'CLOSED';
 
 export type SeasonListItem = {
