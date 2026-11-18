@@ -17,6 +17,7 @@ export function assertIsolatedTarget(
   if (
     options.nodeEnv !== 'test' ||
     !['postgres:', 'postgresql:'].includes(target.protocol) ||
+    !target.port ||
     !['127.0.0.1', 'localhost', '[::1]'].includes(target.hostname) ||
     !/^\/whistle_test_[a-z0-9_]+$/.test(target.pathname) ||
     target.search ||
@@ -30,6 +31,7 @@ export function assertIsolatedTarget(
       operational = new URL(options.operationalUrl);
       if (
         !['postgres:', 'postgresql:'].includes(operational.protocol) ||
+        !operational.port ||
         operational.search ||
         operational.hash
       )
@@ -44,7 +46,7 @@ export function assertIsolatedTarget(
     };
     if (
       local(operational.hostname) === local(target.hostname) &&
-      (operational.port || '5432') === (target.port || '5432') &&
+      operational.port === target.port &&
       operationalDatabase === decodeURIComponent(target.pathname)
     )
       return refuse();

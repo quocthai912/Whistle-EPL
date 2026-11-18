@@ -108,9 +108,13 @@ async function prepare() {
     const descriptor = reservation;
     reservation = undefined;
     closeSync(descriptor);
-    databaseCloseAttempted = true;
-    await db.close();
     complete = true;
+    databaseCloseAttempted = true;
+    try {
+      await db.close();
+    } catch {
+      throw new Error('Database shutdown failed; the complete lookup manifest is retained.');
+    }
     process.stdout.write(
       'Prepared 20 synthetic lookup users and 25 clubs in one isolated season.\n',
     );
@@ -128,9 +132,13 @@ async function prepare() {
     }
   }
 }
-prepare().catch(() => {
+prepare().catch((error) => {
   process.stderr.write(
-    'Lookup fixture preparation failed. Check protected configuration and empty target. ' +
+    'Lookup fixture preparation failed. ' +
+      (error.message === 'Database shutdown failed; the complete lookup manifest is retained.'
+        ? error.message + ' '
+        : 'Incomplete output created by this run is removed; existing output is preserved. ') +
+      'Check protected configuration and empty target. ' +
       'After a partial or post-commit failure, replace the disposable lookup database and use a new fixture output before retrying; ' +
       'follow the Phase 2 quickstart reset procedure. No database reset is performed automatically.\n',
   );

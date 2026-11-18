@@ -10,6 +10,12 @@ node "$OPS_SCRIPT_DIR/verify-target.cjs" isolated
 [[ ! -e $OPS_STATE_DIR/schedule.json && ! -L $OPS_STATE_DIR/schedule.json ]] || {
   echo 'Daily scheduler verification requires fresh schedule state.' >&2; exit 1;
 }
+OPS_MEDIA_REAL=$(realpath -- "${OPS_MEDIA_ROOT:?}")
+for protected_root in "$OPS_BACKUP_REAL" "$OPS_STATE_REAL" "$OPS_APP_REAL" ${OPS_OFFHOST_DIR:+"$(realpath -- "$OPS_OFFHOST_DIR")"}; do
+  [[ $OPS_MEDIA_REAL != "$protected_root" && $OPS_MEDIA_REAL != "${protected_root%/}/"* && $protected_root != "${OPS_MEDIA_REAL%/}/"* ]] || {
+    echo 'Media root must be separate from application, state and backup roots.' >&2; exit 1;
+  }
+done
 if ! media_entries=$(find "$OPS_MEDIA_ROOT" -mindepth 1 -maxdepth 1 -print -quit); then
   echo 'Cannot inspect dedicated media root.' >&2; exit 1;
 fi

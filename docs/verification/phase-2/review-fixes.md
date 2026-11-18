@@ -1,8 +1,16 @@
 # PHASE 2 review corrections — 2026-11-18
 
-Source: `1b2e09b` plus the current uncommitted corrections. This is a follow-up
-to the published T025–T030 evidence; the original source manifest remains tied
-to `d3023cc` and is not rewritten to imply these corrections were published.
+<!-- coderabbit-ai-generated:v1 -->
+
+<!-- coderabbit-ai-generated-section:v1:06fbc8850fca21495576a9008cf4c3d9314c0892063c9af2127efed5706b34f8 -->
+
+Source tested in this report: commit `2b77d8251b43f31495131dfa5de5009066a32e37`
+(the correction patch applied to `1b2e09b`; the report itself is included in that
+commit). This is a follow-up to the published T025–T030 baseline at `d3023cc`;
+the original source manifest remains tied to that baseline. The corrections
+were not part of the published baseline. Subsequent fixes require separate validation.
+
+<!-- /coderabbit-ai-generated:v1 -->
 
 ## Supplied PR findings
 

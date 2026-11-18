@@ -1,5 +1,5 @@
 const { randomUUID } = require('node:crypto');
-const { writeFileSync } = require('node:fs');
+const { openSync, writeFileSync, fsyncSync, closeSync, unlinkSync } = require('node:fs');
 const { isAbsolute } = require('node:path');
 const { URL } = require('node:url');
 const { DatabaseService } = require('../dist/platform/database.service');
@@ -25,7 +25,12 @@ async function prepare() {
   )
     throw new Error('Explicit isolated recovery target and protected fixture path required.');
   const db = new DatabaseService(url.href);
+  let reservation;
+  let owned = false;
+  let complete = false;
   try {
+    reservation = openSync(destination, 'wx', 0o600);
+    owned = true;
     if (
       (await db.client.account.count()) ||
       (await db.client.club.count()) ||
@@ -180,7 +185,7 @@ async function prepare() {
       lifecycles.push({ seasonId: season.id, requestId: id, versionId: version.id });
     }
     writeFileSync(
-      destination,
+      reservation,
       JSON.stringify({
         provenance: '20 synthetic WebP images authored in this authorized verification session',
         assets,
@@ -188,11 +193,23 @@ async function prepare() {
         lifecycles,
         login: { accountId, username: account.username, password },
       }),
-      { flag: 'wx', mode: 0o600 },
     );
+    fsyncSync(reservation);
+    const descriptor = reservation;
+    reservation = undefined;
+    closeSync(descriptor);
+    complete = true;
     process.stdout.write(assets[0].objectKey + '\n');
   } finally {
-    await db.close();
+    try {
+      if (reservation !== undefined) closeSync(reservation);
+    } finally {
+      try {
+        if (owned && !complete) unlinkSync(destination);
+      } finally {
+        await db.close();
+      }
+    }
   }
 }
 prepare().catch((error) => {

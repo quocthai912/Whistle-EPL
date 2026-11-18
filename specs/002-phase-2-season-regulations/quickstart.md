@@ -35,7 +35,15 @@ pnpm --filter @whistle-epl/backend start
 ```
 
 In the Playwright terminal retain the operational URL for the guard and use
-the separate browser database (variables below come from protected configuration):
+<!-- coderabbit-ai-generated:v1 -->
+
+<!-- coderabbit-ai-generated-section:v1:d91667cad33fe51bd53b558685a5424ad8e8410b0167db7a7ae3fada32e9d1b6 -->
+
+the separate browser database, named `whistle_test_browser` or
+`whistle_test_browser_` followed by a nonempty suffix containing only lowercase
+letters, digits or underscores (variables below come from protected configuration):
+
+<!-- /coderabbit-ai-generated:v1 -->
 
 ```powershell
 $env:DATABASE_URL = $operationalDatabaseUrl
