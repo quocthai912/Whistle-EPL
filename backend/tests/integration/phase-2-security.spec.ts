@@ -24,8 +24,97 @@ import { DatabaseService } from '../../src/platform/database.service';
 import type { ReceiptCommand, ReceiptOutcome } from '../../src/platform/command-receipt.service';
 import type { LockResource } from '../../src/platform/transaction-context';
 import { TestClock } from '../fixtures/test-clock';
+import request from 'supertest';
+import { setupMasterHttpFixture } from '../fixtures/phase-2-master-http';
 
 const passwordHash = '$argon2id$v=19$m=19456,t=2,p=1$fixture$fixture';
+
+describe('PHASE 2 actual HTTP master security and literal input', () => {
+  const fixture = setupMasterHttpFixture();
+
+  it.each([
+    ['missing session', 'anonymous', 401],
+    ['season role without shared grant', 'role', 403],
+    ['foreign shared grant', 'foreign', 403],
+    ['missing origin', 'no-origin', 403],
+    ['foreign origin', 'origin', 403],
+    ['missing CSRF', 'no-csrf', 403],
+    ['wrong CSRF', 'csrf', 403],
+    ['revoked session', 'revoked', 401],
+    ['expired session', 'expired', 401],
+    ['revoked shared grant', 'grant', 403],
+  ])('rejects %s without creating a master', async (_label, scenario, expectedStatus) => {
+    const tokens =
+      scenario === 'foreign'
+        ? await fixture.stadiumManager()
+        : scenario === 'role'
+          ? await fixture.authenticate(fixture.fixtures.accounts[2].id)
+          : await fixture.clubManager();
+    if (scenario === 'revoked')
+      await fixture.database.client.session.updateMany({
+        data: { revokedAt: await fixture.database.now(), revocationReason: 'LOGOUT' },
+      });
+    if (scenario === 'expired') {
+      const issued = new Date((await fixture.database.now()).getTime() - 1_900_000);
+      await fixture.database.client.session.updateMany({
+        data: {
+          createdAt: issued,
+          lastActivityAt: issued,
+          absoluteExpiresAt: new Date(issued.getTime() + 28_800_000),
+        },
+      });
+    }
+    if (scenario === 'grant')
+      await fixture.database.client.sharedMasterGrant.updateMany({
+        data: { endedAt: await fixture.database.now(), endReason: 'Fixture revocation' },
+      });
+    const call = request(fixture.app.getHttpServer()).post('/api/v1/clubs');
+    if (scenario !== 'anonymous') call.set('Cookie', `${SESSION_COOKIE}=${tokens.token}`);
+    if (scenario !== 'no-origin')
+      call.set('Origin', scenario === 'origin' ? 'https://foreign.invalid' : fixture.origin);
+    if (scenario !== 'no-csrf')
+      call.set('X-CSRF-Token', scenario === 'csrf' ? 'incorrect' : tokens.csrfToken);
+    await call.send(fixture.club).expect(expectedStatus);
+    expect(await fixture.database.client.club.count()).toBe(0);
+    expect(
+      await fixture.database.client.auditRecord.count({ where: { actionCode: 'CLUB_CREATED' } }),
+    ).toBe(0);
+  });
+
+  it('treats SQL and markup as literal text and rejects unsupported search and form fields', async () => {
+    const tokens = await fixture.clubManager();
+    const name = `CLB <script>alert("fixture")</script> %_ ' OR 1=1 -- Đà Nẵng`;
+    const result = await fixture.createClub(tokens, { ...fixture.club, name }).expect(201);
+    for (const [code, decoyName] of [
+      ['PERCENT_DECOY', name.replace('%', 'X')],
+      ['UNDERSCORE_DECOY', name.replace('_', 'Y')],
+    ])
+      await fixture.createClub(tokens, { ...fixture.club, code, name: decoyName }).expect(201);
+    const search = await fixture
+      .readClub(tokens, '?search=' + encodeURIComponent(name))
+      .expect(200);
+    expect(search.body.data.items).toMatchObject([{ id: result.body.data.id, name }]);
+    expect(search.body.meta.total).toBe(1);
+    await fixture.readClub(tokens, '?unsupported=1').expect(400);
+    await fixture.createClub(tokens, { ...fixture.club, unsupported: true }).expect(400);
+    const before = await fixture.database.client.club.findUniqueOrThrow({
+      where: { id: result.body.data.id },
+    });
+    await fixture
+      .updateClub(tokens, result.body.data.id, {
+        expectedRevision: '1',
+        id: randomUUID(),
+        name: 'Unexpected identity',
+      })
+      .expect(400);
+    const after = await fixture.database.client.club.findUniqueOrThrow({
+      where: { id: result.body.data.id },
+    });
+    expect(after.name).toBe(before.name);
+    expect(after.revision).toBe(before.revision);
+    expect(await fixture.database.client.club.count()).toBe(3);
+  });
+});
 
 describe('PHASE 2 shared business execution security', () => {
   const databaseUrl = process.env.TEST_DATABASE_URL!;

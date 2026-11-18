@@ -1,10 +1,123 @@
 import { randomUUID } from 'node:crypto';
 import { expect, test } from '@playwright/test';
 import { DatabaseService } from '../../backend/src/platform/database.service';
-import { browserAdministration } from '../../backend/tests/fixtures/browser-fixtures';
+import {
+  browserAdministration,
+  browserMasterManager,
+} from '../../backend/tests/fixtures/browser-fixtures';
 import { assertIsolatedTarget } from '../../backend/tests/fixtures/isolated-target.guard';
 import { login } from './login';
 import { openOptions } from './select-option';
+
+const logoFixture = {
+  name: 'synthetic.png',
+  mimeType: 'image/png',
+  buffer: Buffer.from(
+    'iVBORw0KGgoAAAANSUhEUgAAAAwAAAAKCAIAAAAPTiitAAAACXBIWXMAAAPoAAAD6AG1e1JrAAAAFUlEQVQYlWMI1dlGEDGMKmKgWhAAADOpkckQKh4EAAAAAElFTkSuQmCC',
+    'base64',
+  ),
+};
+
+for (const viewport of [
+  { width: 360, height: 800 },
+  { width: 768, height: 1024 },
+  { width: 1366, height: 768 },
+]) {
+  test(`master list preserves all 25 records and usable controls at ${viewport.width}x${viewport.height}`, async ({
+    page,
+  }) => {
+    await page.setViewportSize(viewport);
+    const manager = await browserMasterManager('CLUB_MASTER');
+    const prefix = 'VIEW_' + randomUUID().slice(0, 8).toUpperCase();
+    const records = Array.from({ length: 25 }, (_, index) => ({
+      id: randomUUID(),
+      code: prefix + '_' + String(index).padStart(2, '0'),
+      name: 'Câu lạc bộ kiểm thử màn hình ' + index,
+      abbreviation: 'UI' + index,
+    }));
+    const db = new DatabaseService(assertIsolatedTarget(process.env.E2E_TEST_DATABASE_URL ?? ''));
+    try {
+      await db.client.club.createMany({ data: records });
+    } finally {
+      await db.close();
+    }
+    await login(page, manager);
+    await page.goto('/workspace/clubs');
+    await page.getByLabel('Tìm câu lạc bộ').fill(prefix);
+    await expect(page.getByText('Trang 1 / 2', { exact: true })).toBeVisible();
+    await expect
+      .poll(async () => {
+        const codes = await page
+          .getByRole('table')
+          .locator('tbody tr td:nth-child(3)')
+          .allTextContents();
+        return codes.length === 20 && codes.every((code) => code.startsWith(prefix));
+      })
+      .toBe(true);
+    const first = await page
+      .getByRole('table')
+      .locator('tbody tr td:nth-child(3)')
+      .allTextContents();
+    expect(first).toHaveLength(20);
+    await page.getByRole('button', { name: 'Trang sau', exact: true }).click();
+    await expect(page.getByText('Trang 2 / 2', { exact: true })).toBeVisible();
+    const second = await page
+      .getByRole('table')
+      .locator('tbody tr td:nth-child(3)')
+      .allTextContents();
+    expect(second).toHaveLength(5);
+    expect(new Set([...first, ...second])).toEqual(new Set(records.map(({ code }) => code)));
+    expect(
+      await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth),
+    ).toBe(true);
+    const scroll = page.getByRole('table').locator('..');
+    await scroll.evaluate((element) => {
+      element.scrollLeft = element.scrollWidth;
+    });
+    const container = await scroll.boundingBox();
+    const action = await page.getByRole('table').getByRole('button').last().boundingBox();
+    expect(container).not.toBeNull();
+    expect(action).not.toBeNull();
+    expect(action!.x).toBeGreaterThanOrEqual(container!.x);
+    expect(action!.x + action!.width).toBeLessThanOrEqual(container!.x + container!.width);
+    await expect(page.getByRole('button', { name: 'Thêm câu lạc bộ' })).toBeVisible();
+    await page.getByRole('button', { name: 'Thêm câu lạc bộ' }).click();
+    const form = page.getByRole('dialog', { name: 'Thêm câu lạc bộ' });
+    await expect(form.getByLabel('Tên câu lạc bộ')).toBeVisible();
+    await form.getByLabel('Tên câu lạc bộ').fill('Câu lạc bộ Đà Nẵng');
+    await form.getByRole('button', { name: 'Hủy', exact: true }).click();
+    await expect(form).not.toBeVisible();
+    await page.getByRole('table').getByRole('button').last().click();
+    const profile = page.getByRole('dialog').filter({ hasText: 'Hồ sơ câu lạc bộ' });
+    const fallback = profile.getByRole('img', { name: /chưa có ảnh khả dụng/ });
+    await expect(fallback).toBeVisible();
+    await profile.getByLabel('Chọn ảnh logo').setInputFiles(logoFixture);
+    await profile.getByRole('button', { name: 'Tải logo lên' }).click();
+    const logo = profile.locator('img');
+    await expect(logo).toBeVisible();
+    await expect
+      .poll(() => logo.evaluate((image) => (image as HTMLImageElement).naturalWidth > 0))
+      .toBe(true);
+    for (const control of [
+      logo,
+      profile.getByLabel('Chọn ảnh thay logo'),
+      profile.getByRole('button', { name: 'Gỡ logo', exact: true }),
+    ]) {
+      await control.scrollIntoViewIfNeeded();
+      const bounds = await control.boundingBox();
+      expect(bounds).not.toBeNull();
+      expect(bounds!.x).toBeGreaterThanOrEqual(0);
+      expect(bounds!.x + bounds!.width).toBeLessThanOrEqual(viewport.width);
+      expect(bounds!.y).toBeGreaterThanOrEqual(0);
+      expect(bounds!.y + bounds!.height).toBeLessThanOrEqual(viewport.height);
+    }
+    await profile.getByRole('button', { name: 'Gỡ logo', exact: true }).click();
+    await profile.getByRole('button', { name: 'Xác nhận gỡ logo' }).click();
+    await expect(fallback).toBeVisible();
+    await profile.getByRole('button', { name: 'Đóng', exact: true }).last().click();
+    await expect(profile).not.toBeVisible();
+  });
+}
 
 test('MH13 Club form, current logo and D099 cycle use the administration visual system', async ({
   page,
@@ -47,14 +160,7 @@ test('MH13 Club form, current logo and D099 cycle use the administration visual 
   await expect(
     profile.getByRole('img', { name: `Logo của ${name} chưa có ảnh khả dụng` }),
   ).toBeVisible();
-  await profile.getByLabel('Chọn ảnh logo').setInputFiles({
-    name: 'test.png',
-    mimeType: 'image/png',
-    buffer: Buffer.from(
-      'iVBORw0KGgoAAAANSUhEUgAAAAwAAAAKCAIAAAAPTiitAAAACXBIWXMAAAPoAAAD6AG1e1JrAAAAFUlEQVQYlWMI1dlGEDGMKmKgWhAAADOpkckQKh4EAAAAAElFTkSuQmCC',
-      'base64',
-    ),
-  });
+  await profile.getByLabel('Chọn ảnh logo').setInputFiles(logoFixture);
   await profile.getByRole('button', { name: 'Tải logo lên' }).click();
   await expect(profile.getByRole('img', { name: `Logo của ${name}`, exact: true })).toBeVisible();
   await profile.getByRole('button', { name: 'Ngừng sử dụng hồ sơ' }).click();

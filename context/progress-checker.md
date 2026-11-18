@@ -6,7 +6,7 @@ The [Q99-Q103 extension](README.md#phase-1-preparation-approval---q99-q103), app
 
 This is the current Phase ledger for one evolving package, not a Spec/Plan/Task. See [business](business.md), [quality](quality.md), [UC navigation](README.md) and [source matrix](sources.md). PHASE 1-PHASE 10 remain the same organizational units; their current statuses and checklist states follow the dated evidence below.
 
-**Latest implementation update** 2026-11-17 (Asia/Bangkok). PHASE 2 is `IN_PROGRESS` with T001–T015 complete. See the [PHASE 2 implementation evidence](#phase-2---seasons-catalogs-and-regulations). PHASE 1 is `COMPLETED` for the accepted foundation scope, including [T038–T048 verification and review](#phase-1-audit-and-verification-evidence---2026-11-06). PHASE 3–PHASE 10 remain `NOT_STARTED`.
+**Latest implementation and acceptance update** 2026-11-18 (Asia/Bangkok). PHASE 2 is `COMPLETED` for the explicitly accepted scope, with T001–T030 complete and published; Issues #96–#101 are synchronized as completed. See the [PHASE 2 implementation and acceptance evidence](#phase-2---seasons-catalogs-and-regulations). PHASE 1 is `COMPLETED` for the accepted foundation scope, including [T038–T048 verification and review](#phase-1-audit-and-verification-evidence---2026-11-06). PHASE 3–PHASE 10 remain `NOT_STARTED`; operational inputs and later integration gates remain with their owners.
 
 **Post-acceptance regression** 2026-11-08 (Asia/Bangkok). Account confirmation and PHASE 1 audit before/after refinements passed 45 unit, 90 PostgreSQL integration, 32 Chrome/Edge E2E and five backup/scheduler tests, plus the baseline/negative authentication load checks. See the [dated refinement evidence](../docs/verification/phase-1/ui-refinement.md#audit-completeness-and-full-regression--2026-11-08) for scope, reproduction targets and limits. The accepted Phase status, checklist and historical approval remain unchanged; future-Phase audit actions are not claimed implemented or verified.
 
@@ -45,7 +45,7 @@ After G0, select a Phase with satisfied dependencies → Specification against a
 | Phase | Owned scope | Acceptance dependencies | Implementation Status |
 |---|---|---|---|
 | PHASE 1 - Operational foundation and access administration | Web foundation, accounts/sessions/permissions, log recording/search | G0 | `COMPLETED` |
-| PHASE 2 - Seasons, catalogs, and regulations | Seasons, club master records, stadiums, seasonal regulations | PHASE 1 | `IN_PROGRESS` |
+| PHASE 2 - Seasons, catalogs, and regulations | Seasons, club master records, stadiums, seasonal regulations | PHASE 1 | `COMPLETED` |
 | PHASE 3 - Profiles and player registration | Player profiles, seasonal club applications, registration and validation | PHASE 1, PHASE 2 | `NOT_STARTED` |
 | PHASE 4 - Schedule creation and adjustment | Double round-robin schedules, conflict checks, approval, adjustment | PHASE 2, PHASE 3 | `NOT_STARTED` |
 | PHASE 5 - Official results and statistics | Match reports, results, confirmation/correction, automatic standings/statistics | PHASE 1, PHASE 2, PHASE 3, PHASE 4 | `NOT_STARTED` |
@@ -152,11 +152,13 @@ PHASE 2 owns actual season/regulation workflows and their D089 activation/catch-
 
 **Confirmed media/API scope:** UC07 owns managed club logos and all approved LOGO-01 file, reference, failure and audit behavior. See [media policy](design/media.md) and [INT-01](design/integrations.md). This adds scope/evidence requirements, not progress.
 
-**Implementation Status:** `IN_PROGRESS`.
+**Implementation Status:** `COMPLETED` (2026-11-18, Asia/Bangkok), following explicit Team Leader acceptance of the verified scope in the [acceptance assessment](../docs/verification/phase-2/acceptance.md).
 
 **T001–T015 completion and publication, 2026-11-17 (Asia/Bangkok):** The implementation was published at [2406dc8](https://github.com/quocthai912/Whistle-EPL/commit/2406dc8ad5cd2954459b43da163a0e535d65e71e). The published feature branch was verified at [b99d8cc](https://github.com/quocthai912/Whistle-EPL/commit/b99d8cc9c70a76a0fb3a1386af3f102dac6f0502), which includes the subsequent UI refinements and shared date inputs. [Regression evidence](../docs/verification/phase-2/t001-t015-regression.md) covers the foundation, season creation and metadata, regulation preparation and independent approval, timed activation, cancellation/replacement, and operator recovery. [The Task ledger](../specs/002-phase-2-season-regulations/tasks.md) records tracker closure. At publication, T016–T030 and whole-PHASE 2 acceptance were pending, including operational data and nonempty-media recovery evidence.
 
 **T016–T024 completion and publication, 2026-11-18 (Asia/Bangkok):** Club and stadium management, logo storage and recovery, D099 availability and independently approved season lifecycle transitions are published in [d3bb0d9](https://github.com/quocthai912/Whistle-EPL/commit/d3bb0d9d8109f78d41a4fab94071c71be81c2700). The live remote branch `feat/phase-2-masters-media-and-season-lifecycle` was verified against the full commit `d3bb0d9d8109f78d41a4fab94071c71be81c2700`. The implementation and verification ledger records 24 of 30 tasks. Issues [#87](https://github.com/quocthai912/Whistle-EPL/issues/87) through [#95](https://github.com/quocthai912/Whistle-EPL/issues/95) have their Acceptance Criteria checked and are closed as completed with the `completed` label. T025–T030 and whole-PHASE 2 acceptance remain pending. [Regression and recovery evidence](../docs/verification/phase-2/t016-t024-regression.md).
+
+**T025–T030 completion and publication, 2026-11-18 (Asia/Bangkok):** All 30 Phase tasks are complete and published. The final six are included in [d3023cc](https://github.com/quocthai912/Whistle-EPL/commit/d3023cccfba28cd7c0b2e6946ab9f1b051ee6c59); the live remote branch `test/phase-2-integration-and-acceptance` and all nine tested source checksums match that commit. Issues [#96](https://github.com/quocthai912/Whistle-EPL/issues/96)–[#101](https://github.com/quocthai912/Whistle-EPL/issues/101) have all 19 Acceptance Criteria checked, are closed with reason completed and carry `completed` with `ready-for-agent` removed. Remote read-back verified bodies, states and labels. The [acceptance assessment](../docs/verification/phase-2/acceptance.md) maps all 48 FRs, twelve SCs and seven stories. Windows and Ubuntu PostgreSQL runs passed 168 cases each; backend/frontend units passed 61/85 on both systems; Chrome/Edge passed 62 cases plus eight final affected cases. Both OS root-command propagation runs passed ten probes. Lookup recorded 29,903 measured iterations with all three groups 100% valid within two seconds on the documented hardware deviation. Twenty-logo/two-season same-set recovery, interruption, seven-set retention and the scheduler daily path passed. Independent Standards review reported zero findings; the sole Spec finding was corrected and verified. The Team Leader separately answered “Phê duyệt nghiệm thu PHASE 2” on 2026-11-18, explicitly retaining the documented operational inputs and later-Phase integration gates; PHASE 2 is `COMPLETED` for the verified scope. Operational/later-Phase inputs and historical approvals remain unchanged.
 
 **Scope:** UC05, UC06, UC07, UC12: seasons, club master records, stadiums, status/catalog management, and seasonal regulation sets/approval/effectivity. PHASE 3 owns participation applications and players, which are not duplicated here.
 
@@ -171,11 +173,11 @@ PHASE 2 owns actual season/regulation workflows and their D089 activation/catch-
 - [x] The season, catalog, and regulations Specification is approved.
 - [x] The Implementation Plan is completed against settled effectivity/approval decisions.
 - [x] Tasks and dependencies are approved and linked to Issues under the conventions.
-- [ ] UC05/UC07/UC12 manage seasons, club master records, and stadiums with valid constraints.
-- [ ] UC06 validates, approves, and applies regulations at the correct effective time and records history.
-- [ ] Configuration, points ordering, catalog discontinuation, and two-season preservation tests pass.
-- [ ] Functional, save-failure/permission, and referenced-data regression tests pass.
-- [ ] All in-scope Phase criteria and evidence are verified.
+- [x] UC05/UC07/UC12 manage seasons, club master records, and stadiums with valid constraints.
+- [x] UC06 validates, approves, and applies regulations at the correct effective time and records history.
+- [x] Configuration, points ordering, catalog discontinuation, and two-season preservation tests pass.
+- [x] Functional, save-failure/permission, and referenced-data regression tests pass.
+- [x] All in-scope Phase criteria and evidence are verified.
 
 **Acceptance Criteria:** All flows/exceptions of the four UCs pass; reject missing fields/duplicate identifiers/unauthorized actions, preserving previous data on save failures. Pending regulations do not take effect automatically; record person/time/before-after/basis under UC06; win points > draw points > loss points. Registration, points/ranking, and catalog configuration can be changed under QĐ6/TH without changing business code where required. Changing catalogs/stadiums/clubs preserves used references; new seasons do not alter prior history. Unsupported format configurations cannot generate invalid schedules. Configuration use is further accepted in PHASE 3/PHASE 4/PHASE 5/PHASE 10.
 
