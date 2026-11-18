@@ -1,0 +1,44 @@
+{
+  "baseline": "99c964f8b09b250af2e85582306fd8e5e4a7e5a5",
+  "state": "local working changes; not yet published",
+  "date": "2026-11-18",
+  "files": [
+    {
+      "path": "backend/scripts/prepare-phase2-lookup.cjs",
+      "sha256": "cd9d7d625f11e0b5535a63c11b5c5c26371b106f5564e80481ccaec3c21ce101"
+    },
+    {
+      "path": "backend/scripts/prepare-phase2-recovery.cjs",
+      "sha256": "f3b246743193465b8ef4c9c98ea340636c45a4817610c5fa6c8ceff19b80ee5c"
+    },
+    {
+      "path": "backend/tests/fixtures/phase-2-master-http.ts",
+      "sha256": "4f61a5da31d1c54f170c1856bce2f0539fc3561542d16dd54c9a2e99bf2fcabf"
+    },
+    {
+      "path": "backend/tests/integration/phase-2-media.spec.ts",
+      "sha256": "a153052dfcb084fd29b80da61e9c9a94b22dcb1fc1ed806b59286dd67f8c8112"
+    },
+    {
+      "path": "backend/tests/integration/phase-2-security.spec.ts",
+      "sha256": "f716f27e8dac596d2b43e38034f440aadbac1f4912f19f8bcceb4f9e82bd006f"
+    },
+    {
+      "path": "docs/verification/phase-1/root-commands.test.mjs",
+      "sha256": "086f5b947cef625c3a60abe076acb6ec6acbdfce9692998f33c3e2a06646a55b"
+    },
+    {
+      "path": "ops/backup/tests/phase-2-recovery.sh",
+      "sha256": "784d596e6fea39e3c00082a6a82b79bb5fb83aaa63de5144fbd35c3de17c0048"
+    },
+    {
+      "path": "tests/e2e/phase-2-masters.spec.ts",
+      "sha256": "032415810457f6ebe13611f7fe4528e27dfbc94741b7c0df73100087338d41c1"
+    },
+    {
+      "path": "tests/performance/phase-2-club-lookup.js",
+      "sha256": "5392d3ebb602183093c373399f4178af4baf583f27dd98ef145af2ebea0a6c3a"
+    }
+  ],
+  "normalization": "UTF-8 text with CRLF normalized to LF"
+}

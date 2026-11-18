@@ -46,6 +46,8 @@ export function setupMasterHttpFixture() {
 
   beforeEach(async () => {
     await resetPhase1Fixtures(databaseUrl, 'RESET_ISOLATED_TEST_DATABASE');
+    // The database reset removes every reference; keep the private content fixture isolated too.
+    for (const file of await readdir(mediaRoot)) await unlink(join(mediaRoot, file));
     fixtures = await createPhase1Fixtures(databaseUrl);
   });
 

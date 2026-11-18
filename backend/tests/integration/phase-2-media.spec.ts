@@ -13,6 +13,56 @@ describe('PHASE 2 Club logo and cleanup HTTP contracts', () => {
   const http = setupMasterHttpFixture();
   const { database, origin, authenticate, createClub, readClub, clubManager, club } = http;
 
+  it('uploads and authorizes a real synthetic logo for each of twenty clubs', async () => {
+    const tokens = await clubManager();
+    const outsider = await authenticate(http.fixtures.accounts[4].id);
+    const assets = new Set<string>();
+    for (let index = 1; index <= 20; index++) {
+      const created = await createClub(tokens, {
+        code: `LOGO_${index}`,
+        name: `Câu lạc bộ có logo ${index}`,
+        abbreviation: `L${index}`,
+      }).expect(201);
+      // Original synthetic pixels authorized for the Phase 2 verification dataset.
+      const bytes = await sharp({
+        create: {
+          width: 32 + index,
+          height: 32,
+          channels: 3,
+          background: { r: 20 + index * 10, g: 60, b: 180 },
+        },
+      })
+        .png()
+        .toBuffer();
+      const uploaded = await request(http.app.getHttpServer())
+        .post(`/api/v1/clubs/${created.body.data.id}/logo`)
+        .set('Cookie', `${SESSION_COOKIE}=${tokens.token}`)
+        .set('Origin', origin)
+        .set('X-CSRF-Token', tokens.csrfToken)
+        .field('expectedRevision', '1')
+        .attach('file', bytes, { filename: 'synthetic.png', contentType: 'image/png' })
+        .expect(200);
+      const asset = uploaded.body.data.mediaAssetId as string;
+      assets.add(asset);
+      const image = await request(http.app.getHttpServer())
+        .get(`/api/v1/media/${asset}`)
+        .set('Cookie', `${SESSION_COOKIE}=${tokens.token}`)
+        .expect(200);
+      await expect(sharp(image.body as Buffer).metadata()).resolves.toMatchObject({
+        format: 'webp',
+        width: 32 + index,
+        height: 32,
+      });
+      await request(http.app.getHttpServer())
+        .get(`/api/v1/media/${asset}`)
+        .set('Cookie', `${SESSION_COOKIE}=${outsider.token}`)
+        .expect(404);
+      const detail = await readClub(tokens, `/${created.body.data.id}`).expect(200);
+      expect(detail.body.data.logo.id).toBe(asset);
+    }
+    expect(assets.size).toBe(20);
+  });
+
   it('serves only the current normalized logo and preserves content on rejected mutations', async () => {
     const tokens = await clubManager();
     const created = await createClub(tokens, club).expect(201);

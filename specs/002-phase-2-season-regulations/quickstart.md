@@ -121,9 +121,19 @@ Run actual Chrome and Edge through registered E2E suites; record versions. At 36
 768x1024 and 1366x768 inspect required controls, table scrolling and media fallback. Test
 Loading/Empty/Error, valid-entry preservation, session loss and explicit conflict review.
 
-Planned load entry point (file does not exist until implemented):
+The implemented load fixture requires an empty migrated loopback database named
+`whistle_test_phase2_lookup`. Set `TEST_DATABASE_URL` privately and keep it
+different from `DATABASE_URL`. The output path must be absolute, protected and
+outside tracked files. Prepare once, then run the application against that same
+database with the declared HTTPS origin:
 
 ```powershell
+$env:NODE_ENV = 'test'
+# Set PHASE2_LOOKUP_FIXTURE privately to an absolute ignored JSON output path.
+node backend/scripts/prepare-phase2-lookup.cjs
+# PHASE2_FIXTURE points to that output as seen by k6.
+$env:PHASE2_ISOLATED = 'ISOLATED_CLUB_LOOKUP'
+# Set PHASE2_ORIGIN to the isolated HTTPS origin, with a trusted certificate.
 k6 run tests/performance/phase-2-club-lookup.js
 ```
 
@@ -134,6 +144,11 @@ This is SC-010's partial internal master-list benchmark. HQ-01 public club looku
 remains in PHASE 6 with D097's 20 clubs, 380 matches and at least 600 player profiles.
 Record the actual machine/profile, workload and per-group API timings. Keep the applicable
 browser/UI evidence separate and retain authentication load regression. No new write-latency threshold is implied.
+
+The workload retains cookies between iterations, checks readiness/authenticated
+fixture access before measuring, and requires nonzero measured samples. It uses
+25 declared Club rows: twenty for the baseline and five additional pagination
+records. See the executed [lookup evidence](../../docs/verification/phase-2/lookup.md).
 
 On the isolated Linux reference host, existing command names remain:
 
@@ -160,6 +175,14 @@ Verify corrupt/incomplete/wrong-schema sets are rejected before restore; restore
 content from the same valid set into the separate target. Interrupt midway and prove continued
 maintenance closure/resume, then release only after reference/checksum verification and
 fresh login. Exercise replacement/cleanup/backup races and retained-set-safe cleanup.
+
+For the implemented twenty-logo/two-season drill, use a new migrated
+`whistle_test_phase2_recovery_<suffix>` database and empty protected media/backup
+roots, with `NODE_ENV=test` and the existing isolated test operator configuration.
+Run `bash ops/backup/tests/phase-2-recovery.sh` as the configured media owner.
+It generates authorized synthetic fixtures, performs retention/interruption/
+restore checks and executes the scheduler's daily path. The script refuses a
+populated target. See [recovery evidence](../../docs/verification/phase-2/recovery.md).
 
 ## Review and evidence
 
