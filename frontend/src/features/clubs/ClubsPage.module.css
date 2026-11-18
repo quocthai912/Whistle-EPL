@@ -1,0 +1,53 @@
+.hero {
+  display: grid;
+  justify-items: center;
+  padding: 20px;
+  background: #f2effb;
+  border: 1px solid #e3e7f2;
+  border-radius: 12px;
+}
+.mark,
+.smallMark {
+  display: inline-grid;
+  place-items: center;
+  color: #552cb6;
+  background: #f2effb;
+  border: 1px solid #e3e7f2;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+}
+.mark {
+  width: 96px;
+  height: 96px;
+  background: white;
+}
+.mark svg {
+  width: 40px;
+  height: 40px;
+}
+.mark img,
+.smallMark img {
+  width: 82%;
+  height: 82%;
+  object-fit: contain;
+}
+.logoActions {
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+.logoActions label {
+  display: grid;
+  gap: 4px;
+  max-width: 100%;
+}
+.logoActions input {
+  min-width: 0;
+  max-width: 100%;
+}
+.full {
+  grid-column: 1 / -1;
+}

@@ -118,10 +118,12 @@ export function SeasonDetail({
   seasonId,
   onClose,
   onUpdated,
+  onLifecycle,
 }: {
   seasonId: string;
   onClose: () => void;
   onUpdated: () => void;
+  onLifecycle?: (season: { id: string; name: string }) => void;
 }) {
   const { client, session } = useSession();
   const detail = useAdminList<SeasonDetailRecord>(`/seasons/${encodeURIComponent(seasonId)}`);
@@ -512,6 +514,21 @@ export function SeasonDetail({
                       onClick={() => startEditing(season)}
                     >
                       Chỉnh sửa thông tin mùa giải
+                    </button>
+                  </div>
+                )}
+              {!editing &&
+                !reloadRequired &&
+                onLifecycle &&
+                session?.seasonManagerIds?.includes(seasonId) && (
+                  <div className={css.drawerActions}>
+                    <button
+                      type="button"
+                      onClick={() => onLifecycle({ id: season.id, name: season.name })}
+                    >
+                      {season.state === 'OPEN'
+                        ? 'Đề xuất đóng mùa giải'
+                        : 'Đề xuất mở lại mùa giải'}
                     </button>
                   </div>
                 )}

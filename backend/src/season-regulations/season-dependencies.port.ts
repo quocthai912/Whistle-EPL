@@ -31,7 +31,7 @@ export type DependencyRequestMap = {
   };
   masterImpact: {
     seasonId: string;
-    candidateVersionId: string;
+    candidateVersionId?: string;
     resourceKind: 'CLUB' | 'STADIUM';
     resourceId: string;
   };

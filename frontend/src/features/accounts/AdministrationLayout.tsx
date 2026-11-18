@@ -9,30 +9,40 @@ import css from './Administration.module.css';
 import { SeasonsPage } from '../seasons/SeasonsPage';
 import { regulationSeasonScope } from '../seasons/season-model';
 import { RegulationWorkspace } from '../regulations/RegulationWorkspace';
+import { ClubsPage } from '../clubs/ClubsPage';
+import { StadiumsPage } from '../stadiums/StadiumsPage';
 
 /** Shows the selected administration page only to sessions with the corresponding role. */
 export default function AdministrationLayout({
   page,
 }: {
-  page: 'accounts' | 'delegations' | 'audit' | 'seasons' | 'regulations';
+  page: 'accounts' | 'delegations' | 'audit' | 'seasons' | 'regulations' | 'clubs' | 'stadiums';
 }) {
   const { session } = useSession();
   const { seasonId } = useParams();
   const admin = session?.systemAdministrator;
   const manager = !!session?.seasonManagerIds?.length;
+  const canReadClubs = manager || session?.sharedMasterKinds?.includes('CLUB_MASTER');
+  const canReadStadiums =
+    session?.sharedMasterKinds?.includes('STADIUM_MASTER') ||
+    session?.seasonRoles?.some(({ roleCode }) => roleCode === 'SCHEDULING_OFFICER');
   const hasSeasonRole = !!session?.seasonRoles?.length || manager;
   const canCreateSeason = !!session?.canCreateSeason;
   const regulationSeasonIds = regulationSeasonScope(session);
   const permitted =
-    page === 'regulations'
-      ? seasonId
-        ? regulationSeasonIds.has(seasonId)
-        : regulationSeasonIds.size > 0
-      : page === 'seasons'
-        ? canCreateSeason || hasSeasonRole
-        : page === 'delegations'
-          ? admin || manager
-          : admin;
+    page === 'stadiums'
+      ? canReadStadiums
+      : page === 'clubs'
+        ? canReadClubs
+        : page === 'regulations'
+          ? seasonId
+            ? regulationSeasonIds.has(seasonId)
+            : regulationSeasonIds.size > 0
+          : page === 'seasons'
+            ? canCreateSeason || hasSeasonRole
+            : page === 'delegations'
+              ? admin || manager
+              : admin;
   const navigation = (
     <nav className={css.nav} aria-label="Quản trị">
       {admin && (
@@ -67,6 +77,18 @@ export default function AdministrationLayout({
           <AdminIcon name="regulations" />
           Quản lý quy định mùa giải
         </Link>
+      )}
+      {canReadClubs && (
+        <NavLink to="/workspace/clubs">
+          <AdminIcon name="shield" />
+          Quản lý hồ sơ câu lạc bộ
+        </NavLink>
+      )}
+      {canReadStadiums && (
+        <NavLink to="/workspace/stadiums">
+          <AdminIcon name="stadium" />
+          Quản lý sân vận động
+        </NavLink>
       )}
     </nav>
   );
@@ -112,6 +134,10 @@ export default function AdministrationLayout({
             <DelegationsPage />
           ) : page === 'regulations' ? (
             <RegulationWorkspace />
+          ) : page === 'clubs' ? (
+            <ClubsPage />
+          ) : page === 'stadiums' ? (
+            <StadiumsPage />
           ) : (
             <SeasonsPage />
           )

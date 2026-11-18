@@ -25,6 +25,17 @@ import {
 } from './season-regulations/season-dependencies.service';
 import type { DependencyModuleRegistration } from './season-regulations/season-dependencies.port';
 import { SeasonsController } from './season-regulations/seasons.controller';
+import { ClubsController } from './registry-registration/clubs.controller';
+import { ClubsService } from './registry-registration/clubs.service';
+import { LocalMediaStore } from './media/local-media.store';
+import { MediaController } from './media/media.controller';
+import { MediaService } from './media/media.service';
+import { MasterAvailabilityService } from './platform/master-availability';
+import { MasterCorrectionImpactService } from './platform/master-correction-impact';
+import { StadiumsController } from './scheduling/stadiums.controller';
+import { StadiumsService } from './scheduling/stadiums.service';
+import { SeasonLifecycleController } from './season-regulations/season-lifecycle.controller';
+import { SeasonLifecycleService } from './season-regulations/season-lifecycle.service';
 import { SeasonsService } from './season-regulations/seasons.service';
 import { RegulationsController } from './season-regulations/regulations.controller';
 import { RegulationsService } from './season-regulations/regulations.service';
@@ -90,10 +101,65 @@ class ReadinessController {
     DelegationsController,
     AuditController,
     SeasonsController,
+    SeasonLifecycleController,
+    ClubsController,
+    StadiumsController,
+    MediaController,
     RegulationsController,
     RegulationChangesController,
   ],
   providers: [
+    {
+      provide: MasterCorrectionImpactService,
+      inject: [HttpBusinessExecutionAdapter, SeasonDependenciesService],
+      useFactory: (
+        execution: HttpBusinessExecutionAdapter,
+        dependencies: SeasonDependenciesService,
+      ) => new MasterCorrectionImpactService(execution, dependencies),
+    },
+    {
+      provide: SeasonLifecycleService,
+      inject: [HttpBusinessExecutionAdapter, SeasonDependenciesService, AuditWriterService],
+      useFactory: (
+        execution: HttpBusinessExecutionAdapter,
+        dependencies: SeasonDependenciesService,
+        audit: AuditWriterService,
+      ) => new SeasonLifecycleService(execution, dependencies, audit),
+    },
+    {
+      provide: StadiumsService,
+      inject: [HttpBusinessExecutionAdapter, AuditWriterService, BusinessHistoryService],
+      useFactory: (
+        execution: HttpBusinessExecutionAdapter,
+        audit: AuditWriterService,
+        history: BusinessHistoryService,
+      ) => new StadiumsService(execution, audit, history),
+    },
+    {
+      provide: MasterAvailabilityService,
+      inject: [HttpBusinessExecutionAdapter, AuditWriterService],
+      useFactory: (execution: HttpBusinessExecutionAdapter, audit: AuditWriterService) =>
+        new MasterAvailabilityService(execution, audit),
+    },
+    { provide: LocalMediaStore, useFactory: () => new LocalMediaStore() },
+    {
+      provide: MediaService,
+      inject: [HttpBusinessExecutionAdapter, AuditWriterService, LocalMediaStore],
+      useFactory: (
+        execution: HttpBusinessExecutionAdapter,
+        audit: AuditWriterService,
+        storage: LocalMediaStore,
+      ) => new MediaService(execution, audit, storage),
+    },
+    {
+      provide: ClubsService,
+      inject: [HttpBusinessExecutionAdapter, AuditWriterService, BusinessHistoryService],
+      useFactory: (
+        execution: HttpBusinessExecutionAdapter,
+        audit: AuditWriterService,
+        history: BusinessHistoryService,
+      ) => new ClubsService(execution, audit, history),
+    },
     {
       provide: AuditWriterService,
       useFactory: () => new AuditWriterService(),

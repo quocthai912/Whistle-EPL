@@ -16,14 +16,14 @@ services:
       retries: 30
     restart: unless-stopped
   migrate:
-    build: {context: .., dockerfile: backend/Dockerfile}
+    build: { context: .., dockerfile: backend/Dockerfile }
     env_file: ${BACKEND_ENV_FILE:?Protected backend environment file}
     command: [sh, -c, 'cd /app && pnpm db:migrate']
-    depends_on: {db: {condition: service_healthy}}
+    depends_on: { db: { condition: service_healthy } }
     networks: [private]
     restart: 'no'
   backend:
-    build: {context: .., dockerfile: backend/Dockerfile}
+    build: { context: .., dockerfile: backend/Dockerfile }
     env_file: ${BACKEND_ENV_FILE:?Required}
     environment:
       HOST: 0.0.0.0
@@ -31,12 +31,24 @@ services:
       AUTH_ORIGIN: ${AUTH_ORIGIN:?Exact browser HTTPS origin required}
       AUTH_TRUSTED_PROXY_CIDRS: '${CADDY_PRIVATE_IP:?Reserved Caddy private IPv4 required}/32'
       MAINTENANCE_MARKER_PATH: /operation-state/maintenance.json
+      MEDIA_STORAGE_PROFILE: local
+      MEDIA_ROOT: /var/lib/whistle-epl/media
     volumes:
       - ${OPERATION_STATE_DIR:?Protected host state directory}:/operation-state:ro
-    depends_on: {migrate: {condition: service_completed_successfully}}
+      - type: bind
+        source: ${OPS_MEDIA_ROOT:?Protected backend-owned host media directory}
+        target: /var/lib/whistle-epl/media
+        bind: { create_host_path: false }
+    depends_on: { migrate: { condition: service_completed_successfully } }
     networks: [private]
     healthcheck:
-      test: [CMD, node, -e, "fetch('http://127.0.0.1:3000/ready').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      test:
+        [
+          CMD,
+          node,
+          -e,
+          "fetch('http://127.0.0.1:3000/ready').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
       interval: 10s
       timeout: 5s
       retries: 12
@@ -45,11 +57,11 @@ services:
     build:
       context: ..
       dockerfile: frontend/Dockerfile
-      args: {CADDY_IMAGE: '${CADDY_IMAGE:?Pinned Caddy image required}'}
-    environment: {SITE_ADDRESS: '${SITE_ADDRESS:?Trusted local HTTPS address required}'}
+      args: { CADDY_IMAGE: '${CADDY_IMAGE:?Pinned Caddy image required}' }
+    environment: { SITE_ADDRESS: '${SITE_ADDRESS:?Trusted local HTTPS address required}' }
     ports: ['${HTTPS_BIND:?Explicit bind address}:443:443']
     volumes: [caddy-data:/data, caddy-config:/config]
-    depends_on: {backend: {condition: service_healthy}}
+    depends_on: { backend: { condition: service_healthy } }
     networks:
       private:
         ipv4_address: ${CADDY_PRIVATE_IP:?Reserved Caddy private IPv4 required}

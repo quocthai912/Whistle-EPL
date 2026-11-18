@@ -13,6 +13,36 @@ const button = (page: Page, name: string) => page.getByRole('button', { name, ex
 const accountRow = (page: Page, username: string) =>
   page.getByRole('row').filter({ has: page.getByText(username, { exact: true }) });
 
+test('MH11 drafts a close proposal from the season drawer and displays the current blocker', async ({
+  page,
+}) => {
+  const {
+    accounts: [, , manager],
+    seasons: [assigned],
+  } = await browserAdministration();
+  await login(page, manager);
+  await page.goto('/workspace/seasons');
+  await page
+    .getByRole('row')
+    .filter({ hasText: assigned.code })
+    .getByRole('button', { name: 'Chi tiết' })
+    .click();
+  await page.getByRole('dialog').getByRole('button', { name: 'Đề xuất đóng mùa giải' }).click();
+  await expect(page.getByRole('tab', { name: 'Đề xuất đóng/mở mùa giải' })).toHaveAttribute(
+    'aria-selected',
+    'true',
+  );
+  const draft = page.getByRole('dialog', { name: 'Tạo đề xuất' });
+  await draft.getByLabel('Lý do đề xuất').fill('Rà soát trước khi kết thúc mùa giải.');
+  await draft.getByRole('button', { name: 'Lưu bản nháp' }).click();
+  await expect(draft).not.toBeVisible();
+  await expect(page.getByText(/Cần bản tổng kết đã xác nhận/)).toBeVisible();
+  await page.getByRole('button', { name: 'Chi tiết đề xuất' }).click();
+  const request = page.getByRole('dialog').filter({ hasText: 'Phiên bản 1' });
+  await expect(request.getByText('Rà soát trước khi kết thúc mùa giải.')).toBeVisible();
+  await expect(request.getByRole('button', { name: 'Phê duyệt', exact: true })).toHaveCount(0);
+});
+
 test('a direct season-creation grant lets a create-only account create without reading seasons', async ({
   page,
 }) => {
@@ -254,7 +284,6 @@ test('closed season metadata is displayed read-only without lifecycle actions', 
   const drawer = page.getByRole('dialog');
   await expect(drawer.getByText(/chỉ có thể chỉnh sửa sau khi được mở lại/i)).toBeVisible();
   await expect(drawer.getByRole('button', { name: 'Chỉnh sửa thông tin mùa giải' })).toHaveCount(0);
-  await expect(drawer.getByRole('button', { name: /đóng mùa giải|mở lại mùa giải/i })).toHaveCount(
-    0,
-  );
+  await expect(drawer.getByRole('button', { name: 'Đề xuất mở lại mùa giải' })).toBeVisible();
+  await expect(drawer.getByRole('button', { name: 'Mở lại mùa giải', exact: true })).toHaveCount(0);
 });

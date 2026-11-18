@@ -1,0 +1,23 @@
+.form label > input,
+.form label > textarea {
+  border-radius: 8px;
+  min-height: 42px;
+}
+.form label > textarea {
+  resize: vertical;
+}
+.history {
+  display: grid;
+  gap: 10px;
+  overflow-wrap: anywhere;
+}
+.history article,
+.review {
+  padding: 12px;
+  border: 1px solid #e3e7f2;
+  border-radius: 10px;
+}
+.review {
+  background: #f6f3fc;
+  overflow-wrap: anywhere;
+}

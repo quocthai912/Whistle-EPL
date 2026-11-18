@@ -87,6 +87,25 @@ export async function grantBrowserSeasonManager(
   }
 }
 
+export async function browserMasterManager(kind: 'CLUB_MASTER' | 'STADIUM_MASTER') {
+  const { accounts } = await browserAdministration();
+  const owner = accounts[kind === 'CLUB_MASTER' ? 2 : 3];
+  const db = database();
+  try {
+    await db.client.sharedMasterGrant.create({
+      data: {
+        accountId: owner.id,
+        masterKind: kind,
+        grantedBy: accounts[0].id,
+        grantedAt: await db.now(),
+      },
+    });
+    return owner;
+  } finally {
+    await db.close();
+  }
+}
+
 export async function changeBrowserBasis(
   accountId: string,
   change: 'idle' | 'absolute' | 'revoke' | 'lock',

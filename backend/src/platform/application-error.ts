@@ -14,3 +14,9 @@ export class ApplicationError extends Error {
     super(message);
   }
 }
+
+export class MasterNameConflict extends ApplicationError {
+  constructor(readonly candidates: ReadonlyArray<{ id: string; code: string; name: string }>) {
+    super(409, 'BASIS_CHANGED', 'Danh sách hồ sơ trùng tên đã thay đổi. Vui lòng kiểm tra lại.');
+  }
+}

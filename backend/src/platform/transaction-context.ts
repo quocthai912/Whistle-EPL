@@ -5,6 +5,7 @@ export type LockMode = 'shared' | 'exclusive';
 type LockKind =
   | 'system'
   | 'seasonCollection'
+  | 'masterIdentity'
   | 'account'
   | 'security'
   | 'season'
@@ -49,6 +50,13 @@ const resources = {
     column: null,
     keyType: 'fixed',
     advisoryPrefix: 'season-collection:',
+  },
+  masterIdentity: {
+    order: 2,
+    table: null,
+    column: null,
+    keyType: 'text',
+    advisoryPrefix: 'master-identity:',
   },
   account: { order: 3, table: 'account', column: 'id', keyType: 'uuid' },
   security: {

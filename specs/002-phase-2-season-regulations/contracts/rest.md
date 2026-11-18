@@ -41,6 +41,7 @@ and owning UC05/06/07/12 authority. Relative paths below are under `/api/v1`.
 | PATCH /seasons/{seasonId} | Assigned manager; expectedRevision plus changed name/competitionName/startDate/endDate | OPEN required at final write; immutable code/id rejected; dates/order/history checks; 200 acknowledgement. |
 | GET /seasons/{seasonId}/history | Current object-read authority, scoped filters/pagination | D094 permitted actor/action/time/before-after/reason/version references; no audit mutation/export. |
 | GET /seasons/{seasonId}/lifecycle-requests | Current seasonal responsibility | Versioned requests with permitted reasons/readiness blockers; not a new summary-report endpoint. |
+| GET /season-lifecycle-requests/{requestId} | Current responsibility for the owning season | Paged version history and the current readiness blockers relevant to the request. |
 | POST /seasons/{seasonId}/lifecycle-requests | Assigned manager; action CLOSE/REOPEN, reason | Draft request/version identity; no state transition or implicit readiness. |
 | PATCH /season-lifecycle-requests/{requestId}/draft | Assigned preparer; expectedRevision, action/reason while editable | Updated draft or successor version after return/withdrawal; editor history retained. |
 | POST /season-lifecycle-requests/{requestId}/{action} | Explicit submit/withdraw/return/reject/approve; expectedRevision, submittedVersionId where applicable, required reason | Approve is R, independent assigned manager/nondelegable. CLOSE binds current valid summary and all readiness gates; REOPEN preserves freezes. No generic status PATCH. |
@@ -125,6 +126,7 @@ Mutation orchestration performs its final due check in the caller-owned season t
 | PATCH /clubs/{clubId}; PATCH /stadiums/{stadiumId} | Matching shared grant; expectedRevision, editable name/abbreviation or name/location, correctionReason/correctionBasis where correcting source information; duplicateReview? | Preserve identity/references/snapshots; identify affected work; no indirect match/registration edits. |
 | POST /clubs/{clubId}/{discontinue,resume}; POST /stadiums/{stadiumId}/{discontinue,resume} | Matching shared grant; expectedRevision, nonempty reason | Exact explicit action; state/revision conflict rejects repeats. Authority, trusted recording instant, marker/revision and required audit commit together. |
 | GET /clubs/{clubId}/history; GET /stadiums/{stadiumId}/history | Corresponding current object-read authority | Searchable bounded D094 before/after and complete D099 cycles; no unredacted global audit grant. |
+| GET /clubs/{clubId}/correction-impact; GET /stadiums/{stadiumId}/correction-impact | Matching shared grant and corresponding responsibility for the requested `seasonId` | Affected records from the owning dependency port or its verified absence or unavailable status. |
 
 `duplicateReview` is `{acknowledged:true,candidateIds,reason}` for a genuinely distinct entity.
 It is accepted on creation and name corrections; it does not widen the editable master fields

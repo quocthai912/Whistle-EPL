@@ -71,12 +71,33 @@ export class MaintenanceService {
       throw new Error('Matching durable operation required.');
     return marker;
   }
+  async resumeRestore(operationId: string, backupSetPath: string): Promise<void> {
+    const marker = await this.requireMarker(operationId);
+    if (marker.kind !== 'restore' || marker.backupSetPath !== backupSetPath)
+      throw new Error('Matching durable restore operation required.');
+    await this.database.client.$transaction(async (db) => {
+      const guards = await db.$queryRaw<unknown[]>`
+        SELECT key FROM system_guard WHERE key='maintenance-admission' FOR UPDATE
+      `;
+      if (guards.length !== 1) throw new Error('Maintenance admission guard is missing.');
+      const enclosing = await this.requireMarker(operationId);
+      if (enclosing.kind !== 'restore' || enclosing.backupSetPath !== backupSetPath)
+        throw new Error('Matching durable restore operation required.');
+      // The restored dump can contain the backup operation's closed row. The durable restore
+      // marker owns admission during recovery and is the source of the operation identity.
+      await db.maintenanceState.update({
+        where: { singletonId: 1 },
+        data: { closed: true, operationId, changedAt: new Date() },
+      });
+    });
+  }
+
   async verify(operationId: string): Promise<void> {
     const marker = await this.requireMarker(operationId);
+    const app = resolve(__dirname, '../../..');
     if (marker.kind === 'restore') {
       if (!marker.backupSetPath || !isAbsolute(marker.backupSetPath))
         throw new Error('Selected restore set missing.');
-      const app = resolve(__dirname, '../../..');
       // Re-run actual same-set content, compatibility and relationship verification on every release.
       execFileSync(
         'python3',
@@ -112,15 +133,14 @@ export class MaintenanceService {
       `;
       if (mediaTables.length !== 0 && mediaTables.length !== 3)
         throw new Error('Club/Stadium/media schema is incomplete.');
-      if (mediaTables.length === 3) {
-        const assets = await db.$queryRaw<Array<{ count: bigint }>>`
-          SELECT count(*) AS count FROM media_asset
+      if (mediaTables.length === 3 && marker.kind !== 'restore') {
+        const [{ present }] = await db.$queryRaw<{ present: boolean }[]>`
+          SELECT EXISTS (SELECT 1 FROM media_asset WHERE content_deleted_at IS NULL) AS present
         `;
-        const currentLogos = await db.$queryRaw<Array<{ count: bigint }>>`
-          SELECT count(*) AS count FROM club WHERE current_logo_id IS NOT NULL
-        `;
-        if (assets[0].count !== 0n || currentLogos[0].count !== 0n)
-          throw new Error('Nonempty media requires its owning recovery implementation.');
+        if (present)
+          execFileSync('python3', [resolve(app, 'ops/backup/set-format.py'), 'live-media', app], {
+            stdio: 'pipe',
+          });
       }
       if (
         (await db.systemGuard.count({

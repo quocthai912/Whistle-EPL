@@ -37,6 +37,8 @@ export function FoundationRouter() {
       <Route path="/admin/delegations" element={<AuthRoute page="delegations" />} />
       <Route path="/admin/audit" element={<AuthRoute page="audit" />} />
       <Route path="/workspace/seasons" element={<AuthRoute page="seasons" />} />
+      <Route path="/workspace/clubs" element={<AuthRoute page="clubs" />} />
+      <Route path="/workspace/stadiums" element={<AuthRoute page="stadiums" />} />
       <Route path="/workspace/seasons/regulations" element={<AuthRoute page="regulations" />} />
       <Route
         path="/workspace/seasons/:seasonId/regulations"

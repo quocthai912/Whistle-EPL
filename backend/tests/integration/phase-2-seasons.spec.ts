@@ -17,6 +17,8 @@ import { DatabaseService } from '../../src/platform/database.service';
 import { SafeErrorFilter } from '../../src/platform/error.filter';
 import { ResponseEnvelopeInterceptor } from '../../src/platform/response-envelope.interceptor';
 import { SafeValidationPipe } from '../../src/platform/validation.pipe';
+import { SeasonDependenciesService } from '../../src/season-regulations/season-dependencies.service';
+import type { DependencyResult } from '../../src/season-regulations/season-dependencies.port';
 
 async function nextRegulationVersionNumber(pool: Pool, caseId: string): Promise<number> {
   const result = await pool.query(
@@ -1168,6 +1170,42 @@ describe('PHASE 2 season creation HTTP contract', () => {
       .send(payload);
   }
 
+  function prepareLifecycle(
+    tokens: { token: string; csrfToken: string },
+    id: string,
+    action: 'CLOSE' | 'REOPEN',
+  ) {
+    return request(app.getHttpServer())
+      .post(`/api/v1/seasons/${id}/lifecycle-requests`)
+      .set('Cookie', `${SESSION_COOKIE}=${tokens.token}`)
+      .set('Origin', 'https://whistle.test')
+      .set('X-CSRF-Token', tokens.csrfToken)
+      .send({ action, reason: 'Xác nhận xử lý vòng đời mùa giải.' });
+  }
+
+  function lifecycleAction(
+    tokens: { token: string; csrfToken: string },
+    draft: {
+      id: string;
+      revision: string;
+      relatedId: string;
+    },
+    action: string,
+    key = randomUUID(),
+  ) {
+    return request(app.getHttpServer())
+      .post(`/api/v1/season-lifecycle-requests/${draft.id}/${action}`)
+      .set('Cookie', `${SESSION_COOKIE}=${tokens.token}`)
+      .set('Origin', 'https://whistle.test')
+      .set('X-CSRF-Token', tokens.csrfToken)
+      .set('Idempotency-Key', key)
+      .send({
+        expectedRevision: draft.revision,
+        submittedVersionId: draft.relatedId,
+        reason: 'Đã rà soát đề xuất.',
+      });
+  }
+
   beforeAll(async () => {
     previousOrigin = process.env.AUTH_ORIGIN;
     process.env.AUTH_ORIGIN = 'https://whistle.test';
@@ -1756,5 +1794,189 @@ describe('PHASE 2 season creation HTTP contract', () => {
         where: { actionCode: 'SEASON_UPDATED', objectId: seasonId },
       }),
     ).toBe(0);
+  });
+
+  it('prepares a CLOSE draft before a confirmed summary exists, but blocks submission', async () => {
+    const manager = await createLiveAccount('T023A');
+    const id = fixtures.seasons[0].id;
+    await grantSeasonRole(manager.account.id, id, 'SEASON_MANAGER');
+    const { body } = await prepareLifecycle(manager.tokens, id, 'CLOSE').expect(201);
+    await lifecycleAction(manager.tokens, body.data, 'submit').expect(409);
+    const rows = await observer.query(
+      'SELECT state, summary_version_id FROM season_lifecycle_version WHERE id = $1',
+      [body.data.relatedId],
+    );
+    expect(rows.rows).toEqual([{ state: 'DRAFT', summary_version_id: null }]);
+    expect(
+      (await observer.query('SELECT state FROM season WHERE id = $1', [id])).rows[0].state,
+    ).toBe('OPEN');
+  });
+
+  it('binds actual confirmed summary, rechecks simulated later facts and independently closes and reopens', async () => {
+    const manager = await createLiveAccount('T024P');
+    const approver = await createLiveAccount('T024A');
+    const id = fixtures.seasons[0].id;
+    await grantSeasonRole(manager.account.id, id, 'SEASON_MANAGER');
+    await grantSeasonRole(approver.account.id, id, 'SEASON_MANAGER');
+    const caseId = randomUUID();
+    const summaryId = randomUUID();
+    const regulationCaseId = randomUUID();
+    await observer.query('INSERT INTO regulation_case(id,season_id) VALUES ($1,$2)', [
+      regulationCaseId,
+      id,
+    ]);
+    const regulationId = await insertDraftRegulationVersion(observer, {
+      seasonId: id,
+      caseId: regulationCaseId,
+      preparedBy: manager.account.id,
+      versionNumber: 1,
+    });
+    const registrationId = randomUUID();
+    const sourceSnapshot = {
+      basis: {
+        regulationVersionId: regulationId,
+        officialReportVersionIds: [],
+        rankingResolutionVersionIds: [],
+      },
+      content: { standings: [] },
+    };
+    await observer.query('INSERT INTO season_summary_case(id,season_id) VALUES ($1,$2)', [
+      caseId,
+      id,
+    ]);
+    await observer.query(
+      `
+      INSERT INTO season_summary_version(id, season_id, case_id, version_number, prepared_by,
+        basis_statistics_revision, source_snapshot, report_date)
+      VALUES ($1,$2,$3,1,$4,0,$5::jsonb,'2026-11-17')
+    `,
+      [summaryId, id, caseId, manager.account.id, JSON.stringify(sourceSnapshot)],
+    );
+    await observer.query(
+      `
+      UPDATE season_summary_version SET state='CONFIRMED', submitted_at=clock_timestamp(),
+        decided_at=clock_timestamp(), decided_by=$2 WHERE id=$1
+    `,
+      [summaryId, approver.account.id],
+    );
+    await observer.query(
+      'UPDATE season_summary_case SET current_confirmed_version_id=$1 WHERE id=$2',
+      [summaryId, caseId],
+    );
+    const pastEnd = '2000-01-01T00:00:00.000Z';
+    let playingEnd: string | null = pastEnd;
+    const service = app.get(SeasonDependenciesService);
+    const actualRead = service.read.bind(service);
+    const read = jest.spyOn(service, 'read').mockImplementation((async (kind, context, input) => {
+      if (kind !== 'seasonClosingReadiness') return actualRead(kind, context, input);
+      // GUARD_SIMULATION: no later registration or statistics writer is introduced here.
+      return {
+        status: 'KNOWN',
+        facts: {
+          summary: {
+            caseExists: true,
+            caseId,
+            currentConfirmedVersionId: summaryId,
+            currentVersionState: 'CONFIRMED',
+            currentStatisticsRevision: '0',
+            basisStatisticsRevision: '0',
+            sourceSnapshot,
+            needsReconfirmation: false,
+          },
+          unresolvedRequests: [],
+          waitingEffects: [],
+          unresolvedFuturePlans: [],
+          playingIntervals: [{ registrationId, playingEnd }],
+        },
+        basis: {
+          owner: 'statistics-reporting',
+          sourceRevision: '0:fixture',
+          references: [caseId, summaryId, regulationId, registrationId],
+        },
+        locks: [],
+      } satisfies DependencyResult<'seasonClosingReadiness'>;
+    }) as typeof service.read);
+    try {
+      const draft = (await prepareLifecycle(manager.tokens, id, 'CLOSE').expect(201)).body.data;
+      const pending = (await lifecycleAction(manager.tokens, draft, 'submit').expect(200)).body
+        .data;
+      expect(
+        (
+          await observer.query(
+            'SELECT summary_version_id FROM season_lifecycle_version WHERE id=$1',
+            [draft.relatedId],
+          )
+        ).rows[0],
+      ).toMatchObject({ summary_version_id: summaryId });
+      await lifecycleAction(manager.tokens, pending, 'approve').expect(403);
+      const holder = await observer.connect();
+      let closing: Promise<{ status: number }> | undefined;
+      try {
+        await holder.query('BEGIN');
+        await holder.query('SELECT id FROM season WHERE id = $1 FOR UPDATE', [id]);
+        closing = lifecycleAction(approver.tokens, pending, 'approve').then((result) => result);
+        let waiting = false;
+        const deadline = Date.now() + 10_000;
+        while (Date.now() < deadline && !waiting) {
+          const result = await observer.query(`
+            SELECT pid FROM pg_stat_activity WHERE datname = current_database()
+              AND wait_event_type = 'Lock' AND query ILIKE '%FROM "season"%FOR UPDATE%'
+          `);
+          waiting = !!result.rowCount;
+          if (!waiting) await new Promise((resolve) => setTimeout(resolve, 10));
+        }
+        expect(waiting).toBe(true);
+        playingEnd = '2099-01-01T00:00:00.000Z';
+      } finally {
+        await holder.query('ROLLBACK');
+        holder.release();
+      }
+      expect((await closing!).status).toBe(409);
+      playingEnd = null;
+      await lifecycleAction(approver.tokens, pending, 'approve').expect(409);
+      expect(
+        (await observer.query('SELECT state FROM season WHERE id = $1', [id])).rows[0].state,
+      ).toBe('OPEN');
+      expect(
+        (
+          await observer.query(
+            "SELECT count(*) FROM command_receipt WHERE action_code='SEASON_LIFECYCLE_APPROVED'",
+          )
+        ).rows[0].count,
+      ).toBe('0');
+      playingEnd = pastEnd;
+      const key = randomUUID();
+      const approved = (await lifecycleAction(approver.tokens, pending, 'approve', key).expect(200))
+        .body.data;
+      expect(
+        (await lifecycleAction(approver.tokens, pending, 'approve', key).expect(200)).body.data,
+      ).toEqual(approved);
+      const reopening = (await prepareLifecycle(manager.tokens, id, 'REOPEN').expect(201)).body
+        .data;
+      await updateRequest(manager.tokens, id, {
+        expectedRevision: '2',
+        name: 'Closed write',
+      }).expect(409);
+      const reopenPending = (await lifecycleAction(manager.tokens, reopening, 'submit').expect(200))
+        .body.data;
+      await lifecycleAction(approver.tokens, reopenPending, 'approve').expect(200);
+      const season = (
+        await observer.query(
+          'SELECT state, revision, statistics_revision FROM season WHERE id=$1',
+          [id],
+        )
+      ).rows[0];
+      expect(season).toMatchObject({ state: 'OPEN', revision: '3', statistics_revision: '0' });
+      expect(
+        (
+          await observer.query(
+            'SELECT current_confirmed_version_id, needs_reconfirmation FROM season_summary_case WHERE id=$1',
+            [caseId],
+          )
+        ).rows[0],
+      ).toMatchObject({ current_confirmed_version_id: summaryId, needs_reconfirmation: false });
+    } finally {
+      read.mockRestore();
+    }
   });
 });

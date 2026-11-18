@@ -386,6 +386,7 @@ model SeasonLifecycleVersion {
   action               String
   reason               String?
   summaryVersionId     String?                        @map("summary_version_id") @db.Uuid
+  readinessBasis       String?                        @map("readiness_basis")
   summaryVersion       SeasonSummaryVersion?          @relation("lifecycleSummary", fields: [seasonId, summaryVersionId], references: [seasonId, id], onDelete: Restrict, onUpdate: NoAction)
   createdAt            DateTime                       @default(now()) @map("created_at") @db.Timestamptz(6)
   editors              SeasonLifecycleVersionEditor[]

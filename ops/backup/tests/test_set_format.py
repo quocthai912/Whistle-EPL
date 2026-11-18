@@ -1,8 +1,10 @@
 import importlib.util
+import hashlib
 import json
 from pathlib import Path
 import tempfile
 import unittest
+from unittest.mock import patch
 
 MODULE = Path(__file__).resolve().parents[1] / 'set-format.py'
 spec = importlib.util.spec_from_file_location('set_format', MODULE)
@@ -113,7 +115,12 @@ class SetFormatTest(unittest.TestCase):
             self.assertEqual(
                 manifest['migrationInventory'],
                 [
-                    {'name': name, 'sha256': module.digest(app / 'backend/prisma/migrations' / name / 'migration.sql')}
+                    {
+                        'name': name, 'sha256': hashlib.sha256(
+                            (app / 'backend/prisma/migrations' / name / 'migration.sql')
+                            .read_bytes().replace(b'\r\n', b'\n')
+                        ).hexdigest(),
+                    }
                     for name in PHASE2_MIGRATIONS
                 ],
             )
@@ -139,6 +146,39 @@ class SetFormatTest(unittest.TestCase):
                         'test-image-sha256:abcdef0123456789',
                         '2026-11-15T12:00:00Z',
                     )
+
+    def test_v2_copies_and_requires_each_inventory_asset(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            app = make_app(root, PHASE2_MIGRATIONS)
+            source = root / 'live-media'
+            source.mkdir()
+            content = b'normalized-image-fixture'
+            asset_id = '00000000-0000-4000-8000-000000000001'
+            asset = {
+                'id': asset_id, 'provider': 'LOCAL', 'objectKey': f'{asset_id}.webp',
+                'mimeType': 'image/webp', 'byteSize': len(content), 'width': 4, 'height': 5,
+                'checksum': hashlib.sha256(content).hexdigest(),
+            }
+            (source / asset['objectKey']).write_bytes(content)
+            inventory = phase2_inventory()
+            inventory['club'] = {**inventory_table(1), 'currentLogoReferences': 1}
+            inventory['media_asset'] = {**inventory_table(1), 'storedContent': [asset]}
+            backup = make_backup(root, inventory)
+            with patch.object(module, 'media_root', return_value=source):
+                module.create(
+                    app, backup, 'with-logo', '00000000-0000-4000-8000-000000000002',
+                    'test-image', '2026-11-15T12:00:00Z',
+                )
+            self.assertEqual(module.verify(app, backup)['media'], [asset])
+            logo_copy = backup / 'media' / asset['objectKey']
+            self.assertEqual(logo_copy.read_bytes(), content)
+            logo_copy.write_bytes(b'x' * len(content))
+            with self.assertRaises(ValueError):
+                module.verify(app, backup)
+            logo_copy.unlink()
+            with self.assertRaises(ValueError):
+                module.verify(app, backup)
 
     def test_v2_rejects_unexpected_media_files_and_unknown_migration_profiles(self):
         with tempfile.TemporaryDirectory() as directory:
