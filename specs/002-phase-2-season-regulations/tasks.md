@@ -31,6 +31,15 @@ Issues are closed as completed with the `completed` label. See the [implementati
 and remaining scope](../../context/progress-checker.md#phase-2---seasons-catalogs-and-regulations)
 and [regression evidence](../../docs/verification/phase-2/t001-t015-regression.md).
 
+**Implementation and tracker update, 2026-11-18 (Asia/Bangkok):** T016–T024 are complete
+and published at [d3bb0d9](https://github.com/quocthai912/Whistle-EPL/commit/d3bb0d9d8109f78d41a4fab94071c71be81c2700).
+All 36 Acceptance Criteria in Issues [#87](https://github.com/quocthai912/Whistle-EPL/issues/87)
+through [#95](https://github.com/quocthai912/Whistle-EPL/issues/95) are checked. The nine Issues
+are closed as completed, carry the `completed` label and have had `ready-for-agent` removed.
+The live remote feature branch matched the published commit. See the
+[verification evidence](../../docs/verification/phase-2/t016-t024-regression.md).
+T025–T030 and whole-PHASE 2 acceptance remain pending.
+
 **Input**: [spec.md](spec.md), [plan.md](plan.md), [research.md](research.md),
 [data-model.md](data-model.md), [contracts](contracts/rest.md), [verification.md](verification.md)
 and [quickstart.md](quickstart.md). Current Context/Constitution remain normative.

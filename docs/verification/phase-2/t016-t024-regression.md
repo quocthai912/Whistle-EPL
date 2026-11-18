@@ -1,5 +1,7 @@
 # PHASE 2 T016–T024 verification
 
+**Implementation publication verified, 2026-11-18 (Asia/Bangkok).** The implementation and evidence are published in [d3bb0d9](https://github.com/quocthai912/Whistle-EPL/commit/d3bb0d9d8109f78d41a4fab94071c71be81c2700). The live remote feature branch and local HEAD both resolved to `d3bb0d9d8109f78d41a4fab94071c71be81c2700`. Issues #87–#95 record task completion. The results below retain the recorded supplemental Windows subprocess timeouts.
+
 | Tasks | Coverage |
 | --- | --- |
 | T016, T020 | PostgreSQL-backed master creation, duplicate-name review, normalized codes, scoped correction impact, revision checks, history and pagination. Browser flows exercise the MH13 and MH17 forms with the shared administration controls. |
