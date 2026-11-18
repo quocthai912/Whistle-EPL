@@ -1,7 +1,8 @@
 # PHASE 2 integrated recovery — T028
 
 Execution date: 2026-11-18 (Asia/Bangkok). Source baseline:
-`99c964f8b09b250af2e85582306fd8e5e4a7e5a5` plus this working change set.
+`99c964f8b09b250af2e85582306fd8e5e4a7e5a5` plus the tested change set,
+published in [d3023cc](https://github.com/quocthai912/Whistle-EPL/commit/d3023cccfba28cd7c0b2e6946ab9f1b051ee6c59).
 Actual operator environment: Debian 12 container, Node 24.14.0, PostgreSQL server
 and client 17.11, Python 3.11.2, operator UID 1000, protected mode-0700 roots.
 The drill uses newly created `whistle_test_phase2_recovery_*` databases, separate

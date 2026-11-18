@@ -1,6 +1,8 @@
 {
   "baseline": "99c964f8b09b250af2e85582306fd8e5e4a7e5a5",
-  "state": "local working changes; not yet published",
+  "state": "published; remote ref and all nine tested source hashes verified",
+  "publishedCommit": "d3023cccfba28cd7c0b2e6946ab9f1b051ee6c59",
+  "publishedBranch": "test/phase-2-integration-and-acceptance",
   "date": "2026-11-18",
   "files": [
     {

@@ -2,8 +2,11 @@
 
 Assessment date: 2026-11-18 (Asia/Bangkok). Scope: T001–T030 of
 `specs/002-phase-2-season-regulations/tasks.md`. Review base:
-`99c964f8b09b250af2e85582306fd8e5e4a7e5a5`; T025–T030 are local working changes,
-not a published commit. Earlier T001–T024 publication/approval provenance remains
+`99c964f8b09b250af2e85582306fd8e5e4a7e5a5`; T025–T030 are published in
+[d3023cc](https://github.com/quocthai912/Whistle-EPL/commit/d3023cccfba28cd7c0b2e6946ab9f1b051ee6c59).
+The live remote branch `test/phase-2-integration-and-acceptance` and all nine
+tested source checksums were verified against that commit on 2026-11-18.
+Earlier T001–T024 publication/approval provenance remains
 in the owning [Phase ledger](../../../context/progress-checker.md#phase-2---seasons-catalogs-and-regulations).
 
 **Human Phase acceptance: APPROVED, 2026-11-18 (Asia/Bangkok).** After reviewing
@@ -12,7 +15,7 @@ answered “Phê duyệt nghiệm thu PHASE 2” to the separate acceptance ques
 That question expressly retained the operational inputs and later-Phase
 integration scope listed below. PHASE 2 is `COMPLETED` for this verified scope;
 PHASE 3 remains `NOT_STARTED`. Implementation, verification, review, publication
-and Phase acceptance remain distinct states; T025–T030 are still unpublished.
+and Phase acceptance remain distinct states.
 
 The [source manifest](t025-t030-source.json) pins the changed executable files
 with SHA-256 hashes on top of the baseline commit. Evidence text may subsequently
@@ -69,8 +72,10 @@ to their owners. No optional Internet/Supabase profile was selected here.
 
 All final execution totals are in [regression.md](regression.md). The Team Leader
 separately approved this verified PHASE 2 scope as recorded above; approval is
-not inferred from a green test or closed Issue. Issues #96–#101 retain
-their existing remote states pending publication/tracker synchronization.
+not inferred from a green test or closed Issue. Issues #96–#101 have all nineteen
+Acceptance Criteria checked, are closed as completed and carry `completed`
+instead of `ready-for-agent`. Remote read-back verified every body, state/reason
+and label on 2026-11-18; original approval links and dependencies were preserved.
 
 ## Standards
 
@@ -92,4 +97,4 @@ defect was reported.
 
 Review totals: Standards 0; Spec 1 corrected and verified, 0 open. The
 coordinating agent verified the final test results and retains accountability for
-this local handoff. Human Phase acceptance was explicitly approved on 2026-11-18.
+this handoff. Human Phase acceptance was explicitly approved on 2026-11-18.

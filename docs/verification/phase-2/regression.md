@@ -1,9 +1,10 @@
 # PHASE 2 final regression — T029
 
 Date: 2026-11-18 (Asia/Bangkok). Reviewed source baseline:
-`99c964f8b09b250af2e85582306fd8e5e4a7e5a5`, plus the T025–T030 working changes.
-The work is not yet committed/pushed. Local Ubuntu execution does not claim a
-GitHub-hosted CI result for an unpublished tree.
+`99c964f8b09b250af2e85582306fd8e5e4a7e5a5`, plus the tested T025–T030 changes,
+published in [d3023cc](https://github.com/quocthai912/Whistle-EPL/commit/d3023cccfba28cd7c0b2e6946ab9f1b051ee6c59).
+The live remote ref and all nine source checksums match that commit. These local
+Windows/Ubuntu results do not assert a GitHub-hosted CI result for the commit.
 
 ## Actual execution
 

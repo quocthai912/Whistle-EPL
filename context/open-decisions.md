@@ -10,6 +10,8 @@ The [D100 PHASE 3 preparation extension](README.md#phase-3-preparation-approval-
 
 These items track operational inputs and implementation or verification deliverables. The [Phase ledger](progress-checker.md#phase-1-audit-and-verification-evidence---2026-11-06) records completed PHASE 1 foundation acceptance. The open portions of O08, O12, O13 and O14 apply to production deployment or later verification in their owning Phases. Future Specifications and Plans elaborate approved contracts when separately authorized. Source identifiers remain traceable through sources, ADRs and the owning documents.
 
+PHASE 2's [accepted and published verification](../docs/verification/phase-2/acceptance.md), 2026-11-18, records its completed isolated security/browser/load and twenty-logo/two-season recovery scope. These checks, synthetic-asset authorization and explicit human acceptance do not supply real operational calendars/configuration/assets or complete the later integrated/profile-specific evidence in the rows below; their remaining scope stays open.
+
 | ID | Source | Remaining input or evidence |
 |---|---|---|
 | O01 | QĐ1.3-1.4 p.6; UC11 p.95 | Real operational-season cutoff/qualifying-age values and evidence. D097 fixes the isolated test values only; operational values still need UC06 approval. |
