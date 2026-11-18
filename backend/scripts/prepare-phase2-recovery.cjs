@@ -34,6 +34,7 @@ async function prepare() {
       throw new Error('Recovery preparation requires an empty isolated target.');
     const accountId = randomUUID();
     const security = new SecurityPrimitivesService();
+    const password = 'Synthetic recovery ' + randomUUID();
     const account = await db.client.account.create({
       data: {
         id: accountId,
@@ -41,7 +42,7 @@ async function prepare() {
         personnelCode: 'RECOVERY_FIXTURE',
         fullName: 'Nhân viên khôi phục kiểm thử',
         mustChangePassword: false,
-        passwordHash: await security.hashPassword('Synthetic recovery ' + randomUUID()),
+        passwordHash: await security.hashPassword(password),
       },
     });
     const now = await db.now();
@@ -127,12 +128,14 @@ async function prepare() {
             outcome: 'SUCCESS',
             after: club,
           });
+          let priorDiscontinuedAt = null;
           for (const discontinued of [true, false]) {
             const recordedAt = await context.now();
+            const discontinuedAt = discontinued ? recordedAt : null;
             await context.db.club.update({
               where: { id: clubId },
               data: {
-                discontinuedAt: discontinued ? recordedAt : null,
+                discontinuedAt,
                 revision: { increment: 1 },
               },
             });
@@ -143,17 +146,19 @@ async function prepare() {
               objectId: clubId,
               outcome: 'SUCCESS',
               reason: 'Chu kỳ kiểm thử phục hồi.',
-              before: { discontinuedAt: discontinued ? null : recordedAt.toISOString() },
+              before: { discontinuedAt: priorDiscontinuedAt },
               after: {
-                discontinuedAt: discontinued ? recordedAt.toISOString() : null,
+                discontinuedAt: discontinuedAt?.toISOString() ?? null,
                 effectiveAt: recordedAt.toISOString(),
               },
             });
+            priorDiscontinuedAt = discontinuedAt?.toISOString() ?? null;
           }
         },
       );
       assets.push({ id, clubId, objectKey: key, checksum: mediaChecksum(bytes) });
     }
+    const lifecycles = [];
     for (const season of seasons) {
       const id = randomUUID();
       await db.client.seasonLifecycleRequest.create({ data: { id, seasonId: season.id } });
@@ -172,6 +177,7 @@ async function prepare() {
         where: { id },
         data: { currentVersionId: version.id },
       });
+      lifecycles.push({ seasonId: season.id, requestId: id, versionId: version.id });
     }
     writeFileSync(
       destination,
@@ -179,6 +185,8 @@ async function prepare() {
         provenance: '20 synthetic WebP images authored in this authorized verification session',
         assets,
         seasons: seasons.map(({ id }) => id),
+        lifecycles,
+        login: { accountId, username: account.username, password },
       }),
       { flag: 'wx', mode: 0o600 },
     );
@@ -188,6 +196,13 @@ async function prepare() {
   }
 }
 prepare().catch((error) => {
-  process.stderr.write('Recovery fixture preparation failed (' + error.constructor.name + ').\n');
+  process.stderr.write(
+    'Recovery fixture preparation failed (' +
+      error.constructor.name +
+      '). ' +
+      'After a partial run, replace the disposable database and dedicated media/state/backup roots before retrying. ' +
+      'Choose a new protected PHASE2_RECOVERY_FIXTURE output path; the shell drill already allocates a fresh one. ' +
+      'Preserve diagnostic evidence; do not reuse partial fixtures. No configured target is reset or deleted automatically.\n',
+  );
   process.exitCode = 1;
 });

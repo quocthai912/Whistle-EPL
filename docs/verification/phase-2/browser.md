@@ -34,7 +34,15 @@ defects; no UI behavior or security guard was weakened.
 
 Run `pnpm test:e2e` with explicit `E2E_BASE_URL`, a separate migrated
 `E2E_TEST_DATABASE_URL` named `whistle_test_browser_*`, and
-`E2E_RESET_ACK=RESET_ISOLATED_TEST_DATABASE`. Configure protected local media and
+`E2E_RESET_ACK=RESET_ISOLATED_TEST_DATABASE`. Start the isolated application in
+a separate process with its `DATABASE_URL` set to `E2E_TEST_DATABASE_URL`, so it
+serves the database Playwright seeds. In the Playwright process, preserve the
+original operational `DATABASE_URL` for comparison; its test target must be a
+different database. `assertIsolatedTarget` rejects matching normalized loopback
+hosts, ports and decoded database names. These processes deliberately have
+different `DATABASE_URL` values; the operational application is not repointed.
+See the [Phase 2 environment setup](../../../specs/002-phase-2-season-regulations/quickstart.md).
+Configure protected local media and
 a trusted test certificate before starting the actual application. Traces,
 screenshots and videos remain disabled to avoid credential-bearing diagnostics.
 Final rerun result is recorded in [regression.md](regression.md).

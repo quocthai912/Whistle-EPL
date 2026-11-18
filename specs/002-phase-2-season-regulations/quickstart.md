@@ -4,8 +4,9 @@
 
 # PHASE 2 Validation Guide
 
-**Status**: Future validation/run guide after approved Tasks are implemented. No checks below
-have been run by Plan preparation; new paths are explicitly identified as planned targets.
+**Status**: Implemented PHASE 2 verification guide. The
+[acceptance assessment](../../docs/verification/phase-2/acceptance.md) records executed
+checks; operational and later-Phase gates retain their owning scope.
 See [verification strategy](verification.md) for coverage, [REST](contracts/rest.md),
 [execution](contracts/execution.md), [UI](contracts/ui.md) and [media/recovery](contracts/media-recovery.md).
 
@@ -23,6 +24,34 @@ through protected host configuration. E2E_BASE_URL must be an explicitly trusted
 origin; E2E_TEST_DATABASE_URL must be the dedicated browser target and E2E_RESET_ACK the
 existing exact reset acknowledgement. Never aim migration, fixture, cleanup or restore at
 an operational/shared target. Guarded fixtures are not deployment startup seeds.
+
+Use two separate terminals with protected configuration supplied first. In the
+isolated application terminal, configure its isolated HOST/PORT, AUTH_ORIGIN,
+media root and HTTPS frontend/proxy, then launch the built backend:
+
+```powershell
+$env:DATABASE_URL = $env:E2E_TEST_DATABASE_URL
+pnpm --filter @whistle-epl/backend start
+```
+
+In the Playwright terminal retain the operational URL for the guard and use
+the separate browser database (variables below come from protected configuration):
+
+```powershell
+$env:DATABASE_URL = $operationalDatabaseUrl
+$env:E2E_TEST_DATABASE_URL = $isolatedBrowserDatabaseUrl
+$env:E2E_BASE_URL = $isolatedHttpsOrigin
+$env:E2E_RESET_ACK = 'RESET_ISOLATED_TEST_DATABASE'
+$env:NODE_ENV = 'test'
+pnpm test:e2e
+```
+
+`pnpm test:e2e` typechecks and runs Playwright against the already-running
+`E2E_BASE_URL`; it does not launch another application. Global setup resets the
+browser database through `E2E_TEST_DATABASE_URL` without rewriting the runner's
+operational `DATABASE_URL`. The isolated application serves that same browser
+database while the guard compares it against the operational target. The guard
+refuses ambiguous operational connection query/fragment overrides.
 
 Before affected acceptance: supply authorized actual 20-club logo files/source rights and
 protected media root/UID/space. Missing actual assets remain an acceptance input, not permission
@@ -127,6 +156,39 @@ different from `DATABASE_URL`. The output path must be absolute, protected and
 outside tracked files. Prepare once, then run the application against that same
 database with the declared HTTPS origin:
 
+Target distinctness compares normalized host, port and decoded database name,
+including localhost/127.0.0.1/IPv6-loopback aliases. Both configured URLs must have
+explicit ports and no query/fragment overrides; ambiguous endpoints are refused
+so a `PGPORT` default cannot silently change the compared endpoint.
+The fixture output is reserved exclusively before any seed transaction; an
+existing output stops preparation without seeding. Failed preparation removes
+only the reservation created by that invocation.
+
+After a failure that may have committed seed data:
+
+1. Stop the isolated lookup application and independently verify its PostgreSQL
+   host, port and database name against the dedicated test configuration.
+2. On that verified disposable server only, drop and recreate exactly
+   `whistle_test_phase2_lookup`. Do not reset an application, shared or operational target.
+3. Apply the release's migrations with `pnpm db:migrate` using that isolated
+   target, then restore the original operational `DATABASE_URL` in the fixture
+   shell whenever it was configured; unset it only if it was originally absent.
+   Keep `TEST_DATABASE_URL` distinct from that URL. The lookup URL belongs only
+   to the migration step and isolated application, not the comparison reference.
+4. Select a new protected output path and rerun preparation. Preserve any
+   pre-existing output; neither the script nor this guide deletes arbitrary paths.
+
+After a partial recovery-fixture run, replace its disposable database and
+dedicated media/state/backup roots before retrying. The generator does not clean
+up arbitrary configured targets or treat partially written media as a fresh run.
+This also applies when fixture creation succeeded but a later backup, restore,
+verification or daily scheduler step failed. Preserve diagnostic evidence first,
+then provision fresh disposable targets and a new protected
+`PHASE2_RECOVERY_FIXTURE` output path; the shell drill allocates a new path itself.
+A direct rerun against populated roots or scheduler state is not a reset.
+Keep raw logs, credentials and unredacted diagnostics in ignored `.verification/`.
+Only durable, redacted verification reports belong in tracked `docs/verification/`.
+
 ```powershell
 $env:NODE_ENV = 'test'
 # Set PHASE2_LOOKUP_FIXTURE privately to an absolute ignored JSON output path.
@@ -191,8 +253,11 @@ state, per-case results/measurements, defects and reviewer under docs/verificati
 Keep unavailable assets/production values/profile checks explicitly open. Do not create a
 passing report from this guide or mark later integrated/BM-07 criteria complete.
 
-Plan review must precede Tasks generation. Final approved Tasks receive exactly one GitHub
-Issue each under the issue-tracker conventions, after cross-artifact analysis. Application
-implementation, commit/push/PR and PHASE 3 remain unauthorized at this stage.
+The PHASE 2 implementation and acceptance are complete. Readers may run the
+implemented verification drills against explicitly isolated targets using the
+guards above; consult the [completed evidence](../../docs/verification/phase-2/acceptance.md).
+Task-to-Issue mapping and original approval provenance remain in tasks.md.
+PHASE 3 implementation still requires separate authorization; this guide does
+not authorize commit/push, PR creation or merge.
 
 <!-- /coderabbit-ai-generated:v1 -->

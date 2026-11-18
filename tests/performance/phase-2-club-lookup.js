@@ -28,6 +28,7 @@ if (
 const accepted = new Rate('club_lookup_success');
 const samples = new Counter('club_lookup_samples');
 const complete = new Rate('club_paging_complete');
+const authenticationFailure = new Error('Synthetic lookup authentication failed.');
 const latency = {
   list: new Trend('club_list_ms', true),
   search: new Trend('club_search_ms', true),
@@ -84,45 +85,82 @@ function login() {
     headers: { Origin: origin, 'Content-Type': 'application/json', 'X-CSRF-Token': csrf },
   });
   if (response.status !== 200 || response.json('data.changeRequired') !== false)
-    throw new Error('Synthetic lookup authentication failed.');
+    throw authenticationFailure;
 }
 
-function lookup(measure) {
+function payload(response) {
+  if (response.status !== 200) return null;
+  try {
+    return response.json();
+  } catch {
+    return null;
+  }
+}
+
+function pageData(response) {
+  const body = payload(response);
+  const items = body?.data?.items;
+  return Array.isArray(items) && items.every((item) => item && typeof item.id === 'string')
+    ? { ids: items.map((item) => item.id), total: body?.meta?.total }
+    : null;
+}
+
+function executeLookup(measure) {
   login();
   const listStart = Date.now();
   const first = http.get(origin + '/api/v1/clubs?sort=code:asc&pageSize=20&page=1');
   const second = http.get(origin + '/api/v1/clubs?sort=code:asc&pageSize=20&page=2');
   const listDuration = Date.now() - listStart;
-  const ids = [first, second].flatMap((response) =>
-    response.status === 200 ? response.json('data.items').map((item) => item.id) : [],
-  );
+  const firstPage = pageData(first);
+  const secondPage = pageData(second);
+  const ids = [...(firstPage?.ids ?? []), ...(secondPage?.ids ?? [])];
   const validPages =
+    firstPage?.ids.length === 20 &&
+    secondPage?.ids.length === 5 &&
+    firstPage.ids.every((id, index) => id === fixture.expectedIds[index]) &&
+    secondPage.ids.every((id, index) => id === fixture.expectedIds[index + 20]) &&
     ids.length === 25 &&
     new Set(ids).size === 25 &&
     fixture.expectedIds.every((id) => ids.includes(id)) &&
-    first.json('meta.total') === 25 &&
-    second.json('meta.total') === 25;
+    firstPage.total === 25 &&
+    secondPage.total === 25;
+  const searchStart = Date.now();
   const search = http.get(origin + '/api/v1/clubs?search=' + encodeURIComponent(fixture.search));
+  const searchDuration = Date.now() - searchStart;
+  const detailStart = Date.now();
   const detail = http.get(origin + '/api/v1/clubs/' + fixture.targetId);
+  const detailDuration = Date.now() - detailStart;
+  const searchData = pageData(search);
   const validSearch =
-    search.status === 200 &&
-    search.json('meta.total') === 1 &&
-    search.json('data.items.0.id') === fixture.targetId;
-  const validDetail = detail.status === 200 && detail.json('data.id') === fixture.targetId;
+    searchData?.total === 1 &&
+    searchData.ids.length === 1 &&
+    searchData.ids[0] === fixture.targetId;
+  const validDetail = payload(detail)?.data?.id === fixture.targetId;
   if (measure) {
     samples.add(1);
     complete.add(validPages);
     accepted.add(validPages && validSearch && validDetail);
     for (const [group, valid, duration] of [
       ['list', validPages, listDuration],
-      ['search', validSearch, search.timings.duration],
-      ['detail', validDetail, detail.timings.duration],
+      ['search', validSearch, searchDuration],
+      ['detail', validDetail, detailDuration],
     ]) {
       latency[group].add(duration);
       within[group].add(valid && duration <= 2000);
     }
   }
   sleep(0.25);
+}
+function lookup(measure) {
+  try {
+    executeLookup(measure);
+  } catch (error) {
+    exec.test.abort(
+      error === authenticationFailure
+        ? 'Club lookup authentication failed.'
+        : 'Club lookup attempt failed.',
+    );
+  }
 }
 export function warmup() {
   lookup(false);

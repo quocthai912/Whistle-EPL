@@ -55,7 +55,7 @@ describe('PHASE 2 actual HTTP master security and literal input', () => {
         data: { revokedAt: await fixture.database.now(), revocationReason: 'LOGOUT' },
       });
     if (scenario === 'expired') {
-      const issued = new Date(Date.now() - 1_900_000);
+      const issued = new Date((await fixture.database.now()).getTime() - 1_900_000);
       await fixture.database.client.session.updateMany({
         data: {
           createdAt: issued,
@@ -85,6 +85,11 @@ describe('PHASE 2 actual HTTP master security and literal input', () => {
     const tokens = await fixture.clubManager();
     const name = `CLB <script>alert("fixture")</script> %_ ' OR 1=1 -- Đà Nẵng`;
     const result = await fixture.createClub(tokens, { ...fixture.club, name }).expect(201);
+    for (const [code, decoyName] of [
+      ['PERCENT_DECOY', name.replace('%', 'X')],
+      ['UNDERSCORE_DECOY', name.replace('_', 'Y')],
+    ])
+      await fixture.createClub(tokens, { ...fixture.club, code, name: decoyName }).expect(201);
     const search = await fixture
       .readClub(tokens, '?search=' + encodeURIComponent(name))
       .expect(200);
@@ -92,6 +97,9 @@ describe('PHASE 2 actual HTTP master security and literal input', () => {
     expect(search.body.meta.total).toBe(1);
     await fixture.readClub(tokens, '?unsupported=1').expect(400);
     await fixture.createClub(tokens, { ...fixture.club, unsupported: true }).expect(400);
+    const before = await fixture.database.client.club.findUniqueOrThrow({
+      where: { id: result.body.data.id },
+    });
     await fixture
       .updateClub(tokens, result.body.data.id, {
         expectedRevision: '1',
@@ -99,7 +107,12 @@ describe('PHASE 2 actual HTTP master security and literal input', () => {
         name: 'Unexpected identity',
       })
       .expect(400);
-    expect(await fixture.database.client.club.count()).toBe(1);
+    const after = await fixture.database.client.club.findUniqueOrThrow({
+      where: { id: result.body.data.id },
+    });
+    expect(after.name).toBe(before.name);
+    expect(after.revision).toBe(before.revision);
+    expect(await fixture.database.client.club.count()).toBe(3);
   });
 });
 

@@ -1,5 +1,5 @@
 const { randomUUID } = require('node:crypto');
-const { writeFileSync } = require('node:fs');
+const { openSync, closeSync, writeFileSync, fsyncSync, unlinkSync } = require('node:fs');
 const { isAbsolute } = require('node:path');
 const { URL } = require('node:url');
 const { DatabaseService } = require('../dist/platform/database.service');
@@ -9,20 +9,45 @@ const {
 
 async function prepare() {
   const url = new URL(process.env.TEST_DATABASE_URL || '');
+  const identity = (target) => ({
+    host: ['localhost', '127.0.0.1', '[::1]'].includes(target.hostname.toLowerCase())
+      ? 'loopback'
+      : target.hostname.toLowerCase(),
+    port: Number(target.port || '5432'),
+    database: decodeURIComponent(target.pathname.slice(1)),
+  });
+  const operational = process.env.DATABASE_URL && new URL(process.env.DATABASE_URL);
+  const sameTarget =
+    operational && JSON.stringify(identity(operational)) === JSON.stringify(identity(url));
   const destination = process.env.PHASE2_LOOKUP_FIXTURE;
   if (
     process.env.NODE_ENV !== 'test' ||
+    !['postgres:', 'postgresql:'].includes(url.protocol) ||
+    !url.port ||
     !['localhost', '127.0.0.1'].includes(url.hostname) ||
     url.pathname !== '/whistle_test_phase2_lookup' ||
     url.search ||
     url.hash ||
     !destination ||
     !isAbsolute(destination) ||
-    process.env.DATABASE_URL === process.env.TEST_DATABASE_URL
+    (operational &&
+      (!['postgres:', 'postgresql:'].includes(operational.protocol) ||
+        !operational.hostname ||
+        !operational.port ||
+        !operational.pathname.slice(1) ||
+        operational.search ||
+        operational.hash)) ||
+    sameTarget
   )
     throw new Error('A dedicated lookup database and absolute protected output path are required.');
   const db = new DatabaseService(url.href);
+  let reservation;
+  let owned = false;
+  let databaseCloseAttempted = false;
+  let complete = false;
   try {
+    reservation = openSync(destination, 'wx', 0o600);
+    owned = true;
     if (
       (await db.client.account.count()) ||
       (await db.client.club.count()) ||
@@ -70,7 +95,7 @@ async function prepare() {
       await tx.club.createMany({ data: clubs });
     });
     writeFileSync(
-      destination,
+      reservation,
       JSON.stringify({
         accounts: accounts.map(({ username }) => ({ username, password })),
         total: 25,
@@ -78,18 +103,36 @@ async function prepare() {
         targetId: clubs[0].id,
         search: 'Đà Nẵng',
       }),
-      { mode: 0o600, flag: 'wx' },
     );
+    fsyncSync(reservation);
+    const descriptor = reservation;
+    reservation = undefined;
+    closeSync(descriptor);
+    databaseCloseAttempted = true;
+    await db.close();
+    complete = true;
     process.stdout.write(
       'Prepared 20 synthetic lookup users and 25 clubs in one isolated season.\n',
     );
   } finally {
-    await db.close();
+    try {
+      if (reservation !== undefined) {
+        closeSync(reservation);
+      }
+    } finally {
+      try {
+        if (owned && !complete) unlinkSync(destination);
+      } finally {
+        if (!databaseCloseAttempted) await db.close();
+      }
+    }
   }
 }
 prepare().catch(() => {
   process.stderr.write(
-    'Lookup fixture preparation failed. Check protected configuration and empty target.\n',
+    'Lookup fixture preparation failed. Check protected configuration and empty target. ' +
+      'After a partial or post-commit failure, replace the disposable lookup database and use a new fixture output before retrying; ' +
+      'follow the Phase 2 quickstart reset procedure. No database reset is performed automatically.\n',
   );
   process.exitCode = 1;
 });

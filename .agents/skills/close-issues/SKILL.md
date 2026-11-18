@@ -42,17 +42,23 @@ requested external updates are authorized. Leave unrelated Issues untouched.
   the claimed implementation. A local commit, tracking ref or statement that
   work was pushed is not sufficient verification by itself. Publication on a
   feature branch does not imply merge or deployment.
-- Match the claimed tested sources to the published tree, using existing source
-  manifests/checksums when available. Retain the original review base and test
-  provenance; record the published commit separately. If implementation is
-  missing remotely or differs from tested sources, leave affected Issues open
-  and identify the exact gap. Do not push or implement a fix as part of closure.
+- Compare the claimed tested implementation against the tree of the **live
+  remote ref's resolved SHA**, using existing manifests/checksums when available,
+  rather than proving only its presence in a historical commit. Later commits
+  that preserve the implementation are allowed. If the live tree removes or
+  changes the claimed implementation, leave affected Issues open and identify
+  the exact gap. Retain the original review base, tested-source provenance and
+  publication commit separately from the live ref. Do not push or implement a
+  fix as part of closure.
 - Map **each Acceptance Criterion** to actual implementation, tests, review and
   applicable human approvals. Read the full criteria, including continuations.
   Existing valid evidence can be reused; rerun relevant checks only for a
   material mismatch or missing evidence. Local results and hosted CI are
   separate claims. Preserve declared fixture/hardware limitations and later
   operational/integration gates.
+
+Retain the verified acceptance criteria snapshot and its evidence mapping for
+comparison with the fresh Issue read in step 4.
 
 Ready when each criterion has a supported outcome. Check only satisfied criteria;
 an unmet criterion keeps its Issue open and ineligible for the `completed` label.
@@ -88,9 +94,43 @@ as pending until the corresponding GitHub read-back succeeds.
 
 ## 4. Complete eligible Issues
 
-For each eligible Issue, read its current body immediately before editing and
-preserve its title, criteria wording, source links, unrelated checkboxes/labels,
-assignees and native dependency relationships.
+For each eligible Issue, resolve the live remote ref again before any Issue
+update. If its SHA changed, compare the new tree with the tested implementation
+and proceed only while it is preserved. Read the current body immediately before editing and
+compare its full acceptance criteria with the snapshot verified in step 2,
+normalizing only checkbox states. If criteria changed, verify the changed
+criteria before **any completion mutation**; leave the Issue open if any criterion
+remains unsupported. If unchanged, reuse the existing evidence. Preserve its
+title, criteria wording, source links, unrelated checkboxes/labels, assignees
+and native dependency relationships.
+After changed criteria are reverified, replace the verified snapshot and evidence
+mapping, reconcile the acceptance section and completion comment with that
+version, and then proceed. When unchanged, reuse the evidence and skip writes
+that are already equivalent.
+
+For body edits, build from the latest full body and change only acceptance
+checkboxes. Establish whether the configured API actually enforces a revision
+precondition rejecting intervening edits; use it when supported. Otherwise use
+an already-established coordinated edit window, or coordinate one before body
+replacement. A timestamp check and read-back cannot protect a note written and
+erased between those checks. If neither protection is available, leave the body
+update blocked and report it while completing independent preparation.
+On drift, reread and rebuild, then compare the criteria with the verified
+snapshot again before writing; reuse evidence when only unrelated notes changed.
+Read back the updated body and preserve all out-of-section text. Stop and report
+any detected conflict before applying completion status or closing.
+
+Repeat the live-ref and full-criteria comparisons immediately before applying
+`completed` and again before closing, normalizing only checkbox states. Reverify
+changed criteria before proceeding, then repeat the snapshot/evidence, checkbox
+and completion-comment reconciliation above and verify its read-back. Closure
+requires that reconciled state. While any criterion is unsupported, make no
+completion mutations. If this run or a prior partial run left a stale `completed` label,
+remove that label only when label maintenance is already authorized; otherwise
+report it as a blocker. Leave the Issue open where possible. If the final
+read-back detects concurrent changes after closure, report the conflict and
+identify recovery actions (such as reopening or changing labels/body) that need
+additional authorization; perform only actions already authorized.
 
 1. Check every verified Acceptance Criteria box within the actual acceptance
    section. Preserve text and list structure; do not weaken criteria to close it.
@@ -116,6 +156,10 @@ reason instead of claiming success or repeatedly retrying.
   criterion counts, preserved acceptance text, `CLOSED` state, `COMPLETED` reason,
   presence of `completed`, absence of `ready-for-agent`, and the evidence comment.
   Do not report a remotely blocked or partial update as completed.
+- Resolve the live ref again during final read-back. If its SHA advanced,
+  compare the new tree with the verified implementation. Finalize only if it
+  still preserves that implementation; otherwise report a publication conflict
+  and the actual Issue state without recording completion as successful.
 - Finalize documentation with the **observed** tracker outcome. Reconcile Task
   totals, Phase status and publication statements across every affected owner;
   retain accurate partial-failure notes where needed.

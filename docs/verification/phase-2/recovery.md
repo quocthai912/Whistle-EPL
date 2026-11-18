@@ -63,3 +63,17 @@ The script never resets an existing populated target.
 Production logo rights, volume ownership/disk capacity, actual systemd scheduling,
 off-host Internet-profile storage and later complete BM-07 remain operator or
 later-Phase prerequisites. Fixture authorization does not approve production assets.
+
+## Review correction drill — 2026-11-18
+
+The uncommitted corrections based on `1b2e09b` were executed against a new
+disposable database and fresh protected roots. In addition to the original
+inventory/count checks, every restored Club/current asset ID, object key and
+checksum, and each season/request/current-version association matched the
+pre-backup manifest. The interrupted checkpoint confirmed the restored Club name
+before repairing the media destination. Both early and immediate pre-invocation
+scheduler-state gates ran. After all restore/scheduling operations released
+maintenance, a real login and authenticated session GET passed against the
+restored account using Node's built-in client; no development-only HTTP package
+is required. Failures now explain how to preserve diagnostics and provision fresh
+targets/output instead of rerunning partial state. See [review corrections](review-fixes.md).

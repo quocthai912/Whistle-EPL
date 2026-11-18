@@ -26,6 +26,24 @@ describe('isolated fixture target interface', () => {
         { nodeEnv: 'test', operationalUrl: safe.replace('fixture:fixture', 'operator:different') },
       ],
       [safe + '?host=production', { nodeEnv: 'test' }],
+      [safe, { nodeEnv: 'test', operationalUrl: safe.replace('127.0.0.1', 'LOCALHOST') }],
+      [
+        safe,
+        {
+          nodeEnv: 'test',
+          operationalUrl:
+            'postgresql://operator:fixture@other.invalid:6543/whistle_test_foundation?host=127.0.0.1&port=55437',
+        },
+      ],
+      [
+        safe,
+        {
+          nodeEnv: 'test',
+          operationalUrl: safe
+            .replace('127.0.0.1', 'localhost')
+            .replace('whistle_test', '%77histle_test'),
+        },
+      ],
     ] as const)
       expect(() => assertIsolatedTarget(url, options)).toThrow('isolated');
   });

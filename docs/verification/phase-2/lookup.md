@@ -50,7 +50,7 @@ are separate in [browser.md](browser.md). This is SC-010's PHASE 2 internal-list
 partial benchmark; PHASE 6 public lookup, 380 matches/600 players and later
 10-season/3,800-match workloads remain open with their owning Phases.
 
-## Measured result
+## Original measured result — published in d3023cc
 
 The completed run recorded 29,903 measured iterations, hence 29,903 samples in
 each group. Exact paging and combined lookup validity were both 100%.
@@ -65,3 +65,24 @@ All three groups independently achieved 100% valid results within two seconds.
 Including warm-up, setup and authentication, k6 made 129,876 HTTP requests with
 zero failed requests and completed 32,458 iterations. The group samples above
 exclude warm-up. No API result is pooled with browser evidence.
+
+## Review correction remeasurement — 2026-11-18
+
+The uncommitted corrections based on `1b2e09b` require exact ordered page slices
+and measure search/detail wall time immediately around each request, including
+connection setup. The full twenty-user, one-minute warm-up and ten-minute
+measurement passed with 31,618 measured iterations. Each group independently
+returned 100% valid results within two seconds; both-page completeness was 100%.
+
+| Group | Mean | Median | p95 | Maximum |
+|---|---:|---:|---:|---:|
+| Both list pages | 63.87 ms | 58 ms | 117 ms | 289 ms |
+| Vietnamese search | 31.82 ms | 29 ms | 60 ms | 164 ms |
+| Detail | 33.13 ms | 30 ms | 62 ms | 162 ms |
+
+There were 138,532 total HTTP requests, zero failed requests and 34,622 total
+iterations including conditioning. The same Docker Desktop host/profile deviation
+recorded above applies (twenty CPUs and 8,172,445,696 bytes reported in this run).
+Separate negative fault probes confirm malformed items,
+wrong page order and login errors cannot produce a successful measured run;
+those probes are not counted as benchmark samples. See [review corrections](review-fixes.md).

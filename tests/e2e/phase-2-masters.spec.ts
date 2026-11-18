@@ -65,6 +65,7 @@ for (const viewport of [
       .getByRole('table')
       .locator('tbody tr td:nth-child(3)')
       .allTextContents();
+    expect(second).toHaveLength(5);
     expect(new Set([...first, ...second])).toEqual(new Set(records.map(({ code }) => code)));
     expect(
       await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth),
