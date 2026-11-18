@@ -222,7 +222,7 @@ function StadiumProfile({
             </div>
           </dl>
           <div className={css.actions}>
-            {!resource.loading && detail.capabilities.canEdit && (
+            {!resource.loading && !resource.error && detail.capabilities.canEdit && (
               <>
                 <button type="button" className={css.primary} onClick={() => setForm('edit')}>
                   Chỉnh sửa
@@ -248,6 +248,10 @@ function StadiumProfile({
             <MasterForm
               master="stadiums"
               detail={detail}
+              onRevisionConflict={() => {
+                setForm(undefined);
+                refresh();
+              }}
               correcting={form === 'correct'}
               onClose={() => setForm(undefined)}
               onSaved={() => {

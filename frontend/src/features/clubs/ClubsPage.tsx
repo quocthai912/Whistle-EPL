@@ -207,7 +207,7 @@ function ClubProfile({
           </dl>
           <p>Trạng thái sử dụng: {detail.discontinuedAt ? 'Đã ngừng sử dụng' : 'Đang sử dụng'}</p>
           <div className={css.actions}>
-            {detail.capabilities.canEdit && (
+            {!resource.loading && !resource.error && detail.capabilities.canEdit && (
               <>
                 <button type="button" className={css.primary} onClick={() => setForm({ detail })}>
                   Chỉnh sửa
@@ -239,6 +239,11 @@ function ClubProfile({
               master="clubs"
               correcting={form.correcting}
               detail={form.detail}
+              onRevisionConflict={() => {
+                setForm(undefined);
+                resource.reload();
+                onChange();
+              }}
               onClose={() => setForm(undefined)}
               onSaved={() => {
                 setForm(undefined);

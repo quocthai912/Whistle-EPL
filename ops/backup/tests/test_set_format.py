@@ -90,6 +90,16 @@ def legacy_inventory():
 
 
 class SetFormatTest(unittest.TestCase):
+    def test_cleanup_reports_incompatible_retained_set_and_required_operator_action(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            backup = root / '20261118T000000Z-00000000-0000-4000-8000-000000000001'
+            backup.mkdir()
+            with patch.dict(module.os.environ, {'OPS_BACKUP_DIR': str(root), 'OPS_PROFILE': 'test'}):
+                with patch.object(module, 'verify', side_effect=ValueError('Schema mismatch')):
+                    with self.assertRaisesRegex(ValueError, backup.name + '.*matching application release'):
+                        module.protected_media(root)
+
     def test_expanded_no_asset_set_uses_v2_and_includes_populated_masters(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)

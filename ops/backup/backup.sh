@@ -15,7 +15,8 @@ if [[ $OPS_FORMAT_PROFILE = available-phase-2 ]]; then
   fi
 fi
 OPS_DONE=0
-trap 'if [[ $OPS_DONE != 1 ]]; then ops_feedback "BACKUP_FAILED $OPS_SET maintenance remains closed; inspect and verify before release"; fi' EXIT
+OPS_RELEASED=0
+trap 'if [[ $OPS_DONE != 1 ]]; then if [[ $OPS_RELEASED = 1 ]]; then ops_feedback "RETENTION_FAILED $OPS_SET maintenance released; media cleanup skipped"; else ops_feedback "BACKUP_FAILED $OPS_SET maintenance remains closed; inspect and verify before release"; fi; fi' EXIT
 ops_maintenance close backup "${1:-scheduled foundation backup}" "$OPS_ID"
 ops_verify_database
 mkdir -m 700 "$OPS_PENDING"
@@ -38,10 +39,11 @@ if [[ $OPS_PROFILE = internet ]]; then
 fi
 mv -- "$OPS_PENDING" "$OPS_BACKUP_DIR/$OPS_SET"
 sync -f "$OPS_BACKUP_DIR"
-# Only verified complete sets participate in retention. Failures never replace a good set.
-python3 "$OPS_SCRIPT_DIR/set-format.py" retain "$OPS_APP_DIR" "$OPS_BACKUP_DIR"
 ops_maintenance verify backup 'verify completed backup' "$OPS_ID"
 ops_maintenance release backup 'release completed backup' "$OPS_ID"
+OPS_RELEASED=1
+# Release writers before retention. Cleanup runs only after successful retention.
+python3 "$OPS_SCRIPT_DIR/set-format.py" retain "$OPS_APP_DIR" "$OPS_BACKUP_DIR"
 ops_feedback "BACKUP_SUCCESS $OPS_SET"
 OPS_DONE=1
 if [[ $OPS_FORMAT_PROFILE = available-phase-2 && -n ${OPS_MEDIA_ROOT:-} ]]; then

@@ -407,6 +407,12 @@ function SeasonRequests({
         <LifecycleForm
           {...form}
           path={path}
+          onRecover={() => {
+            setForm(undefined);
+            setSelectedId(undefined);
+            list.reload();
+            onUpdated();
+          }}
           action={data.seasonState === 'OPEN' ? 'CLOSE' : 'REOPEN'}
           onClose={() => setForm(undefined)}
           onSaved={(message) => {
@@ -429,6 +435,7 @@ function LifecycleForm({
   path,
   onClose,
   onSaved,
+  onRecover,
 }: {
   request?: LifecycleRequest;
   command?: Command;
@@ -436,6 +443,7 @@ function LifecycleForm({
   path: string;
   onClose: () => void;
   onSaved: (message: string) => void;
+  onRecover: () => void;
 }) {
   const { client } = useSession();
   const [reason, setReason] = useState(command ? '' : (request?.reason ?? ''));
@@ -470,7 +478,7 @@ function LifecycleForm({
       onSaved(command ? 'Đã ghi nhận thao tác.' : 'Đã lưu bản nháp đề xuất.');
     } catch (failure) {
       const unknownOutcome = failure instanceof HttpFailure && failure.unknownOutcome;
-      setUncertain(unknownOutcome);
+      setUncertain((previous) => previous || unknownOutcome);
       setError(
         unknownOutcome && command !== 'approve'
           ? 'Hãy tải lại danh sách để kiểm tra kết quả trước khi gửi yêu cầu mới.'
@@ -508,7 +516,7 @@ function LifecycleForm({
           <textarea
             required
             value={reason}
-            readOnly={uncertain}
+            readOnly={busy || uncertain}
             onChange={(event) => {
               setReason(event.target.value);
               idempotencyKey.current = undefined;
@@ -521,6 +529,11 @@ function LifecycleForm({
           </p>
         )}
         <div className={css.actions}>
+          {uncertain && (
+            <button type="button" disabled={busy} onClick={onRecover}>
+              Tải lại danh sách để kiểm tra
+            </button>
+          )}
           <button type="button" disabled={busy} onClick={onClose}>
             Hủy
           </button>

@@ -1944,6 +1944,19 @@ describe('PHASE 2 season creation HTTP contract', () => {
           )
         ).rows[0].count,
       ).toBe('0');
+      playingEnd = '1999-01-01T00:00:00.000Z';
+      const changedBasis = await lifecycleAction(approver.tokens, pending, 'approve').expect(409);
+      expect(changedBasis.body.error.code).toBe('BASIS_CHANGED');
+      expect(
+        (await observer.query('SELECT state FROM season WHERE id=$1', [id])).rows[0].state,
+      ).toBe('OPEN');
+      expect(
+        (
+          await observer.query(
+            "SELECT count(*) FROM command_receipt WHERE action_code='SEASON_LIFECYCLE_APPROVED'",
+          )
+        ).rows[0].count,
+      ).toBe('0');
       playingEnd = pastEnd;
       const key = randomUUID();
       const approved = (await lifecycleAction(approver.tokens, pending, 'approve', key).expect(200))

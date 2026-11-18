@@ -591,7 +591,16 @@ def protected_media(app):
         for backup in directory.iterdir():
             if not SET_NAME.fullmatch(backup.name):
                 continue
-            for asset in verify(app, backup)['media']:
+            try:
+                manifest = verify(app, backup)
+            except (ValueError, OSError, KeyError) as error:
+                raise ValueError(
+                    f'Retained backup set {backup.name} cannot be verified. '
+                    'Verify it with its matching application release and preserve a recoverable '
+                    'copy in a separately managed archive before removing it from active retention. '
+                    'Media cleanup is blocked until all active retained sets verify.'
+                ) from error
+            for asset in manifest['media']:
                 key, checksum = asset['objectKey'], asset['checksum']
                 if protected.setdefault(key, checksum) != checksum:
                     raise ValueError('Retained copies of an asset disagree.')
@@ -853,6 +862,8 @@ if __name__ == '__main__':
             print(json.dumps(protected_media(app), sort_keys=True))
         else:
             raise ValueError('Unknown verification action.')
-    except Exception:
+    except Exception as error:
+        if action == 'protected-media':
+            print(str(error), file=sys.stderr)
         print('Backup set verification failed; inspect protected operator state.', file=sys.stderr)
         sys.exit(1)

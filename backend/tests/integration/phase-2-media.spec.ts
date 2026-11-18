@@ -143,6 +143,28 @@ describe('PHASE 2 Club logo and cleanup HTTP contracts', () => {
     await inventory.save(
       new Map([[orphanKey, { identity: first!.identity, observedAt: old.getTime() }]]),
     );
+    const failAudit = jest
+      .spyOn(http.app.get(AuditWriterService), 'appendSystemTechnical')
+      .mockRejectedValueOnce(new Error('Cleanup audit rollback fixture'));
+    try {
+      expect(await cleanup.execute(new Map([[objectKey, checksum]]))).toBe(1);
+    } finally {
+      failAudit.mockRestore();
+    }
+    expect(await http.storage.read(objectKey, bytes.length, checksum)).toEqual(bytes);
+    expect(
+      (await database.client.mediaAsset.findUniqueOrThrow({ where: { id } })).contentDeletedAt,
+    ).toBeNull();
+    await http.storage.deleteKnown(objectKey, bytes.length, checksum);
+    await cleanup.recoverInterrupted();
+    expect(await http.storage.read(objectKey, bytes.length, checksum)).toEqual(bytes);
+    await http.storage.deleteKnown(objectKey, bytes.length, checksum);
+    await database.client.mediaAsset.update({
+      where: { id },
+      data: { contentDeletedAt: await database.now() },
+    });
+    await cleanup.recoverInterrupted();
+    expect((await http.storage.inventory()).staged).not.toContain(objectKey);
     expect(await cleanup.execute(new Map([[objectKey, checksum]]))).toBe(0);
     expect(await http.storage.identity(objectKey)).toBeNull();
     expect(await http.storage.identity(orphanKey)).toBeNull();
@@ -153,6 +175,6 @@ describe('PHASE 2 Club logo and cleanup HTTP contracts', () => {
       await database.client.auditRecord.count({
         where: { actionCode: 'MEDIA_ASSET_CLEANED', objectId: id },
       }),
-    ).toBe(1);
+    ).toBe(0);
   });
 });

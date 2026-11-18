@@ -160,6 +160,7 @@ export function MasterForm({
   correcting,
   onClose,
   onSaved,
+  onRevisionConflict,
 }: {
   master: Master;
   detail?: { id: string; revision: string; code: string; name: string } & (
@@ -168,6 +169,7 @@ export function MasterForm({
   correcting?: boolean;
   onClose: () => void;
   onSaved: () => void;
+  onRevisionConflict?: () => void;
 }) {
   const { client } = useSession();
   const club = master === 'clubs';
@@ -183,6 +185,7 @@ export function MasterForm({
   const [candidates, setCandidates] = useState<readonly MasterNameCandidate[]>([]);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
+  const [stale, setStale] = useState(false);
   const title = correcting
     ? `Hiệu chỉnh thông tin ${noun}`
     : detail
@@ -191,7 +194,7 @@ export function MasterForm({
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (busy) return;
+    if (busy || stale) return;
     setBusy(true);
     setError('');
     try {
@@ -215,6 +218,10 @@ export function MasterForm({
       });
       onSaved();
     } catch (failure) {
+      if (failure instanceof HttpFailure && failure.code === 'REVISION_CONFLICT') {
+        setStale(true);
+        onRevisionConflict?.();
+      }
       if (failure instanceof HttpFailure && failure.candidates) {
         setCandidates(failure.candidates);
         setDuplicateReason('');
@@ -256,6 +263,7 @@ export function MasterForm({
           <input
             required
             value={name}
+            readOnly={busy}
             onChange={(event) => {
               setName(event.target.value);
               setCandidates([]);
@@ -346,7 +354,7 @@ export function MasterForm({
           <button type="button" onClick={onClose} disabled={busy}>
             Hủy
           </button>
-          <button type="submit" className={css.primary} disabled={busy}>
+          <button type="submit" className={css.primary} disabled={busy || stale}>
             {busy ? 'Đang lưu…' : candidates.length ? 'Xác nhận lưu hồ sơ riêng' : 'Lưu hồ sơ'}
           </button>
         </div>
