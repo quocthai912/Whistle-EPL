@@ -112,7 +112,12 @@ function validRequest<K extends DependencyKind>(
   kind: K,
   value: unknown,
 ): value is DependencyRequestMap[K] {
-  if (!isRecord(value) || !exactKeys(value, requestFields[kind])) return false;
+  if (!isRecord(value)) return false;
+  const fields =
+    kind === 'masterImpact' && !Object.hasOwn(value, 'candidateVersionId')
+      ? requestFields[kind].filter((field) => field !== 'candidateVersionId')
+      : requestFields[kind];
+  if (!exactKeys(value, fields)) return false;
   if (!isUuid(value.seasonId)) return false;
   switch (kind) {
     case 'registrationCompatibility':
@@ -129,7 +134,7 @@ function validRequest<K extends DependencyKind>(
       );
     case 'masterImpact':
       return (
-        isUuid(value.candidateVersionId) &&
+        (value.candidateVersionId === undefined || isUuid(value.candidateVersionId)) &&
         isUuid(value.resourceId) &&
         ['CLUB', 'STADIUM'].includes(String(value.resourceKind))
       );

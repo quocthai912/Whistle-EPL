@@ -169,7 +169,10 @@ export class CommandReceiptService {
         key === 'kind'
       ) {
         payload[key] = value.trim().toUpperCase();
-      } else if (key.endsWith('Id') || key === 'readinessBasisReference') {
+      } else if (key === 'readinessBasisReference') {
+        if (!UUID4.test(value) && !/^[0-9a-f]{64}$/i.test(value)) return invalidIntent();
+        payload[key] = value.toLowerCase();
+      } else if (key.endsWith('Id')) {
         if (!UUID4.test(value)) return invalidIntent();
         payload[key] = value.toLowerCase();
       } else {

@@ -1,17 +1,34 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
 source "$(dirname -- "$0")/common.sh"
-[[ $# = 2 && $1 =~ ^[0-9]{8}T[0-9]{6}Z-[0-9a-f-]{36}$ && $2 = "RESTORE:$OPS_DB_NAME:$1" ]] || { echo 'Usage: restore.sh set-id RESTORE:database:set-id' >&2; exit 1; }
+[[ ( $# = 2 || ( $# = 3 && $3 = --resume ) ) && $1 =~ ^[0-9]{8}T[0-9]{6}Z-[0-9a-f-]{36}$ && $2 = "RESTORE:$OPS_DB_NAME:$1" ]] || { echo 'Usage: restore.sh set-id RESTORE:database:set-id [--resume]' >&2; exit 1; }
 ops_lock
 OPS_SET="$OPS_BACKUP_DIR/$1"
-python3 "$OPS_SCRIPT_DIR/set-format.py" verify "$OPS_APP_DIR" "$OPS_SET"
+python3 "$OPS_SCRIPT_DIR/set-format.py" preflight-media "$OPS_APP_DIR" "$OPS_SET"
+python3 "$OPS_SCRIPT_DIR/set-format.py" verify-archive "$OPS_APP_DIR" "$OPS_SET"
 pg_restore --list "$OPS_SET/database.dump" >/dev/null
 OPS_ID=$(cat /proc/sys/kernel/random/uuid)
+if [[ ${3:-} = --resume ]]; then
+  OPS_ID=$(ops_maintenance status restore 'verify resumable restore' "$OPS_ID" | python3 -c '
+import json, re, sys
+marker = json.loads(sys.stdin.readline())
+if not marker or marker["kind"] != "restore" or marker["backupSetPath"] != sys.argv[1]:
+    raise SystemExit("No interrupted restore for the selected set.")
+operation = marker["operationId"]
+if not re.fullmatch(r"[a-f0-9-]{36}", operation):
+    raise SystemExit("Invalid stored operation.")
+print(operation)
+' "$OPS_SET")
+  ops_maintenance resume-restore restore 'drain for resumed restore' "$OPS_ID" "$OPS_SET"
+else
+  ops_verify_database
+  ops_maintenance close restore "restore set $1" "$OPS_ID" "$OPS_SET"
+fi
 OPS_DONE=0
 trap 'if [[ $OPS_DONE != 1 ]]; then ops_feedback "RESTORE_FAILED maintenance remains closed; repair and verify explicitly"; fi' EXIT
-ops_maintenance close restore "restore set $1" "$OPS_ID" "$OPS_SET"
 # Atomic restore: --clean can encounter missing objects but --if-exists is deliberate.
 pg_restore --dbname="$OPS_DB_NAME" --clean --if-exists --no-owner --no-privileges --single-transaction --exit-on-error "$OPS_SET/database.dump"
+python3 "$OPS_SCRIPT_DIR/set-format.py" restore-media "$OPS_APP_DIR" "$OPS_SET"
 ops_inventory > "$OPS_STATE_DIR/restored-inventory.json"
 cmp -- "$OPS_SET/inventory.json" "$OPS_STATE_DIR/restored-inventory.json"
 ops_verify_database

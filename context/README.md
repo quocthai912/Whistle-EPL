@@ -2,7 +2,7 @@
 
 **Current version:** v2 | **Status:** APPROVED | **Whole-package approval:** Q98, Team Leader, 2026-10-26 (Asia/Bangkok)
 
-**Latest implementation publication (2026-11-17)** PHASE 2 T001–T015 are published and verified. PHASE 2 is `IN_PROGRESS`. See the [Phase ledger](progress-checker.md#phase-2---seasons-catalogs-and-regulations) for the published revisions, Task completion, and acceptance scope.
+**Latest implementation publication (2026-11-18)** PHASE 2 T001–T024 are published. T016–T024 are included in [d3bb0d9](https://github.com/quocthai912/Whistle-EPL/commit/d3bb0d9d8109f78d41a4fab94071c71be81c2700). PHASE 2 is `IN_PROGRESS`, with 24 of 30 tasks complete. See the [Phase ledger](progress-checker.md#phase-2---seasons-catalogs-and-regulations) for verification, tracker completion and remaining acceptance scope.
 
 **PHASE 1 implementation publication (2026-11-06)** T038–T048 have recorded verification and T048 reviewer approval. See the [Phase ledger](progress-checker.md#phase-1-audit-and-verification-evidence---2026-11-06) for source and evidence. PHASE 1 is `COMPLETED` for the accepted foundation scope.
 

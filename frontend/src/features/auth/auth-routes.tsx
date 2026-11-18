@@ -19,6 +19,8 @@ export function AuthRoute({
     | 'delegations'
     | 'audit'
     | 'seasons'
+    | 'clubs'
+    | 'stadiums'
     | 'regulations';
 }) {
   const { ready, session, bootstrapError, retry } = useSession();
@@ -39,6 +41,8 @@ export function AuthRoute({
     page === 'delegations' ||
     page === 'audit' ||
     page === 'seasons' ||
+    page === 'clubs' ||
+    page === 'stadiums' ||
     page === 'regulations'
   )
     return (
@@ -53,7 +57,10 @@ export function AuthRoute({
       {session.systemAdministrator ||
       session.seasonManagerIds?.length ||
       session.seasonRoles?.length ||
-      session.canCreateSeason ? (
+      session.canCreateSeason ||
+      session.sharedMasterKinds?.some(
+        (kind) => kind === 'CLUB_MASTER' || kind === 'STADIUM_MASTER',
+      ) ? (
         <nav aria-label="Chức năng nội bộ">
           {session.systemAdministrator && (
             <p>
@@ -73,6 +80,18 @@ export function AuthRoute({
           {(session.canCreateSeason || session.seasonRoles?.length) && (
             <p>
               <Link to="/workspace/seasons">Quản lý mùa giải</Link>
+            </p>
+          )}
+          {(!!session.seasonManagerIds?.length ||
+            session.sharedMasterKinds?.includes('CLUB_MASTER')) && (
+            <p>
+              <Link to="/workspace/clubs">Quản lý hồ sơ câu lạc bộ</Link>
+            </p>
+          )}
+          {(session.sharedMasterKinds?.includes('STADIUM_MASTER') ||
+            session.seasonRoles?.some(({ roleCode }) => roleCode === 'SCHEDULING_OFFICER')) && (
+            <p>
+              <Link to="/workspace/stadiums">Quản lý sân vận động</Link>
             </p>
           )}
         </nav>

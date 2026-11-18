@@ -295,7 +295,7 @@ test('season edit stays disabled while a fresh detail response is pending', asyn
   expect(within(drawer).getByLabelText(/^Tên mùa giải/)).toHaveValue('Tên sau khi lưu');
 });
 
-test('closed season metadata is read-only and does not expose lifecycle actions', async () => {
+test('closed season metadata stays read-only while a manager can propose reopening', async () => {
   const closedSeason = {
     ...baseSeason,
     state: 'CLOSED',
@@ -323,9 +323,8 @@ test('closed season metadata is read-only and does not expose lifecycle actions'
   expect(
     within(drawer).queryByRole('button', { name: 'Chỉnh sửa thông tin mùa giải' }),
   ).not.toBeInTheDocument();
-  expect(
-    within(drawer).queryByRole('button', { name: /đóng mùa giải|mở lại mùa giải/i }),
-  ).not.toBeInTheDocument();
+  expect(within(drawer).getByRole('button', { name: 'Đề xuất mở lại mùa giải' })).toBeVisible();
+  expect(within(drawer).queryByRole('button', { name: 'Mở lại mùa giải' })).not.toBeInTheDocument();
 });
 
 test(

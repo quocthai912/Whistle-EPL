@@ -130,6 +130,19 @@ const businessPolicies = {
     'replacementVersionId',
     'approvedAt',
   ],
+  SEASON_LIFECYCLE_DRAFT_CREATED: ['requestId', 'versionId', 'versionNumber', 'action', 'state'],
+  SEASON_LIFECYCLE_DRAFT_UPDATED: ['requestId', 'versionId', 'versionNumber', 'action', 'state'],
+  SEASON_LIFECYCLE_SUBMITTED: [
+    'requestId',
+    'versionId',
+    'versionNumber',
+    'action',
+    'state',
+    'summaryVersionId',
+  ],
+  SEASON_LIFECYCLE_WITHDRAWN: ['requestId', 'versionId', 'versionNumber', 'action', 'state'],
+  SEASON_LIFECYCLE_RETURNED: ['requestId', 'versionId', 'versionNumber', 'action', 'state'],
+  SEASON_LIFECYCLE_REJECTED: ['requestId', 'versionId', 'versionNumber', 'action', 'state'],
   SEASON_LIFECYCLE_APPROVED: [
     'requestId',
     'versionId',
@@ -141,12 +154,12 @@ const businessPolicies = {
   ],
   CLUB_CREATED: ['code', 'name', 'abbreviation'],
   CLUB_UPDATED: ['name', 'abbreviation'],
-  CLUB_CORRECTED: ['name', 'abbreviation', 'correctionBasis'],
+  CLUB_CORRECTED: ['name', 'abbreviation', 'correctionBasis', 'duplicateReviewReason'],
   CLUB_DISCONTINUED: ['discontinuedAt', 'effectiveAt'],
   CLUB_RESUMED: ['discontinuedAt', 'effectiveAt'],
   STADIUM_CREATED: ['code', 'name', 'location'],
   STADIUM_UPDATED: ['name', 'location'],
-  STADIUM_CORRECTED: ['name', 'location', 'correctionBasis'],
+  STADIUM_CORRECTED: ['name', 'location', 'correctionBasis', 'duplicateReviewReason'],
   STADIUM_DISCONTINUED: ['discontinuedAt', 'effectiveAt'],
   STADIUM_RESUMED: ['discontinuedAt', 'effectiveAt'],
   MEDIA_ASSET_STORED: [
@@ -194,6 +207,12 @@ const objectKindByAction: Partial<Record<AuditAction, BusinessHistoryKind>> = {
   REGULATION_CHANGE_RETURNED: 'RegulationChangeRequest',
   REGULATION_CHANGE_REJECTED: 'RegulationChangeRequest',
   REGULATION_CHANGE_APPROVED: 'RegulationChangeRequest',
+  SEASON_LIFECYCLE_DRAFT_CREATED: 'SeasonLifecycleRequest',
+  SEASON_LIFECYCLE_DRAFT_UPDATED: 'SeasonLifecycleRequest',
+  SEASON_LIFECYCLE_SUBMITTED: 'SeasonLifecycleRequest',
+  SEASON_LIFECYCLE_WITHDRAWN: 'SeasonLifecycleRequest',
+  SEASON_LIFECYCLE_RETURNED: 'SeasonLifecycleRequest',
+  SEASON_LIFECYCLE_REJECTED: 'SeasonLifecycleRequest',
   SEASON_LIFECYCLE_APPROVED: 'SeasonLifecycleRequest',
   CLUB_CREATED: 'Club',
   CLUB_UPDATED: 'Club',
@@ -377,7 +396,7 @@ function boundedText(value: unknown, max: number, optional = false): value is st
 }
 
 function sameChangedFieldKeys(before: Record<string, unknown>, after: Record<string, unknown>) {
-  const basisFields = new Set(['correctionBasis']);
+  const basisFields = new Set(['correctionBasis', 'duplicateReviewReason']);
   const beforeKeys = Object.keys(before)
     .filter((key) => !basisFields.has(key))
     .sort();

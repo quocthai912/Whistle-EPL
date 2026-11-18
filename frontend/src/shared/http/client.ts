@@ -22,9 +22,12 @@ const notices: Record<string, string> = {
   NOT_FOUND: 'Không tìm thấy dữ liệu.',
   LOGIN_THROTTLED: 'Có quá nhiều lần thử. Vui lòng thử lại sau.',
   MAINTENANCE: 'Hệ thống đang bảo trì. Vui lòng thử lại sau.',
+  MEDIA_UNAVAILABLE: 'Tạm thời không thể truy cập nội dung logo.',
+  LIFECYCLE_READINESS_UNAVAILABLE: 'Chưa thể xác minh điều kiện đóng mùa giải.',
   REGULATION_BASIS_UNRESOLVED: 'Đang chờ xác định quy định có hiệu lực. Vui lòng thử lại sau.',
 };
 export type FieldErrorDetail = Readonly<{ field: string; code: string; message?: string }>;
+export type MasterNameCandidate = Readonly<{ id: string; code: string; name: string }>;
 
 export class HttpFailure extends Error {
   constructor(
@@ -33,6 +36,7 @@ export class HttpFailure extends Error {
     readonly requestId?: string,
     readonly unknownOutcome = false,
     readonly details?: readonly FieldErrorDetail[],
+    readonly candidates?: readonly MasterNameCandidate[],
   ) {
     super(notices[code] ?? 'Không thể hoàn tất yêu cầu. Vui lòng thử lại sau.');
   }
@@ -41,6 +45,25 @@ type Options = { method?: 'GET' | 'POST' | 'PATCH'; body?: unknown; requestKey?:
 type Envelope<T> = { data: T; meta?: unknown; requestId: string };
 function record(value: unknown): value is Record<string, unknown> {
   return !!value && typeof value === 'object' && !Array.isArray(value);
+}
+function masterNameCandidates(value: unknown): readonly MasterNameCandidate[] | undefined {
+  if (!Array.isArray(value)) return undefined;
+  const candidates: MasterNameCandidate[] = [];
+  for (const item of value) {
+    if (
+      !record(item) ||
+      typeof item.id !== 'string' ||
+      !/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(item.id) ||
+      typeof item.code !== 'string' ||
+      !/^[A-Z0-9][A-Z0-9_-]{0,31}$/.test(item.code) ||
+      typeof item.name !== 'string' ||
+      !item.name.trim() ||
+      [...item.name].length > 200
+    )
+      return undefined;
+    candidates.push({ id: item.id, code: item.code, name: item.name });
+  }
+  return candidates;
 }
 function fieldErrorDetails(value: unknown): readonly FieldErrorDetail[] | undefined {
   if (!Array.isArray(value)) return undefined;
@@ -244,6 +267,9 @@ export class HttpClient {
         record(body.error) &&
           (body.error.code === 'VALIDATION_FAILED' || body.error.code === 'INVALID_INPUT')
           ? fieldErrorDetails(body.error.details)
+          : undefined,
+        code === 'BASIS_CHANGED' && record(body.error)
+          ? masterNameCandidates(body.error.candidates)
           : undefined,
       );
       if (response.status === 401 && path !== '/auth/login') this.session.clear(failure.message);

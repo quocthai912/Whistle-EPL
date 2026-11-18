@@ -29,6 +29,9 @@ if (require.main === module)
       case 'status':
         console.log(JSON.stringify(await maintenance.status()));
         break;
+      case 'resume-restore':
+        await maintenance.resumeRestore(args['--operation-id'], args['--set-path']);
+        break;
       default:
         throw new Error('Invalid maintenance action.');
     }

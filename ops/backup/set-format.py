@@ -1,10 +1,13 @@
-"""Strict v1 foundation and no-assets v2 available-phase-2 backup sets."""
+"""Strict v1 foundation and v2 available-phase-2 backup sets."""
 import hashlib
 import json
+import os
 import re
 import shutil
+import stat
 import subprocess
 import sys
+import tempfile
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -24,6 +27,7 @@ PHASE2_MIGRATIONS = LEGACY_MIGRATIONS + (
     '202611150003_club_stadium_media_asset',
     '202611170001_regulation_ranking_and_logo_lifecycle',
 )
+LIFECYCLE_MIGRATION = '202611170002_lifecycle_readiness_basis'
 
 FOUNDATION_TABLES = {
     '_prisma_migrations', 'account', 'session', 'prelogin_csrf_context',
@@ -193,7 +197,7 @@ def schema_profile(app):
     names = {path.parent.name for path in migrations(app)}
     if names == set(LEGACY_MIGRATIONS):
         return 'available-foundation'
-    if names == set(PHASE2_MIGRATIONS):
+    if names in (set(PHASE2_MIGRATIONS), set(PHASE2_MIGRATIONS) | {LIFECYCLE_MIGRATION}):
         return 'available-phase-2'
     raise ValueError('Unsupported application/schema migration profile.')
 
@@ -248,16 +252,96 @@ def validate_phase2_inventory(inventory):
         expected_keys = {'rows', 'contentSha256'}
         if name == 'club':
             expected_keys.add('currentLogoReferences')
+        if name == 'media_asset' and isinstance(value, dict) and value.get('rows'):
+            expected_keys.add('storedContent')
         if not isinstance(value, dict) or set(value) != expected_keys:
             raise ValueError('Invalid available-phase-2 table inventory.')
         if type(value.get('rows')) is not int or value['rows'] < 0:
             raise ValueError('Invalid available-phase-2 row count.')
         if not isinstance(value.get('contentSha256'), str) or not SHA256.fullmatch(value['contentSha256']):
             raise ValueError('Invalid available-phase-2 content checksum.')
-    if inventory['media_asset']['rows'] != 0:
-        raise ValueError('Nonempty media storage requires its owning recovery implementation.')
-    if type(inventory['club']['currentLogoReferences']) is not int or inventory['club']['currentLogoReferences'] != 0:
-        raise ValueError('Current media references require their owning recovery implementation.')
+    assets = inventory['media_asset']
+    stored = assets.get('storedContent', [])
+    validate_media_inventory(stored)
+    references = inventory['club']['currentLogoReferences']
+    if len(stored) > assets['rows'] or type(references) is not int or not 0 <= references <= min(
+        len(stored), inventory['club']['rows'],
+    ):
+        raise ValueError('Invalid available-phase-2 media inventory counts.')
+
+
+def validate_media_inventory(media):
+    if not isinstance(media, list):
+        raise ValueError('Invalid media inventory.')
+    previous = ''
+    for asset in media:
+        if not isinstance(asset, dict) or set(asset) != {
+            'id', 'provider', 'objectKey', 'mimeType', 'byteSize', 'width', 'height', 'checksum',
+        }:
+            raise ValueError('Unexpected media inventory fields.')
+        key = asset['id']
+        if (
+            not isinstance(key, str) or not UUID.fullmatch(key) or key <= previous
+            or asset['objectKey'] != f'{key}.webp'
+            or asset['provider'] != 'LOCAL' or asset['mimeType'] != 'image/webp'
+            or any(type(asset[field]) is not int or not 1 <= asset[field] <= maximum
+                   for field, maximum in [('byteSize', 2097152), ('width', 2048), ('height', 2048)])
+            or not isinstance(asset['checksum'], str) or not SHA256.fullmatch(asset['checksum'])
+        ):
+            raise ValueError('Invalid or duplicate media record.')
+        previous = key
+
+
+def media_root():
+    raw = os.environ.get('OPS_MEDIA_ROOT', '')
+    path = Path(raw)
+    if not path.is_absolute() or path == Path(path.anchor) or path.resolve() != path or not path.is_dir():
+        raise ValueError('Protected absolute media root required.')
+    uid = media_uid()
+    if path.stat().st_uid != uid or path.stat().st_mode & 0o077:
+        raise ValueError('Media root must be private and backend-owned.')
+    for name in ('OPS_APP_DIR', 'OPS_STATE_DIR', 'OPS_BACKUP_DIR', 'OPS_OFFHOST_DIR'):
+        if os.environ.get(name):
+            owned = Path(os.environ[name]).resolve()
+            if path == owned or path.is_relative_to(owned) or owned.is_relative_to(path):
+                raise ValueError('Media root must be separate from application, state and backup roots.')
+    return path
+
+
+def media_uid():
+    uid = int(os.environ.get('OPS_MEDIA_UID', '1000'))
+    if uid <= 0:
+        raise ValueError('Non-root backend UID required.')
+    return uid
+
+
+def read_media(path, asset):
+    observed = path.lstat()
+    if not stat.S_ISREG(observed.st_mode):
+        raise ValueError('Unexpected media file.')
+    flags = os.O_RDONLY | getattr(os, 'O_NOFOLLOW', 0) | getattr(os, 'O_NONBLOCK', 0) | getattr(os, 'O_BINARY', 0)
+    with os.fdopen(os.open(path, flags), 'rb') as handle:
+        info = os.fstat(handle.fileno())
+        if (
+            not stat.S_ISREG(info.st_mode) or info.st_nlink != 1
+            or (info.st_dev, info.st_ino) != (observed.st_dev, observed.st_ino)
+            or info.st_size != asset['byteSize']
+        ):
+            raise ValueError('Unexpected media file.')
+        data = handle.read(asset['byteSize'] + 1)
+    if len(data) != asset['byteSize'] or hashlib.sha256(data).hexdigest() != asset['checksum']:
+        raise ValueError('Media integrity failed.')
+    return data
+
+
+def verify_media(directory, media):
+    validate_media_inventory(media)
+    if directory.is_symlink() or not directory.is_dir() or {
+        item.name for item in directory.iterdir()
+    } != {asset['objectKey'] for asset in media}:
+        raise ValueError('Unexpected or incomplete set media directory.')
+    for asset in media:
+        read_media(directory / asset['objectKey'], asset)
 
 
 def validate_set_layout(backup, scope):
@@ -269,8 +353,8 @@ def validate_set_layout(backup, scope):
         raise ValueError('Incomplete set or unexpected content.')
     for item in backup.iterdir():
         if item.name == 'media' and scope == 'available-phase-2':
-            if item.is_symlink() or not item.is_dir() or any(item.iterdir()):
-                raise ValueError('Available-phase-2 media directory must be a real empty directory.')
+            if item.is_symlink() or not item.is_dir():
+                raise ValueError('Available-phase-2 media directory must be a real directory.')
         elif item.is_symlink() or not item.is_file():
             raise ValueError('Set must contain regular files only.')
 
@@ -306,15 +390,22 @@ def create(app, backup, identifier, operation_id=None, application_revision=None
             raise ValueError('Available-phase-2 application revision is required.')
         validate_snapshot_at(snapshot_at)
         validate_phase2_inventory(inventory)
+        stored = inventory['media_asset'].get('storedContent', [])
         media_dir = backup / 'media'
         if media_dir.exists():
             if media_dir.is_symlink() or not media_dir.is_dir() or any(media_dir.iterdir()):
                 raise ValueError('Available-phase-2 media directory must be empty.')
         else:
             media_dir.mkdir(mode=0o700)
+        if stored:
+            source = media_root()
+            for asset in stored:
+                key = asset['objectKey']
+                (media_dir / key).write_bytes(read_media(source / key, asset))
         manifest = {
             'formatVersion': 2,
             **common,
+            'media': stored,
             'operationId': operation_id,
             'applicationRevision': application_revision,
             'snapshotAt': snapshot_at,
@@ -348,7 +439,7 @@ def verify(app, backup, identifier=None):
         raise ValueError('Unsupported backup manifest fields.')
     if (
         manifest.get('formatVersion') != expected_version
-        or manifest.get('media') != []
+        or (scope == 'available-foundation' and manifest.get('media') != [])
         or manifest.get('scope') != scope
     ):
         raise ValueError('Unsupported backup scope/format.')
@@ -379,7 +470,102 @@ def verify(app, backup, identifier=None):
         validate_foundation_inventory(inventory)
     else:
         validate_phase2_inventory(inventory)
+        if manifest['media'] != inventory['media_asset'].get('storedContent', []):
+            raise ValueError('Manifest and media inventory differ.')
+        verify_media(backup / 'media', manifest['media'])
     return manifest
+
+
+def restore_media(app, backup):
+    manifest = verify(app, backup)
+    if not manifest['media']:
+        return
+    root = media_root()
+    uid = media_uid()
+    for asset in manifest['media']:
+        key = asset['objectKey']
+        content = read_media(backup / 'media' / key, asset)
+        descriptor, stage = tempfile.mkstemp(prefix='.restore-', dir=root)
+        try:
+            with os.fdopen(descriptor, 'wb') as handle:
+                os.fchown(handle.fileno(), uid, -1)
+                handle.write(content)
+                handle.flush()
+                os.fsync(handle.fileno())
+            target = root / key
+            if target.is_symlink() or (target.exists() and not target.is_file()):
+                raise ValueError('Unsafe destination for restored media.')
+            os.replace(stage, target)
+        finally:
+            Path(stage).unlink(missing_ok=True)
+    descriptor = os.open(root, os.O_RDONLY | os.O_DIRECTORY)
+    try:
+        os.fsync(descriptor)
+    finally:
+        os.close(descriptor)
+
+
+def verify_live_media(app):
+    if schema_profile(app) != 'available-phase-2':
+        return
+    media = inventory(app)['media_asset'].get('storedContent', [])
+    if media:
+        root = media_root()
+        for asset in media:
+            read_media(root / asset['objectKey'], asset)
+
+
+def archive_rows(backup, table):
+    # Read COPY data without applying SQL to the restore target.
+    query = subprocess.check_output(
+        ['pg_restore', '--data-only', '--table', table, '--file', '-', str(backup / 'database.dump')],
+        text=True, encoding='UTF-8',
+    )
+    prefix = f'COPY public.{table} ('
+    columns = None
+    rows = []
+    for line in query.split('\n'):
+        if line.startswith(prefix) and line.endswith(') FROM stdin;'):
+            if columns is not None:
+                raise ValueError('Duplicate restore table stream.')
+            columns = line[len(prefix):-len(') FROM stdin;')].split(', ')
+            continue
+        if columns is None:
+            continue
+        if line == r'\.':
+            return rows
+        fields = line.split('\t')
+        if len(fields) != len(columns):
+            raise ValueError('Invalid restore table row.')
+        rows.append(dict(zip(columns, fields)))
+    raise ValueError('Missing restore table stream.')
+
+
+def verify_archive(app, backup):
+    manifest = verify(app, backup)
+    if manifest['formatVersion'] == 1:
+        return
+    inventory = load_inventory(backup)
+    assets = archive_rows(backup, 'media_asset')
+    clubs = archive_rows(backup, 'club')
+    null = r'\N'
+    if len(assets) != inventory['media_asset']['rows'] or len(clubs) != inventory['club']['rows']:
+        raise ValueError('Archive and master inventory row counts differ.')
+    referenced = {club['current_logo_id']: club['id'] for club in clubs if club['current_logo_id'] != null}
+    if len(referenced) != inventory['club']['currentLogoReferences']:
+        raise ValueError('Archive current logo inventory differs.')
+    by_id = {asset['id']: asset for asset in assets}
+    for asset_id, club_id in referenced.items():
+        asset = by_id.get(asset_id)
+        if not asset or asset['club_id'] != club_id or asset['unreferenced_at'] != null or asset['content_deleted_at'] != null:
+            raise ValueError('Archive current logo reference is invalid.')
+    stored = [{
+        'id': asset['id'], 'provider': asset['provider'], 'objectKey': asset['object_key'],
+        'mimeType': asset['mime_type'], 'byteSize': int(asset['byte_size']),
+        'width': int(asset['width']), 'height': int(asset['height']), 'checksum': asset['checksum'],
+    } for asset in sorted(assets, key=lambda row: row['id']) if asset['content_deleted_at'] == null]
+    if stored != manifest['media']:
+        raise ValueError('Archive media metadata differs from the selected set.')
 
 
 def retain(app, directory):
@@ -394,6 +580,31 @@ def retain(app, directory):
             continue
     for path in sorted(complete, key=lambda item: item.name, reverse=True)[7:]:
         shutil.rmtree(path)
+
+
+def protected_media(app):
+    directories = [Path(os.environ['OPS_BACKUP_DIR'])]
+    if os.environ.get('OPS_PROFILE') == 'internet':
+        directories.append(Path(os.environ['OPS_OFFHOST_DIR']))
+    protected = {}
+    for directory in directories:
+        for backup in directory.iterdir():
+            if not SET_NAME.fullmatch(backup.name):
+                continue
+            try:
+                manifest = verify(app, backup)
+            except (ValueError, OSError, KeyError) as error:
+                raise ValueError(
+                    f'Retained backup set {backup.name} cannot be verified. '
+                    'Verify it with its matching application release and preserve a recoverable '
+                    'copy in a separately managed archive before removing it from active retention. '
+                    'Media cleanup is blocked until all active retained sets verify.'
+                ) from error
+            for asset in manifest['media']:
+                key, checksum = asset['objectKey'], asset['checksum']
+                if protected.setdefault(key, checksum) != checksum:
+                    raise ValueError('Retained copies of an asset disagree.')
+    return protected
 
 
 def sql(query):
@@ -442,10 +653,14 @@ def inventory(app):
         if scope == 'available-phase-2' and name == 'club':
             logo_references = int(sql('SELECT count(*) FROM "club" WHERE "current_logo_id" IS NOT NULL'))
             result[name]['currentLogoReferences'] = logo_references
-            if logo_references:
-                raise ValueError('Current media references require their owning recovery implementation.')
         if scope == 'available-phase-2' and name == 'media_asset' and row_count:
-            raise ValueError('Nonempty media storage requires its owning recovery implementation.')
+            result[name]['storedContent'] = json.loads(sql("""
+                SELECT coalesce(jsonb_agg(jsonb_build_object(
+                  'id', id, 'provider', provider, 'objectKey', object_key,
+                  'mimeType', mime_type, 'byteSize', byte_size, 'width', width,
+                  'height', height, 'checksum', checksum
+                ) ORDER BY id), '[]') FROM media_asset WHERE content_deleted_at IS NULL
+            """))
     required = {'account', 'session', 'audit_record', 'command_receipt', '_prisma_migrations'}
     if not required <= result.keys():
         raise ValueError('Missing foundation schema.')
@@ -622,16 +837,33 @@ if __name__ == '__main__':
             create(app, Path(arguments[0]), arguments[1], operation_id, application_revision, snapshot_at)
         elif action == 'verify':
             verify(app, Path(arguments[0]))
+        elif action == 'verify-archive':
+            verify_archive(app, Path(arguments[0]))
         elif action == 'restored':
             backup = Path(arguments[0])
-            verify(app, backup)
+            manifest = verify(app, backup)
             database(app)
             if inventory(app) != load_inventory(backup):
                 raise ValueError('Restored contents differ from selected set.')
+            if manifest['media']:
+                root = media_root()
+                for asset in manifest['media']:
+                    read_media(root / asset['objectKey'], asset)
+        elif action == 'restore-media':
+            restore_media(app, Path(arguments[0]))
+        elif action == 'preflight-media':
+            if verify(app, Path(arguments[0]))['media']:
+                media_root()
+        elif action == 'live-media':
+            verify_live_media(app)
         elif action == 'retain':
             retain(app, Path(arguments[0]))
+        elif action == 'protected-media':
+            print(json.dumps(protected_media(app), sort_keys=True))
         else:
             raise ValueError('Unknown verification action.')
-    except Exception:
+    except Exception as error:
+        if action == 'protected-media':
+            print(str(error), file=sys.stderr)
         print('Backup set verification failed; inspect protected operator state.', file=sys.stderr)
         sys.exit(1)

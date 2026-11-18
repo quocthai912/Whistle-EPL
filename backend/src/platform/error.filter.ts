@@ -8,6 +8,7 @@ import {
 import { randomUUID } from 'node:crypto';
 import type { Response } from 'express';
 import { ApplicationError, type ApplicationErrorDetail } from './application-error';
+import { MasterNameConflict } from './application-error';
 import { clearAuthCookie, SESSION_COOKIE } from '../identity-access/csrf.service';
 
 const safeFieldPath = /^[A-Za-z][A-Za-z0-9_.-]*(?:\[\d+\][A-Za-z0-9_.-]*)*$/;
@@ -57,6 +58,7 @@ const failures: Record<number, { code: string; message: string }> = {
   404: { code: 'NOT_FOUND', message: 'Không tìm thấy dữ liệu.' },
   405: { code: 'INVALID_INPUT', message: 'Thao tác không được hỗ trợ.' },
   409: { code: 'STATE_CONFLICT', message: 'Dữ liệu đã thay đổi. Vui lòng tải lại.' },
+  413: { code: 'VALIDATION_FAILED', message: 'Tệp tải lên vượt quá kích thước cho phép.' },
   429: { code: 'LOGIN_THROTTLED', message: 'Vui lòng thử lại sau.' },
   503: { code: 'TEMPORARILY_UNAVAILABLE', message: 'Hệ thống tạm thời không khả dụng.' },
 };
@@ -86,6 +88,9 @@ export class SafeErrorFilter implements ExceptionFilter {
             code: exception.code,
             message: exception.message,
             ...(details ? { details } : {}),
+            ...(exception instanceof MasterNameConflict
+              ? { candidates: exception.candidates }
+              : {}),
           }
         : (failures[status] ?? {
             code: 'INTERNAL_ERROR',
