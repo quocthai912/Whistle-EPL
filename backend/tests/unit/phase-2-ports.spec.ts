@@ -19,6 +19,7 @@ import type {
 import { dependencySources } from '../../src/season-regulations/season-dependencies.port';
 import { composePhase2Evidence, simulateLaterFact } from '../fixtures/phase-2-evidence';
 import { createPhase2Fixtures, resetPhase2Fixtures } from '../fixtures/phase-2-fixtures';
+import { assertIsolatedTarget } from '../fixtures/isolated-target.guard';
 
 const seasonId = randomUUID();
 const versionId = randomUUID();
@@ -694,11 +695,28 @@ describe('PHASE 2 typed later-fact ports', () => {
 
   it('keeps fixture creation and reset behind the isolated-target guard and reset acknowledgement', async () => {
     await expect(
-      createPhase2Fixtures('postgresql://operator:secret@db.example.com/whistle_test_bad'),
+      createPhase2Fixtures('postgresql://operator:secret@db.example.com:55437/whistle_test_bad'),
     ).rejects.toThrow('isolated test database');
     await expect(
-      resetPhase2Fixtures('postgresql://operator:secret@127.0.0.1/whistle_test_fixture', ''),
+      resetPhase2Fixtures('postgresql://operator:secret@127.0.0.1:55437/whistle_test_fixture', ''),
     ).rejects.toThrow('acknowledgement');
+  });
+
+  it('requires explicit ports for both isolated and operational database URLs', () => {
+    const target = 'postgresql://fixture:fixture@127.0.0.1:55437/whistle_test_fixture';
+    const operational = 'postgresql://operator:fixture@127.0.0.1:5432/whistle';
+    expect(assertIsolatedTarget(target, { nodeEnv: 'test', operationalUrl: operational })).toBe(
+      target,
+    );
+    expect(() => assertIsolatedTarget(target.replace(':55437', ''), { nodeEnv: 'test' })).toThrow(
+      'isolated test database',
+    );
+    expect(() =>
+      assertIsolatedTarget(target, {
+        nodeEnv: 'test',
+        operationalUrl: operational.replace(':5432', ''),
+      }),
+    ).toThrow('isolated test database');
   });
 
   it('rejects invalid IDs and unknown dependency kinds before catalog access', async () => {
