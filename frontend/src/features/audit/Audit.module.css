@@ -224,3 +224,9 @@
 .advancedFields label small {
   min-height: 36px;
 }
+
+.technicalHint {
+  margin: 12px 0 0;
+  color: #65718a;
+  font-size: 14px;
+}

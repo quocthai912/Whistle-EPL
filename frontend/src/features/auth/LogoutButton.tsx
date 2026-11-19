@@ -8,7 +8,7 @@ export function LogoutButton() {
   const { store } = useSession();
   const { error, busy, uncertain, execute, resolved } = useAuthCommand();
   return (
-    <div>
+    <div className={styles.logoutGroup}>
       <Button
         htmlType="button"
         className={styles.logout}
@@ -38,8 +38,12 @@ export function LogoutButton() {
       >
         {busy ? 'Đang đăng xuất…' : 'Đăng xuất'}
       </Button>
-      {error && <p role="alert">{error}</p>}
-      {uncertain && <SessionResolution onResolved={resolved} />}
+      {(error || uncertain) && (
+        <div className={styles.logoutRecovery}>
+          {error && <p role="alert">{error}</p>}
+          {uncertain && <SessionResolution onResolved={resolved} />}
+        </div>
+      )}
     </div>
   );
 }

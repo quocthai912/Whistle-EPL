@@ -94,11 +94,21 @@ test('a direct season-creation grant lets a create-only account create without r
   await starts.click();
   await page.locator('td[title="2028-08-15"]:visible').click();
   await expect(starts).toHaveValue('15/08/2028');
+  // A picker blur must not erase the first submit's date-order error.
+  await dialog.getByLabel(/^Ngày kết thúc/).fill('14/08/2028');
+  await dialog.getByRole('button', { name: 'Xác nhận tạo mùa giải' }).click();
+  await expect(dialog.getByRole('alert')).toContainText(
+    'Ngày kết thúc phải sau hoặc bằng ngày bắt đầu.',
+  );
+  const startBox = await starts.boundingBox();
+  const endBox = await dialog.getByLabel(/^Ngày kết thúc/).boundingBox();
+  expect(Math.abs(startBox!.y - endBox!.y)).toBeLessThanOrEqual(1);
+  expect(seasonRequests).toEqual([]);
   await dialog.getByLabel(/^Ngày kết thúc/).fill('23/05/2029');
   await dialog.getByRole('button', { name: 'Xác nhận tạo mùa giải' }).click();
 
-  await expect(page.getByRole('status')).toContainText('Đã tạo mùa giải. Mã định danh:');
-  await expect(page.getByRole('status')).toContainText('phiên bản 1');
+  await expect(page.getByRole('status')).toContainText('Đã tạo mùa giải ');
+  await expect(page.getByRole('status')).not.toContainText('Mã định danh');
   expect(seasonRequests).toEqual(['POST']);
 
   await button(page, 'Đăng xuất').click();

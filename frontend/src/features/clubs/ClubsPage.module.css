@@ -108,3 +108,7 @@
   opacity: 0.6;
   cursor: default;
 }
+
+.logoActions > p {
+  margin: 0;
+}

@@ -8,6 +8,7 @@
 .dialog :global(.ant-modal-container) {
   padding: 0;
   overflow: hidden;
+  max-height: calc(100dvh - 48px);
   border: 1px solid #e3e7f2;
   border-radius: 14px;
 }
@@ -27,7 +28,9 @@
 }
 .dialog :global(.ant-modal-body) {
   padding: 24px;
-  max-height: calc(100dvh - 190px);
+  box-sizing: border-box;
+  max-height: calc(100dvh - 160px);
+  scrollbar-gutter: stable;
   overflow-y: auto;
 }
 .dialog :global(.ant-modal-footer) {
@@ -48,7 +51,13 @@
   flex-wrap: wrap;
   justify-content: flex-end;
   gap: 10px;
-  padding-top: 16px;
+  position: sticky;
+  bottom: -24px;
+  z-index: 2;
+  margin: 0 -24px -24px;
+  padding: 16px 24px;
+  background: white;
+  box-shadow: 0 -4px 12px #17213b08;
   border-top: 1px solid #e3e7f2;
 }
 .dialog form label {
@@ -125,4 +134,24 @@
 .dialog form > dl > dd {
   margin: 0 0 8px;
   overflow-wrap: anywhere;
+}
+
+.dialog form > label {
+  margin: 0;
+}
+.dialog form > label > textarea {
+  font-weight: 400;
+}
+.dialog input:disabled {
+  color: #526078;
+  background: #edf0f5;
+  border: 1px solid #d5dbe6;
+  -webkit-text-fill-color: #526078;
+  cursor: not-allowed;
+  opacity: 1;
+}
+
+.dialog [role='alert'],
+.dialog [data-dialog-feedback] {
+  scroll-margin-block: 24px 100px;
 }

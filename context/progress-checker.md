@@ -143,8 +143,9 @@ PHASE 2 owns actual season/regulation workflows and their D089 activation/catch-
 **Post-acceptance UI refinement, 2026-11-19:** A separately authorized review of
 PHASE 1–2 addresses the supplied gallery feedback, prioritizing the regulation
 draft editor and shared dialogs. See the [local refinement and verification
-record](../docs/verification/phase-2/ui-review-refinement.md). This work is local
-and unpublished; it does not replace the historical Phase acceptance or source
+record](../docs/verification/phase-2/ui-review-refinement.md) and the
+[second review and proposed final UI](../docs/verification/phase-2/ui-final-review.md).
+The follow-up is local and unpublished; it does not replace the historical Phase acceptance or source
 publication evidence below, and does not close operational/later-Phase gates.
 
 **Specification approval evidence, 2026-11-10 (Asia/Bangkok):** The Team Leader explicitly answered "Tôi đồng ý phê duyệt." after the [PHASE 2 Specification](../specs/002-phase-2-season-regulations/spec.md), completed clarification and 16/16 requirements-quality checklist were presented for approval before Plan. This establishes Specification approval only; Plan review, final Tasks/Issues, implementation and acceptance remain separate gates. Implementation had yet to start at this milestone.

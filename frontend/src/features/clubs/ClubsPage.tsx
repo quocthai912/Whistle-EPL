@@ -232,10 +232,7 @@ function ClubProfile({
             {!resource.loading && !resource.error && detail.capabilities.canEdit && (
               <>
                 <button type="button" className={css.primary} onClick={() => setForm({ detail })}>
-                  Chỉnh sửa
-                </button>
-                <button type="button" onClick={() => setForm({ detail, correcting: true })}>
-                  Hiệu chỉnh thông tin
+                  Chỉnh sửa thông tin
                 </button>
                 {!resource.loading && (
                   <MasterAvailability

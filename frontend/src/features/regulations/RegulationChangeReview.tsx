@@ -1,3 +1,4 @@
+import { useDialogFeedback } from '../accounts/use-dialog-feedback';
 import { AdminSelect } from '../accounts/AdminSelect';
 import { WorkspaceDialog as Modal } from '../accounts/WorkspaceDialog';
 import { useEffect, useState, type FormEvent } from 'react';
@@ -58,10 +59,30 @@ export function RegulationChangeReview({
   const [error, setError] = useState<string>();
   const [unknown, setUnknown] = useState(false);
   const [conflict, setConflict] = useState(false);
+  const formFeedback = useDialogFeedback(error);
   const collection = `/seasons/${encodeURIComponent(seasonId)}/regulation-change-requests`;
   const replacementId =
     review?.change.replacementVersionId ?? (creating?.action === 'REPLACE' ? replacement : null);
   const replacementContent = useRegulationReviewContent(replacementId);
+  const waitingVersionId = review?.change.waitingVersionId ?? creating?.waitingVersionId;
+  const basisVersionId = review?.change.currentBasisVersionId;
+  const waitingContent = useRegulationReviewContent(
+    waitingVersionId && !versions.some((item) => item.id === waitingVersionId)
+      ? waitingVersionId
+      : null,
+  );
+  const basisContent = useRegulationReviewContent(
+    basisVersionId && !versions.some((item) => item.id === basisVersionId) ? basisVersionId : null,
+  );
+  const knownVersions = [
+    ...versions,
+    waitingContent?.detail,
+    basisContent?.detail,
+    replacementContent?.detail,
+  ];
+  const identityReady = [waitingVersionId, basisVersionId, replacementId].every(
+    (id) => !id || knownVersions.some((item) => item?.id === id),
+  );
 
   useEffect(() => {
     let active = true;
@@ -79,6 +100,12 @@ export function RegulationChangeReview({
     };
   }, [client, collection, attempt, epoch, waitingId]);
 
+  function versionLabel(id: string | null | undefined) {
+    if (!id) return 'Chưa có';
+    const version = knownVersions.find((item) => item?.id === id);
+    return version ? 'Phiên bản ' + version.versionNumber : 'Đang xác minh phiên bản…';
+  }
+
   function close() {
     setCreating(undefined);
     setReview(undefined);
@@ -94,6 +121,7 @@ export function RegulationChangeReview({
     const normalized = reason.normalize('NFC').trim();
     if (
       !normalized ||
+      (!identityReady && !unknown) ||
       Array.from(normalized).length > 2000 ||
       busy ||
       conflict ||
@@ -235,14 +263,14 @@ export function RegulationChangeReview({
         keyboard={!busy && !unknown}
         mask={{ closable: false }}
       >
-        <form onSubmit={(event) => void confirm(event)}>
+        <form ref={formFeedback} onSubmit={(event) => void confirm(event)}>
           <dl>
             <dt>Phiên bản chờ</dt>
-            <dd>{review?.change.waitingVersionId ?? creating?.waitingVersionId}</dd>
+            <dd>{versionLabel(review?.change.waitingVersionId ?? creating?.waitingVersionId)}</dd>
             {review?.change.replacementVersionId && (
               <>
                 <dt>Phiên bản thay thế</dt>
-                <dd>{review.change.replacementVersionId}</dd>
+                <dd>{versionLabel(review.change.replacementVersionId)}</dd>
               </>
             )}
             {review?.change.cutoff && (
@@ -254,15 +282,13 @@ export function RegulationChangeReview({
             {review?.change.replacementVersionId && (
               <>
                 <dt>Phiên bản đang hiệu lực được đối chiếu</dt>
-                <dd>{review.change.currentBasisVersionId ?? 'Chưa có'}</dd>
+                <dd>{versionLabel(review.change.currentBasisVersionId)}</dd>
               </>
             )}
             {review && (
               <>
                 <dt>Phiên bản đề nghị</dt>
-                <dd>
-                  {review.change.versionId} · {review.change.revision}
-                </dd>
+                <dd>Lần sửa {review.change.revision}</dd>
                 <dt>Lý do đề nghị</dt>
                 <dd>{review.change.reason}</dd>
               </>
@@ -281,7 +307,7 @@ export function RegulationChangeReview({
                 { value: '', label: 'Chọn phiên bản đã gửi' },
                 ...candidates.map((item) => ({
                   value: item.id,
-                  label: 'Phiên bản ' + item.versionNumber + ' · ' + item.id,
+                  label: 'Phiên bản ' + item.versionNumber,
                 })),
               ]}
             />
@@ -297,6 +323,12 @@ export function RegulationChangeReview({
             ) : (
               <p role="status">Đang tải nội dung phiên bản thay thế…</p>
             ))}
+          {(waitingContent?.error || basisContent?.error) && (
+            <p role="alert" className={css.formError}>
+              Không thể xác minh phiên bản liên quan. Đóng và mở lại đề nghị để tải lại trước khi
+              xác nhận.
+            </p>
+          )}
           <label>
             Lý do
             <textarea
@@ -334,6 +366,7 @@ export function RegulationChangeReview({
               disabled={
                 busy ||
                 conflict ||
+                (!identityReady && !unknown) ||
                 !reason.trim() ||
                 (creating?.action === 'REPLACE' && !replacement) ||
                 Boolean(replacementId && !replacementContent?.detail && !unknown)

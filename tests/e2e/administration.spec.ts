@@ -27,7 +27,7 @@ test('checks direct navigation and administrator cancellation, account creation 
     await login(unauthorized, await browserAccount());
     await unauthorized.goto('/admin/delegations');
     await expect(unauthorized.getByRole('alert')).toContainText(
-      'Bạn không có quyền truy cập trang này.',
+      'Bạn đã đăng nhập. Chức năng này yêu cầu quyền riêng; liên hệ Quản trị viên nếu cần sử dụng.',
     );
   } finally {
     await unauthorized.close();
@@ -158,7 +158,9 @@ test('manager submits a real delegation and an independent administrator grants 
   } = await browserAdministration();
   await login(page, manager);
   await page.goto('/admin/accounts');
-  await expect(page.getByRole('alert')).toContainText('Bạn không có quyền truy cập trang này.');
+  await expect(page.getByRole('alert')).toContainText(
+    'Bạn đã đăng nhập. Chức năng này yêu cầu quyền riêng; liên hệ Quản trị viên nếu cần sử dụng.',
+  );
   await page.goto('/admin/delegations');
   await button(page, '+ Tạo đề xuất ủy quyền').click();
   await selectOption(page, 'Nghiệp vụ *', 'Phê duyệt yêu cầu điều chỉnh lịch thi đấu');

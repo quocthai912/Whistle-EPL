@@ -735,7 +735,8 @@ test('action confirmation stays on its reviewed version across refresh and cance
   expect(await screen.findByRole('heading', { name: 'Phiên bản 1' }, wait)).toBeVisible();
   fireEvent.click(screen.getByRole('button', { name: 'Gửi thẩm định' }));
   const firstDialog = await screen.findByRole('dialog', { name: 'Xác nhận gửi thẩm định' }, wait);
-  expect(firstDialog).toHaveTextContent(`${versionId}`);
+  expect(firstDialog).toHaveTextContent('Phiên bản 1');
+  expect(firstDialog).not.toHaveTextContent(versionId);
   fireEvent.click(screen.getByRole('button', { name: /Phiên bản 2/ }));
   expect(await screen.findByRole('heading', { name: 'Phiên bản 2' }, wait)).toBeVisible();
   expect(screen.queryByRole('dialog', { name: 'Xác nhận gửi thẩm định' })).not.toBeInTheDocument();
@@ -1042,8 +1043,8 @@ test('submission and withdrawal lock the exact version and require an explicit s
   expect(screen.queryByRole('button', { name: /phê duyệt|approve/i })).not.toBeInTheDocument();
   fireEvent.click(screen.getByRole('button', { name: 'Gửi thẩm định' }));
   const submissionDialog = await screen.findByRole('dialog', { name: 'Xác nhận gửi thẩm định' });
-  expect(submissionDialog).toHaveTextContent('Phiên bản1');
-  expect(submissionDialog).toHaveTextContent(versionId);
+  expect(submissionDialog).toHaveTextContent('Phiên bản 1');
+  expect(submissionDialog).not.toHaveTextContent(versionId);
   expect(
     within(submissionDialog).getByRole('button', { name: 'Xác nhận gửi thẩm định' }),
   ).toBeDisabled();
@@ -1182,7 +1183,8 @@ test.each([
     expect(await screen.findByRole('heading', { name: 'Phiên bản 1' }, wait)).toBeVisible();
     fireEvent.click(screen.getByRole('button', { name: label }));
     const dialog = await screen.findByRole('dialog', { name: `Xác nhận ${label.toLowerCase()}` });
-    expect(dialog).toHaveTextContent(versionId);
+    expect(dialog).toHaveTextContent('Phiên bản 1');
+    expect(dialog).not.toHaveTextContent(versionId);
     const confirm = within(dialog).getByRole('button', {
       name: `Xác nhận ${label.toLowerCase()}`,
     });

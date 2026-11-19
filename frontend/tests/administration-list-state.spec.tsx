@@ -105,22 +105,26 @@ it('keeps submitted audit identifiers when an automatic filter changes during id
   await screen.findByRole('textbox', { name: 'Tìm nhật ký' }, timeout);
   const actorId = '12345678-1234-4234-8234-123456789012';
   const objectId = '22345678-1234-4234-8234-123456789012';
-  fireEvent.change(screen.getByLabelText('Mã người thực hiện'), { target: { value: actorId } });
-  fireEvent.change(screen.getByLabelText('Mã đối tượng'), { target: { value: objectId } });
+  fireEvent.change(screen.getByLabelText('ID kỹ thuật người thực hiện'), {
+    target: { value: actorId },
+  });
+  fireEvent.change(screen.getByLabelText('ID kỹ thuật đối tượng'), { target: { value: objectId } });
   fireEvent.click(screen.getByRole('button', { name: 'Tra cứu' }));
   await waitFor(() => expect(requests.at(-1)?.searchParams.get('actorId')).toBe(actorId), timeout);
-  fireEvent.change(screen.getByLabelText('Mã người thực hiện'), { target: { value: '1234' } });
-  fireEvent.change(screen.getByLabelText('Mã đối tượng'), { target: { value: '' } });
+  fireEvent.change(screen.getByLabelText('ID kỹ thuật người thực hiện'), {
+    target: { value: '1234' },
+  });
+  fireEvent.change(screen.getByLabelText('ID kỹ thuật đối tượng'), { target: { value: '' } });
   fireEvent.mouseDown(screen.getByRole('combobox', { name: 'Số dòng mỗi trang' }));
   fireEvent.click(await screen.findByRole('option', { name: '50' }, timeout));
   await waitFor(() => expect(requests.at(-1)?.searchParams.get('pageSize')).toBe('50'), timeout);
   expect(requests.at(-1)?.searchParams.get('actorId')).toBe(actorId);
   expect(requests.at(-1)?.searchParams.get('objectId')).toBe(objectId);
   expect(screen.queryByRole('alert')).not.toBeInTheDocument();
-  expect(screen.getByLabelText('Mã người thực hiện')).toHaveValue('1234');
-  expect(screen.getByLabelText('Mã đối tượng')).toHaveValue('');
-  expect(screen.getByText(/Mã người thực hiện chưa áp dụng/)).toHaveTextContent(actorId);
-  expect(screen.getByText(/Mã đối tượng chưa áp dụng/)).toHaveTextContent(objectId);
+  expect(screen.getByLabelText('ID kỹ thuật người thực hiện')).toHaveValue('1234');
+  expect(screen.getByLabelText('ID kỹ thuật đối tượng')).toHaveValue('');
+  expect(screen.queryByText(/ID kỹ thuật người thực hiện chưa áp dụng/)).not.toBeInTheDocument();
+  expect(screen.queryByText(/ID kỹ thuật đối tượng chưa áp dụng/)).not.toBeInTheDocument();
   fireEvent.click(screen.getByRole('button', { name: 'Tra cứu' }));
   expect(await screen.findByRole('alert')).toHaveTextContent('định dạng UUID');
 }, 15000);
@@ -135,7 +139,9 @@ it('submits audit search and actor together without requesting the previous sear
   );
   const actorId = '12345678-1234-4234-8234-123456789012';
   fireEvent.change(input, { target: { value: 'new search' } });
-  fireEvent.change(screen.getByLabelText('Mã người thực hiện'), { target: { value: actorId } });
+  fireEvent.change(screen.getByLabelText('ID kỹ thuật người thực hiện'), {
+    target: { value: actorId },
+  });
   const beforeSubmit = requests.length;
   fireEvent.click(screen.getByRole('button', { name: 'Tra cứu' }));
   await act(async () => {

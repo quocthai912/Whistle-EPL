@@ -1,3 +1,4 @@
+import { useDialogFeedback } from '../accounts/use-dialog-feedback';
 import { LogoFileField } from '../clubs/LogoFileField';
 import { WorkspaceDialog as Modal } from '../accounts/WorkspaceDialog';
 import { useState, type FormEvent } from 'react';
@@ -81,9 +82,9 @@ function CorrectionImpactResults({ path }: { path: string }) {
       {result.data?.status === 'KNOWN' &&
         (result.data.affected?.length ? (
           <ul>
-            {result.data.affected.map((record) => (
+            {result.data.affected.map((record, index) => (
               <li key={record.id}>
-                {labels[record.kind]} · {record.id}
+                {labels[record.kind]} · mục {index + 1}
               </li>
             ))}
           </ul>
@@ -158,7 +159,7 @@ export function MasterHistory({ master, id }: { master: Master; id: string }) {
 export function MasterForm({
   master,
   detail,
-  correcting,
+  correcting: initialCorrecting,
   onClose,
   onSaved,
   onRevisionConflict,
@@ -176,6 +177,7 @@ export function MasterForm({
   const club = master === 'clubs';
   const noun = club ? 'câu lạc bộ' : 'sân vận động';
   const root = '/' + master;
+  const [correcting, setCorrecting] = useState(initialCorrecting ?? false);
   const [logoFile, setLogoFile] = useState<File>();
   const [created, setCreated] = useState<{ id: string; revision: string }>();
   const [code, setCode] = useState(detail?.code ?? '');
@@ -189,11 +191,8 @@ export function MasterForm({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [stale, setStale] = useState(false);
-  const title = correcting
-    ? `Hiệu chỉnh có căn cứ ${noun}`
-    : detail
-      ? `Chỉnh sửa ${noun}`
-      : `Thêm ${noun}`;
+  const formFeedback = useDialogFeedback(error);
+  const title = detail ? `Chỉnh sửa thông tin ${noun}` : `Thêm ${noun}`;
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -258,6 +257,7 @@ export function MasterForm({
       keyboard={!busy}
     >
       <form
+        ref={formFeedback}
         className={`${css.form} ${reviewCss.form}`}
         onSubmit={(event) => {
           void submit(event);
@@ -269,6 +269,22 @@ export function MasterForm({
             để kiểm tra. Không cần tạo hồ sơ lần nữa.
           </p>
         )}
+        {club && !detail && (
+          <LogoFileField
+            label="Biểu trưng câu lạc bộ (không bắt buộc)"
+            file={logoFile}
+            disabled={busy || !!created}
+            onChange={(file) => {
+              if (file && file.size > 2097152) {
+                setError('Logo không được vượt quá 2 MiB.');
+                setLogoFile(undefined);
+              } else {
+                setError('');
+                setLogoFile(file);
+              }
+            }}
+          />
+        )}
         <label>
           {club ? 'Mã CLB' : 'Mã sân'}{' '}
           <input
@@ -279,6 +295,22 @@ export function MasterForm({
             onChange={(event) => setCode(event.target.value)}
           />
         </label>
+        {detail && (
+          <p className={reviewCss.identityNote}>Mã hồ sơ không thể thay đổi sau khi tạo.</p>
+        )}
+        {detail && (
+          <AdminSelect
+            hideLabel={false}
+            label="Loại chỉnh sửa"
+            value={correcting ? 'correction' : 'update'}
+            disabled={busy || stale}
+            onChange={(value) => setCorrecting(value === 'correction')}
+            options={[
+              { value: 'update', label: 'Cập nhật thông tin' },
+              { value: 'correction', label: 'Sửa thông tin gốc đã ghi sai' },
+            ]}
+          />
+        )}
         <label>
           Tên {noun}{' '}
           <input
@@ -301,22 +333,6 @@ export function MasterForm({
             onChange={(event) => setSecondaryValue(event.target.value)}
           />
         </label>
-        {club && !detail && (
-          <LogoFileField
-            label="Biểu trưng câu lạc bộ (không bắt buộc)"
-            file={logoFile}
-            disabled={busy || !!created}
-            onChange={(file) => {
-              if (file && file.size > 2097152) {
-                setError('Logo không được vượt quá 2 MiB.');
-                setLogoFile(undefined);
-              } else {
-                setError('');
-                setLogoFile(file);
-              }
-            }}
-          />
-        )}
         {correcting && (
           <>
             <p className={css.notice}>

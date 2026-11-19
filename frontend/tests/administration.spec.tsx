@@ -74,7 +74,11 @@ describe('administration navigation and confirmation', () => {
         <App />
       </MemoryRouter>,
     );
-    await screen.findByText('Bạn không có quyền truy cập trang này.', undefined, uiWait);
+    await screen.findByText(
+      'Bạn đã đăng nhập. Chức năng này yêu cầu quyền riêng; liên hệ Quản trị viên nếu cần sử dụng.',
+      undefined,
+      uiWait,
+    );
     expect(screen.queryByText('Quản lý mùa giải')).not.toBeInTheDocument();
     expect(fetcher.mock.calls).toHaveLength(1);
   });

@@ -137,7 +137,7 @@ export default function AdministrationLayout({
       <main className={css.workspace}>
         {permitted ? (
           page === 'home' ? (
-            <section className={css.panel}>
+            <section className={`${css.panel} ${css.homePanel}`}>
               <h1>Xin chào, {session?.account.fullName}.</h1>
               <p>Chọn chức năng trong thanh điều hướng để bắt đầu làm việc.</p>
               {!admin &&
@@ -146,7 +146,8 @@ export default function AdministrationLayout({
                 !canReadClubs &&
                 !canReadStadiums && (
                   <p className={css.notice}>
-                    Chưa có chức năng nội bộ được triển khai cho tài khoản này.
+                    Tài khoản chưa được phân công quyền nghiệp vụ. Liên hệ Quản trị viên để được
+                    phân công.
                   </p>
                 )}
               <Link to="/change-password">Đổi mật khẩu</Link>
@@ -168,9 +169,12 @@ export default function AdministrationLayout({
           )
         ) : (
           <section className={css.panel}>
-            <h1>Truy cập bị từ chối</h1>
-            <p role="alert">Bạn không có quyền truy cập trang này.</p>
-            <NavLink to="/internal">Về trang nội bộ</NavLink>
+            <h1>Chức năng cần quyền được phân công</h1>
+            <p role="alert">
+              Bạn đã đăng nhập. Chức năng này yêu cầu quyền riêng; liên hệ Quản trị viên nếu cần sử
+              dụng.
+            </p>
+            <NavLink to="/internal">Về trang làm việc</NavLink>
           </section>
         )}
       </main>

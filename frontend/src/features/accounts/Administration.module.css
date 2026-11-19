@@ -1007,7 +1007,7 @@
 }
 .profileActions {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 10px;
   width: 100%;
 }
@@ -1033,4 +1033,26 @@
   .profileActions {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+}
+
+.homePanel {
+  min-height: 480px;
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+}
+.homePanel::after {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  inset: 130px 0 0;
+  background: url('/images/Whistle-EPL-Lion-Background.svg#auth') center / contain no-repeat;
+  opacity: 0.8;
+  pointer-events: none;
+}
+.details > details {
+  margin-top: 0;
+}
+.details > .actions:empty {
+  display: none;
 }

@@ -97,7 +97,8 @@ test('independent managers approve and cancel exact scheduled regulations throug
     const approve = reviewPage.getByRole('button', { name: 'Phê duyệt phiên bản', exact: true });
     await approve.click();
     const dialog = reviewPage.getByRole('dialog', { name: 'Xác nhận phê duyệt phiên bản' });
-    await expect(dialog).toContainText(version.id);
+    await expect(dialog).toContainText('Phiên bản 1');
+    await expect(dialog).not.toContainText(version.id);
     await dialog.getByRole('button', { name: 'Hủy', exact: true }).click();
     await expect(dialog).toHaveCount(0);
     await expect(approve).toBeVisible();
@@ -112,7 +113,8 @@ test('independent managers approve and cancel exact scheduled regulations throug
 
     await reviewPage.getByRole('button', { name: 'Đề nghị hủy', exact: true }).click();
     const cancellation = reviewPage.getByRole('dialog', { name: 'Hủy hiệu lực theo lịch' });
-    await expect(cancellation).toContainText(version.id);
+    await expect(cancellation).toContainText('Phiên bản 1');
+    await expect(cancellation).not.toContainText(version.id);
     await cancellation.getByLabel('Lý do').fill('Đề nghị hủy lịch hiệu lực.');
     await cancellation.getByRole('button', { name: 'Xác nhận', exact: true }).click();
     await reviewPage.getByRole('button', { name: 'Gửi đề nghị', exact: true }).click();
@@ -129,7 +131,8 @@ test('independent managers approve and cancel exact scheduled regulations throug
     });
     await approveCancellation.click();
     const change = page.getByRole('dialog', { name: 'Xác nhận phê duyệt đề nghị' });
-    await expect(change).toContainText(version.id);
+    await expect(change).toContainText('Phiên bản 1');
+    await expect(change).not.toContainText(version.id);
     await change.getByRole('button', { name: 'Hủy', exact: true }).click();
     await expect(change).toHaveCount(0);
     await approveCancellation.click();
@@ -211,7 +214,7 @@ test('an assigned manager can create and save an incomplete regulation draft', a
     'stretch',
   );
   const draftNotice = page.getByRole('status').filter({ hasText: 'Đã tạo bản nháp trống' });
-  await expect(draftNotice).toHaveCSS('margin-bottom', '14px');
+  await expect(draftNotice).toHaveCSS('margin-bottom', '0px');
   await expect(page.getByLabel('Giới hạn danh sách cầu thủ')).toHaveValue('');
   await expect(page.getByLabel('Giới hạn danh sách cầu thủ')).toHaveCSS('font-size', '15px');
   // Paired limits stay aligned even when the longer business label wraps.

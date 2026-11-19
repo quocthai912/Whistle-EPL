@@ -23,7 +23,11 @@ it('denies direct audit navigation without requesting records for ordinary accou
   const fetcher = vi.fn(async () => envelope(account));
   vi.stubGlobal('fetch', fetcher);
   openAudit();
-  await screen.findByText('Bạn không có quyền truy cập trang này.', undefined, { timeout: 5000 });
+  await screen.findByText(
+    'Bạn đã đăng nhập. Chức năng này yêu cầu quyền riêng; liên hệ Quản trị viên nếu cần sử dụng.',
+    undefined,
+    { timeout: 5000 },
+  );
   expect(fetcher.mock.calls).toHaveLength(1);
 });
 

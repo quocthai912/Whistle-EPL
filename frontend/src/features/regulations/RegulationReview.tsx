@@ -43,9 +43,7 @@ export function RegulationReview({
       {currentBasis ? (
         <section className={css.actionPreview} aria-label="Căn cứ đang hiệu lực">
           <h3>Căn cứ đang hiệu lực</h3>
-          <p>
-            Phiên bản {currentBasis.versionNumber} · {currentBasis.id}
-          </p>
+          <p>Phiên bản {currentBasis.versionNumber}</p>
           {basis?.error && <p role="alert">{basis.error}</p>}
           {!basis && <p role="status">Đang tải nội dung đang hiệu lực…</p>}
           {previous && (
@@ -304,14 +302,8 @@ function ReadCatalog({ title, items }: { title: string; items: (GoalType | CardT
         <ul>
           {items.map((item, index) => (
             <li key={`${item.code}-${index}`}>
-              <strong>{item.code}</strong> · {item.name} ·{' '}
-              {'isOwnGoal' in item
-                ? item.isOwnGoal
-                  ? 'Phản lưới nhà'
-                  : 'Không phải phản lưới nhà'
-                : item.meaning === 'YELLOW'
-                  ? 'Thẻ vàng'
-                  : 'Thẻ đỏ'}{' '}
+              <strong>{item.code}</strong> · {item.name}
+              {catalogMeaning(item) && ` · ${catalogMeaning(item)}`}{' '}
               {item.enabled ? '' : '(không cho chọn)'}
             </li>
           ))}
@@ -325,4 +317,15 @@ function ReadCatalog({ title, items }: { title: string; items: (GoalType | CardT
 
 function minutes(value: number | null | undefined): string {
   return value === null || value === undefined ? '—' : `${value} phút`;
+}
+
+/** Avoids repeating standard names while retaining custom catalog classifications. */
+function catalogMeaning(item: GoalType | CardType): string {
+  const name = item.name.normalize('NFC').trim().toLocaleLowerCase('vi-VN');
+  if ('isOwnGoal' in item) {
+    if (item.isOwnGoal) return name.includes('phản lưới nhà') ? '' : 'Phản lưới nhà';
+    return ['bàn thắng thông thường', 'phạt đền'].includes(name) ? '' : 'Không phản lưới nhà';
+  }
+  const meaning = item.meaning === 'YELLOW' ? 'Thẻ vàng' : 'Thẻ đỏ';
+  return name.includes(meaning.toLocaleLowerCase('vi-VN')) ? '' : meaning;
 }

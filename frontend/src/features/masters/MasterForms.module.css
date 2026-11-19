@@ -49,3 +49,9 @@
 .review > strong + dl {
   margin-top: 12px;
 }
+
+.identityNote {
+  color: #65718a;
+  font-size: 13px;
+  margin-top: -10px !important;
+}

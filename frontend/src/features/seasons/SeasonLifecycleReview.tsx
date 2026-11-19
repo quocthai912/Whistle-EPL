@@ -1,3 +1,4 @@
+import { useDialogFeedback } from '../accounts/use-dialog-feedback';
 import { WorkspaceDialog as Modal } from '../accounts/WorkspaceDialog';
 import { useRef, useState, type FormEvent } from 'react';
 import { HttpFailure } from '../../shared/http/client';
@@ -292,7 +293,7 @@ function SeasonRequests({
           <table className={css.table}>
             <thead>
               <tr>
-                <th scope="col">Mã đề xuất</th>
+                <th scope="col">STT</th>
                 <th scope="col">Mùa giải</th>
                 <th scope="col">Loại đề xuất</th>
                 <th scope="col">Người đề xuất</th>
@@ -301,11 +302,9 @@ function SeasonRequests({
               </tr>
             </thead>
             <tbody>
-              {items.map((row) => (
+              {items.map((row, index) => (
                 <tr key={row.id}>
-                  <td title={row.id} className={css.code}>
-                    {row.id.slice(0, 8).toUpperCase()}
-                  </td>
+                  <td>{(page - 1) * Number(pageSize) + index + 1}</td>
                   <td>{season.name}</td>
                   <td>{actionNames[row.action]}</td>
                   <td>{row.preparerName}</td>
@@ -345,7 +344,7 @@ function SeasonRequests({
                 <dt>Người đề xuất</dt>
                 <dd>{selected.preparerName}</dd>
               </div>
-              <div className={css.fullWidth}>
+              <div>
                 <dt>Người đã chỉnh sửa</dt>
                 <dd>{selected.editors.join(', ') || '—'}</dd>
               </div>
@@ -462,6 +461,7 @@ function LifecycleForm({
   const [error, setError] = useState('');
   const [uncertain, setUncertain] = useState(false);
   const idempotencyKey = useRef<string | undefined>(undefined);
+  const formFeedback = useDialogFeedback(error);
   const title = command
     ? commandNames[command]
     : request
@@ -517,6 +517,7 @@ function LifecycleForm({
       mask={{ closable: !busy }}
     >
       <form
+        ref={formFeedback}
         className={css.form}
         onSubmit={(event) => {
           void submit(event);

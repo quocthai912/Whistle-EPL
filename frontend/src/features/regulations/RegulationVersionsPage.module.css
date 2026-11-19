@@ -158,17 +158,25 @@
   padding-top: 10px;
 }
 .officialGroups summary {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 8px;
   color: #552cb6;
   cursor: pointer;
   font-weight: 600;
-  text-align: right;
+  text-align: left;
   list-style: none;
 }
 
 .officialGroups summary::after {
-  content: '⌄';
-  display: inline-block;
-  margin-left: 8px;
+  content: '';
+  display: block;
+  width: 7px;
+  height: 7px;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: rotate(45deg) translateY(-2px);
   transition: transform 120ms;
 }
 .officialGroups .readGroup dl > div {
@@ -498,7 +506,8 @@
 }
 
 .detailHeading {
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
   align-items: flex-start;
   justify-content: space-between;
   gap: 20px;
@@ -733,8 +742,8 @@
 .versionHistory {
   display: grid;
   gap: 10px;
-  margin-top: 20px;
-  padding-top: 18px;
+  margin-top: 16px;
+  padding-top: 16px;
   border-top: 1px solid #e9edf5;
 }
 
@@ -927,7 +936,7 @@
 
 .workspaceBody > .formSuccess,
 .workspaceBody > .formError {
-  margin-bottom: 14px;
+  margin-bottom: 0;
 }
 
 .draftNotice {
@@ -1234,7 +1243,7 @@
   margin-bottom: 0;
 }
 .changePanel {
-  margin-bottom: 6px;
+  margin-bottom: 24px;
 }
 .changePanel > .workflowActions {
   padding: 16px 20px;
@@ -1254,7 +1263,7 @@
   padding-top: 8px;
 }
 .officialGroups details[open] summary::after {
-  transform: rotate(180deg);
+  transform: rotate(225deg) translate(-1px, -1px);
 }
 .catalogRead {
   display: grid;
@@ -1310,7 +1319,7 @@
   }
 }
 /* Drafts need a complete editing canvas; version navigation moves above the form. */
-.draftWorkspace {
+.contentGrid.draftWorkspace {
   grid-template-columns: minmax(0, 1fr);
   gap: 24px;
 }
@@ -1431,4 +1440,67 @@
   .draftForm .repeater {
     padding: 14px;
   }
+}
+
+/* Reading and editing share a complete canvas and the same type scale. */
+.detailPanel {
+  font-size: 15px;
+  line-height: 1.65;
+}
+.detailPanel .readGroup {
+  padding: 24px;
+}
+.detailPanel .groupHeading h3 {
+  font-size: 17px;
+}
+.detailPanel .readGroup dt,
+.detailPanel .readGroup dd,
+.detailPanel .catalogRead h4,
+.detailPanel .catalogRead ul,
+.detailPanel .workflowFacts dd {
+  font-size: 15px;
+}
+.detailPanel .readGroups {
+  gap: 20px;
+}
+.detailPanel .readGroup dl {
+  gap: 12px;
+  margin-top: 20px;
+}
+.detailPanel .dateMetadata {
+  box-sizing: border-box;
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px 24px;
+  padding: 16px;
+  background: #f6f8fc;
+  border-radius: 10px;
+}
+.detailPanel .dateMetadata:empty {
+  display: none;
+}
+.detailPanel .dateMetadata span {
+  text-align: left;
+  align-content: start;
+}
+.actionForm {
+  gap: 20px;
+}
+.actionPreview {
+  padding: 16px;
+  gap: 12px;
+}
+.actionPreview p {
+  margin: 0;
+}
+.actionForm .toolbar {
+  margin-top: 0;
+}
+.versionPanel > [role='alert'] {
+  margin: 12px 16px;
+}
+
+.workflowWide {
+  grid-column: 1 / -1;
 }

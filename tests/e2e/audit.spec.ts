@@ -30,7 +30,7 @@ test('traces real administration and authentication events across pages and tech
     await login(outsider, staff);
     await outsider.goto('/admin/audit');
     await expect(outsider.getByRole('alert')).toContainText(
-      'Bạn không có quyền truy cập trang này.',
+      'Bạn đã đăng nhập. Chức năng này yêu cầu quyền riêng; liên hệ Quản trị viên nếu cần sử dụng.',
     );
     expect(await auditStatus(outsider)).toBe(403);
     await outsider.getByRole('button', { name: 'Đăng xuất' }).click();
@@ -177,7 +177,7 @@ test('traces real administration and authentication events across pages and tech
     await page.keyboard.press('Escape');
     await expect(actionMenu).toBeHidden();
     await page.getByText('Bộ lọc nâng cao', { exact: true }).click();
-    await page.getByLabel('Mã đối tượng').fill(subject.id);
+    await page.getByLabel('ID kỹ thuật đối tượng').fill(subject.id);
     await page.getByRole('button', { name: 'Tra cứu' }).click();
     await expect(page.getByText(/23 bản ghi nhật ký/)).toBeVisible();
     const firstPage = await table.innerText();
@@ -218,7 +218,7 @@ test('traces real administration and authentication events across pages and tech
       [1366, 768],
     ]) {
       await page.setViewportSize({ width, height });
-      await page.getByLabel('Mã đối tượng').fill(subject.id);
+      await page.getByLabel('ID kỹ thuật đối tượng').fill(subject.id);
       await page.getByRole('button', { name: 'Tra cứu' }).click();
       await expect(page.getByText(/23 bản ghi nhật ký/)).toBeVisible();
       await page.getByRole('button', { name: 'Trang sau' }).click();
@@ -240,7 +240,9 @@ test('traces real administration and authentication events across pages and tech
     await expect(page).toHaveURL(/login$/);
     await login(page, staff);
     await page.goto('/admin/audit');
-    await expect(page.getByRole('alert')).toContainText('Bạn không có quyền truy cập trang này.');
+    await expect(page.getByRole('alert')).toContainText(
+      'Bạn đã đăng nhập. Chức năng này yêu cầu quyền riêng; liên hệ Quản trị viên nếu cần sử dụng.',
+    );
     await expect(table).toHaveCount(0);
     expect(
       await page.evaluate(() => ({ local: localStorage.length, session: sessionStorage.length })),

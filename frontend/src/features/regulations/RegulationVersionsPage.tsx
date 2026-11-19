@@ -1,3 +1,4 @@
+import { useDialogFeedback } from '../accounts/use-dialog-feedback';
 import { WorkspaceDialog as Modal } from '../accounts/WorkspaceDialog';
 import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
 import { useParams } from 'react-router';
@@ -189,6 +190,10 @@ export function RegulationVersionsPage({
   );
   const currentContent =
     detail?.id === currentEffective?.id ? detail?.content : currentRead?.detail?.content;
+
+  const actionForm = useDialogFeedback(
+    actionError || actionConflict?.status || actionFieldErrors.length,
+  );
 
   const dismissAction = useCallback(() => {
     actionDialogSequence.current += 1;
@@ -640,9 +645,7 @@ export function RegulationVersionsPage({
           />
         )}
 
-        <div
-          className={`${css.contentGrid} ${visibleDetail?.capabilities.canEditDraft ? css.draftWorkspace : ''}`}
-        >
+        <div className={`${css.contentGrid} ${css.draftWorkspace}`}>
           <aside className={css.versionPanel} aria-label="Danh sách phiên bản">
             <div className={css.panelHeading}>
               <div>
@@ -688,9 +691,6 @@ export function RegulationVersionsPage({
                           ? 'Đề xuất hiệu lực ngay'
                           : 'Chưa chọn cách hiệu lực'}
                     </span>
-                    {version.isCurrentEffective && (
-                      <span className={css.pointerBadge}>Đang hiệu lực</span>
-                    )}
                     {version.isCurrentDraft && (
                       <span className={css.pointerBadge}>Bản nháp hiện tại</span>
                     )}
@@ -864,7 +864,11 @@ export function RegulationVersionsPage({
             mask={{ closable: false }}
             keyboard={!actionBusy && !actionUnknown}
           >
-            <form className={css.actionForm} onSubmit={(event) => void confirmAction(event)}>
+            <form
+              ref={actionForm}
+              className={css.actionForm}
+              onSubmit={(event) => void confirmAction(event)}
+            >
               <p>
                 Xác nhận {actionLabels[actionReview.action].toLowerCase()} đúng phiên bản và nội
                 dung bên dưới.
@@ -879,9 +883,7 @@ export function RegulationVersionsPage({
                 </div>
                 <div>
                   <dt>Phiên bản</dt>
-                  <dd>
-                    {actionReview.versionNumber} · {actionReview.versionId}
-                  </dd>
+                  <dd>Phiên bản {actionReview.versionNumber}</dd>
                 </div>
                 <div>
                   <dt>Lần sửa đã tải</dt>
@@ -906,7 +908,11 @@ export function RegulationVersionsPage({
                 heading="Nội dung đã lưu đang xác nhận"
               />
               {actionConflict && (
-                <section className={css.actionConflict} aria-label="Kiểm tra phiên bản mới">
+                <section
+                  data-dialog-feedback
+                  className={css.actionConflict}
+                  aria-label="Kiểm tra phiên bản mới"
+                >
                   <h3>Phiên bản đã thay đổi</h3>
                   {actionConflict.status === 'required' && (
                     <>
@@ -1126,7 +1132,7 @@ function RegulationVersionWorkflow({
           </div>
         )}
         {detail.decisionReason && (
-          <div>
+          <div className={css.workflowWide}>
             <dt>Lý do quyết định</dt>
             <dd>{detail.decisionReason}</dd>
           </div>
@@ -1186,8 +1192,8 @@ function RegulationVersionWorkflow({
       )}
       {detail.predecessorVersionId && (
         <p className={css.workflowNote}>
-          Phiên bản kế tiếp của {seasonCode ?? 'mùa giải'} · phiên bản trước{' '}
-          {detail.predecessorVersionId}.
+          Phiên bản này kế thừa nội dung đã lưu của phiên bản trước trong {seasonCode ?? 'mùa giải'}
+          .
         </p>
       )}
     </section>
@@ -1247,8 +1253,7 @@ function RegulationVersionHistory({ versionId }: { versionId: string }) {
 }
 
 function RegulationHistoryEvent({ item }: { item: RegulationVersionHistoryItem }) {
-  const actor =
-    item.actorName ?? item.operatorIdentity ?? item.actorId ?? 'Tài khoản được phân quyền';
+  const actor = item.actorName ?? item.operatorIdentity ?? 'Tài khoản được phân quyền';
   return (
     <article className={css.historyEvent}>
       <div>
