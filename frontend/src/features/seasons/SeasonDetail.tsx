@@ -1,3 +1,4 @@
+import { WorkspaceDialog } from '../accounts/WorkspaceDialog';
 import { isLocalDateTime, parseDisplayDate } from '../../shared/date-format';
 import { AdminSelect } from '../accounts/AdminSelect';
 import formCss from './SeasonCreateForm.module.css';
@@ -295,6 +296,7 @@ export function SeasonDetail({
 
   return (
     <AdminDrawer
+      width={700}
       title={season ? `Chi tiết mùa giải: ${season.name}` : 'Chi tiết mùa giải'}
       subtitle="Thông tin và lịch sử trong phạm vi được phân công"
       icon={<AdminIcon name="season" />}
@@ -377,7 +379,6 @@ export function SeasonDetail({
                   <dd>{formatSeasonDate(season.endDate)}</dd>
                 </div>
               </dl>
-
               <section className={css.regulationSummary} aria-label="Tình trạng quy định mùa giải">
                 <h3>Tình trạng quy định mùa giải</h3>
                 {!editing && regulationSeasonScope(session).has(season.id) && (
@@ -404,7 +405,6 @@ export function SeasonDetail({
                   </div>
                 </dl>
               </section>
-
               {season.state === 'CLOSED' && (
                 <p className={shared.notice} role="status">
                   Mùa giải đã đóng. Tên mùa giải, tên giải đấu và ngày chỉ có thể chỉnh sửa sau khi
@@ -503,81 +503,71 @@ export function SeasonDetail({
                   )}
                 </section>
               )}
-              {!editing &&
-                !reloadRequired &&
-                season.capabilities.canEditMetadata &&
-                season.state === 'OPEN' && (
-                  <div className={css.drawerActions}>
-                    <button
-                      type="button"
-                      disabled={detail.loading}
-                      onClick={() => startEditing(season)}
-                    >
-                      Chỉnh sửa thông tin mùa giải
-                    </button>
-                  </div>
-                )}
-              {!editing &&
-                !reloadRequired &&
-                onLifecycle &&
-                session?.seasonManagerIds?.includes(seasonId) && (
-                  <div className={css.drawerActions}>
-                    <button
-                      type="button"
-                      onClick={() => onLifecycle({ id: season.id, name: season.name })}
-                    >
-                      {season.state === 'OPEN'
-                        ? 'Đề xuất đóng mùa giải'
-                        : 'Đề xuất mở lại mùa giải'}
-                    </button>
-                  </div>
-                )}
+              <div className={css.drawerActions}>
+                {!editing &&
+                  !reloadRequired &&
+                  season.capabilities.canEditMetadata &&
+                  season.state === 'OPEN' && (
+                    <>
+                      <button
+                        type="button"
+                        disabled={detail.loading}
+                        onClick={() => startEditing(season)}
+                      >
+                        Chỉnh sửa thông tin mùa giải
+                      </button>
+                    </>
+                  )}
+                {!editing &&
+                  !reloadRequired &&
+                  onLifecycle &&
+                  session?.seasonManagerIds?.includes(seasonId) && (
+                    <>
+                      <button
+                        type="button"
+                        onClick={() => onLifecycle({ id: season.id, name: season.name })}
+                      >
+                        {season.state === 'OPEN'
+                          ? 'Đề xuất đóng mùa giải'
+                          : 'Đề xuất mở lại mùa giải'}
+                      </button>
+                    </>
+                  )}
+              </div>
               {editing && (
-                <form className={css.editForm} noValidate onSubmit={(event) => void save(event)}>
-                  <h3>Chỉnh sửa thông tin mùa giải</h3>
-                  <p className={shared.notice}>
-                    Mã mùa giải không thể thay đổi. Nhập hoặc chọn ngày theo định dạng DD/MM/YYYY.
-                  </p>
-                  {(['name', 'competitionName'] as const).map((field) => (
-                    <label className={formCss.field} key={field} htmlFor={`season-edit-${field}`}>
-                      <span>{fieldLabels[field]} *</span>
-                      <input
-                        id={`season-edit-${field}`}
-                        value={values[field]}
-                        disabled={busy || reloadRequired || detail.loading}
-                        aria-invalid={!!errors[field]}
-                        aria-describedby={errors[field] ? `season-edit-${field}-error` : undefined}
-                        onChange={(event) => change(field, event.target.value)}
-                      />
-                      {normalizeSeasonText(values[field]) && (
-                        <span className={css.preview}>
-                          Giá trị chuẩn hóa: {normalizeSeasonText(values[field])}
-                        </span>
-                      )}
-                      {errors[field] && (
-                        <span
-                          className={css.fieldError}
-                          id={`season-edit-${field}-error`}
-                          role="alert"
-                        >
-                          {errors[field]}
-                        </span>
-                      )}
-                    </label>
-                  ))}
-                  <div className={css.dateFields}>
-                    {(['startDate', 'endDate'] as const).map((field) => (
-                      <label key={field} htmlFor={`season-edit-${field}`}>
+                <WorkspaceDialog
+                  open
+                  title="Chỉnh sửa thông tin mùa giải"
+                  footer={null}
+                  onCancel={busy ? undefined : cancelEditing}
+                  closable={!busy}
+                >
+                  <form
+                    className={`${css.editForm} ${shared.form}`}
+                    noValidate
+                    onSubmit={(event) => void save(event)}
+                  >
+                    <p className={shared.notice}>
+                      Mã mùa giải không thể thay đổi. Nhập hoặc chọn ngày theo định dạng DD/MM/YYYY.
+                    </p>
+                    {(['name', 'competitionName'] as const).map((field) => (
+                      <label className={formCss.field} key={field} htmlFor={`season-edit-${field}`}>
                         <span>{fieldLabels[field]} *</span>
-                        <DateOnlyPicker
+                        <input
                           id={`season-edit-${field}`}
-                          initialDate={values[field]}
-                          required
+                          value={values[field]}
                           disabled={busy || reloadRequired || detail.loading}
-                          invalid={!!errors[field]}
-                          describedBy={errors[field] ? `season-edit-${field}-error` : undefined}
-                          onDateTextChange={(text) => change(field, parseDisplayDate(text))}
+                          aria-invalid={!!errors[field]}
+                          aria-describedby={
+                            errors[field] ? `season-edit-${field}-error` : undefined
+                          }
+                          onChange={(event) => change(field, event.target.value)}
                         />
+                        {normalizeSeasonText(values[field]) && (
+                          <span className={css.preview}>
+                            Giá trị chuẩn hóa: {normalizeSeasonText(values[field])}
+                          </span>
+                        )}
                         {errors[field] && (
                           <span
                             className={css.fieldError}
@@ -589,25 +579,55 @@ export function SeasonDetail({
                         )}
                       </label>
                     ))}
-                  </div>
-                  {failure && (
-                    <p className={shared.error} role="alert">
-                      {failure}
-                    </p>
-                  )}
-                  <div className={css.drawerActions}>
-                    <button type="button" disabled={busy} onClick={cancelEditing}>
-                      {reloadRequired ? 'Bỏ nội dung đã nhập' : 'Hủy'}
-                    </button>
-                    <button
-                      className={shared.primary}
-                      type="submit"
-                      disabled={busy || detail.loading || reloadRequired}
-                    >
-                      {busy ? 'Đang lưu…' : 'Lưu thông tin'}
-                    </button>
-                  </div>
-                </form>
+                    <div className={css.dateFields}>
+                      {(['startDate', 'endDate'] as const).map((field) => (
+                        <label key={field} htmlFor={`season-edit-${field}`}>
+                          <span>{fieldLabels[field]} *</span>
+                          <DateOnlyPicker
+                            id={`season-edit-${field}`}
+                            initialDate={values[field]}
+                            required
+                            disabled={busy || reloadRequired || detail.loading}
+                            invalid={!!errors[field]}
+                            describedBy={errors[field] ? `season-edit-${field}-error` : undefined}
+                            onDateTextChange={(text) => change(field, parseDisplayDate(text))}
+                          />
+                          {errors[field] && (
+                            <span
+                              className={css.fieldError}
+                              id={`season-edit-${field}-error`}
+                              role="alert"
+                            >
+                              {errors[field]}
+                            </span>
+                          )}
+                        </label>
+                      ))}
+                    </div>
+                    {failure && (
+                      <p className={shared.error} role="alert">
+                        {failure}
+                      </p>
+                    )}
+                    {reloadRequired && (
+                      <button type="button" disabled={busy} onClick={reloadAfterConflict}>
+                        Tải lại và so sánh thay đổi
+                      </button>
+                    )}
+                    <div className={css.drawerActions}>
+                      <button type="button" disabled={busy} onClick={cancelEditing}>
+                        {reloadRequired ? 'Bỏ nội dung đã nhập' : 'Hủy'}
+                      </button>
+                      <button
+                        className={shared.primary}
+                        type="submit"
+                        disabled={busy || detail.loading || reloadRequired}
+                      >
+                        {busy ? 'Đang lưu…' : 'Lưu thông tin'}
+                      </button>
+                    </div>
+                  </form>
+                </WorkspaceDialog>
               )}
             </div>
           ) : (

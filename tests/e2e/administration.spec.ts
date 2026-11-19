@@ -217,7 +217,7 @@ test('manager submits a real delegation and an independent administrator grants 
     await button(administration, 'Chi tiết').click();
     await expect
       .poll(async () => (await administration.getByRole('dialog').boundingBox())?.x)
-      .toBe(880);
+      .toBe(1440 - 700);
     await administration.screenshot({
       path: `.verification/ui-review/mh09-detail-${info.project.name}.png`,
     });

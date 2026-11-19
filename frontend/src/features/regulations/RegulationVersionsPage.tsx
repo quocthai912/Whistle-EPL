@@ -1,4 +1,4 @@
-import { Modal } from 'antd';
+import { WorkspaceDialog as Modal } from '../accounts/WorkspaceDialog';
 import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
 import { useParams } from 'react-router';
 import { HttpFailure } from '../../shared/http/client';
@@ -640,7 +640,9 @@ export function RegulationVersionsPage({
           />
         )}
 
-        <div className={css.contentGrid}>
+        <div
+          className={`${css.contentGrid} ${visibleDetail?.capabilities.canEditDraft ? css.draftWorkspace : ''}`}
+        >
           <aside className={css.versionPanel} aria-label="Danh sách phiên bản">
             <div className={css.panelHeading}>
               <div>

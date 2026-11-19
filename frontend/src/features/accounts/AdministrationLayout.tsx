@@ -16,7 +16,15 @@ import { StadiumsPage } from '../stadiums/StadiumsPage';
 export default function AdministrationLayout({
   page,
 }: {
-  page: 'accounts' | 'delegations' | 'audit' | 'seasons' | 'regulations' | 'clubs' | 'stadiums';
+  page:
+    | 'home'
+    | 'accounts'
+    | 'delegations'
+    | 'audit'
+    | 'seasons'
+    | 'regulations'
+    | 'clubs'
+    | 'stadiums';
 }) {
   const { session } = useSession();
   const { seasonId } = useParams();
@@ -30,19 +38,21 @@ export default function AdministrationLayout({
   const canCreateSeason = !!session?.canCreateSeason;
   const regulationSeasonIds = regulationSeasonScope(session);
   const permitted =
-    page === 'stadiums'
-      ? canReadStadiums
-      : page === 'clubs'
-        ? canReadClubs
-        : page === 'regulations'
-          ? seasonId
-            ? regulationSeasonIds.has(seasonId)
-            : regulationSeasonIds.size > 0
-          : page === 'seasons'
-            ? canCreateSeason || hasSeasonRole
-            : page === 'delegations'
-              ? admin || manager
-              : admin;
+    page === 'home'
+      ? true
+      : page === 'stadiums'
+        ? canReadStadiums
+        : page === 'clubs'
+          ? canReadClubs
+          : page === 'regulations'
+            ? seasonId
+              ? regulationSeasonIds.has(seasonId)
+              : regulationSeasonIds.size > 0
+            : page === 'seasons'
+              ? canCreateSeason || hasSeasonRole
+              : page === 'delegations'
+                ? admin || manager
+                : admin;
   const navigation = (
     <nav className={css.nav} aria-label="Quản trị">
       {admin && (
@@ -80,7 +90,7 @@ export default function AdministrationLayout({
       )}
       {canReadClubs && (
         <NavLink to="/workspace/clubs">
-          <AdminIcon name="shield" />
+          <AdminIcon name="club" />
           Quản lý hồ sơ câu lạc bộ
         </NavLink>
       )}
@@ -126,7 +136,22 @@ export default function AdministrationLayout({
       </aside>
       <main className={css.workspace}>
         {permitted ? (
-          page === 'audit' ? (
+          page === 'home' ? (
+            <section className={css.panel}>
+              <h1>Xin chào, {session?.account.fullName}.</h1>
+              <p>Chọn chức năng trong thanh điều hướng để bắt đầu làm việc.</p>
+              {!admin &&
+                !hasSeasonRole &&
+                !canCreateSeason &&
+                !canReadClubs &&
+                !canReadStadiums && (
+                  <p className={css.notice}>
+                    Chưa có chức năng nội bộ được triển khai cho tài khoản này.
+                  </p>
+                )}
+              <Link to="/change-password">Đổi mật khẩu</Link>
+            </section>
+          ) : page === 'audit' ? (
             <AuditPage />
           ) : page === 'accounts' ? (
             <AccountsPage />

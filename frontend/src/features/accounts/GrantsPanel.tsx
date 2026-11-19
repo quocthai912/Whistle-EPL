@@ -447,8 +447,7 @@ export function GrantsPanel({
               </div>
             </section>
             <p className={css.notice}>
-              <AdminIcon name="shield" /> Mọi thay đổi phân quyền hệ thống được ghi nhận trong nhật
-              ký hoạt động.
+              Mọi thay đổi phân quyền hệ thống được ghi nhận trong nhật ký hoạt động.
             </p>
           </>
         )}

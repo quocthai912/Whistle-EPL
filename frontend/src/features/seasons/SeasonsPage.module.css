@@ -312,3 +312,16 @@
     grid-template-columns: minmax(0, 1fr);
   }
 }
+
+.drawerActions + .drawerActions {
+  margin-top: 0;
+}
+.historyFilters {
+  margin-top: 0;
+}
+.editForm {
+  margin: 0;
+}
+.editForm > .actions {
+  justify-content: flex-end;
+}

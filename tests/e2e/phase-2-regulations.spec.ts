@@ -213,6 +213,19 @@ test('an assigned manager can create and save an incomplete regulation draft', a
   const draftNotice = page.getByRole('status').filter({ hasText: 'Đã tạo bản nháp trống' });
   await expect(draftNotice).toHaveCSS('margin-bottom', '14px');
   await expect(page.getByLabel('Giới hạn danh sách cầu thủ')).toHaveValue('');
+  await expect(page.getByLabel('Giới hạn danh sách cầu thủ')).toHaveCSS('font-size', '15px');
+  // Paired limits stay aligned even when the longer business label wraps.
+  await expect
+    .poll(async () => {
+      const left = await page
+        .getByLabel('Giới hạn danh sách cầu thủ', { exact: true })
+        .boundingBox();
+      const right = await page
+        .getByLabel('Giới hạn cầu thủ không thuộc diện đào tạo trong nước', { exact: true })
+        .boundingBox();
+      return left && right ? Math.abs(left.y - right.y) : Infinity;
+    })
+    .toBeLessThanOrEqual(1);
   await expect(page.getByLabel('Ngày sinh giới hạn U21')).toHaveValue('');
   await expect(page.getByLabel('Điểm thắng')).toHaveValue('');
   await expect(page.getByRole('button', { name: 'Lưu bản nháp' })).toBeVisible();

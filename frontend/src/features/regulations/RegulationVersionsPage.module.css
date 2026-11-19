@@ -35,7 +35,7 @@
 .seasonPickerLabel,
 .effectiveBanner span {
   color: #596683;
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 700;
   text-transform: uppercase;
 }
@@ -166,7 +166,10 @@
 }
 
 .officialGroups summary::after {
-  content: ' ›';
+  content: '⌄';
+  display: inline-block;
+  margin-left: 8px;
+  transition: transform 120ms;
 }
 .officialGroups .readGroup dl > div {
   grid-template-columns: minmax(0, 1fr);
@@ -220,7 +223,7 @@
 .pageHeader p {
   margin: 6px 0 0;
   color: #65718a;
-  font-size: 13px;
+  font-size: 14px;
 }
 
 .eyebrow {
@@ -235,7 +238,7 @@
 .scopeNote,
 .listMeta {
   color: #65718a;
-  font-size: 12px;
+  font-size: 14px;
 }
 
 .headerActions,
@@ -301,7 +304,7 @@
   width: fit-content;
   padding: 4px 9px;
   border-radius: 999px;
-  font-size: 11px;
+  font-size: 14px;
   font-weight: 600;
   white-space: nowrap;
 }
@@ -356,7 +359,7 @@
   border-radius: 11px;
   color: #552cb6;
   background: #f0eafd;
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 700;
 }
 
@@ -368,7 +371,7 @@
 
 .overviewCard span {
   color: #7b8498;
-  font-size: 9.5px;
+  font-size: 14px;
   font-weight: 700;
   letter-spacing: 0.08em;
 }
@@ -380,7 +383,7 @@
 
 .overviewCard small {
   color: #65718a;
-  font-size: 11.5px;
+  font-size: 14px;
 }
 
 .contentGrid {
@@ -423,13 +426,13 @@
 .detailHeading > div > p:last-child {
   margin: 4px 0 0;
   color: #65718a;
-  font-size: 11.5px;
+  font-size: 14px;
 }
 
 .panelHeading button {
   min-height: 30px;
   padding: 4px 8px;
-  font-size: 11px;
+  font-size: 14px;
 }
 
 .versionList {
@@ -463,24 +466,24 @@
 .selectedVersion {
   border-color: #8e72d1 !important;
   background: #f8f5ff !important;
-  box-shadow: inset 3px 0 #552cb6;
+  box-shadow: none;
 }
 
 .versionTitle {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 700;
 }
 
 .versionMeta {
   color: #65718a;
-  font-size: 10.5px;
+  font-size: 14px;
   font-weight: 400;
 }
 
 .pointerBadge {
   color: #552cb6;
   background: #eee8fb;
-  font-size: 10px;
+  font-size: 14px;
 }
 
 .listMeta,
@@ -516,11 +519,11 @@
 
 .dateMetadata small {
   color: #65718a;
-  font-size: 10.5px;
+  font-size: 14px;
 }
 
 .dateMetadata strong {
-  font-size: 11.5px;
+  font-size: 14px;
 }
 
 .workflowPanel {
@@ -548,7 +551,7 @@
 
 .workflowFacts dt {
   color: #65718a;
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 600;
 }
 
@@ -556,7 +559,7 @@
   min-width: 0;
   margin: 0;
   color: #27324a;
-  font-size: 13px;
+  font-size: 14px;
   overflow-wrap: anywhere;
 }
 
@@ -564,7 +567,8 @@
   display: grid;
   gap: 4px;
   margin: 0;
-  padding-left: 17px;
+  padding-left: 0;
+  list-style: none;
 }
 
 .workflowActions {
@@ -576,14 +580,14 @@
 .workflowNote {
   margin: 0;
   color: #65718a;
-  font-size: 11px;
+  font-size: 14px;
 }
 
 .actionReason {
   display: grid;
   gap: 6px;
   color: #334056;
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 600;
 }
 
@@ -601,7 +605,7 @@
 
 .actionReason small {
   color: #7b8498;
-  font-size: 10px;
+  font-size: 14px;
   font-weight: 400;
   text-align: right;
 }
@@ -609,15 +613,15 @@
 .actionForm {
   display: grid;
   gap: 13px;
-  max-height: min(72vh, 700px);
-  overflow: auto;
+  max-height: none;
+  overflow: visible;
   padding: 2px 5px 2px 0;
 }
 
 .actionForm > p {
   margin: 0;
   color: #526078;
-  font-size: 12px;
+  font-size: 14px;
   line-height: 1.6;
 }
 
@@ -644,7 +648,7 @@
 .actionPreview dt,
 .historyTransition dt {
   color: #65718a;
-  font-size: 10.5px;
+  font-size: 14px;
 }
 
 .actionTarget dd,
@@ -652,7 +656,7 @@
 .historyTransition dd {
   margin: 0;
   color: #17213b;
-  font-size: 11px;
+  font-size: 14px;
   font-weight: 600;
   overflow-wrap: anywhere;
 }
@@ -668,14 +672,14 @@
 
 .actionPreview h3 {
   margin: 0;
-  font-size: 12px;
+  font-size: 14px;
 }
 
 .actionPreview details {
   padding-top: 7px;
   border-top: 1px solid #edf0f5;
   color: #552cb6;
-  font-size: 11px;
+  font-size: 14px;
 }
 
 .actionPreview summary {
@@ -685,6 +689,16 @@
 
 .actionPreview details > .readGroups {
   margin-top: 10px;
+  grid-template-columns: minmax(0, 1fr);
+}
+.actionPreview .readGroups > :last-child > dl {
+  grid-template-columns: minmax(0, 1fr);
+}
+.actionPreview .readGroup dl > div {
+  background: transparent;
+  border-radius: 0;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  padding: 0 0 10px;
 }
 
 .actionConflict {
@@ -700,7 +714,7 @@
 .actionConflict h3,
 .actionConflict p {
   margin: 0;
-  font-size: 12px;
+  font-size: 14px;
   line-height: 1.5;
 }
 
@@ -713,7 +727,7 @@
   border-radius: 8px;
   color: #9c263c;
   background: #fff5f6;
-  font-size: 11px;
+  font-size: 14px;
 }
 
 .versionHistory {
@@ -732,7 +746,7 @@
 .historyHeading p {
   margin: 4px 0 0;
   color: #65718a;
-  font-size: 11px;
+  font-size: 14px;
 }
 
 .historyEvents {
@@ -757,14 +771,14 @@
 }
 
 .historyEvent strong {
-  font-size: 11.5px;
+  font-size: 14px;
 }
 
 .historyEvent time,
 .historyEvent p {
   margin: 0;
   color: #65718a;
-  font-size: 10.5px;
+  font-size: 14px;
 }
 
 .historyTransition {
@@ -784,7 +798,7 @@
   flex-wrap: wrap;
   gap: 10px;
   color: #65718a;
-  font-size: 11px;
+  font-size: 14px;
 }
 
 .emptyDetail,
@@ -807,7 +821,7 @@
   max-width: 450px;
   margin: 0 0 7px;
   color: #65718a;
-  font-size: 13px;
+  font-size: 14px;
 }
 
 .emptyIcon {
@@ -821,6 +835,13 @@
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
+}
+.readGroups > :last-child {
+  grid-column: 1 / -1;
+}
+.readGroups > :last-child > dl {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px 24px;
 }
 
 .readGroup,
@@ -853,12 +874,12 @@
 
 .readGroup dt {
   color: #65718a;
-  font-size: 11px;
+  font-size: 14px;
 }
 
 .readGroup dd {
   margin: 0;
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 600;
   overflow-wrap: anywhere;
 }
@@ -871,7 +892,7 @@
 
 .catalogRead h4 {
   margin: 0 0 6px;
-  font-size: 12px;
+  font-size: 14px;
 }
 
 .catalogRead ul {
@@ -880,13 +901,13 @@
   margin: 0;
   padding-left: 19px;
   color: #526078;
-  font-size: 11.5px;
+  font-size: 14px;
 }
 
 .catalogRead p {
   margin: 0;
   color: #7b8498;
-  font-size: 11.5px;
+  font-size: 14px;
 }
 
 .draftForm {
@@ -901,7 +922,7 @@
   margin: 0;
   padding: 11px 13px;
   border-radius: 8px;
-  font-size: 12px;
+  font-size: 14px;
 }
 
 .workspaceBody > .formSuccess,
@@ -912,7 +933,7 @@
 .draftNotice {
   display: grid;
   gap: 3px;
-  font-size: 13px;
+  font-size: 14px;
   border: 1px solid #dcd1f2;
   color: #4b3880;
   background: #f7f3ff;
@@ -969,7 +990,7 @@
   max-width: 420px;
   margin: 0;
   color: #65718a;
-  font-size: 12px;
+  font-size: 14px;
   text-align: right;
 }
 
@@ -982,7 +1003,7 @@
   border-radius: 8px;
   color: #552cb6;
   background: #f0eafd;
-  font-size: 10px;
+  font-size: 14px;
   font-weight: 700;
 }
 
@@ -998,7 +1019,7 @@
   gap: 5px;
   min-width: 0;
   color: #334056;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 600;
 }
 
@@ -1028,14 +1049,14 @@
 
 .field small {
   color: #7b8498;
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 400;
 }
 
 .field .fieldError,
 .fieldError {
   color: #9c263c;
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 500;
 }
 
@@ -1064,7 +1085,7 @@
 .repeaterHeading h4,
 .repeaterHeading strong {
   margin: 0;
-  font-size: 13px;
+  font-size: 14px;
 }
 
 .linkButton {
@@ -1081,7 +1102,7 @@
   border-radius: 8px;
   color: #65718a;
   background: #f7f8fb;
-  font-size: 12px;
+  font-size: 14px;
 }
 
 .rankingRow {
@@ -1094,7 +1115,7 @@
   border: 1px solid #e8ebf3;
   border-radius: 8px;
   background: #fafbfe;
-  font-size: 13px;
+  font-size: 14px;
 }
 
 .formActions {
@@ -1110,7 +1131,7 @@
 
 .formActions span {
   color: #65718a;
-  font-size: 12px;
+  font-size: 14px;
 }
 
 .conflictReview {
@@ -1121,13 +1142,13 @@
   border-radius: 9px;
   background: #fffaf0;
   color: #604811;
-  font-size: 12px;
+  font-size: 14px;
 }
 
 .conflictReview h3,
 .conflictReview p {
   margin: 0;
-  font-size: 13px;
+  font-size: 14px;
 }
 
 .comparison {
@@ -1202,5 +1223,212 @@
 
   .rankingRow strong {
     grid-column: 1 / -1;
+  }
+}
+
+.workspaceBody {
+  display: grid;
+  gap: 22px;
+}
+.ruleTabs {
+  margin-bottom: 0;
+}
+.changePanel {
+  margin-bottom: 6px;
+}
+.changePanel > .workflowActions {
+  padding: 16px 20px;
+}
+.changePanel > article {
+  padding: 20px;
+  border-top: 1px solid #e3e7f2;
+  display: grid;
+  gap: 12px;
+}
+.changePanel > article h3,
+.changePanel > article p {
+  margin: 0;
+}
+.changePanel > article .workflowActions {
+  justify-content: flex-end;
+  padding-top: 8px;
+}
+.officialGroups details[open] summary::after {
+  transform: rotate(180deg);
+}
+.catalogRead {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+  gap: 20px;
+}
+.catalogRead ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 12px;
+}
+.catalogRead li {
+  padding: 10px 12px;
+  background: #f6f8fc;
+  border-radius: 8px;
+  line-height: 1.65;
+}
+.versionItem {
+  padding: 14px;
+  text-align: left;
+}
+.actionForm > div:last-child {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 10px;
+  padding-top: 16px;
+  border-top: 1px solid #e3e7f2;
+}
+.workspaceBody [role='alert'],
+.toolbar > [role='alert'] {
+  padding: 14px 16px;
+  margin: 0;
+  color: #9c263c;
+  background: #fff1f3;
+  border: 1px solid #f2cfd2;
+  border-radius: 10px;
+}
+.toolbar:has(> [role='alert']) {
+  justify-content: space-between;
+}
+.toolbar > [role='alert'] {
+  flex: 1 1 300px;
+}
+@media (max-width: 600px) {
+  .readGroups > :last-child > dl {
+    grid-template-columns: 1fr;
+  }
+  .catalogRead {
+    grid-template-columns: 1fr;
+  }
+}
+/* Drafts need a complete editing canvas; version navigation moves above the form. */
+.draftWorkspace {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 24px;
+}
+.draftWorkspace .versionList {
+  display: flex;
+  gap: 12px;
+  max-height: none;
+  overflow-x: auto;
+  padding: 16px;
+}
+.draftWorkspace .versionItem {
+  flex: 0 0 230px;
+  width: 230px;
+}
+.draftWorkspace .panelHeading {
+  padding: 16px 20px;
+}
+.draftWorkspace .panelHeading p {
+  display: none;
+}
+.draftWorkspace .detailPanel {
+  padding: 24px;
+}
+.draftForm {
+  gap: 24px;
+  font-size: 15px;
+  line-height: 1.65;
+}
+.draftForm .formSection {
+  padding: 24px;
+  gap: 24px;
+  scroll-margin-top: 84px;
+}
+.draftForm .formSection > button {
+  justify-self: start;
+  max-width: 100%;
+}
+.draftForm .groupHeading {
+  display: grid;
+  gap: 8px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid #edf0f5;
+}
+.draftForm .groupHeading h3 {
+  font-size: 17px;
+  line-height: 1.5;
+}
+.draftForm .groupHeading > p {
+  max-width: none;
+  text-align: left;
+  margin-left: 36px;
+  font-size: 14px;
+}
+.draftForm .fieldGrid {
+  column-gap: 24px;
+  row-gap: 8px;
+  align-items: start;
+}
+.draftForm .fieldGrid > .field {
+  grid-row: span 4;
+  grid-template-rows: subgrid;
+  row-gap: 8px;
+}
+.draftForm .field {
+  font-size: 15px;
+  font-weight: 500;
+  gap: 8px;
+}
+.draftForm .field > input {
+  min-height: 44px;
+  border-radius: 8px;
+  font-size: 15px;
+  padding: 10px 12px;
+}
+.draftForm .repeater {
+  padding: 20px;
+  gap: 20px;
+}
+.draftForm .windowList {
+  gap: 16px;
+}
+.draftForm .windowList .repeater .fieldGrid > :first-child {
+  grid-column: 1 / -1;
+}
+.draftForm .catalogGroup {
+  gap: 16px;
+}
+.draftForm .catalogGroup + .catalogGroup {
+  margin-top: 8px;
+  padding-top: 24px;
+  border-top: 1px solid #edf0f5;
+}
+.draftForm .repeaterHeading h4,
+.draftForm .repeaterHeading strong {
+  font-size: 15px;
+}
+.draftForm .linkButton {
+  font-size: 13px !important;
+  min-height: 34px !important;
+  padding: 6px 12px !important;
+}
+.draftForm .rankingRow {
+  max-width: none;
+  padding: 14px 16px;
+  grid-template-columns: 120px minmax(0, 1fr) auto;
+}
+.draftForm .formActions {
+  padding: 16px 0;
+}
+@media (max-width: 760px) {
+  .draftWorkspace .detailPanel,
+  .draftForm .formSection {
+    padding: 16px;
+  }
+  .draftForm .fieldGrid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .draftForm .repeater {
+    padding: 14px;
   }
 }

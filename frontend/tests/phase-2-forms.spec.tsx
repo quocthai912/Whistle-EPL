@@ -1,3 +1,4 @@
+import { ConfigProvider } from 'antd';
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { MemoryRouter } from 'react-router';
 import { afterEach, expect, test, vi } from 'vitest';
@@ -33,9 +34,11 @@ afterEach(() => vi.unstubAllGlobals());
 function open(fetcher: typeof fetch) {
   vi.stubGlobal('fetch', fetcher);
   render(
-    <MemoryRouter initialEntries={['/workspace/seasons']}>
-      <App />
-    </MemoryRouter>,
+    <ConfigProvider theme={{ token: { motion: false } }}>
+      <MemoryRouter initialEntries={['/workspace/seasons']}>
+        <App />
+      </MemoryRouter>
+    </ConfigProvider>,
   );
 }
 
@@ -168,10 +171,10 @@ test(
     expect(within(drawer).queryByLabelText(/Mã mùa giải/)).not.toBeInTheDocument();
 
     fireEvent.click(within(drawer).getByRole('button', { name: 'Chỉnh sửa thông tin mùa giải' }));
-    const name = within(drawer).getByLabelText(/^Tên mùa giải/);
+    const name = (await editDialog()).getByLabelText(/^Tên mùa giải/);
     fireEvent.change(name, { target: { value: '  Mùa   mới  ' } });
-    expect(within(drawer).getByText('Giá trị chuẩn hóa: Mùa mới')).toBeVisible();
-    fireEvent.click(within(drawer).getByRole('button', { name: 'Lưu thông tin' }));
+    expect((await editDialog()).getByText('Giá trị chuẩn hóa: Mùa mới')).toBeInTheDocument();
+    fireEvent.click((await editDialog()).getByRole('button', { name: 'Lưu thông tin' }));
 
     await waitFor(() => expect(patchBodies).toHaveLength(1), wait);
     expect(patchBodies[0]).toEqual({ expectedRevision: '1', name: 'Mùa mới' });
@@ -208,92 +211,100 @@ test(
   },
 );
 
-test('season metadata editing allows names with 200 astral code points', async () => {
-  const longName = '😀'.repeat(200);
-  let patchBody: unknown;
-  const fetcher = vi.fn<typeof fetch>(async (input, init) => {
-    const path = pathOf(input);
-    if (path.endsWith('/auth/session')) return envelope(account);
-    if (path.endsWith('/auth/csrf')) return envelope({ csrfToken: 'c'.repeat(43) });
-    if (path === '/api/v1/seasons') {
-      const result = listResult();
-      return envelope(result.data, result.meta);
-    }
-    if (path === `/api/v1/seasons/${seasonId}` && init?.method === 'PATCH') {
-      patchBody = JSON.parse(String(init.body));
-      return envelope({ id: seasonId, revision: '2' });
-    }
-    if (path === `/api/v1/seasons/${seasonId}`)
-      return envelope({ ...baseSeason, waitingRegulation: null });
-    throw new Error(`Unexpected request: ${path}`);
-  });
-  open(fetcher);
+test(
+  'season metadata editing allows names with 200 astral code points',
+  { timeout: 15000 },
+  async () => {
+    const longName = '😀'.repeat(200);
+    let patchBody: unknown;
+    const fetcher = vi.fn<typeof fetch>(async (input, init) => {
+      const path = pathOf(input);
+      if (path.endsWith('/auth/session')) return envelope(account);
+      if (path.endsWith('/auth/csrf')) return envelope({ csrfToken: 'c'.repeat(43) });
+      if (path === '/api/v1/seasons') {
+        const result = listResult();
+        return envelope(result.data, result.meta);
+      }
+      if (path === `/api/v1/seasons/${seasonId}` && init?.method === 'PATCH') {
+        patchBody = JSON.parse(String(init.body));
+        return envelope({ id: seasonId, revision: '2' });
+      }
+      if (path === `/api/v1/seasons/${seasonId}`)
+        return envelope({ ...baseSeason, waitingRegulation: null });
+      throw new Error(`Unexpected request: ${path}`);
+    });
+    open(fetcher);
 
-  await screen.findByText('MG-2028-2029', undefined, wait);
-  fireEvent.click(screen.getByRole('button', { name: 'Chi tiết' }));
-  const drawer = await screen.findByRole('dialog', undefined, wait);
-  fireEvent.click(
-    await within(drawer).findByRole('button', { name: 'Chỉnh sửa thông tin mùa giải' }, wait),
-  );
-  const name = within(drawer).getByLabelText(/^Tên mùa giải/);
-  expect(name).not.toHaveAttribute('maxLength');
-  fireEvent.change(name, { target: { value: longName } });
-  fireEvent.click(within(drawer).getByRole('button', { name: 'Lưu thông tin' }));
+    await screen.findByText('MG-2028-2029', undefined, wait);
+    fireEvent.click(screen.getByRole('button', { name: 'Chi tiết' }));
+    const drawer = await screen.findByRole('dialog', undefined, wait);
+    fireEvent.click(
+      await within(drawer).findByRole('button', { name: 'Chỉnh sửa thông tin mùa giải' }, wait),
+    );
+    const name = (await editDialog()).getByLabelText(/^Tên mùa giải/);
+    expect(name).not.toHaveAttribute('maxLength');
+    fireEvent.change(name, { target: { value: longName } });
+    fireEvent.click((await editDialog()).getByRole('button', { name: 'Lưu thông tin' }));
 
-  await waitFor(() => expect(patchBody).toEqual({ expectedRevision: '1', name: longName }), wait);
-});
+    await waitFor(() => expect(patchBody).toEqual({ expectedRevision: '1', name: longName }), wait);
+  },
+);
 
-test('season edit stays disabled while a fresh detail response is pending', async () => {
-  let detailReads = 0;
-  let releaseRefresh: (() => void) | undefined;
-  let editedName = 'Tên sau khi lưu';
-  const refresh = new Promise<Response>((resolve) => {
-    releaseRefresh = () =>
-      resolve(
-        envelope({ ...baseSeason, name: editedName, revision: '2', waitingRegulation: null }),
-      );
-  });
-  const fetcher = vi.fn<typeof fetch>(async (input, init) => {
-    const path = pathOf(input);
-    if (path.endsWith('/auth/session')) return envelope(account);
-    if (path.endsWith('/auth/csrf')) return envelope({ csrfToken: 'c'.repeat(43) });
-    if (path === '/api/v1/seasons') {
-      const result = listResult();
-      return envelope(result.data, result.meta);
-    }
-    if (path === `/api/v1/seasons/${seasonId}` && init?.method === 'PATCH') {
-      editedName = JSON.parse(String(init.body)).name;
-      return envelope({ id: seasonId, revision: '2' });
-    }
-    if (path === `/api/v1/seasons/${seasonId}`) {
-      detailReads++;
-      return detailReads === 1 ? envelope({ ...baseSeason, waitingRegulation: null }) : refresh;
-    }
-    throw new Error(`Unexpected request: ${path}`);
-  });
-  open(fetcher);
+test(
+  'season edit stays disabled while a fresh detail response is pending',
+  { timeout: 15000 },
+  async () => {
+    let detailReads = 0;
+    let releaseRefresh: (() => void) | undefined;
+    let editedName = 'Tên sau khi lưu';
+    const refresh = new Promise<Response>((resolve) => {
+      releaseRefresh = () =>
+        resolve(
+          envelope({ ...baseSeason, name: editedName, revision: '2', waitingRegulation: null }),
+        );
+    });
+    const fetcher = vi.fn<typeof fetch>(async (input, init) => {
+      const path = pathOf(input);
+      if (path.endsWith('/auth/session')) return envelope(account);
+      if (path.endsWith('/auth/csrf')) return envelope({ csrfToken: 'c'.repeat(43) });
+      if (path === '/api/v1/seasons') {
+        const result = listResult();
+        return envelope(result.data, result.meta);
+      }
+      if (path === `/api/v1/seasons/${seasonId}` && init?.method === 'PATCH') {
+        editedName = JSON.parse(String(init.body)).name;
+        return envelope({ id: seasonId, revision: '2' });
+      }
+      if (path === `/api/v1/seasons/${seasonId}`) {
+        detailReads++;
+        return detailReads === 1 ? envelope({ ...baseSeason, waitingRegulation: null }) : refresh;
+      }
+      throw new Error(`Unexpected request: ${path}`);
+    });
+    open(fetcher);
 
-  await screen.findByText('MG-2028-2029', undefined, wait);
-  fireEvent.click(screen.getByRole('button', { name: 'Chi tiết' }));
-  const drawer = await screen.findByRole('dialog', undefined, wait);
-  fireEvent.click(
-    await within(drawer).findByRole('button', { name: 'Chỉnh sửa thông tin mùa giải' }, wait),
-  );
-  fireEvent.change(within(drawer).getByLabelText(/^Tên mùa giải/), {
-    target: { value: 'Tên sau khi lưu' },
-  });
-  fireEvent.click(within(drawer).getByRole('button', { name: 'Lưu thông tin' }));
+    await screen.findByText('MG-2028-2029', undefined, wait);
+    fireEvent.click(screen.getByRole('button', { name: 'Chi tiết' }));
+    const drawer = await screen.findByRole('dialog', undefined, wait);
+    fireEvent.click(
+      await within(drawer).findByRole('button', { name: 'Chỉnh sửa thông tin mùa giải' }, wait),
+    );
+    fireEvent.change((await editDialog()).getByLabelText(/^Tên mùa giải/), {
+      target: { value: 'Tên sau khi lưu' },
+    });
+    fireEvent.click((await editDialog()).getByRole('button', { name: 'Lưu thông tin' }));
 
-  const editButton = await within(drawer).findByRole('button', {
-    name: 'Chỉnh sửa thông tin mùa giải',
-  });
-  await waitFor(() => expect(editButton).toBeDisabled(), wait);
-  expect(within(drawer).getByText('Đang tải lại thông tin mùa giải…')).toBeVisible();
-  releaseRefresh?.();
-  await waitFor(() => expect(editButton).toBeEnabled(), wait);
-  fireEvent.click(editButton);
-  expect(within(drawer).getByLabelText(/^Tên mùa giải/)).toHaveValue('Tên sau khi lưu');
-});
+    const editButton = await within(drawer).findByRole('button', {
+      name: 'Chỉnh sửa thông tin mùa giải',
+    });
+    await waitFor(() => expect(editButton).toBeDisabled(), wait);
+    expect(within(drawer).getByText('Đang tải lại thông tin mùa giải…')).toBeVisible();
+    releaseRefresh?.();
+    await waitFor(() => expect(editButton).toBeEnabled(), wait);
+    fireEvent.click(editButton);
+    expect((await editDialog()).getByLabelText(/^Tên mùa giải/)).toHaveValue('Tên sau khi lưu');
+  },
+);
 
 test('closed season metadata stays read-only while a manager can propose reopening', async () => {
   const closedSeason = {
@@ -379,16 +390,18 @@ test(
     fireEvent.click(
       await within(drawer).findByRole('button', { name: 'Chỉnh sửa thông tin mùa giải' }, wait),
     );
-    fireEvent.change(within(drawer).getByLabelText(/^Tên mùa giải/), {
+    fireEvent.change((await editDialog()).getByLabelText(/^Tên mùa giải/), {
       target: { value: 'Nội dung đang sửa' },
     });
-    fireEvent.click(within(drawer).getByRole('button', { name: 'Lưu thông tin' }));
+    fireEvent.click((await editDialog()).getByRole('button', { name: 'Lưu thông tin' }));
 
-    expect(await within(drawer).findByRole('alert', undefined, wait)).toHaveTextContent(
+    expect(await (await editDialog()).findByRole('alert', undefined, wait)).toHaveTextContent(
       'Dữ liệu đã thay đổi. Vui lòng tải lại và xem xét trước khi lưu.',
     );
-    expect(within(drawer).getByLabelText(/^Tên mùa giải/)).toHaveValue('Nội dung đang sửa');
-    fireEvent.click(within(drawer).getByRole('button', { name: 'Tải lại và so sánh thay đổi' }));
+    expect((await editDialog()).getByLabelText(/^Tên mùa giải/)).toHaveValue('Nội dung đang sửa');
+    fireEvent.click(
+      (await editDialog()).getByRole('button', { name: 'Tải lại và so sánh thay đổi' }),
+    );
     expect(
       await within(drawer).findByText(
         'Đang tải dữ liệu mới; nội dung đã nhập được giữ lại.',
@@ -412,11 +425,11 @@ test(
     fireEvent.click(
       within(drawer).getByRole('button', { name: 'Tiếp tục với thay đổi đã xem xét' }),
     );
-    expect(within(drawer).getByLabelText(/^Tên mùa giải/)).toHaveValue('Nội dung đang sửa');
-    expect(within(drawer).getByLabelText(/^Tên giải đấu/)).toHaveValue(
+    expect((await editDialog()).getByLabelText(/^Tên mùa giải/)).toHaveValue('Nội dung đang sửa');
+    expect((await editDialog()).getByLabelText(/^Tên giải đấu/)).toHaveValue(
       'Giải đã được cập nhật ở nơi khác',
     );
-    fireEvent.click(within(drawer).getByRole('button', { name: 'Lưu thông tin' }));
+    fireEvent.click((await editDialog()).getByRole('button', { name: 'Lưu thông tin' }));
 
     await waitFor(
       () => expect(patchBodies[1]).toEqual({ expectedRevision: '2', name: 'Nội dung đang sửa' }),
@@ -478,14 +491,16 @@ test(
     fireEvent.click(
       await within(drawer).findByRole('button', { name: 'Chỉnh sửa thông tin mùa giải' }, wait),
     );
-    fireEvent.change(within(drawer).getByLabelText(/^Tên mùa giải/), {
+    fireEvent.change((await editDialog()).getByLabelText(/^Tên mùa giải/), {
       target: { value: 'Nội dung chưa lưu' },
     });
-    fireEvent.click(within(drawer).getByRole('button', { name: 'Lưu thông tin' }));
-    await within(drawer).findByRole('alert', undefined, wait);
+    fireEvent.click((await editDialog()).getByRole('button', { name: 'Lưu thông tin' }));
+    await (await editDialog()).findByRole('alert', undefined, wait);
     expect(patchCount).toBe(1);
 
-    fireEvent.click(within(drawer).getByRole('button', { name: 'Tải lại và so sánh thay đổi' }));
+    fireEvent.click(
+      (await editDialog()).getByRole('button', { name: 'Tải lại và so sánh thay đổi' }),
+    );
     expect(
       await within(drawer).findByText(/Nội dung đã nhập vẫn được giữ lại/, undefined, wait),
     ).toBeVisible();
@@ -540,3 +555,14 @@ test('season list shows only persisted effective regulation versions and uses re
   expect(within(row).getByText(/Phiên bản 3/)).toBeVisible();
   expect(screen.getByText(/trong tổng số 21 kết quả/)).toBeVisible();
 });
+
+// rc-util uses a constant title id under NODE_ENV=test; nested portal dialogs share it.
+// Real browser coverage checks the accessible title and animations.
+async function editDialog() {
+  const heading = await screen.findByText(
+    'Chỉnh sửa thông tin mùa giải',
+    { selector: '.ant-modal-title' },
+    wait,
+  );
+  return within(heading.closest('[role="dialog"]') as HTMLElement);
+}

@@ -578,6 +578,7 @@ export function DelegationsPage() {
       )}
       {detail && (
         <AdminDrawer
+          width={700}
           onClose={() => setDetail(undefined)}
           title={'Chi tiết đề xuất · ' + detail.id.slice(0, 8).toUpperCase()}
           subtitle="Thẩm quyền phê duyệt và cấp ủy quyền nghiệp vụ"

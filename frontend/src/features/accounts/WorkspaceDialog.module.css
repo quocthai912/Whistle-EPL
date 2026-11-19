@@ -1,0 +1,128 @@
+.dialog {
+  color: #17213b;
+  font:
+    14px/1.6 'Be Vietnam Pro',
+    Arial,
+    sans-serif;
+}
+.dialog :global(.ant-modal-container) {
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid #e3e7f2;
+  border-radius: 14px;
+}
+.dialog :global(.ant-modal-header) {
+  margin: 0;
+  padding: 20px 24px;
+  background: #f2f4f8;
+  border-bottom: 1px solid #e3e7f2;
+}
+.dialog :global(.ant-modal-title) {
+  padding-right: 28px;
+  font:
+    600 17px/1.5 'Be Vietnam Pro',
+    Arial,
+    sans-serif;
+  color: #17213b;
+}
+.dialog :global(.ant-modal-body) {
+  padding: 24px;
+  max-height: calc(100dvh - 190px);
+  overflow-y: auto;
+}
+.dialog :global(.ant-modal-footer) {
+  margin: 0;
+  padding: 16px 24px;
+  border-top: 1px solid #e3e7f2;
+}
+.dialog form {
+  display: grid;
+  gap: 18px;
+  font: inherit;
+}
+.dialog form > p {
+  margin: 0;
+}
+.dialog form > div:last-child:has(> button) {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 10px;
+  padding-top: 16px;
+  border-top: 1px solid #e3e7f2;
+}
+.dialog form label {
+  display: grid;
+  gap: 8px;
+  font-weight: 500;
+}
+.dialog form textarea {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 110px;
+  resize: vertical;
+  padding: 11px 12px;
+  border: 1px solid #e3e7f2;
+  border-radius: 8px;
+  color: #17213b;
+  background: white;
+  font: inherit;
+}
+.dialog :global(.ant-modal-body) button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 9px 16px;
+  border: 1px solid #e3e7f2;
+  border-radius: 8px;
+  background: white;
+  color: #552cb6;
+  font: inherit;
+  font-weight: 500;
+  cursor: pointer;
+  transition:
+    background 120ms,
+    border-color 120ms;
+}
+.dialog :global(.ant-modal-body) button:hover:not(:disabled) {
+  background: #f8f6ff;
+  border-color: #bcaaec;
+}
+.dialog :global(.ant-modal-body) button[type='submit'],
+.dialog :global(.ant-modal-body) button[data-primary] {
+  color: white;
+  background: #552cb6;
+  border-color: #552cb6;
+  font-weight: 600;
+}
+.dialog :global(.ant-modal-body) button[type='submit']:hover:not(:disabled),
+.dialog :global(.ant-modal-body) button[data-primary]:hover:not(:disabled) {
+  background: #452196;
+}
+.dialog :global(.ant-modal-body) button:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+.dialog :focus-visible {
+  outline: 2px solid #8663d8;
+  outline-offset: 2px;
+}
+.dialog form > dl {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 16px;
+  background: #f6f8fc;
+  border: 1px solid #e3e7f2;
+  border-radius: 10px;
+}
+.dialog form > dl > dt {
+  color: #65718a;
+  font-size: 13px;
+}
+.dialog form > dl > dd {
+  margin: 0 0 8px;
+  overflow-wrap: anywhere;
+}

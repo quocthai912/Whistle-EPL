@@ -1,5 +1,5 @@
 import { AdminSelect } from '../accounts/AdminSelect';
-import { Modal } from 'antd';
+import { WorkspaceDialog as Modal } from '../accounts/WorkspaceDialog';
 import { useEffect, useState, type FormEvent } from 'react';
 import { useSession } from '../../shared/http/use-session';
 import { HttpFailure } from '../../shared/http/client';
@@ -160,7 +160,10 @@ export function RegulationChangeReview({
       : 'Xác nhận gửi đề nghị';
   if (!waitingId && items.length === 0) return null;
   return (
-    <section className={css.versionPanel} aria-label="Đề nghị thay đổi quy định">
+    <section
+      className={`${css.versionPanel} ${css.changePanel}`}
+      aria-label="Đề nghị thay đổi quy định"
+    >
       <div className={css.panelHeading}>
         <h2>Đề nghị thay đổi quy định</h2>
       </div>

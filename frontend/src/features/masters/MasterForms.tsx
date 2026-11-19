@@ -1,4 +1,5 @@
-import { Modal } from 'antd';
+import { LogoFileField } from '../clubs/LogoFileField';
+import { WorkspaceDialog as Modal } from '../accounts/WorkspaceDialog';
 import { useState, type FormEvent } from 'react';
 import { HttpFailure, type MasterNameCandidate } from '../../shared/http/client';
 import { useSession } from '../../shared/http/use-session';
@@ -175,6 +176,8 @@ export function MasterForm({
   const club = master === 'clubs';
   const noun = club ? 'câu lạc bộ' : 'sân vận động';
   const root = '/' + master;
+  const [logoFile, setLogoFile] = useState<File>();
+  const [created, setCreated] = useState<{ id: string; revision: string }>();
   const [code, setCode] = useState(detail?.code ?? '');
   const [name, setName] = useState(detail?.name ?? '');
   const originalSecondaryValue = club ? detail?.abbreviation : detail?.location;
@@ -187,35 +190,45 @@ export function MasterForm({
   const [error, setError] = useState('');
   const [stale, setStale] = useState(false);
   const title = correcting
-    ? `Hiệu chỉnh thông tin ${noun}`
+    ? `Hiệu chỉnh có căn cứ ${noun}`
     : detail
       ? `Chỉnh sửa ${noun}`
       : `Thêm ${noun}`;
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (busy || stale) return;
+    if (busy || stale || created) return;
     setBusy(true);
     setError('');
     try {
-      await client.request(detail ? `${root}/${detail.id}` : root, {
-        method: detail ? 'PATCH' : 'POST',
-        body: {
-          ...(detail ? { expectedRevision: detail.revision } : { code }),
-          name,
-          ...(club ? { abbreviation: secondaryValue } : { location: secondaryValue || null }),
-          ...(correcting ? { correctionReason, correctionBasis } : {}),
-          ...(candidates.length
-            ? {
-                duplicateReview: {
-                  acknowledged: true,
-                  reason: duplicateReason,
-                  candidateIds: candidates.map(({ id }) => id),
-                },
-              }
-            : {}),
+      const { data: saved } = await client.request<{ id: string; revision: string }>(
+        detail ? `${root}/${detail.id}` : root,
+        {
+          method: detail ? 'PATCH' : 'POST',
+          body: {
+            ...(detail ? { expectedRevision: detail.revision } : { code }),
+            name,
+            ...(club ? { abbreviation: secondaryValue } : { location: secondaryValue || null }),
+            ...(correcting ? { correctionReason, correctionBasis } : {}),
+            ...(candidates.length
+              ? {
+                  duplicateReview: {
+                    acknowledged: true,
+                    reason: duplicateReason,
+                    candidateIds: candidates.map(({ id }) => id),
+                  },
+                }
+              : {}),
+          },
         },
-      });
+      );
+      if (club && !detail && logoFile) {
+        setCreated(saved);
+        const upload = new FormData();
+        upload.append('expectedRevision', saved.revision);
+        upload.append('file', logoFile);
+        await client.request('/clubs/' + saved.id + '/logo', { method: 'POST', body: upload });
+      }
       onSaved();
     } catch (failure) {
       if (failure instanceof HttpFailure && failure.code === 'REVISION_CONFLICT') {
@@ -227,6 +240,7 @@ export function MasterForm({
         setDuplicateReason('');
       }
       setError(failure instanceof Error ? failure.message : 'Không thể lưu hồ sơ.');
+      if (failure instanceof HttpFailure && failure.unknownOutcome) setStale(true);
     } finally {
       setBusy(false);
     }
@@ -249,11 +263,18 @@ export function MasterForm({
           void submit(event);
         }}
       >
+        {created && (
+          <p role="status" className={css.notice}>
+            Hồ sơ đã được tạo. Biểu trưng chưa được xác nhận tải lên; mở lại hồ sơ trong danh sách
+            để kiểm tra. Không cần tạo hồ sơ lần nữa.
+          </p>
+        )}
         <label>
           {club ? 'Mã CLB' : 'Mã sân'}{' '}
           <input
             required
             readOnly={!!detail}
+            disabled={!!detail || !!created}
             value={code}
             onChange={(event) => setCode(event.target.value)}
           />
@@ -263,7 +284,7 @@ export function MasterForm({
           <input
             required
             value={name}
-            readOnly={busy}
+            readOnly={busy || !!created}
             onChange={(event) => {
               setName(event.target.value);
               setCandidates([]);
@@ -274,13 +295,34 @@ export function MasterForm({
         <label>
           {club ? 'Tên viết tắt' : 'Địa điểm'}{' '}
           <input
+            readOnly={!!created}
             required={club}
             value={secondaryValue}
             onChange={(event) => setSecondaryValue(event.target.value)}
           />
         </label>
+        {club && !detail && (
+          <LogoFileField
+            label="Biểu trưng câu lạc bộ (không bắt buộc)"
+            file={logoFile}
+            disabled={busy || !!created}
+            onChange={(file) => {
+              if (file && file.size > 2097152) {
+                setError('Logo không được vượt quá 2 MiB.');
+                setLogoFile(undefined);
+              } else {
+                setError('');
+                setLogoFile(file);
+              }
+            }}
+          />
+        )}
         {correcting && (
           <>
+            <p className={css.notice}>
+              Dùng khi thông tin gốc đã ghi sai: cần lý do, căn cứ và rà soát các hồ sơ nghiệp vụ
+              liên quan trước khi lưu.
+            </p>
             <label>
               Lý do hiệu chỉnh{' '}
               <textarea
@@ -354,9 +396,15 @@ export function MasterForm({
           <button type="button" onClick={onClose} disabled={busy}>
             Hủy
           </button>
-          <button type="submit" className={css.primary} disabled={busy || stale}>
-            {busy ? 'Đang lưu…' : candidates.length ? 'Xác nhận lưu hồ sơ riêng' : 'Lưu hồ sơ'}
-          </button>
+          {created ? (
+            <button type="button" className={css.primary} data-primary onClick={onSaved}>
+              Xem danh sách hồ sơ
+            </button>
+          ) : (
+            <button type="submit" className={css.primary} disabled={busy || stale}>
+              {busy ? 'Đang lưu…' : candidates.length ? 'Xác nhận lưu hồ sơ riêng' : 'Lưu hồ sơ'}
+            </button>
+          )}
         </div>
       </form>
     </Modal>

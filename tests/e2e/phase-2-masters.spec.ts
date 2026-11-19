@@ -208,3 +208,35 @@ test('MH17 Stadium shows real filters and only approved master fields', async ({
   await modal.getByRole('button', { name: 'Lưu hồ sơ' }).click();
   await expect(page.getByRole('cell', { name: code, exact: true })).toBeVisible();
 });
+
+test('creating a club can upload its optional crest and opens the persisted profile', async ({
+  page,
+}) => {
+  const manager = await browserMasterManager('CLUB_MASTER');
+  const code = `LOGO_${randomUUID().slice(0, 8).toUpperCase()}`;
+  await login(page, manager);
+  await page.goto('/workspace/clubs');
+  await page.getByRole('button', { name: 'Thêm câu lạc bộ', exact: true }).click();
+  const form = page.getByRole('dialog', { name: 'Thêm câu lạc bộ' });
+  await form.getByLabel('Mã CLB', { exact: true }).fill(code);
+  await form.getByLabel('Tên câu lạc bộ', { exact: true }).fill(`Câu lạc bộ biểu trưng ${code}`);
+  await form.getByLabel('Tên viết tắt', { exact: true }).fill('LOG');
+  await form
+    .getByLabel('Biểu trưng câu lạc bộ (không bắt buộc)', { exact: true })
+    .setInputFiles(logoFixture);
+  await form.getByRole('button', { name: 'Lưu hồ sơ', exact: true }).click();
+  await expect(form).not.toBeVisible();
+  await page.getByLabel('Tìm câu lạc bộ', { exact: true }).fill(code);
+  await page
+    .getByRole('row')
+    .filter({ hasText: code })
+    .getByRole('button', { name: /Chi tiết/ })
+    .click();
+  const profile = page.getByRole('dialog').filter({ hasText: 'Hồ sơ câu lạc bộ' });
+  await expect(profile.locator('img')).toBeVisible();
+  await expect
+    .poll(() =>
+      profile.locator('img').evaluate((image) => (image as HTMLImageElement).naturalWidth),
+    )
+    .toBeGreaterThan(0);
+});

@@ -459,3 +459,14 @@
     padding: 14px 16px;
   }
 }
+
+.visual {
+  align-items: center;
+}
+.formPanel [role='status'] + div,
+.formPanel [role='alert'] + div {
+  margin-top: 14px;
+}
+.formPanel div:has(> button) + form {
+  margin-top: 16px;
+}

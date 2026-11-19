@@ -1,3 +1,4 @@
+import { LogoFileField } from './LogoFileField';
 import { useEffect, useState } from 'react';
 import { HttpFailure } from '../../shared/http/client';
 import { useSession } from '../../shared/http/use-session';
@@ -55,7 +56,7 @@ export function ClubLogo({
         />
       ) : (
         <span role="img" aria-label={`${label} chưa có ảnh khả dụng`}>
-          <AdminIcon name="shield" />
+          <AdminIcon name="club" />
         </span>
       )}
     </span>
@@ -119,27 +120,20 @@ export function ClubLogoActions({
 
   return (
     <div className={css.logoActions}>
-      <label>
-        {logo ? 'Chọn ảnh thay logo' : 'Chọn ảnh logo'}
-        <input
-          key={file ? 'picked' : 'empty'}
-          type="file"
-          accept="image/png,image/jpeg,image/webp"
-          disabled={busy || reloadRequired || remove}
-          onChange={(event) => {
-            const next = event.target.files?.[0];
-            if (next && next.size > 2_097_152) {
-              setError('Logo không được vượt quá 2 MiB.');
-              setFile(undefined);
-            } else {
-              setError('');
-              setFile(next);
-            }
-            event.target.value = '';
-          }}
-        />
-      </label>
-      {file && <p>{file.name}</p>}
+      <LogoFileField
+        label={logo ? 'Chọn ảnh thay logo' : 'Chọn ảnh logo'}
+        file={file}
+        disabled={busy || reloadRequired || remove}
+        onChange={(next) => {
+          if (next && next.size > 2097152) {
+            setError('Logo không được vượt quá 2 MiB.');
+            setFile(undefined);
+          } else {
+            setError('');
+            setFile(next);
+          }
+        }}
+      />
       {remove && <p>Gỡ logo hiện tại khỏi hồ sơ câu lạc bộ?</p>}
       {error && (
         <p role="alert" className={shared.error}>
