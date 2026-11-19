@@ -115,7 +115,7 @@ const actor = (row: AuditRecord) =>
     ? (row.operatorIdentity ?? 'Người vận hành')
     : row.actorKind === 'SYSTEM'
       ? 'Hệ thống'
-      : (row.actorName ?? row.actorId ?? '—');
+      : (row.actorName ?? 'Tài khoản đã ghi nhận');
 /** Displays a readable target name or its safe object-kind label. */
 const target = (row: AuditRecord) => row.objectName ?? label(objectKinds, row.objectKind);
 
@@ -194,13 +194,30 @@ function ChangeSummary({
       {!values && <p>{empty}</p>}
       {values && (
         <dl>
-          {Object.entries(values).map(([name, value]) => (
-            <div key={name}>
-              <dt>{label(changeLabels, name)}</dt>
-              <dd>{changeValue(name, value, actionCode, after)}</dd>
-            </div>
-          ))}
+          {Object.entries(values)
+            .filter(([name]) => !name.endsWith('Id'))
+            .map(([name, value]) => (
+              <div key={name}>
+                <dt>{label(changeLabels, name)}</dt>
+                <dd>{changeValue(name, value, actionCode, after)}</dd>
+              </div>
+            ))}
         </dl>
+      )}
+      {values && Object.keys(values).some((name) => name.endsWith('Id')) && (
+        <details>
+          <summary>Định danh kỹ thuật của thay đổi</summary>
+          <dl>
+            {Object.entries(values)
+              .filter(([name]) => name.endsWith('Id'))
+              .map(([name, value]) => (
+                <div key={name}>
+                  <dt>{label(changeLabels, name)}</dt>
+                  <dd>{changeValue(name, value, actionCode, after)}</dd>
+                </div>
+              ))}
+          </dl>
+        </details>
       )}
     </div>
   );
@@ -343,46 +360,29 @@ export function AuditPage() {
         </div>
         <details className={css.advanced}>
           <summary>Bộ lọc nâng cao</summary>
+          <p id="audit-technical-id-help" className={css.technicalHint}>
+            Tra cứu bằng UUID kỹ thuật, không dùng mã nhân viên hoặc mã hồ sơ.
+          </p>
           <div className={css.advancedFields}>
             <label>
-              Mã người thực hiện
+              ID kỹ thuật người thực hiện
               <input
                 value={draft.actorId}
-                aria-label="Mã người thực hiện"
-                aria-describedby={
-                  draft.actorId.trim() !== (query.get('actorId') ?? '')
-                    ? 'audit-actor-pending'
-                    : undefined
-                }
+                aria-label="ID kỹ thuật người thực hiện"
+                aria-describedby="audit-technical-id-help"
                 onChange={(event) => update('actorId', event.target.value)}
                 placeholder="UUID người thực hiện"
               />
-              {draft.actorId.trim() !== (query.get('actorId') ?? '') && (
-                <small id="audit-actor-pending">
-                  Mã người thực hiện chưa áp dụng. Đang áp dụng: {query.get('actorId') ?? 'Tất cả'}.
-                  Nhấn Tra cứu để áp dụng bản nháp.
-                </small>
-              )}
             </label>
             <label>
-              Mã đối tượng
+              ID kỹ thuật đối tượng
               <input
                 value={draft.objectId}
-                aria-label="Mã đối tượng"
-                aria-describedby={
-                  draft.objectId.trim() !== (query.get('objectId') ?? '')
-                    ? 'audit-object-pending'
-                    : undefined
-                }
+                aria-label="ID kỹ thuật đối tượng"
+                aria-describedby="audit-technical-id-help"
                 onChange={(event) => update('objectId', event.target.value)}
                 placeholder="UUID đối tượng"
               />
-              {draft.objectId.trim() !== (query.get('objectId') ?? '') && (
-                <small id="audit-object-pending">
-                  Mã đối tượng chưa áp dụng. Đang áp dụng: {query.get('objectId') ?? 'Tất cả'}. Nhấn
-                  Tra cứu để áp dụng bản nháp.
-                </small>
-              )}
             </label>
             <AdminSelect
               hideLabel={false}
@@ -468,7 +468,9 @@ export function AuditPage() {
                 </td>
                 <td>{label(actions, row.actionCode)}</td>
                 <td>{target(row)}</td>
-                <td>{row.seasonCode ?? row.seasonId ?? 'Không áp dụng'}</td>
+                <td>
+                  {row.seasonCode ?? (row.seasonId ? 'Mùa giải đã ghi nhận' : 'Không áp dụng')}
+                </td>
                 <td>
                   <span className={css.outcome} data-outcome={row.outcome}>
                     {label(results, row.outcome)}
@@ -520,17 +522,13 @@ export function AuditPage() {
       )}
       {selected && (
         <AdminDrawer
-          title={'Chi tiết nhật ký · ' + selected.id}
+          title="Chi tiết nhật ký"
           subtitle="Lịch sử thao tác quản trị và kiểm tra hệ thống"
           icon={<AdminIcon name="audit" />}
           onClose={() => setSelectedId(undefined)}
         >
           <div className={shared.details}>
             <dl className={shared.detailGrid}>
-              <div className={shared.fullWidth}>
-                <dt>Mã bản ghi</dt>
-                <dd className={shared.code}>{selected.id}</dd>
-              </div>
               <div>
                 <dt>Thao tác</dt>
                 <dd>{label(actions, selected.actionCode)}</dd>
@@ -543,25 +541,16 @@ export function AuditPage() {
                 <dt>Người thực hiện</dt>
                 <dd>{actor(selected)}</dd>
               </div>
-              {selected.actorId && (
-                <div>
-                  <dt>Mã người thực hiện</dt>
-                  <dd>{selected.actorId}</dd>
-                </div>
-              )}
               <div>
                 <dt>Đối tượng</dt>
                 <dd>{target(selected)}</dd>
               </div>
-              {selected.objectId && (
-                <div>
-                  <dt>Mã đối tượng</dt>
-                  <dd>{selected.objectId}</dd>
-                </div>
-              )}
               <div>
                 <dt>Mùa giải</dt>
-                <dd>{selected.seasonCode ?? selected.seasonId ?? 'Không áp dụng'}</dd>
+                <dd>
+                  {selected.seasonCode ??
+                    (selected.seasonId ? 'Mùa giải đã ghi nhận' : 'Không áp dụng')}
+                </dd>
               </div>
               <div>
                 <dt>Kết quả</dt>
@@ -578,6 +567,27 @@ export function AuditPage() {
                 </div>
               )}
             </dl>
+            <details>
+              <summary>Thông tin kỹ thuật phục vụ tra cứu</summary>
+              <dl className={shared.detailGrid}>
+                <div>
+                  <dt>Mã bản ghi</dt>
+                  <dd>{selected.id}</dd>
+                </div>
+                {selected.actorId && (
+                  <div>
+                    <dt>ID kỹ thuật người thực hiện</dt>
+                    <dd>{selected.actorId}</dd>
+                  </div>
+                )}
+                {selected.objectId && (
+                  <div>
+                    <dt>ID kỹ thuật đối tượng</dt>
+                    <dd>{selected.objectId}</dd>
+                  </div>
+                )}
+              </dl>
+            </details>
             {(selected.before || selected.after) && (
               <>
                 <h3>Nội dung thay đổi chi tiết</h3>

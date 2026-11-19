@@ -1,6 +1,12 @@
 import type { ReactNode } from 'react';
 
 const shapes = {
+  club: (
+    <>
+      <path d="M12 3 4 6v6c0 4 4 7 8 9 4-2 8-5 8-9V6L12 3Z" />
+      <path d="m12 7 3 2-1 3h-4L9 9l3-2Zm-2 5-2 3m6-3 2 3m-4-8V5" />
+    </>
+  ),
   accounts: (
     <>
       <path d="M12 3 4 6v6c0 5 8 9 8 9s8-4 8-9V6z" />

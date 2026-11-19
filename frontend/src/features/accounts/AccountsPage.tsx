@@ -267,7 +267,7 @@ export function AccountsPage() {
                         <span key={id} className={css.roleTag}>
                           {roleNames[roleCode]} (
                           {list.data!.seasons.find((season) => season.id === seasonId)?.name ??
-                            seasonId}
+                            'Mùa giải đã được phân công'}
                           )
                         </span>
                       ))}

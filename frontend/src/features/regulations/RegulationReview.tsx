@@ -43,9 +43,7 @@ export function RegulationReview({
       {currentBasis ? (
         <section className={css.actionPreview} aria-label="Căn cứ đang hiệu lực">
           <h3>Căn cứ đang hiệu lực</h3>
-          <p>
-            Phiên bản {currentBasis.versionNumber} · {currentBasis.id}
-          </p>
+          <p>Phiên bản {currentBasis.versionNumber}</p>
           {basis?.error && <p role="alert">{basis.error}</p>}
           {!basis && <p role="status">Đang tải nội dung đang hiệu lực…</p>}
           {previous && (
@@ -191,8 +189,41 @@ export function RegulationReadView({
         />
       </ReadGroup>
       <ReadGroup
-        title={summary ? 'Điều kiện đăng ký cầu thủ' : 'Điều kiện đăng ký'}
+        title={summary ? 'Loại sự kiện trận đấu' : 'Danh mục sự kiện'}
         number="03"
+        summary={
+          summary
+            ? `${content.goalTypes.length} loại bàn thắng và ${content.cardTypes.length} loại thẻ.`
+            : undefined
+        }
+      >
+        <div className={css.catalogRead}>
+          <ReadCatalog title="Loại bàn thắng" items={content.goalTypes} />
+          <ReadCatalog title="Loại thẻ" items={content.cardTypes} />
+        </div>
+      </ReadGroup>
+      <ReadGroup
+        title={summary ? 'Thời gian tiếp nhận đăng ký' : 'Các đợt tiếp nhận'}
+        number="04"
+        summary={
+          summary ? `${content.registrationWindows.length} đợt tiếp nhận đăng ký.` : undefined
+        }
+      >
+        {content.registrationWindows.length ? (
+          content.registrationWindows.map((window, index) => (
+            <ReadPair
+              key={`${window.intakeKind}-${index}`}
+              label={`${intakeKindLabels[window.intakeKind]} · Đợt ${index + 1}`}
+              value={`${formatSeasonInstant(window.opensAt)} – ${formatSeasonInstant(window.closesAt)}`}
+            />
+          ))
+        ) : (
+          <ReadPair label="Trạng thái" value="Chưa có đợt tiếp nhận được lưu." />
+        )}
+      </ReadGroup>
+      <ReadGroup
+        title={summary ? 'Điều kiện đăng ký cầu thủ' : 'Điều kiện đăng ký'}
+        number="05"
         summary={
           summary
             ? `Tối đa ${number(content.squadLimit)} cầu thủ, trong đó tối đa ${number(content.nonHomegrownLimit)} cầu thủ không thuộc diện đào tạo trong nước.`
@@ -215,39 +246,6 @@ export function RegulationReadView({
           }
         />
         <ReadPair label="Ngày sinh giới hạn U21" value={formatRegulationDate(content.u21Cutoff)} />
-      </ReadGroup>
-      <ReadGroup
-        title={summary ? 'Thời gian tiếp nhận đăng ký' : 'Các đợt tiếp nhận'}
-        number="04"
-        summary={
-          summary ? `${content.registrationWindows.length} đợt tiếp nhận đăng ký.` : undefined
-        }
-      >
-        {content.registrationWindows.length ? (
-          content.registrationWindows.map((window, index) => (
-            <ReadPair
-              key={`${window.intakeKind}-${index}`}
-              label={`${intakeKindLabels[window.intakeKind]} · Đợt ${index + 1}`}
-              value={`${formatSeasonInstant(window.opensAt)} – ${formatSeasonInstant(window.closesAt)}`}
-            />
-          ))
-        ) : (
-          <ReadPair label="Trạng thái" value="Chưa có đợt tiếp nhận được lưu." />
-        )}
-      </ReadGroup>
-      <ReadGroup
-        title={summary ? 'Loại sự kiện trận đấu' : 'Danh mục sự kiện'}
-        number="05"
-        summary={
-          summary
-            ? `${content.goalTypes.length} loại bàn thắng và ${content.cardTypes.length} loại thẻ.`
-            : undefined
-        }
-      >
-        <div className={css.catalogRead}>
-          <ReadCatalog title="Loại bàn thắng" items={content.goalTypes} />
-          <ReadCatalog title="Loại thẻ" items={content.cardTypes} />
-        </div>
       </ReadGroup>
     </div>
   );
@@ -304,14 +302,8 @@ function ReadCatalog({ title, items }: { title: string; items: (GoalType | CardT
         <ul>
           {items.map((item, index) => (
             <li key={`${item.code}-${index}`}>
-              <strong>{item.code}</strong> · {item.name} ·{' '}
-              {'isOwnGoal' in item
-                ? item.isOwnGoal
-                  ? 'Phản lưới nhà'
-                  : 'Không phải phản lưới nhà'
-                : item.meaning === 'YELLOW'
-                  ? 'Thẻ vàng'
-                  : 'Thẻ đỏ'}{' '}
+              <strong>{item.code}</strong> · {item.name}
+              {catalogMeaning(item) && ` · ${catalogMeaning(item)}`}{' '}
               {item.enabled ? '' : '(không cho chọn)'}
             </li>
           ))}
@@ -325,4 +317,15 @@ function ReadCatalog({ title, items }: { title: string; items: (GoalType | CardT
 
 function minutes(value: number | null | undefined): string {
   return value === null || value === undefined ? '—' : `${value} phút`;
+}
+
+/** Avoids repeating standard names while retaining custom catalog classifications. */
+function catalogMeaning(item: GoalType | CardType): string {
+  const name = item.name.normalize('NFC').trim().toLocaleLowerCase('vi-VN');
+  if ('isOwnGoal' in item) {
+    if (item.isOwnGoal) return name.includes('phản lưới nhà') ? '' : 'Phản lưới nhà';
+    return ['bàn thắng thông thường', 'phạt đền'].includes(name) ? '' : 'Không phản lưới nhà';
+  }
+  const meaning = item.meaning === 'YELLOW' ? 'Thẻ vàng' : 'Thẻ đỏ';
+  return name.includes(meaning.toLocaleLowerCase('vi-VN')) ? '' : meaning;
 }

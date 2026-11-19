@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { AdminDrawer } from '../accounts/AdminDrawer';
 import { AdminIcon } from '../accounts/AdminIcon';
-import { ListFeedback, Pagination } from '../accounts/AdminLists';
+import { DisplayOptions, ListFeedback, Pagination } from '../accounts/AdminLists';
 import { AdminSelect } from '../accounts/AdminSelect';
 import { useAdminList } from '../accounts/use-admin-list';
 import { useSearchTerm } from '../accounts/use-search-term';
@@ -34,10 +34,12 @@ export function ClubsPage() {
   const [searchDraft, setSearchDraft] = useState('');
   const search = useSearchTerm(searchDraft);
   const [page, setPage] = useState(1);
+  const [sort, setSort] = useState('code:asc');
+  const [pageSize, setPageSize] = useState('20');
   const [availability, setAvailability] = useState('ALL');
   const [selected, setSelected] = useState<Club>();
   const [creating, setCreating] = useState(false);
-  const query = new URLSearchParams({ page: String(page), availability, search });
+  const query = new URLSearchParams({ page: String(page), pageSize, sort, availability, search });
   const list = useAdminList<ClubList, SeasonHistoryMeta>(`/clubs?${query}`);
   const items = list.data?.items ?? [];
 
@@ -85,6 +87,22 @@ export function ClubsPage() {
           <AdminIcon name="refresh" />
         </button>
       </div>
+      <DisplayOptions
+        sort={sort}
+        pageSize={pageSize}
+        sorts={[
+          { value: 'code:asc', label: 'Mã A–Z' },
+          { value: 'name:asc', label: 'Tên A–Z' },
+        ]}
+        onSort={(value) => {
+          setSort(value);
+          setPage(1);
+        }}
+        onPageSize={(value) => {
+          setPageSize(value);
+          setPage(1);
+        }}
+      />
       <ListFeedback
         loading={list.loading}
         error={list.error}
@@ -142,7 +160,10 @@ export function ClubsPage() {
       {creating && (
         <MasterForm
           master="clubs"
-          onClose={() => setCreating(false)}
+          onClose={() => {
+            setCreating(false);
+            list.reload();
+          }}
           onSaved={() => {
             setCreating(false);
             setPage(1);
@@ -169,9 +190,10 @@ function ClubProfile({
   const detail = resource.data;
   return (
     <AdminDrawer
+      width={760}
       title={detail?.name ?? club.name}
       subtitle="Hồ sơ câu lạc bộ"
-      icon={<AdminIcon name="shield" />}
+      icon={<AdminIcon name="club" />}
       onClose={onClose}
     >
       <ListFeedback loading={resource.loading} error={resource.error} onRetry={resource.reload} />
@@ -206,14 +228,11 @@ function ClubProfile({
             </div>
           </dl>
           <p>Trạng thái sử dụng: {detail.discontinuedAt ? 'Đã ngừng sử dụng' : 'Đang sử dụng'}</p>
-          <div className={css.actions}>
+          <div className={`${css.actions} ${css.profileActions}`}>
             {!resource.loading && !resource.error && detail.capabilities.canEdit && (
               <>
                 <button type="button" className={css.primary} onClick={() => setForm({ detail })}>
-                  Chỉnh sửa
-                </button>
-                <button type="button" onClick={() => setForm({ detail, correcting: true })}>
-                  Hiệu chỉnh thông tin
+                  Chỉnh sửa thông tin
                 </button>
                 {!resource.loading && (
                   <MasterAvailability

@@ -94,11 +94,21 @@ test('a direct season-creation grant lets a create-only account create without r
   await starts.click();
   await page.locator('td[title="2028-08-15"]:visible').click();
   await expect(starts).toHaveValue('15/08/2028');
+  // A picker blur must not erase the first submit's date-order error.
+  await dialog.getByLabel(/^Ngày kết thúc/).fill('14/08/2028');
+  await dialog.getByRole('button', { name: 'Xác nhận tạo mùa giải' }).click();
+  await expect(dialog.getByRole('alert')).toContainText(
+    'Ngày kết thúc phải sau hoặc bằng ngày bắt đầu.',
+  );
+  const startBox = await starts.boundingBox();
+  const endBox = await dialog.getByLabel(/^Ngày kết thúc/).boundingBox();
+  expect(Math.abs(startBox!.y - endBox!.y)).toBeLessThanOrEqual(1);
+  expect(seasonRequests).toEqual([]);
   await dialog.getByLabel(/^Ngày kết thúc/).fill('23/05/2029');
   await dialog.getByRole('button', { name: 'Xác nhận tạo mùa giải' }).click();
 
-  await expect(page.getByRole('status')).toContainText('Đã tạo mùa giải. Mã định danh:');
-  await expect(page.getByRole('status')).toContainText('phiên bản 1');
+  await expect(page.getByRole('status')).toContainText('Đã tạo mùa giải ');
+  await expect(page.getByRole('status')).not.toContainText('Mã định danh');
   expect(seasonRequests).toEqual(['POST']);
 
   await button(page, 'Đăng xuất').click();
@@ -138,19 +148,20 @@ test('an assigned manager can search, edit, and inspect history for only their a
   const row = page.getByRole('row').filter({ hasText: assignedSeason.code });
   await expect(row).toBeVisible();
   await row.getByRole('button', { name: 'Chi tiết' }).click();
-  const drawer = page.getByRole('dialog');
+  const drawer = page.getByRole('dialog').first();
   await expect(drawer.getByText(assignedSeason.name, { exact: true })).toBeVisible();
   await drawer.getByRole('button', { name: 'Chỉnh sửa thông tin mùa giải' }).click();
-  await expect(drawer.getByLabel('Tên mùa giải *')).toHaveCSS('border-radius', '8px');
-  await expect(drawer.getByLabel('Tên giải đấu *')).toHaveCSS('border-radius', '8px');
-  await expect(drawer.getByLabel('Ngày bắt đầu *', { exact: true })).toHaveValue(
+  const editor = page.getByRole('dialog', { name: 'Chỉnh sửa thông tin mùa giải' });
+  await expect(editor.getByLabel('Tên mùa giải *')).toHaveCSS('border-radius', '8px');
+  await expect(editor.getByLabel('Tên giải đấu *')).toHaveCSS('border-radius', '8px');
+  await expect(editor.getByLabel('Ngày bắt đầu *', { exact: true })).toHaveValue(
     /^\d{2}\/\d{2}\/\d{4}$/,
   );
-  await expect(drawer.getByLabel('Ngày kết thúc *', { exact: true })).toHaveValue(
+  await expect(editor.getByLabel('Ngày kết thúc *', { exact: true })).toHaveValue(
     /^\d{2}\/\d{2}\/\d{4}$/,
   );
-  await drawer.getByLabel('Tên mùa giải *').fill('  Mùa   giải đã chỉnh sửa  ');
-  await drawer.getByRole('button', { name: 'Lưu thông tin' }).click();
+  await editor.getByLabel('Tên mùa giải *').fill('  Mùa   giải đã chỉnh sửa  ');
+  await editor.getByRole('button', { name: 'Lưu thông tin' }).click();
   await expect(drawer.getByText('Đã cập nhật thông tin mùa giải.', { exact: true })).toBeVisible();
   await expect(drawer.getByText('Mùa giải đã chỉnh sửa', { exact: true })).toBeVisible();
 

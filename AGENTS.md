@@ -16,6 +16,14 @@ Reviewed Commit: `adad61f2a0625d62538aa10ce0ec8b6a91defa53`;
 Branch: `docs/build-agent-context`. Approval covers the business-requirements foundation,
 document structure, traceability, and Phase decomposition only. The v1 approval alone satisfies only its historical G0 document condition. Q98 separately records v2 document approval. Neither approval establishes software implementation/acceptance or waives Phase-specific dependencies, remaining operator inputs and required evidence. Preserve Phase statuses and checkboxes.
 
+### UI implementation
+
+For PHASE 3 and later UI implementation, apply
+[build-ui-ux](.agents/skills/build-ui-ux/SKILL.md): reuse the approved PHASE 1–2
+components, audit the affected screen family before editing, and obtain design
+approval for new or substantially rearranged layouts. Use its lightweight path
+for cosmetic adjustments and respect the user's requested test/capture scope.
+
 ### Documentation maintenance
 
 Maintain the current Context Package only in [context/](context/README.md),

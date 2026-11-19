@@ -34,7 +34,7 @@ export function LoginPage() {
     }
   }
   return (
-    <AuthLayout>
+    <AuthLayout recovery={uncertain}>
       <h2>Đăng nhập</h2>
       <p className={styles.description}>Nhập thông tin tài khoản được cấp để tiếp tục.</p>
       {notice && (

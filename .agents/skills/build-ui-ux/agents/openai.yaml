@@ -1,0 +1,4 @@
+interface:
+  display_name: "Build UI/UX"
+  short_description: "Build consistent Whistle-EPL screens and workflows"
+  default_prompt: "Use $build-ui-ux to audit the scoped UI, reuse approved Whistle-EPL components, obtain approval for new layouts, and implement and visually verify the requested screens."

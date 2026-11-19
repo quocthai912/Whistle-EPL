@@ -16,7 +16,15 @@ import { StadiumsPage } from '../stadiums/StadiumsPage';
 export default function AdministrationLayout({
   page,
 }: {
-  page: 'accounts' | 'delegations' | 'audit' | 'seasons' | 'regulations' | 'clubs' | 'stadiums';
+  page:
+    | 'home'
+    | 'accounts'
+    | 'delegations'
+    | 'audit'
+    | 'seasons'
+    | 'regulations'
+    | 'clubs'
+    | 'stadiums';
 }) {
   const { session } = useSession();
   const { seasonId } = useParams();
@@ -29,20 +37,30 @@ export default function AdministrationLayout({
   const hasSeasonRole = !!session?.seasonRoles?.length || manager;
   const canCreateSeason = !!session?.canCreateSeason;
   const regulationSeasonIds = regulationSeasonScope(session);
+  const hasWorkspaceAccess = !!(
+    admin ||
+    hasSeasonRole ||
+    canCreateSeason ||
+    canReadClubs ||
+    canReadStadiums ||
+    regulationSeasonIds.size
+  );
   const permitted =
-    page === 'stadiums'
-      ? canReadStadiums
-      : page === 'clubs'
-        ? canReadClubs
-        : page === 'regulations'
-          ? seasonId
-            ? regulationSeasonIds.has(seasonId)
-            : regulationSeasonIds.size > 0
-          : page === 'seasons'
-            ? canCreateSeason || hasSeasonRole
-            : page === 'delegations'
-              ? admin || manager
-              : admin;
+    page === 'home'
+      ? true
+      : page === 'stadiums'
+        ? canReadStadiums
+        : page === 'clubs'
+          ? canReadClubs
+          : page === 'regulations'
+            ? seasonId
+              ? regulationSeasonIds.has(seasonId)
+              : regulationSeasonIds.size > 0
+            : page === 'seasons'
+              ? canCreateSeason || hasSeasonRole
+              : page === 'delegations'
+                ? admin || manager
+                : admin;
   const navigation = (
     <nav className={css.nav} aria-label="Quản trị">
       {admin && (
@@ -80,7 +98,7 @@ export default function AdministrationLayout({
       )}
       {canReadClubs && (
         <NavLink to="/workspace/clubs">
-          <AdminIcon name="shield" />
+          <AdminIcon name="club" />
           Quản lý hồ sơ câu lạc bộ
         </NavLink>
       )}
@@ -126,7 +144,29 @@ export default function AdministrationLayout({
       </aside>
       <main className={css.workspace}>
         {permitted ? (
-          page === 'audit' ? (
+          page === 'home' ? (
+            <section className={css.messagePanel}>
+              <div className={css.messageHeader}>
+                <span className={css.messageIcon} aria-hidden="true">
+                  <img src="/images/Whistle-EPL-Logo.png" alt="" />
+                </span>
+                <div>
+                  <p className={css.messageEyebrow}>KHÔNG GIAN LÀM VIỆC</p>
+                  <h1>Xin chào, {session?.account.fullName}.</h1>
+                </div>
+              </div>
+              <p className={css.messageDescription}>
+                {hasWorkspaceAccess
+                  ? 'Chọn chức năng trong thanh điều hướng để bắt đầu làm việc.'
+                  : 'Tài khoản của bạn chưa được phân công quyền nghiệp vụ. Vui lòng liên hệ Quản trị viên để được phân công.'}
+              </p>
+              <div className={css.messageActions}>
+                <Link to="/change-password" className={css.workspaceLink}>
+                  Đổi mật khẩu
+                </Link>
+              </div>
+            </section>
+          ) : page === 'audit' ? (
             <AuditPage />
           ) : page === 'accounts' ? (
             <AccountsPage />
@@ -142,10 +182,25 @@ export default function AdministrationLayout({
             <SeasonsPage />
           )
         ) : (
-          <section className={css.panel}>
-            <h1>Truy cập bị từ chối</h1>
-            <p role="alert">Bạn không có quyền truy cập trang này.</p>
-            <NavLink to="/internal">Về trang nội bộ</NavLink>
+          <section className={css.messagePanel}>
+            <div className={css.messageHeader}>
+              <span className={css.messageIcon} aria-hidden="true">
+                <img src="/images/Whistle-EPL-Logo.png" alt="" />
+              </span>
+              <div>
+                <p className={css.messageEyebrow}>QUYỀN TRUY CẬP</p>
+                <h1>Bạn chưa có quyền truy cập</h1>
+              </div>
+            </div>
+            <p className={css.messageDescription} role="alert">
+              Chức năng này yêu cầu quyền được phân công. Vui lòng liên hệ Quản trị viên nếu bạn cần
+              sử dụng.
+            </p>
+            <div className={css.messageActions}>
+              <NavLink to="/internal" className={css.workspaceLink}>
+                <span aria-hidden="true">←</span> Về trang làm việc
+              </NavLink>
+            </div>
           </section>
         )}
       </main>

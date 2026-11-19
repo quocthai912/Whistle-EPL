@@ -1,10 +1,11 @@
-import { Modal } from 'antd';
+import { useDialogFeedback } from '../accounts/use-dialog-feedback';
+import { WorkspaceDialog as Modal } from '../accounts/WorkspaceDialog';
 import { useRef, useState, type FormEvent } from 'react';
 import { HttpFailure } from '../../shared/http/client';
 import { useSession } from '../../shared/http/use-session';
 import { AdminDrawer } from '../accounts/AdminDrawer';
 import { AdminIcon } from '../accounts/AdminIcon';
-import { ListFeedback, Pagination, StateBadge } from '../accounts/AdminLists';
+import { DisplayOptions, ListFeedback, Pagination, StateBadge } from '../accounts/AdminLists';
 import { AdminSelect } from '../accounts/AdminSelect';
 import { useAdminList } from '../accounts/use-admin-list';
 import css from '../accounts/Administration.module.css';
@@ -166,6 +167,7 @@ export function SeasonLifecycleReview({
         <>
           <div className={css.filters}>
             <AdminSelect
+              className={css.wideSelect}
               label="Mùa giải của đề xuất"
               hideLabel={false}
               value={current.id}
@@ -201,6 +203,7 @@ function SeasonRequests({
   onUpdated: () => void;
 }) {
   const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState('20');
   const [action, setAction] = useState('');
   const [state, setState] = useState('');
   const [selectedId, setSelectedId] = useState<string>();
@@ -211,6 +214,7 @@ function SeasonRequests({
   const path = `/seasons/${season.id}/lifecycle-requests`;
   const query = new URLSearchParams({
     page: String(page),
+    pageSize,
     ...(action ? { action } : {}),
     ...(state ? { state } : {}),
   });
@@ -222,10 +226,7 @@ function SeasonRequests({
   return (
     <>
       <div className={css.sectionHeader}>
-        <div>
-          <h2>{season.name}</h2>
-          {data && <StateBadge state={data.seasonState} />}
-        </div>
+        <div>{data && <StateBadge state={data.seasonState} />}</div>
         {data?.canPrepare && (
           <button type="button" className={css.primary} onClick={() => setForm({})}>
             <AdminIcon name="plus" /> Tạo đề xuất
@@ -270,6 +271,17 @@ function SeasonRequests({
           }}
         />
       </div>
+      <DisplayOptions
+        sort="createdAt:desc"
+        pageSize={pageSize}
+        sorts={[{ value: 'createdAt:desc', label: 'Mới nhất trước' }]}
+        onSort={() => setPage(1)}
+        onPageSize={(value) => {
+          setPageSize(value);
+          setPage(1);
+          setSelectedId(undefined);
+        }}
+      />
       <ListFeedback
         loading={list.loading}
         error={list.error}
@@ -281,7 +293,7 @@ function SeasonRequests({
           <table className={css.table}>
             <thead>
               <tr>
-                <th scope="col">Mã đề xuất</th>
+                <th scope="col">STT</th>
                 <th scope="col">Mùa giải</th>
                 <th scope="col">Loại đề xuất</th>
                 <th scope="col">Người đề xuất</th>
@@ -290,11 +302,9 @@ function SeasonRequests({
               </tr>
             </thead>
             <tbody>
-              {items.map((row) => (
+              {items.map((row, index) => (
                 <tr key={row.id}>
-                  <td title={row.id} className={css.code}>
-                    {row.id.slice(0, 8).toUpperCase()}
-                  </td>
+                  <td>{(page - 1) * Number(pageSize) + index + 1}</td>
                   <td>{season.name}</td>
                   <td>{actionNames[row.action]}</td>
                   <td>{row.preparerName}</td>
@@ -305,7 +315,7 @@ function SeasonRequests({
                   </td>
                   <td>
                     <button type="button" onClick={() => setSelectedId(row.id)}>
-                      Chi tiết đề xuất
+                      <AdminIcon name="eye" /> Chi tiết đề xuất
                     </button>
                   </td>
                 </tr>
@@ -342,7 +352,7 @@ function SeasonRequests({
                 <dt>Đã gửi</dt>
                 <dd>{formatSeasonInstant(selected.submittedAt)}</dd>
               </div>
-              <div>
+              <div className={css.fullWidth}>
                 <dt>Lý do đề xuất</dt>
                 <dd>{selected.reason}</dd>
               </div>
@@ -359,7 +369,7 @@ function SeasonRequests({
                 </div>
               )}
               {selected.decisionReason && (
-                <div>
+                <div className={css.fullWidth}>
                   <dt>Lý do xử lý</dt>
                   <dd>{selected.decisionReason}</dd>
                 </div>
@@ -451,7 +461,12 @@ function LifecycleForm({
   const [error, setError] = useState('');
   const [uncertain, setUncertain] = useState(false);
   const idempotencyKey = useRef<string | undefined>(undefined);
-  const title = command ? commandNames[command] : request ? 'Sửa bản nháp đề xuất' : 'Tạo đề xuất';
+  const formFeedback = useDialogFeedback(error);
+  const title = command
+    ? commandNames[command]
+    : request
+      ? 'Sửa bản nháp đề xuất'
+      : `Tạo đề xuất ${actionNames[action].toLowerCase()}`;
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (busy || !reason.trim() || (uncertain && command !== 'approve')) return;
@@ -502,15 +517,18 @@ function LifecycleForm({
       mask={{ closable: !busy }}
     >
       <form
+        ref={formFeedback}
         className={css.form}
         onSubmit={(event) => {
           void submit(event);
         }}
       >
-        <p>
-          {actionNames[command && request ? request.action : action]}
-          {request && ` · Phiên bản ${request.versionNumber}`}
-        </p>
+        {request && (
+          <p>
+            {actionNames[request.action]}
+            {` · Phiên bản ${request.versionNumber}`}
+          </p>
+        )}
         <label>
           {command ? 'Lý do xử lý' : 'Lý do đề xuất'}
           <textarea

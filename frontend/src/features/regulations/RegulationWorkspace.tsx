@@ -1,6 +1,6 @@
 import { AdminSelect } from '../accounts/AdminSelect';
 import shared from '../accounts/Administration.module.css';
-import { Modal } from 'antd';
+import { WorkspaceDialog as Modal } from '../accounts/WorkspaceDialog';
 import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router';
 import { useSession } from '../../shared/http/use-session';

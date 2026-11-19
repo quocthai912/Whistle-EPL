@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import { expect, test } from '@playwright/test';
+import { expect, test, type Locator } from '@playwright/test';
 import { DatabaseService } from '../../backend/src/platform/database.service';
 import {
   browserAdministration,
@@ -8,6 +8,23 @@ import {
 import { assertIsolatedTarget } from '../../backend/tests/fixtures/isolated-target.guard';
 import { login } from './login';
 import { openOptions } from './select-option';
+
+/** Exercises the user-visible spacing invariant, including the native scrollbar gutter. */
+async function expectBalancedDialog(dialog: Locator) {
+  await expect
+    .poll(async () =>
+      dialog.evaluate((element) => {
+        const box = element.getBoundingClientRect();
+        const form = element.querySelector('form')!.getBoundingClientRect();
+        const heading = element.querySelector('.ant-modal-title')!.getBoundingClientRect();
+        return Math.max(
+          Math.abs(form.left - box.left - (box.right - form.right)),
+          Math.abs(form.left - heading.left),
+        );
+      }),
+    )
+    .toBeLessThanOrEqual(1);
+}
 
 const logoFixture = {
   name: 'synthetic.png',
@@ -147,6 +164,7 @@ test('MH13 Club form, current logo and D099 cycle use the administration visual 
   const code = `E2E_CLUB_${randomUUID().slice(0, 8).toUpperCase()}`;
   await page.getByRole('button', { name: 'Thêm câu lạc bộ' }).click();
   const create = page.getByRole('dialog', { name: 'Thêm câu lạc bộ' });
+  await expectBalancedDialog(create);
   const name = `Câu lạc bộ ${code.slice(-8)}`;
   await expect(create.getByLabel('Tên câu lạc bộ')).toHaveCSS('border-radius', '8px');
   await create.getByLabel('Tên câu lạc bộ').fill(name);
@@ -201,10 +219,43 @@ test('MH17 Stadium shows real filters and only approved master fields', async ({
   await page.getByRole('button', { name: 'Thêm sân vận động' }).click();
   const modal = page.getByRole('dialog', { name: 'Thêm sân vận động' });
   await expect(modal.getByLabel('Địa điểm')).toBeVisible();
+  await expectBalancedDialog(modal);
   await expect(modal.getByLabel('Sức chứa')).toHaveCount(0);
   const code = `E2E_GROUND_${randomUUID().slice(0, 8).toUpperCase()}`;
   await modal.getByLabel('Mã sân').fill(code);
   await modal.getByLabel('Tên sân vận động').fill(`Sân ${code.slice(-8)}`);
   await modal.getByRole('button', { name: 'Lưu hồ sơ' }).click();
   await expect(page.getByRole('cell', { name: code, exact: true })).toBeVisible();
+});
+
+test('creating a club can upload its optional crest and opens the persisted profile', async ({
+  page,
+}) => {
+  const manager = await browserMasterManager('CLUB_MASTER');
+  const code = `LOGO_${randomUUID().slice(0, 8).toUpperCase()}`;
+  await login(page, manager);
+  await page.goto('/workspace/clubs');
+  await page.getByRole('button', { name: 'Thêm câu lạc bộ', exact: true }).click();
+  const form = page.getByRole('dialog', { name: 'Thêm câu lạc bộ' });
+  await form.getByLabel('Mã CLB', { exact: true }).fill(code);
+  await form.getByLabel('Tên câu lạc bộ', { exact: true }).fill(`Câu lạc bộ biểu trưng ${code}`);
+  await form.getByLabel('Tên viết tắt', { exact: true }).fill('LOG');
+  await form
+    .getByLabel('Biểu trưng câu lạc bộ (không bắt buộc)', { exact: true })
+    .setInputFiles(logoFixture);
+  await form.getByRole('button', { name: 'Lưu hồ sơ', exact: true }).click();
+  await expect(form).not.toBeVisible();
+  await page.getByLabel('Tìm câu lạc bộ', { exact: true }).fill(code);
+  await page
+    .getByRole('row')
+    .filter({ hasText: code })
+    .getByRole('button', { name: /Chi tiết/ })
+    .click();
+  const profile = page.getByRole('dialog').filter({ hasText: 'Hồ sơ câu lạc bộ' });
+  await expect(profile.locator('img')).toBeVisible();
+  await expect
+    .poll(() =>
+      profile.locator('img').evaluate((image) => (image as HTMLImageElement).naturalWidth),
+    )
+    .toBeGreaterThan(0);
 });

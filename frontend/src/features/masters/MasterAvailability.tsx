@@ -1,4 +1,4 @@
-import { Modal } from 'antd';
+import { WorkspaceDialog as Modal } from '../accounts/WorkspaceDialog';
 import { useState, type FormEvent } from 'react';
 import { useSession } from '../../shared/http/use-session';
 import css from '../accounts/Administration.module.css';

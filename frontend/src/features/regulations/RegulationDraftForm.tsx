@@ -1,4 +1,4 @@
-import { Modal } from 'antd';
+import { WorkspaceDialog as Modal } from '../accounts/WorkspaceDialog';
 import { isValidElement } from 'react';
 import { AdminSelect } from '../accounts/AdminSelect';
 import { useEffect, useMemo, useState, type FormEvent, type ReactNode } from 'react';
@@ -480,8 +480,7 @@ export function RegulationDraftForm({ detail, canEdit, onSaved, onDirtyChange }:
       <div className={css.draftNotice}>
         <strong>Bản nháp có thể chưa đầy đủ.</strong>
         <span>
-          Lưu chỉ ghi thay đổi đã nhập. Gửi thẩm định dùng đúng bản đã lưu; phê duyệt và hiệu lực
-          chưa được xử lý trong phần này.
+          Bạn có thể lưu khi chưa nhập đủ thông tin. Chỉ nội dung đã lưu mới được gửi thẩm định.
         </span>
       </div>
       {!canEdit && (
@@ -550,7 +549,7 @@ export function RegulationDraftForm({ detail, canEdit, onSaved, onDirtyChange }:
             <span className={css.step}>01</span>
             <h3 id="regulation-effective-heading">Thời điểm đề xuất</h3>
           </div>
-          <p>Ngày giờ được nhập theo múi giờ Asia/Ho_Chi_Minh.</p>
+          <p>Nhập ngày giờ theo giờ Việt Nam (UTC+7).</p>
         </div>
         <div className={css.fieldGrid}>
           <Field label="Cách đề xuất hiệu lực" error={errors.effectiveMode}>
@@ -701,10 +700,7 @@ export function RegulationDraftForm({ detail, canEdit, onSaved, onDirtyChange }:
             <span className={css.step}>04</span>
             <h3 id="regulation-windows-heading">Các đợt tiếp nhận</h3>
           </div>
-          <p>
-            Thời điểm mở và đóng được lưu dưới dạng UTC từ giờ Việt Nam. Có thể để trống toàn bộ
-            nhóm khi lưu bản nháp.
-          </p>
+          <p>Mỗi nhóm có thể có nhiều đợt tiếp nhận. Thời điểm đóng phải sau thời điểm mở.</p>
         </div>
         <div className={css.windowList}>
           {values.registrationWindows.map((window, index) => (

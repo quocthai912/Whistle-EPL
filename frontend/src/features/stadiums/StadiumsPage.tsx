@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { AdminDrawer } from '../accounts/AdminDrawer';
 import { AdminIcon } from '../accounts/AdminIcon';
-import { ListFeedback, Pagination } from '../accounts/AdminLists';
+import { DisplayOptions, ListFeedback, Pagination } from '../accounts/AdminLists';
 import { AdminSelect } from '../accounts/AdminSelect';
 import { useAdminList } from '../accounts/use-admin-list';
 import { useSearchTerm } from '../accounts/use-search-term';
@@ -35,10 +35,12 @@ export function StadiumsPage() {
   const [searchDraft, setSearchDraft] = useState('');
   const search = useSearchTerm(searchDraft);
   const [page, setPage] = useState(1);
+  const [sort, setSort] = useState('code:asc');
+  const [pageSize, setPageSize] = useState('20');
   const [availability, setAvailability] = useState('ALL');
   const [selected, setSelected] = useState<Stadium>();
   const [creating, setCreating] = useState(false);
-  const query = new URLSearchParams({ page: String(page), availability, search });
+  const query = new URLSearchParams({ page: String(page), pageSize, sort, availability, search });
   const list = useAdminList<Collection, SeasonHistoryMeta>(`/stadiums?${query}`);
   const items = list.data?.items ?? [];
   const counts = list.data?.counts;
@@ -102,6 +104,22 @@ export function StadiumsPage() {
           <AdminIcon name="refresh" />
         </button>
       </div>
+      <DisplayOptions
+        sort={sort}
+        pageSize={pageSize}
+        sorts={[
+          { value: 'code:asc', label: 'Mã A–Z' },
+          { value: 'name:asc', label: 'Tên A–Z' },
+        ]}
+        onSort={(value) => {
+          setSort(value);
+          setPage(1);
+        }}
+        onPageSize={(value) => {
+          setPageSize(value);
+          setPage(1);
+        }}
+      />
       <ListFeedback
         loading={list.loading}
         error={list.error}
@@ -195,6 +213,7 @@ function StadiumProfile({
   };
   return (
     <AdminDrawer
+      width={760}
       title={detail?.name ?? stadium.name}
       subtitle="Hồ sơ sân vận động"
       icon={<AdminIcon name="stadium" />}
@@ -221,14 +240,11 @@ function StadiumProfile({
               <dd>{detail.location ?? '—'}</dd>
             </div>
           </dl>
-          <div className={css.actions}>
+          <div className={`${css.actions} ${css.profileActions}`}>
             {!resource.loading && !resource.error && detail.capabilities.canEdit && (
               <>
                 <button type="button" className={css.primary} onClick={() => setForm('edit')}>
-                  Chỉnh sửa
-                </button>
-                <button type="button" onClick={() => setForm('correct')}>
-                  Hiệu chỉnh thông tin
+                  Chỉnh sửa thông tin
                 </button>
                 <MasterAvailability
                   master="stadiums"

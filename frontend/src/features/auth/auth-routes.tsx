@@ -1,10 +1,9 @@
-import { Navigate, Link } from 'react-router';
+import { Navigate } from 'react-router';
 import { lazy, Suspense } from 'react';
 import { Button } from 'antd';
 import { useSession } from '../../shared/http/use-session';
 import { LoginPage } from './LoginPage';
 import { ChangePasswordPage } from './ChangePasswordPage';
-import { LogoutButton } from './LogoutButton';
 const AdministrationLayout = lazy(() => import('../accounts/AdministrationLayout'));
 
 /** Resolves session and password-change requirements before rendering a protected route. */
@@ -51,55 +50,8 @@ export function AuthRoute({
       </Suspense>
     );
   return (
-    <main style={{ padding: 32 }}>
-      <h1>Whistle-EPL</h1>
-      <p>Xin chào, {session.account.fullName}.</p>
-      {session.systemAdministrator ||
-      session.seasonManagerIds?.length ||
-      session.seasonRoles?.length ||
-      session.canCreateSeason ||
-      session.sharedMasterKinds?.some(
-        (kind) => kind === 'CLUB_MASTER' || kind === 'STADIUM_MASTER',
-      ) ? (
-        <nav aria-label="Chức năng nội bộ">
-          {session.systemAdministrator && (
-            <p>
-              <Link to="/admin/accounts">Tài khoản và phân quyền</Link>
-            </p>
-          )}
-          {(session.systemAdministrator || session.seasonManagerIds?.length) && (
-            <p>
-              <Link to="/admin/delegations">Ủy quyền nghiệp vụ</Link>
-            </p>
-          )}
-          {session.systemAdministrator && (
-            <p>
-              <Link to="/admin/audit">Nhật ký hoạt động</Link>
-            </p>
-          )}
-          {(session.canCreateSeason || session.seasonRoles?.length) && (
-            <p>
-              <Link to="/workspace/seasons">Quản lý mùa giải</Link>
-            </p>
-          )}
-          {(!!session.seasonManagerIds?.length ||
-            session.sharedMasterKinds?.includes('CLUB_MASTER')) && (
-            <p>
-              <Link to="/workspace/clubs">Quản lý hồ sơ câu lạc bộ</Link>
-            </p>
-          )}
-          {(session.sharedMasterKinds?.includes('STADIUM_MASTER') ||
-            session.seasonRoles?.some(({ roleCode }) => roleCode === 'SCHEDULING_OFFICER')) && (
-            <p>
-              <Link to="/workspace/stadiums">Quản lý sân vận động</Link>
-            </p>
-          )}
-        </nav>
-      ) : (
-        <p>Chưa có chức năng nội bộ được triển khai cho tài khoản này.</p>
-      )}
-      <Link to="/change-password">Đổi mật khẩu</Link>
-      <LogoutButton />
-    </main>
+    <Suspense fallback={<p role="status">Đang tải trang quản trị…</p>}>
+      <AdministrationLayout page="home" />
+    </Suspense>
   );
 }

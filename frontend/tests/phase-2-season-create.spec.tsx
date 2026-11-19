@@ -99,7 +99,11 @@ test('administrator-only status does not grant season discovery or creation', as
   open('/workspace/seasons', fetcher);
 
   expect(
-    await screen.findByText('Bạn không có quyền truy cập trang này.', undefined, wait),
+    await screen.findByText(
+      'Chức năng này yêu cầu quyền được phân công. Vui lòng liên hệ Quản trị viên nếu bạn cần sử dụng.',
+      undefined,
+      wait,
+    ),
   ).toBeVisible();
   expect(screen.queryByRole('button', { name: 'Tạo mùa giải' })).not.toBeInTheDocument();
   expect(fetcher.mock.calls.map(([path]) => path)).toEqual(['/api/v1/auth/session']);
@@ -169,7 +173,7 @@ test('creation previews normalized fields and sends only the minimal receipt-bea
   expect(
     fetcher.mock.calls.filter(([path]) => String(path).includes('/api/v1/seasons')),
   ).toHaveLength(1);
-  expect(screen.getByText(/phiên bản 1/i)).toBeVisible();
+  expect(screen.getByText('Đã tạo mùa giải MG-2028-2029.')).toBeVisible();
 });
 
 test('creation accepts 200 astral code points for both normalized names', async () => {
@@ -284,7 +288,8 @@ test('date order is checked locally and invalid values remain available for corr
   expect(within(dialog).getByLabelText(/^Ngày bắt đầu \*/)).toHaveValue('23/05/2029');
   expect(within(dialog).getByLabelText(/^Ngày kết thúc \*/)).toHaveValue('15/08/2028');
   expect(fetcher.mock.calls.map(([path]) => path)).toEqual(['/api/v1/auth/session']);
-});
+  // Two date-validation cycles exceed the default 5s in isolated Windows JSDOM.
+}, 15_000);
 
 test.each(['ß', 'ſ'])(
   'season codes reject non-ASCII characters before uppercase conversion: %s',
@@ -315,55 +320,60 @@ test.each(['ß', 'ſ'])(
   },
 );
 
-test('localized backend field errors stay attached to the field and keep entered values', async () => {
-  const fetcher = vi.fn<typeof fetch>(async (input) => {
-    const path = String(input);
-    if (path.endsWith('/auth/session')) return envelope(account);
-    if (path.endsWith('/auth/csrf')) return envelope({ csrfToken: 'c'.repeat(43) });
-    if (path.endsWith('/seasons'))
-      return Response.json(
-        {
-          error: {
-            code: 'VALIDATION_FAILED',
-            details: [
-              {
-                field: 'competitionName',
-                code: 'INVALID_TEXT',
-                message: 'Tên giải đấu không hợp lệ.',
-              },
-            ],
+// Complete dialog render/input/response flow exceeds 5s in host JSDOM; assertions keep their own bounds.
+test(
+  'localized backend field errors stay attached to the field and keep entered values',
+  { timeout: 15000 },
+  async () => {
+    const fetcher = vi.fn<typeof fetch>(async (input) => {
+      const path = String(input);
+      if (path.endsWith('/auth/session')) return envelope(account);
+      if (path.endsWith('/auth/csrf')) return envelope({ csrfToken: 'c'.repeat(43) });
+      if (path.endsWith('/seasons'))
+        return Response.json(
+          {
+            error: {
+              code: 'VALIDATION_FAILED',
+              details: [
+                {
+                  field: 'competitionName',
+                  code: 'INVALID_TEXT',
+                  message: 'Tên giải đấu không hợp lệ.',
+                },
+              ],
+            },
+            requestId: 'field-error',
           },
-          requestId: 'field-error',
-        },
-        { status: 400 },
-      );
-    throw new Error('Unexpected request: ' + path);
-  });
-  open('/workspace/seasons', fetcher);
-  fireEvent.click(await screen.findByRole('button', { name: 'Tạo mùa giải' }, wait));
-  const dialog = await screen.findByRole('dialog', undefined, wait);
-  fireEvent.change(within(dialog).getByLabelText(/Mã mùa giải/i), {
-    target: { value: 'mg-2028-2029' },
-  });
-  fireEvent.change(within(dialog).getByLabelText(/Tên mùa giải/i), {
-    target: { value: 'Mùa   giải 2028/2029' },
-  });
-  fireEvent.change(within(dialog).getByLabelText(/Tên giải đấu/i), {
-    target: { value: 'Giải Ngoại hạng' },
-  });
-  fireEvent.change(within(dialog).getByLabelText(/Ngày bắt đầu/i), {
-    target: { value: '15/08/2028' },
-  });
-  fireEvent.change(within(dialog).getByLabelText(/Ngày kết thúc/i), {
-    target: { value: '23/05/2029' },
-  });
-  fireEvent.click(within(dialog).getByRole('button', { name: 'Xác nhận tạo mùa giải' }));
+          { status: 400 },
+        );
+      throw new Error('Unexpected request: ' + path);
+    });
+    open('/workspace/seasons', fetcher);
+    fireEvent.click(await screen.findByRole('button', { name: 'Tạo mùa giải' }, wait));
+    const dialog = await screen.findByRole('dialog', undefined, wait);
+    fireEvent.change(within(dialog).getByLabelText(/Mã mùa giải/i), {
+      target: { value: 'mg-2028-2029' },
+    });
+    fireEvent.change(within(dialog).getByLabelText(/Tên mùa giải/i), {
+      target: { value: 'Mùa   giải 2028/2029' },
+    });
+    fireEvent.change(within(dialog).getByLabelText(/Tên giải đấu/i), {
+      target: { value: 'Giải Ngoại hạng' },
+    });
+    fireEvent.change(within(dialog).getByLabelText(/Ngày bắt đầu/i), {
+      target: { value: '15/08/2028' },
+    });
+    fireEvent.change(within(dialog).getByLabelText(/Ngày kết thúc/i), {
+      target: { value: '23/05/2029' },
+    });
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Xác nhận tạo mùa giải' }));
 
-  const error = await within(dialog).findByRole('alert', undefined, wait);
-  expect(error).toHaveTextContent('Tên giải đấu không hợp lệ.');
-  expect(within(dialog).getByLabelText(/Tên giải đấu/i)).toHaveValue('Giải Ngoại hạng');
-  expect(within(dialog).getByLabelText(/Tên mùa giải/i)).toHaveValue('Mùa   giải 2028/2029');
-});
+    const error = await within(dialog).findByRole('alert', undefined, wait);
+    expect(error).toHaveTextContent('Tên giải đấu không hợp lệ.');
+    expect(within(dialog).getByLabelText(/Tên giải đấu/i)).toHaveValue('Giải Ngoại hạng');
+    expect(within(dialog).getByLabelText(/Tên mùa giải/i)).toHaveValue('Mùa   giải 2028/2029');
+  },
+);
 
 test('unknown create outcome retries only the same body with the original idempotency key', async () => {
   const calls: { init: RequestInit | undefined }[] = [];

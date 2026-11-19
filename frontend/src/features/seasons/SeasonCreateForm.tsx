@@ -1,5 +1,5 @@
 import { Modal } from 'antd';
-import { useState, type FormEvent } from 'react';
+import { useRef, useState, type FormEvent } from 'react';
 import { HttpFailure } from '../../shared/http/client';
 import { useSession } from '../../shared/http/use-session';
 import { AdminIcon } from '../accounts/AdminIcon';
@@ -119,10 +119,11 @@ export function SeasonCreateForm({
   const [open, setOpen] = useState(false);
   const [values, setValues] = useState(emptyFields);
   const [errors, setErrors] = useState<FieldErrors>({});
+  const dateTexts = useRef<Record<string, string>>({});
   const [failure, setFailure] = useState<string>();
   const [busy, setBusy] = useState(false);
   const [unknownIntent, setUnknownIntent] = useState<CreateIntent | null>(null);
-  const [created, setCreated] = useState<SeasonAcknowledgement>();
+  const [created, setCreated] = useState<SeasonAcknowledgement & { code: string }>();
 
   function close() {
     if (busy || unknownIntent) return;
@@ -174,7 +175,7 @@ export function SeasonCreateForm({
       });
       const result = acknowledgement(response.data);
       if (!result) throw new HttpFailure(200, 'INVALID_RESPONSE', response.requestId, true);
-      setCreated(result);
+      setCreated({ ...result, code: intent.body.code });
       onCreated?.(result);
       setOpen(false);
       setValues(emptyFields);
@@ -221,7 +222,7 @@ export function SeasonCreateForm({
   );
   const announcement = created && (
     <p className={css.success} role="status">
-      Đã tạo mùa giải. Mã định danh: {created.id}; phiên bản {created.revision}.
+      Đã tạo mùa giải {created.code}.
     </p>
   );
   const dialog = open && (
@@ -333,7 +334,12 @@ export function SeasonCreateForm({
                     ? `${id}-error season-create-date-format`
                     : 'season-create-date-format'
                 }
-                onDateTextChange={() => clearFeedback(field)}
+                onDateTextChange={(text) => {
+                  if (dateTexts.current[field] !== text) {
+                    dateTexts.current[field] = text;
+                    clearFeedback(field);
+                  }
+                }}
               />
               {errors[field] && (
                 <span className={css.fieldError} id={`${id}-error`} role="alert">
