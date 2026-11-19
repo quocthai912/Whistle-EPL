@@ -476,7 +476,7 @@ export function DelegationsPage() {
             <thead>
               <tr>
                 {[
-                  'Mã đề xuất',
+                  'STT',
                   'Người đề xuất → Người nhận',
                   'Nghiệp vụ',
                   'Mùa giải',
@@ -490,10 +490,10 @@ export function DelegationsPage() {
               </tr>
             </thead>
             <tbody>
-              {proposals.data.items.map((row) => (
+              {proposals.data.items.map((row, index) => (
                 <tr key={row.id}>
                   <td className={css.code}>
-                    {row.id.slice(0, 8).toUpperCase()}
+                    {(filter.page - 1) * Number(display.proposals.pageSize) + index + 1}
                     <small>Phiên bản {row.currentVersion.versionNumber}</small>
                   </td>
                   <td>
@@ -578,8 +578,9 @@ export function DelegationsPage() {
       )}
       {detail && (
         <AdminDrawer
+          width={700}
           onClose={() => setDetail(undefined)}
-          title={'Chi tiết đề xuất · ' + detail.id.slice(0, 8).toUpperCase()}
+          title={'Đề xuất ủy quyền · ' + detail.recipient.fullName}
           subtitle="Thẩm quyền phê duyệt và cấp ủy quyền nghiệp vụ"
           icon={<AdminIcon name="delegations" />}
         >
@@ -593,8 +594,8 @@ export function DelegationsPage() {
             </div>
             <dl className={css.detailGrid}>
               <div>
-                <dt>Mã đề xuất</dt>
-                <dd className={css.code}>{detail.id}</dd>
+                <dt>Phiên bản đề xuất</dt>
+                <dd>{detail.currentVersion.versionNumber}</dd>
               </div>
               <div>
                 <dt>Trạng thái</dt>
@@ -644,7 +645,8 @@ export function DelegationsPage() {
                 </div>
               )}
             </dl>
-            {proposalActions(detail)}
+            {['DRAFT', 'RETURNED', 'PENDING'].includes(detail.currentVersion.state) &&
+              proposalActions(detail)}
             <details>
               <summary>Lịch sử phiên bản ({detail.versions.length})</summary>
               <div className={css.details}>

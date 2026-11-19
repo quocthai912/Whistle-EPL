@@ -15,7 +15,9 @@ function run(command) {
     cwd: root,
     shell: true,
     encoding: 'utf8',
-    timeout: 180_000,
+    // The complete Windows frontend suite can exceed three minutes on the reference host.
+    // Keep the full root command and require its real failure exit, rather than a timeout.
+    timeout: 600_000,
   });
 }
 

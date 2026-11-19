@@ -2,7 +2,11 @@
 
 **Current version:** v2 | **Status:** APPROVED | **Whole-package approval:** Q98, Team Leader, 2026-10-26 (Asia/Bangkok)
 
-**Latest implementation publication (2026-11-06)** T038–T048 have recorded verification and T048 reviewer approval. See the [Phase ledger](progress-checker.md#phase-1-audit-and-verification-evidence---2026-11-06) for source and evidence. PHASE 1 is `COMPLETED` for the accepted foundation scope.
+**Latest implementation publication (2026-11-18)** PHASE 2 T001–T030 are published. T025–T030 are included in [d3023cc](https://github.com/quocthai912/Whistle-EPL/commit/d3023cccfba28cd7c0b2e6946ab9f1b051ee6c59), verified against the live remote branch and all nine tested source checksums. PHASE 2 is `COMPLETED` for the separately accepted scope, with all 30 tasks published. See the [Phase ledger](progress-checker.md#phase-2---seasons-catalogs-and-regulations) for verification, tracker completion and retained operational/later-Phase scope.
+
+**Latest verification, acceptance and tracker synchronization (2026-11-18)** All 30 PHASE 2 tasks are complete and published. Issues #96–#101 have all 19 Acceptance Criteria checked, are closed as completed and carry `completed` instead of `ready-for-agent`; every remote state was read back. [The acceptance assessment](../docs/verification/phase-2/acceptance.md) records actual Windows/Ubuntu, browser, load, recovery and independent review evidence. The Team Leader explicitly approved PHASE 2 acceptance on 2026-11-18 with “Phê duyệt nghiệm thu PHASE 2”, retaining the documented operational/later-Phase input gates. PHASE 2 is `COMPLETED` for that verified scope; earlier publication and approval records remain unchanged.
+
+**PHASE 1 implementation publication (2026-11-06)** T038–T048 have recorded verification and T048 reviewer approval. See the [Phase ledger](progress-checker.md#phase-1-audit-and-verification-evidence---2026-11-06) for source and evidence. PHASE 1 is `COMPLETED` for the accepted foundation scope.
 
 **Approved extension:** D098 and PHASE 1 preparation clarifications, Q99-Q103 and final shared-understanding approval, Team Leader, 2026-10-28 (Asia/Bangkok). See [the extension record](#phase-1-preparation-approval---q99-q103); Q98 is not retroactive approval of this extension.
 
@@ -32,6 +36,7 @@ One evolving, English-only Context Package is maintained in this directory for h
 | Media or future external APIs | [Media](design/media.md), [integration](design/integrations.md) |
 | Quality, acceptance or Phase selection | [Quality](quality.md), [Progress Checker](progress-checker.md) |
 | Current administration/authentication UI and search/filter verification | [UI refinement evidence](../docs/verification/phase-1/ui-refinement.md), [REST contract](../specs/001-phase-1-operational-foundation/contracts/rest.md) |
+| Post-acceptance PHASE 1–2 visual review and local UI refinement | [Final targeted polish](../docs/verification/phase-2/ui-final-polish.md), [final review follow-up](../docs/verification/phase-2/ui-final-review.md), [first refinement evidence](../docs/verification/phase-2/ui-review-refinement.md) |
 | Implemented PHASE 1 audit before/after fields and latest regression | [Audit field catalog](../specs/001-phase-1-operational-foundation/contracts/rest.md#phase-1-audit-change-summaries), [2026-11-08 regression](../docs/verification/phase-1/ui-refinement.md#audit-completeness-and-full-regression--2026-11-08) |
 | CI/merge policy or PHASE 1 preparation readiness | [D098](design/architecture.md#d098---required-ci-and-protected-integration-branches), [readiness](progress-checker.md#phase-1-specification-readiness-and-foundation-verification) |
 | Unresolved work | [Open decisions](open-decisions.md) |
@@ -74,7 +79,7 @@ The Team Leader accepted the final summary and expressly required that no Specs 
 
 **Status:** APPROVED. **Approver:** Team Leader. **Date:** 2026-11-10 (Asia/Bangkok). Local preparation Q1-A and Q2-A, followed by explicit final shared-understanding confirmation, approve [D099](business.md#d099---club-and-stadium-discontinuation-with-controlled-resumption). [ADR 0009](../docs/adr/0009-stable-identities-and-selective-business-snapshots.md#d099---club-and-stadium-discontinuation-and-resumption) preserves the actual confirmations, alternatives and rationale. These local question labels do not renumber the historical package interview.
 
-This is an extension of the evolving English v2 package, not retroactive Q98 approval. Authorization covers the minimal decision-document updates and consistency verification only. PHASE 2 remains NOT_STARTED; Phase statuses, checkboxes and historical approvals are preserved. No Specifications, Plans, Tasks, Issues, implementation code, commit, push or PR are authorized by this approval.
+This is an extension of the evolving English v2 package, not retroactive Q98 approval. Authorization covers the minimal decision-document updates and consistency verification only. At the time of the extension approval, PHASE 2 was NOT_STARTED. The [Phase ledger](progress-checker.md#phase-2---seasons-catalogs-and-regulations) tracks subsequent implementation. No Specifications, Plans, Tasks, Issues, implementation code, commit, push or PR are authorized by this approval.
 
 ## PHASE 3 preparation approval - D100
 

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Close Issues"
+  short_description: "Sync published work, context and completed Issues"
+  default_prompt: "Use $close-issues to verify the pushed implementation, synchronize all related Context/specification/evidence files, and complete the corresponding Task Issues with verified Acceptance Criteria, labels and closure."

@@ -17,6 +17,7 @@ export function assertIsolatedTarget(
   if (
     options.nodeEnv !== 'test' ||
     !['postgres:', 'postgresql:'].includes(target.protocol) ||
+    !target.port ||
     !['127.0.0.1', 'localhost', '[::1]'].includes(target.hostname) ||
     !/^\/whistle_test_[a-z0-9_]+$/.test(target.pathname) ||
     target.search ||
@@ -25,17 +26,28 @@ export function assertIsolatedTarget(
     return refuse();
   if (options.operationalUrl) {
     let operational: URL;
+    let operationalDatabase: string;
     try {
       operational = new URL(options.operationalUrl);
+      if (
+        !['postgres:', 'postgresql:'].includes(operational.protocol) ||
+        !operational.port ||
+        operational.search ||
+        operational.hash
+      )
+        return refuse();
+      operationalDatabase = decodeURIComponent(operational.pathname);
     } catch {
       return refuse();
     }
-    const local = (host: string) =>
-      ['127.0.0.1', 'localhost', '[::1]'].includes(host) ? 'loopback' : host;
+    const local = (host: string) => {
+      const normalized = host.toLowerCase();
+      return ['127.0.0.1', 'localhost', '[::1]'].includes(normalized) ? 'loopback' : normalized;
+    };
     if (
       local(operational.hostname) === local(target.hostname) &&
-      (operational.port || '5432') === (target.port || '5432') &&
-      operational.pathname === target.pathname
+      operational.port === target.port &&
+      operationalDatabase === decodeURIComponent(target.pathname)
     )
       return refuse();
   }

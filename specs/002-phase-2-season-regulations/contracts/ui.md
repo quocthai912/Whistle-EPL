@@ -11,6 +11,7 @@ Retain existing /admin/auth routes and add only the approved internal workspace 
 | Route | Behavior | Authority/empty state |
 |---|---|---|
 | /workspace/seasons | Assigned-season list/search, explicit creation action, metadata details/edit, lifecycle requests/history | Creation capability exposes create only. No accessible seasons shows an empty list or explains scope, never unrelated internal data. |
+| /workspace/seasons/regulations | One navigation item opens the list of eligible seasons. After choosing a season, its selector remains available and the workspace separates current rules from versions and approvals. Links from a season row or detail open the exact same workspace with that season selected. | The list only exposes seasons the current account may access for regulation management. |
 | /workspace/seasons/{seasonId}/regulations | Current/waiting/previous/draft versions, full typed form, exact submitted review, effectivity/cancel-replace/history | Manager and valid delegated preparation capabilities determine actions; independent approval exclusions shown and server-enforced. |
 | /workspace/clubs | Search/pagination, master details/correction/history, logo operations and discontinue/resume | Live shared Club grant for writes; permitted read responsibility for display. |
 | /workspace/stadiums | Search/pagination, details/correction/history and discontinue/resume | Live shared Stadium grant; no schedule editor or match relocation here. |

@@ -147,10 +147,14 @@ it('sends only the applied audit filters, paginates, and retries a safe read err
   );
   await screen.findByText('Chưa có dữ liệu phù hợp.', undefined, { timeout: 5000 });
   const reads = fetcher.mock.calls.length;
-  fireEvent.change(screen.getByLabelText('Mã người thực hiện'), { target: { value: '1234' } });
+  fireEvent.change(screen.getByLabelText('ID kỹ thuật người thực hiện'), {
+    target: { value: '1234' },
+  });
   expect(screen.queryByRole('alert')).not.toBeInTheDocument();
   expect(fetcher.mock.calls).toHaveLength(reads);
-  fireEvent.change(screen.getByLabelText('Mã người thực hiện'), { target: { value: actorId } });
+  fireEvent.change(screen.getByLabelText('ID kỹ thuật người thực hiện'), {
+    target: { value: actorId },
+  });
   fireEvent.change(screen.getByLabelText('Từ ngày'), { target: { value: '05/11/2026' } });
   fireEvent.keyDown(screen.getByLabelText('Từ ngày'), { key: 'Enter', code: 'Enter' });
   fireEvent.blur(screen.getByLabelText('Từ ngày'));

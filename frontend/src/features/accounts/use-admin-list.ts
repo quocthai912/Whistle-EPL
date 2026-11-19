@@ -3,7 +3,7 @@ import { useSession } from '../../shared/http/use-session';
 import { HttpFailure } from '../../shared/http/client';
 
 /** Keeps the last successful data for the same query while a refresh is pending or fails. */
-export function useAdminList<T>(path: string) {
+export function useAdminList<T, Meta = unknown>(path: string) {
   const { client } = useSession();
   const [attempt, setAttempt] = useState(0);
   // A return to the same path starts a new request while retaining any matching data.
@@ -11,6 +11,7 @@ export function useAdminList<T>(path: string) {
   const [result, setResult] = useState<{
     request: typeof request;
     data?: T;
+    meta?: Meta;
     error?: string;
     requestId?: string;
   }>();
@@ -18,8 +19,8 @@ export function useAdminList<T>(path: string) {
     let active = true;
     void request.client
       .request<T>(request.path)
-      .then(({ data }) => {
-        if (active) setResult({ request, data });
+      .then(({ data, meta }) => {
+        if (active) setResult({ request, data, meta: meta as Meta | undefined });
       })
       .catch((error: unknown) => {
         if (active)
@@ -30,6 +31,7 @@ export function useAdminList<T>(path: string) {
               !(error instanceof HttpFailure && [401, 403].includes(error.status))
                 ? previous.data
                 : undefined,
+            meta: previous?.request.path === request.path ? previous.meta : undefined,
             error: error instanceof Error ? error.message : 'Không thể tải dữ liệu.',
             requestId: error instanceof HttpFailure ? error.requestId : undefined,
           }));
@@ -42,6 +44,7 @@ export function useAdminList<T>(path: string) {
   const loading = result?.request !== request;
   return {
     data: result?.request.path === path ? result.data : undefined,
+    meta: result?.request.path === path ? result.meta : undefined,
     error: loading ? undefined : result?.error,
     requestId: loading ? undefined : result?.requestId,
     reload,

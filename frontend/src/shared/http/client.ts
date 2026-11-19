@@ -22,13 +22,21 @@ const notices: Record<string, string> = {
   NOT_FOUND: 'Không tìm thấy dữ liệu.',
   LOGIN_THROTTLED: 'Có quá nhiều lần thử. Vui lòng thử lại sau.',
   MAINTENANCE: 'Hệ thống đang bảo trì. Vui lòng thử lại sau.',
+  MEDIA_UNAVAILABLE: 'Tạm thời không thể truy cập nội dung logo.',
+  LIFECYCLE_READINESS_UNAVAILABLE: 'Chưa thể xác minh điều kiện đóng mùa giải.',
+  REGULATION_BASIS_UNRESOLVED: 'Đang chờ xác định quy định có hiệu lực. Vui lòng thử lại sau.',
 };
+export type FieldErrorDetail = Readonly<{ field: string; code: string; message?: string }>;
+export type MasterNameCandidate = Readonly<{ id: string; code: string; name: string }>;
+
 export class HttpFailure extends Error {
   constructor(
     readonly status: number,
     readonly code: string,
     readonly requestId?: string,
     readonly unknownOutcome = false,
+    readonly details?: readonly FieldErrorDetail[],
+    readonly candidates?: readonly MasterNameCandidate[],
   ) {
     super(notices[code] ?? 'Không thể hoàn tất yêu cầu. Vui lòng thử lại sau.');
   }
@@ -37,6 +45,58 @@ type Options = { method?: 'GET' | 'POST' | 'PATCH'; body?: unknown; requestKey?:
 type Envelope<T> = { data: T; meta?: unknown; requestId: string };
 function record(value: unknown): value is Record<string, unknown> {
   return !!value && typeof value === 'object' && !Array.isArray(value);
+}
+function masterNameCandidates(value: unknown): readonly MasterNameCandidate[] | undefined {
+  if (!Array.isArray(value)) return undefined;
+  const candidates: MasterNameCandidate[] = [];
+  for (const item of value) {
+    if (
+      !record(item) ||
+      typeof item.id !== 'string' ||
+      !/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(item.id) ||
+      typeof item.code !== 'string' ||
+      !/^[A-Z0-9][A-Z0-9_-]{0,31}$/.test(item.code) ||
+      typeof item.name !== 'string' ||
+      !item.name.trim() ||
+      [...item.name].length > 200
+    )
+      return undefined;
+    candidates.push({ id: item.id, code: item.code, name: item.name });
+  }
+  return candidates;
+}
+function fieldErrorDetails(value: unknown): readonly FieldErrorDetail[] | undefined {
+  if (!Array.isArray(value)) return undefined;
+  const safeMessageCharacters = /^[\p{L}\p{M}\p{N} .,;:!?()%-]+$/u;
+  const vietnameseDiacritics = /[\u00C0-\u024F\u1E00-\u1EFF]/u;
+  const safeMessage = (message: unknown): message is string =>
+    typeof message === 'string' &&
+    message.length > 0 &&
+    message.length <= 240 &&
+    safeMessageCharacters.test(message) &&
+    vietnameseDiacritics.test(message);
+  const details: FieldErrorDetail[] = [];
+  for (const item of value.slice(0, 64)) {
+    if (
+      record(item) &&
+      typeof item.field === 'string' &&
+      item.field.length <= 80 &&
+      /^[A-Za-z][A-Za-z0-9_.-]*(?:\[\d+\][A-Za-z0-9_.-]*)*$/.test(item.field) &&
+      typeof item.code === 'string' &&
+      /^[A-Za-z][A-Za-z0-9_]{0,63}$/.test(item.code)
+    ) {
+      if (item.message !== undefined && !safeMessage(item.message)) continue;
+      details.push({
+        field: item.field,
+        code: item.code,
+        ...(item.message !== undefined ? { message: item.message } : {}),
+      });
+    }
+  }
+  return details.length ? details : undefined;
+}
+function formData(value: unknown): value is FormData {
+  return typeof FormData !== 'undefined' && value instanceof FormData;
 }
 
 export class HttpClient {
@@ -87,6 +147,19 @@ export class HttpClient {
   }
 
   async request<T>(path: string, options: Options = {}): Promise<Envelope<T>> {
+    return (await this.send<T>(path, options, 'json')) as Envelope<T>;
+  }
+
+  /** Fetches an explicitly authorized media response as normalized image bytes. */
+  async requestFile(path: string): Promise<Blob> {
+    return (await this.send<never>(path, { method: 'GET' }, 'file')) as Blob;
+  }
+
+  private async send<T>(
+    path: string,
+    options: Options,
+    responseMode: 'json' | 'file',
+  ): Promise<Envelope<T> | Blob> {
     const url = new URL(`/api/v1${path}`, 'https://whistle.invalid');
     if (
       !path.startsWith('/') ||
@@ -99,8 +172,14 @@ export class HttpClient {
     const method = options.method ?? 'GET';
     const writing = method !== 'GET';
     const epoch = this.session.getSnapshot().epoch;
-    const headers: Record<string, string> = { Accept: 'application/json' };
-    if (options.body !== undefined) headers['Content-Type'] = 'application/json';
+    const multipart = formData(options.body);
+    const headers: Record<string, string> = {
+      Accept:
+        responseMode === 'file'
+          ? 'image/png, image/jpeg, image/webp, application/json'
+          : 'application/json',
+    };
+    if (options.body !== undefined && !multipart) headers['Content-Type'] = 'application/json';
     if (options.requestKey) {
       if (
         !/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
@@ -114,18 +193,40 @@ export class HttpClient {
     if (this.session.getSnapshot().epoch !== epoch) throw new HttpFailure(401, 'AUTH_REQUIRED');
     let response: Response;
     try {
+      const requestBody =
+        options.body === undefined
+          ? undefined
+          : multipart
+            ? options.body
+            : JSON.stringify(options.body);
       response = await this.fetcher(url.pathname + url.search, {
         method,
         headers,
         credentials: 'same-origin',
         cache: 'no-store',
-        ...(options.body === undefined ? {} : { body: JSON.stringify(options.body) }),
+        ...(requestBody === undefined ? {} : { body: requestBody as BodyInit }),
       });
     } catch {
       throw new HttpFailure(0, 'NETWORK_ERROR', undefined, writing);
     }
     // A late response from a previous account must not repopulate its successor's memory.
     if (this.session.getSnapshot().epoch !== epoch) throw new HttpFailure(401, 'AUTH_REQUIRED');
+    if (responseMode === 'file' && response.ok) {
+      const mimeType = response.headers.get('Content-Type')?.split(';', 1)[0]?.trim().toLowerCase();
+      if (!mimeType || !['image/jpeg', 'image/png', 'image/webp'].includes(mimeType))
+        throw new HttpFailure(response.status, 'INVALID_RESPONSE');
+      let blob: Blob;
+      try {
+        blob = await response.blob();
+      } catch {
+        if (this.session.getSnapshot().epoch !== epoch) throw new HttpFailure(401, 'AUTH_REQUIRED');
+        throw new HttpFailure(response.status, 'INVALID_RESPONSE');
+      }
+      if (this.session.getSnapshot().epoch !== epoch) throw new HttpFailure(401, 'AUTH_REQUIRED');
+      if (!blob.size || (blob.type && blob.type.toLowerCase() !== mimeType))
+        throw new HttpFailure(response.status, 'INVALID_RESPONSE');
+      return blob;
+    }
     let body: unknown;
     try {
       body = await response.json();
@@ -163,6 +264,13 @@ export class HttpClient {
         code,
         requestId,
         writing && response.status >= 500,
+        record(body.error) &&
+          (body.error.code === 'VALIDATION_FAILED' || body.error.code === 'INVALID_INPUT')
+          ? fieldErrorDetails(body.error.details)
+          : undefined,
+        code === 'BASIS_CHANGED' && record(body.error)
+          ? masterNameCandidates(body.error.candidates)
+          : undefined,
       );
       if (response.status === 401 && path !== '/auth/login') this.session.clear(failure.message);
       if (code === 'CSRF_INVALID' || code === 'CSRF_REJECTED') this.session.forgetCsrf();

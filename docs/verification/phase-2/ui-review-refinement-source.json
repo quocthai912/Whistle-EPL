@@ -1,0 +1,181 @@
+{
+  "baseline": "eb8aba985600dc7696593634460fb54c5c7507e3",
+  "status": "Local unpublished UI refinement; user visual review pending",
+  "files": [
+    {
+      "path": "frontend/src/features/accounts/AdminDrawer.tsx",
+      "sha256": "9dd613e8d35d2544444cd79ef3b6c9c11f4d511b8546e48301c7b174560b9a03"
+    },
+    {
+      "path": "frontend/src/features/accounts/AdminIcon.tsx",
+      "sha256": "51bd56c67c193ee13f81a6cc93b5c26cb6db67647b2c099aa67c1828038c5818"
+    },
+    {
+      "path": "frontend/src/features/accounts/Administration.module.css",
+      "sha256": "3f1264e2b23fe81fd601dc6ed794c9e20f571d116e57813ec4046bd9c7a4aeca"
+    },
+    {
+      "path": "frontend/src/features/accounts/AdministrationLayout.tsx",
+      "sha256": "6e1265a4e8e22d41a33aa816ea4f7599a938e3a55ee9f3f9e221b81952d9d373"
+    },
+    {
+      "path": "frontend/src/features/accounts/DelegationsPage.tsx",
+      "sha256": "126212fcd8768d1a4cc5a684644249e4ecd5b7abd429fd14f4382b9965bac7a5"
+    },
+    {
+      "path": "frontend/src/features/accounts/GrantsPanel.tsx",
+      "sha256": "43f9d07a03116602792fdfde2fe825a77a2be93f66bc2e91022b73321f9e1afe"
+    },
+    {
+      "path": "frontend/src/features/accounts/WorkspaceDialog.module.css",
+      "sha256": "ca380a6bbf411eb1a22f7496faaacfebef088799d3eb842ef6b2e2e8d3cbdfa8"
+    },
+    {
+      "path": "frontend/src/features/accounts/WorkspaceDialog.tsx",
+      "sha256": "8df33f4a80270f37b8bccee244e7fc9c758c94b2c4ede152d041e8f525ec6eea"
+    },
+    {
+      "path": "frontend/src/features/audit/Audit.module.css",
+      "sha256": "48a6f58aa6fc31c4edc2441dc79e010ed7fa58375b081c7d98a768458f06dc77"
+    },
+    {
+      "path": "frontend/src/features/auth/Auth.module.css",
+      "sha256": "884d9f73d6a8d0d3aa42075cf3bca791c970542a93dca5950eb7232c621b3f31"
+    },
+    {
+      "path": "frontend/src/features/auth/auth-routes.tsx",
+      "sha256": "b681c4743f3a94aed78cfd2b224121dc40db24fa3299e41f020df0e641989f9e"
+    },
+    {
+      "path": "frontend/src/features/clubs/ClubLogo.tsx",
+      "sha256": "cb618c56c42490b5bd683f67432468e9b136238067a4ad81c6b8154f2845d6ce"
+    },
+    {
+      "path": "frontend/src/features/clubs/ClubsPage.module.css",
+      "sha256": "16419fd90ebd6bcd7a90aa84d83faea594b89da9d2fca7a620adff964c2eb45d"
+    },
+    {
+      "path": "frontend/src/features/clubs/ClubsPage.tsx",
+      "sha256": "3062c8a40c67be7eaad96c4ed23cb8b725f3d8a06548f90f3edcabbfc19d6a6f"
+    },
+    {
+      "path": "frontend/src/features/clubs/LogoFileField.tsx",
+      "sha256": "b7603ea6cd7847197976c0f79ccf21da3f92a38f618f149c11d04852721f07cf"
+    },
+    {
+      "path": "frontend/src/features/masters/MasterAvailability.tsx",
+      "sha256": "09d3ab65e5379827ef415c74c6aaaac592854f6f0d16b36d7db2674ead4b09d1"
+    },
+    {
+      "path": "frontend/src/features/masters/MasterForms.module.css",
+      "sha256": "09feeb753e49bc950e91b677c6b8ffe07b07c021e629e8064d1f835c5bf3a6c8"
+    },
+    {
+      "path": "frontend/src/features/masters/MasterForms.tsx",
+      "sha256": "c175e561c416c425fdc2c4698fea73de41e5cb9bc0a6283f5412762f1a119382"
+    },
+    {
+      "path": "frontend/src/features/regulations/RegulationChangeReview.tsx",
+      "sha256": "b4d98acc2d37bbeda2138a25df07de15a83f5e02066ebb46106c55ad669d36d2"
+    },
+    {
+      "path": "frontend/src/features/regulations/RegulationDraftForm.tsx",
+      "sha256": "c6d354fd7107ba1343796de07ce1019cb4cfdff2faa2a798ff5c8f2cc5557cd8"
+    },
+    {
+      "path": "frontend/src/features/regulations/RegulationReview.tsx",
+      "sha256": "b2aa363bb80716b9fc6c3e2148f750b92861f44a11b58e85e091c72f157b0d61"
+    },
+    {
+      "path": "frontend/src/features/regulations/RegulationVersionsPage.module.css",
+      "sha256": "f3259065417027f6c170e05f6b40cf695c4e2bfdadf43d5e677156b940db15ee"
+    },
+    {
+      "path": "frontend/src/features/regulations/RegulationVersionsPage.tsx",
+      "sha256": "69a698307f2075259ce11b7435d1035be557ecf92d8fd8ffcf90d94f587151e8"
+    },
+    {
+      "path": "frontend/src/features/regulations/RegulationWorkspace.tsx",
+      "sha256": "dd3322c7d25a1bc58b8d1b0e45c0469b40abb834697ec3abf8a195c308861d7e"
+    },
+    {
+      "path": "frontend/src/features/seasons/SeasonDetail.tsx",
+      "sha256": "1fbb5a93596f26c1f3ecbadd90cb2b7962fe570748104190f6bed69abedd4472"
+    },
+    {
+      "path": "frontend/src/features/seasons/SeasonLifecycleReview.tsx",
+      "sha256": "a0c1c93560622710e98014b75251be166dd34d7892fd4e2be7a6e76f19615ed9"
+    },
+    {
+      "path": "frontend/src/features/seasons/SeasonsPage.module.css",
+      "sha256": "163eb1ae2d3d8ab216e3a4c233916b247204635b523d13b487f0aa552ab6aff7"
+    },
+    {
+      "path": "frontend/src/features/stadiums/StadiumsPage.tsx",
+      "sha256": "da5e3a18c1d3e395fd09acaf91a409682b201cd37d7bf92d69aa7e4928c3acfb"
+    },
+    {
+      "path": "frontend/tests/club-create-logo.spec.tsx",
+      "sha256": "fbf30d252a29802b96c4623af5926143f01a805f7f7941439abb7bf62b008264"
+    },
+    {
+      "path": "frontend/tests/phase-2-forms.spec.tsx",
+      "sha256": "f45232e82a04dc910ec7ad655ac3216ff19195a0008b4b3b1751edd46b7548d9"
+    },
+    {
+      "path": "tests/e2e/administration.spec.ts",
+      "sha256": "aea040f2e98b1b911afcd612067cc40ef43d4ead92339e6fdaaddaaac834c758"
+    },
+    {
+      "path": "tests/e2e/phase-2-masters.spec.ts",
+      "sha256": "18655c35110dc42618fea5db1163b6c78bd60e53d560c4122342d20a61b8c8bd"
+    },
+    {
+      "path": "tests/e2e/phase-2-regulations.spec.ts",
+      "sha256": "ed31ea5ed8bf57ebd14852040c448b9528beaaacb69a210208ecf364cdb2240c"
+    },
+    {
+      "path": "tests/e2e/phase-2-seasons.spec.ts",
+      "sha256": "55f9b995a6de818bb14155b932b422399d14a393c6e0a354bcb98e2cbac7b742"
+    }
+  ],
+  "protectedControls": [
+    {
+      "path": "frontend/src/features/accounts/AdminSelect.tsx",
+      "sha256": "5b0aabc14f81f6ecfce36d134df246e51e3b8bbbacdf4b2d36fe3aa6eacb3f9b",
+      "unchangedFromBase": true
+    },
+    {
+      "path": "frontend/src/shared/DatePickers.tsx",
+      "sha256": "57b55cb941b309f105e530b6db6fb3fafb15c6f5c1af188451c9ae3625d6315f",
+      "unchangedFromBase": true
+    },
+    {
+      "path": "frontend/src/shared/date-format.ts",
+      "sha256": "541d89c1fa07b96b58e5a8289e55578ffe6f0537facd8c2ed3f58790fa4edc42",
+      "unchangedFromBase": true
+    }
+  ],
+  "reviewInputs": [
+    {
+      "file": "Whistle-EPL-UI-REVIEW.json",
+      "sha256": "c9f9f22695ebf2652b34ee1a796aeb4bc30f5ec1019e7a8a6aa5fabc253cbeb2"
+    },
+    {
+      "file": "Whistle-EPL-MH11.zip",
+      "sha256": "1e00c82bda52561fbd8992c5bfd0bf31786dab7cacd0fc86e672168fb21fc66c"
+    },
+    {
+      "file": "Whistle-EPL-MH12.zip",
+      "sha256": "00c11b0b1c3ead3b07c44432d2467a16828dd316ad9c58b31cc8f702bf7bbcda"
+    },
+    {
+      "file": "Whistle-EPL-MH13.zip",
+      "sha256": "d1ddcd5c750898655df320faa4c4262b438ad3c9af2343ff4991ed09b891bb50"
+    },
+    {
+      "file": "Whistle-EPL-MH17.zip",
+      "sha256": "e5e3ce8fa7c436fd6b18ab0f4744a784dd686626c70e5c805d88902fbd949804"
+    }
+  ]
+}

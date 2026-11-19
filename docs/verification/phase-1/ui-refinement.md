@@ -1,5 +1,10 @@
 # Administration and authentication UI refinement
 
+For the separately authorized 2026-11-19 PHASE 1–2 gallery review and local
+refinement, see the [shared review record](../phase-2/ui-review-refinement.md).
+Its publication and human visual-review status are separate from the historical
+evidence below.
+
 The Team Leader requested a complete visual and interaction review on 2026-11-07
 (Asia/Bangkok). References are the supplied MH08, MH09 and MH10 ZIP HTML and twelve
 screenshots. Archive content was inspected as design reference data. The local

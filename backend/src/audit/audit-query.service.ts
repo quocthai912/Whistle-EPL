@@ -21,7 +21,7 @@ const filters = [
 const sorts = ['occurredAt:desc', 'occurredAt:asc'];
 
 /** Parses an optional exact UTC boundary without accepting normalized invalid dates. */
-function instant(value: string | undefined) {
+export function parseAuditInstant(value: string | undefined) {
   if (value === undefined) return undefined;
   if (
     !/^\d{4}-\d{2}-\d{2}T(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d{1,3})?Z$/.test(value) ||
@@ -60,8 +60,8 @@ export class AuditQueryService {
         const { actorId, actionCode, objectKind, objectId } = values;
         const search = listSearch(values.search);
         const pattern = '%' + search + '%';
-        const gte = instant(values.occurredFrom);
-        const lt = instant(values.occurredBefore);
+        const gte = parseAuditInstant(values.occurredFrom);
+        const lt = parseAuditInstant(values.occurredBefore);
         if (
           (gte && lt && gte >= lt) ||
           (actionCode !== undefined && !isAuditAction(actionCode)) ||

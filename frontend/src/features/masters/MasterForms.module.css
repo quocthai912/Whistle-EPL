@@ -1,0 +1,66 @@
+.form label > input,
+.form label > textarea {
+  border-radius: 8px;
+  min-height: 42px;
+}
+.form label > textarea {
+  resize: vertical;
+}
+.history {
+  display: grid;
+  gap: 10px;
+  overflow-wrap: anywhere;
+}
+.history article,
+.review {
+  padding: 12px;
+  border: 1px solid #e3e7f2;
+  border-radius: 10px;
+}
+.impactReview {
+  display: grid;
+  gap: 16px;
+  padding: 20px;
+}
+.impactReview > p,
+.impactReview > ul {
+  margin: 0;
+}
+.review {
+  background: #f6f3fc;
+  overflow-wrap: anywhere;
+}
+
+.history article {
+  display: grid;
+  gap: 14px;
+  padding: 18px;
+}
+.history article > p,
+.history article > dl {
+  margin: 0;
+}
+.review > ul {
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 8px;
+}
+.review > ul > li {
+  padding: 10px 12px;
+  background: white;
+  border: 1px solid #e3e7f2;
+  border-radius: 8px;
+}
+.review > label {
+  margin-top: 14px;
+}
+.review > strong + dl {
+  margin-top: 12px;
+}
+
+.identityNote {
+  color: #65718a;
+  font-size: 13px;
+  margin-top: -10px !important;
+}

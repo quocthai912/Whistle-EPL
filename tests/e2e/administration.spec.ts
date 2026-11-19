@@ -27,7 +27,7 @@ test('checks direct navigation and administrator cancellation, account creation 
     await login(unauthorized, await browserAccount());
     await unauthorized.goto('/admin/delegations');
     await expect(unauthorized.getByRole('alert')).toContainText(
-      'Bạn không có quyền truy cập trang này.',
+      'Chức năng này yêu cầu quyền được phân công. Vui lòng liên hệ Quản trị viên nếu bạn cần sử dụng.',
     );
   } finally {
     await unauthorized.close();
@@ -158,7 +158,9 @@ test('manager submits a real delegation and an independent administrator grants 
   } = await browserAdministration();
   await login(page, manager);
   await page.goto('/admin/accounts');
-  await expect(page.getByRole('alert')).toContainText('Bạn không có quyền truy cập trang này.');
+  await expect(page.getByRole('alert')).toContainText(
+    'Chức năng này yêu cầu quyền được phân công. Vui lòng liên hệ Quản trị viên nếu bạn cần sử dụng.',
+  );
   await page.goto('/admin/delegations');
   await button(page, '+ Tạo đề xuất ủy quyền').click();
   await selectOption(page, 'Nghiệp vụ *', 'Phê duyệt yêu cầu điều chỉnh lịch thi đấu');
@@ -170,10 +172,26 @@ test('manager submits a real delegation and an independent administrator grants 
     return person.fullName + ' · ' + person.personnelCode;
   }, recipient.id);
   await selectOption(page, 'Người nhận *', recipientLabel);
+  await selectOption(page, 'Bắt đầu *', 'Theo lịch');
+  const startInput = page.getByLabel('Bắt đầu (giờ Việt Nam)', { exact: true });
+  await expect(startInput).toHaveAttribute('placeholder', 'DD/MM/YYYY HH:mm');
+  await selectOption(page, 'Bắt đầu *', 'Khi được cấp');
+
   const end = new Date(Date.now() + 24 * 3600000 + 7 * 3600000).toISOString().slice(0, 16);
-  await page.getByLabel(/Kết thúc \(giờ Việt Nam\)/).fill(end);
+  const [date, time] = end.split('T');
+  const endInput = page.getByLabel('Kết thúc (giờ Việt Nam)', { exact: true });
+  await endInput.fill(date.split('-').reverse().join('/') + ' ' + time);
+  await endInput.press('Tab');
   await page.getByLabel(/^Lý do$/).fill('Kiểm thử đề xuất điều chỉnh lịch');
+  const creation = page.waitForRequest(
+    (request) =>
+      request.method() === 'POST' &&
+      new URL(request.url()).pathname === '/api/v1/delegation-proposals',
+  );
   await button(page, 'Xác nhận').click();
+  expect((await creation).postDataJSON()).toMatchObject({
+    endsAt: new Date(end + '+07:00').toISOString(),
+  });
   await button(page, 'Chi tiết').click();
   await button(page, 'Gửi đề xuất').click();
   await button(page, 'Xác nhận').click();
@@ -201,7 +219,7 @@ test('manager submits a real delegation and an independent administrator grants 
     await button(administration, 'Chi tiết').click();
     await expect
       .poll(async () => (await administration.getByRole('dialog').boundingBox())?.x)
-      .toBe(880);
+      .toBe(1440 - 700);
     await administration.screenshot({
       path: `.verification/ui-review/mh09-detail-${info.project.name}.png`,
     });

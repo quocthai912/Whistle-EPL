@@ -29,12 +29,61 @@ export const actions: Record<string, string> = {
   DELEGATION_TERMINATED: 'Chấm dứt ủy quyền',
   DELEGATION_STARTED: 'Bắt đầu ủy quyền',
   DELEGATION_EXPIRED: 'Hết hạn ủy quyền',
+  SEASON_CREATED: 'Tạo mùa giải',
+  SEASON_UPDATED: 'Cập nhật thông tin mùa giải',
+  REGULATION_DRAFT_CREATED: 'Tạo bản nháp quy định',
+  REGULATION_DRAFT_UPDATED: 'Cập nhật bản nháp quy định',
+  REGULATION_SUBMITTED: 'Gửi quy định thẩm định',
+  REGULATION_WITHDRAWN: 'Rút phiên bản quy định',
+  REGULATION_RETURNED: 'Trả lại quy định để bổ sung',
+  REGULATION_REJECTED: 'Từ chối phiên bản quy định',
+  REGULATION_APPROVED: 'Phê duyệt phiên bản quy định',
+  REGULATION_ACTIVATED: 'Kích hoạt quy định mùa giải',
+  REGULATION_ACTIVATION_BLOCKED: 'Chặn kích hoạt quy định',
+  REGULATION_CHANGE_SUBMITTED: 'Gửi thẩm định yêu cầu thay đổi quy định',
+  REGULATION_CHANGE_WITHDRAWN: 'Rút yêu cầu thay đổi quy định',
+  REGULATION_CHANGE_RETURNED: 'Trả lại yêu cầu thay đổi quy định',
+  REGULATION_CHANGE_REJECTED: 'Từ chối yêu cầu thay đổi quy định',
+  REGULATION_CHANGE_APPROVED: 'Phê duyệt thay đổi quy định',
+  SEASON_LIFECYCLE_DRAFT_CREATED: 'Tạo bản nháp đề xuất đóng/mở mùa giải',
+  SEASON_LIFECYCLE_DRAFT_UPDATED: 'Sửa bản nháp đề xuất đóng/mở mùa giải',
+  SEASON_LIFECYCLE_SUBMITTED: 'Gửi đề xuất đóng/mở mùa giải',
+  SEASON_LIFECYCLE_WITHDRAWN: 'Rút đề xuất đóng/mở mùa giải',
+  SEASON_LIFECYCLE_RETURNED: 'Trả đề xuất đóng/mở mùa giải',
+  SEASON_LIFECYCLE_REJECTED: 'Từ chối đề xuất đóng/mở mùa giải',
+  SEASON_LIFECYCLE_APPROVED: 'Phê duyệt đóng hoặc mở lại mùa giải',
+  CLUB_CREATED: 'Tạo hồ sơ câu lạc bộ',
+  CLUB_UPDATED: 'Cập nhật hồ sơ câu lạc bộ',
+  CLUB_CORRECTED: 'Đính chính hồ sơ câu lạc bộ',
+  CLUB_DISCONTINUED: 'Ngừng sử dụng hồ sơ câu lạc bộ',
+  CLUB_RESUMED: 'Sử dụng lại hồ sơ câu lạc bộ',
+  STADIUM_CREATED: 'Tạo hồ sơ sân vận động',
+  STADIUM_UPDATED: 'Cập nhật hồ sơ sân vận động',
+  STADIUM_CORRECTED: 'Đính chính hồ sơ sân vận động',
+  STADIUM_DISCONTINUED: 'Ngừng sử dụng hồ sơ sân vận động',
+  STADIUM_RESUMED: 'Sử dụng lại hồ sơ sân vận động',
+  MEDIA_ASSET_STORED: 'Lưu tệp hình ảnh',
+  MEDIA_ASSET_ATTACHED: 'Gắn tệp hình ảnh',
+  MEDIA_ASSET_REPLACED: 'Thay tệp hình ảnh',
+  MEDIA_ASSET_DETACHED: 'Gỡ tệp hình ảnh',
+  MEDIA_ASSET_CLEANED: 'Dọn tệp hình ảnh',
 };
 
-export const objectKinds: Record<string, string> = {
+export const filterableObjectKinds = {
   Account: 'Tài khoản',
   DelegationCase: 'Đề xuất ủy quyền',
   DelegationGrant: 'Quyền ủy quyền',
+};
+
+export const objectKinds: Record<string, string> = {
+  ...filterableObjectKinds,
+  Season: 'Mùa giải',
+  RegulationVersion: 'Phiên bản quy định',
+  RegulationChangeRequest: 'Đề nghị thay đổi quy định',
+  SeasonLifecycleRequest: 'Đề nghị đóng hoặc mở lại mùa giải',
+  Club: 'Câu lạc bộ',
+  Stadium: 'Sân vận động',
+  MediaAsset: 'Tệp hình ảnh',
 };
 
 export const initialFilters = {
@@ -55,7 +104,7 @@ export function auditFilters(draft: typeof initialFilters) {
   const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
   const identifiers = { actorId: actorId.trim(), objectId: objectId.trim() };
   if (Object.values(identifiers).some((value) => value && !uuid.test(value)))
-    throw new Error('Mã người thực hiện và mã đối tượng phải có định dạng UUID.');
+    throw new Error('ID kỹ thuật người thực hiện và ID kỹ thuật đối tượng phải có định dạng UUID.');
   /** Converts a local calendar boundary to its UTC instant, optionally advancing whole days. */
   const localMidnight = (date: string, days: number) => {
     if (!date) return '';

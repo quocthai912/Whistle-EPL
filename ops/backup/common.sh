@@ -17,6 +17,7 @@ OPS_STATE_REAL=$(realpath "$OPS_STATE_DIR")
 [[ $OPS_DB_NAME =~ ^[a-z][a-z0-9_]*$ ]] || exit 1
 export DATABASE_URL PGSERVICE PGPASSFILE OPS_APP_DIR OPS_DB_NAME OPS_PROFILE OPS_ISOLATED
 export PGSERVICEFILE PGHOST PGPORT PGUSER
+export OPS_MEDIA_ROOT OPS_MEDIA_UID OPS_STATE_DIR OPS_BACKUP_DIR OPS_OFFHOST_DIR
 export MAINTENANCE_MARKER_PATH="$OPS_STATE_DIR/maintenance.json"
 export PGDATABASE="$OPS_DB_NAME"
 node "$OPS_SCRIPT_DIR/verify-target.cjs"
@@ -34,5 +35,8 @@ ops_inventory() {
 }
 ops_verify_database() {
   python3 "$OPS_SCRIPT_DIR/set-format.py" database "$OPS_APP_DIR"
+}
+ops_format_profile() {
+  python3 "$OPS_SCRIPT_DIR/set-format.py" profile "$OPS_APP_DIR"
 }
 ops_feedback() { printf '%s %s\n' "$(date -u +%FT%TZ)" "$1" >> "$OPS_STATE_DIR/operations.log"; }

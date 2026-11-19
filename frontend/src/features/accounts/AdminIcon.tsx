@@ -1,6 +1,12 @@
 import type { ReactNode } from 'react';
 
 const shapes = {
+  club: (
+    <>
+      <path d="M12 3 4 6v6c0 4 4 7 8 9 4-2 8-5 8-9V6L12 3Z" />
+      <path d="m12 7 3 2-1 3h-4L9 9l3-2Zm-2 5-2 3m6-3 2 3m-4-8V5" />
+    </>
+  ),
   accounts: (
     <>
       <path d="M12 3 4 6v6c0 5 8 9 8 9s8-4 8-9V6z" />
@@ -18,6 +24,19 @@ const shapes = {
     <>
       <path d="M3 10a9 9 0 1 1 1 7M3 4v6h6m3-3v5l3 2" />
     </>
+  ),
+  season: (
+    <>
+      <path d="M6.5 3.5h11v4a5.5 5.5 0 0 1-11 0v-4Z" />
+      <path d="M6.5 5.5H3v1.25a4.5 4.5 0 0 0 4.5 4.5m10-5.75H21v1.25a4.5 4.5 0 0 1-4.5 4.5" />
+      <path d="M12 13v4.5m-3.5 0h7l1.5 3h-10l1.5-3Z" />
+    </>
+  ),
+  regulations: (
+    <path d="M12 6.5C9 4.5 5.5 4 3 5v14c3-1 6-.5 9 1.5m0-14c3-2 6.5-2.5 9-1.5v14c-3-1-6-.5-9 1.5m0-14v14M6 9l3 1m6 0 3-1M6 13l3 1m6 0 3-1" />
+  ),
+  stadium: (
+    <path d="M3 9v7c0 2 4 4 9 4s9-2 9-4V9m-18 0c0-2 4-4 9-4s9 2 9 4-4 4-9 4-9-2-9-4Zm4 4v4m10-4v4m-7 3v-3h4v3" />
   ),
   user: (
     <>

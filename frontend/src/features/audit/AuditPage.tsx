@@ -1,5 +1,7 @@
 import { useState, type FormEvent } from 'react';
 import { DatePicker } from 'antd';
+import { dateFormat } from '../../shared/date-format';
+import { regulationStateLabels } from '../regulations/regulation-model';
 import dayjs from 'dayjs';
 import { AdminSelect } from '../accounts/AdminSelect';
 import { useSearchTerm } from '../accounts/use-search-term';
@@ -16,7 +18,13 @@ import {
 } from '../accounts/administration-model';
 import { useAdminList } from '../accounts/use-admin-list';
 import shared from '../accounts/Administration.module.css';
-import { actions, auditFilters, initialFilters, objectKinds } from './audit-filters';
+import {
+  actions,
+  auditFilters,
+  filterableObjectKinds,
+  initialFilters,
+  objectKinds,
+} from './audit-filters';
 import css from './Audit.module.css';
 
 type Change = Record<string, string | number | boolean | null>;
@@ -77,6 +85,26 @@ const changeLabels: Record<string, string> = {
   startsAt: 'Bắt đầu',
   endsAt: 'Kết thúc',
   effectiveAt: 'Thời điểm hiệu lực',
+  code: 'Mã',
+  name: 'Tên',
+  competitionName: 'Tên giải đấu',
+  startDate: 'Ngày bắt đầu',
+  endDate: 'Ngày kết thúc',
+  revision: 'Lần sửa',
+  effectiveMode: 'Cách áp dụng',
+  proposedEffectiveAt: 'Thời điểm đề xuất hiệu lực',
+  activeFrom: 'Hiệu lực từ',
+  activeUntil: 'Hiệu lực đến',
+  submittedAt: 'Thời điểm gửi thẩm định',
+  decidedAt: 'Thời điểm quyết định',
+  approvedAt: 'Thời điểm phê duyệt',
+  processedAt: 'Thời điểm xử lý',
+  blockedAt: 'Thời điểm chặn',
+  decisionReason: 'Lý do quyết định',
+  requestId: 'Mã đề nghị',
+  waitingVersionId: 'Mã phiên bản chờ',
+  replacementVersionId: 'Mã phiên bản thay thế',
+  action: 'Loại đề nghị',
 };
 /** Uses an own-property display label, preserving unknown historical codes as text. */
 const label = (names: Record<string, string>, key: string) =>
@@ -87,7 +115,7 @@ const actor = (row: AuditRecord) =>
     ? (row.operatorIdentity ?? 'Người vận hành')
     : row.actorKind === 'SYSTEM'
       ? 'Hệ thống'
-      : (row.actorName ?? row.actorId ?? '—');
+      : (row.actorName ?? 'Tài khoản đã ghi nhận');
 /** Displays a readable target name or its safe object-kind label. */
 const target = (row: AuditRecord) => row.objectName ?? label(objectKinds, row.objectKind);
 
@@ -114,11 +142,34 @@ function changeValue(name: string, value: Change[string], actionCode: string, af
         'DELEGATION_GRANTED',
       ].includes(actionCode)
         ? grantStateNames
-        : stateNames,
+        : actionCode.startsWith('REGULATION_')
+          ? { ...stateNames, ...regulationStateLabels, APPROVED: 'Đã phê duyệt' }
+          : stateNames,
     startMode: { IMMEDIATE: 'Ngay khi cấp quyền', SCHEDULED: 'Theo thời gian chỉ định' },
+    effectiveMode: { IMMEDIATE: 'Hiệu lực ngay', SCHEDULED: 'Hiệu lực theo lịch' },
+    action: {
+      CANCEL: 'Hủy',
+      REPLACE: 'Thay thế',
+      CLOSE: 'Đóng mùa giải',
+      REOPEN: 'Mở lại mùa giải',
+    },
   };
+  if ((name === 'startDate' || name === 'endDate') && /^\d{4}-\d{2}-\d{2}$/.test(value))
+    return value.split('-').reverse().join('/');
   if (Object.hasOwn(names, name)) return label(names[name], value);
-  return ['startsAt', 'endsAt', 'effectiveAt'].includes(name) && Number.isFinite(Date.parse(value))
+  return [
+    'startsAt',
+    'endsAt',
+    'effectiveAt',
+    'activeFrom',
+    'activeUntil',
+    'proposedEffectiveAt',
+    'submittedAt',
+    'decidedAt',
+    'approvedAt',
+    'processedAt',
+    'blockedAt',
+  ].includes(name) && Number.isFinite(Date.parse(value))
     ? time.format(new Date(value))
     : value;
 }
@@ -143,13 +194,30 @@ function ChangeSummary({
       {!values && <p>{empty}</p>}
       {values && (
         <dl>
-          {Object.entries(values).map(([name, value]) => (
-            <div key={name}>
-              <dt>{label(changeLabels, name)}</dt>
-              <dd>{changeValue(name, value, actionCode, after)}</dd>
-            </div>
-          ))}
+          {Object.entries(values)
+            .filter(([name]) => !name.endsWith('Id'))
+            .map(([name, value]) => (
+              <div key={name}>
+                <dt>{label(changeLabels, name)}</dt>
+                <dd>{changeValue(name, value, actionCode, after)}</dd>
+              </div>
+            ))}
         </dl>
+      )}
+      {values && Object.keys(values).some((name) => name.endsWith('Id')) && (
+        <details>
+          <summary>Định danh kỹ thuật của thay đổi</summary>
+          <dl>
+            {Object.entries(values)
+              .filter(([name]) => name.endsWith('Id'))
+              .map(([name, value]) => (
+                <div key={name}>
+                  <dt>{label(changeLabels, name)}</dt>
+                  <dd>{changeValue(name, value, actionCode, after)}</dd>
+                </div>
+              ))}
+          </dl>
+        </details>
       )}
     </div>
   );
@@ -252,7 +320,7 @@ export function AuditPage() {
             <span className={shared.srOnly}>Từ ngày</span>
             <DatePicker
               aria-label="Từ ngày"
-              format="DD/MM/YYYY"
+              format={dateFormat}
               placeholder="Từ ngày"
               value={draft.from ? dayjs(draft.from) : null}
               onChange={(date) => update('from', date?.format('YYYY-MM-DD') ?? '')}
@@ -262,7 +330,7 @@ export function AuditPage() {
             <span className={shared.srOnly}>Đến ngày</span>
             <DatePicker
               aria-label="Đến ngày"
-              format="DD/MM/YYYY"
+              format={dateFormat}
               placeholder="Đến ngày"
               value={draft.through ? dayjs(draft.through) : null}
               onChange={(date) => update('through', date?.format('YYYY-MM-DD') ?? '')}
@@ -292,46 +360,29 @@ export function AuditPage() {
         </div>
         <details className={css.advanced}>
           <summary>Bộ lọc nâng cao</summary>
+          <p id="audit-technical-id-help" className={css.technicalHint}>
+            Tra cứu bằng UUID kỹ thuật, không dùng mã nhân viên hoặc mã hồ sơ.
+          </p>
           <div className={css.advancedFields}>
             <label>
-              Mã người thực hiện
+              ID kỹ thuật người thực hiện
               <input
                 value={draft.actorId}
-                aria-label="Mã người thực hiện"
-                aria-describedby={
-                  draft.actorId.trim() !== (query.get('actorId') ?? '')
-                    ? 'audit-actor-pending'
-                    : undefined
-                }
+                aria-label="ID kỹ thuật người thực hiện"
+                aria-describedby="audit-technical-id-help"
                 onChange={(event) => update('actorId', event.target.value)}
                 placeholder="UUID người thực hiện"
               />
-              {draft.actorId.trim() !== (query.get('actorId') ?? '') && (
-                <small id="audit-actor-pending">
-                  Mã người thực hiện chưa áp dụng. Đang áp dụng: {query.get('actorId') ?? 'Tất cả'}.
-                  Nhấn Tra cứu để áp dụng bản nháp.
-                </small>
-              )}
             </label>
             <label>
-              Mã đối tượng
+              ID kỹ thuật đối tượng
               <input
                 value={draft.objectId}
-                aria-label="Mã đối tượng"
-                aria-describedby={
-                  draft.objectId.trim() !== (query.get('objectId') ?? '')
-                    ? 'audit-object-pending'
-                    : undefined
-                }
+                aria-label="ID kỹ thuật đối tượng"
+                aria-describedby="audit-technical-id-help"
                 onChange={(event) => update('objectId', event.target.value)}
                 placeholder="UUID đối tượng"
               />
-              {draft.objectId.trim() !== (query.get('objectId') ?? '') && (
-                <small id="audit-object-pending">
-                  Mã đối tượng chưa áp dụng. Đang áp dụng: {query.get('objectId') ?? 'Tất cả'}. Nhấn
-                  Tra cứu để áp dụng bản nháp.
-                </small>
-              )}
             </label>
             <AdminSelect
               hideLabel={false}
@@ -340,7 +391,10 @@ export function AuditPage() {
               onChange={(value) => update('objectKind', value)}
               options={[
                 { value: '', label: 'Tất cả đối tượng' },
-                ...Object.entries(objectKinds).map(([value, label]) => ({ value, label })),
+                ...Object.entries(filterableObjectKinds).map(([value, label]) => ({
+                  value,
+                  label,
+                })),
               ]}
             />
             <AdminSelect
@@ -414,7 +468,9 @@ export function AuditPage() {
                 </td>
                 <td>{label(actions, row.actionCode)}</td>
                 <td>{target(row)}</td>
-                <td>{row.seasonCode ?? row.seasonId ?? 'Không áp dụng'}</td>
+                <td>
+                  {row.seasonCode ?? (row.seasonId ? 'Mùa giải đã ghi nhận' : 'Không áp dụng')}
+                </td>
                 <td>
                   <span className={css.outcome} data-outcome={row.outcome}>
                     {label(results, row.outcome)}
@@ -466,17 +522,13 @@ export function AuditPage() {
       )}
       {selected && (
         <AdminDrawer
-          title={'Chi tiết nhật ký · ' + selected.id}
+          title="Chi tiết nhật ký"
           subtitle="Lịch sử thao tác quản trị và kiểm tra hệ thống"
           icon={<AdminIcon name="audit" />}
           onClose={() => setSelectedId(undefined)}
         >
           <div className={shared.details}>
             <dl className={shared.detailGrid}>
-              <div className={shared.fullWidth}>
-                <dt>Mã bản ghi</dt>
-                <dd className={shared.code}>{selected.id}</dd>
-              </div>
               <div>
                 <dt>Thao tác</dt>
                 <dd>{label(actions, selected.actionCode)}</dd>
@@ -489,25 +541,16 @@ export function AuditPage() {
                 <dt>Người thực hiện</dt>
                 <dd>{actor(selected)}</dd>
               </div>
-              {selected.actorId && (
-                <div>
-                  <dt>Mã người thực hiện</dt>
-                  <dd>{selected.actorId}</dd>
-                </div>
-              )}
               <div>
                 <dt>Đối tượng</dt>
                 <dd>{target(selected)}</dd>
               </div>
-              {selected.objectId && (
-                <div>
-                  <dt>Mã đối tượng</dt>
-                  <dd>{selected.objectId}</dd>
-                </div>
-              )}
               <div>
                 <dt>Mùa giải</dt>
-                <dd>{selected.seasonCode ?? selected.seasonId ?? 'Không áp dụng'}</dd>
+                <dd>
+                  {selected.seasonCode ??
+                    (selected.seasonId ? 'Mùa giải đã ghi nhận' : 'Không áp dụng')}
+                </dd>
               </div>
               <div>
                 <dt>Kết quả</dt>
@@ -524,6 +567,27 @@ export function AuditPage() {
                 </div>
               )}
             </dl>
+            <details>
+              <summary>Thông tin kỹ thuật phục vụ tra cứu</summary>
+              <dl className={shared.detailGrid}>
+                <div>
+                  <dt>Mã bản ghi</dt>
+                  <dd>{selected.id}</dd>
+                </div>
+                {selected.actorId && (
+                  <div>
+                    <dt>ID kỹ thuật người thực hiện</dt>
+                    <dd>{selected.actorId}</dd>
+                  </div>
+                )}
+                {selected.objectId && (
+                  <div>
+                    <dt>ID kỹ thuật đối tượng</dt>
+                    <dd>{selected.objectId}</dd>
+                  </div>
+                )}
+              </dl>
+            </details>
             {(selected.before || selected.after) && (
               <>
                 <h3>Nội dung thay đổi chi tiết</h3>

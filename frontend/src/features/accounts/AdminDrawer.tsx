@@ -9,18 +9,21 @@ export function AdminDrawer({
   icon,
   children,
   onClose,
+  width = 560,
 }: {
   title: string;
   subtitle: string;
   icon: ReactNode;
   children: ReactNode;
   onClose: () => void;
+  width?: number;
 }) {
   return (
     <Drawer
       open
       onClose={onClose}
-      size="min(560px, 100vw)"
+      size={`min(${width}px, 100vw)`}
+      styles={{ wrapper: { maxWidth: '100vw' } }}
       className={css.drawer}
       closeIcon={<span aria-hidden="true">×</span>}
       title={

@@ -1,5 +1,5 @@
 import type { Prisma } from '../generated/prisma/client';
-import { auditChangeSummary, isAuditAction } from './audit-payload.policy';
+import { auditChangeSummary, isAuditAction, isBusinessHistoryAction } from './audit-payload.policy';
 
 export const auditObjectKinds = ['Account', 'DelegationCase', 'DelegationGrant'] as const;
 
@@ -22,6 +22,22 @@ export const auditSelection = {
 } satisfies Prisma.AuditRecordSelect;
 
 type AuditRow = Prisma.AuditRecordGetPayload<{ select: typeof auditSelection }>;
+
+/** Projects detail only for the exact action/object pair authorized by an owning service. */
+export function projectBusinessHistory(rows: AuditRow[]) {
+  return rows.map((row) => {
+    const { actor, season, beforeData, afterData, reason, ...metadata } = row;
+    const action = isBusinessHistoryAction(row.actionCode, row.objectKind) ? row.actionCode : null;
+    return {
+      ...metadata,
+      actorName: actor?.fullName ?? null,
+      seasonCode: season?.code ?? null,
+      reason: action ? reason : null,
+      before: action ? auditChangeSummary(action, beforeData) : null,
+      after: action ? auditChangeSummary(action, afterData) : null,
+    };
+  });
+}
 
 function ownsChangePayload({ actionCode, objectKind }: AuditRow) {
   if (actionCode.startsWith('DELEGATION_')) {

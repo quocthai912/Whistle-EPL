@@ -327,14 +327,14 @@
   border: 1px solid #ffd1ce;
 }
 .notice {
-  color: #513810;
-  background: #fff9e8;
-  border: 1px solid #ecdcb5;
+  color: #4b2b93;
+  background: #f3edff;
+  border: 1px solid #ded0f5;
 }
 .success {
-  color: #237804;
-  background: #f6ffed;
-  border: 1px solid #b7eb8f;
+  color: #4b2b93;
+  background: #f3edff;
+  border: 1px solid #ded0f5;
 }
 .logout {
   box-shadow: none;
@@ -458,4 +458,80 @@
   .footer {
     padding: 14px 16px;
   }
+}
+
+.visual {
+  align-items: center;
+}
+.formPanel [role='status'] + div,
+.formPanel [role='alert'] + div {
+  margin-top: 14px;
+}
+.formPanel div:has(> button) + form {
+  margin-top: 16px;
+}
+
+.notice[role='status'] {
+  display: grid;
+  gap: 14px;
+  padding: 16px;
+  border-radius: 10px;
+}
+.notice[role='status'] > p {
+  margin: 0;
+}
+.notice[role='status'] > button {
+  justify-self: start;
+}
+.page .submit:disabled {
+  opacity: 1;
+  color: #526078;
+  background: #e4e7ef;
+  border-color: #d5dae6;
+  box-shadow: none;
+}
+.visual {
+  align-items: stretch;
+}
+.visualContent {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.visualContent .strips {
+  flex: 1;
+  justify-content: center;
+}
+.recovery .visualContent .strips {
+  flex: 0 0 auto;
+}
+.recovery .visualContent > p {
+  margin: 8px 0 0;
+}
+.logoutGroup {
+  position: relative;
+  flex-shrink: 0;
+}
+.logoutRecovery {
+  position: absolute;
+  z-index: 1100;
+  top: calc(100% + 12px);
+  right: 0;
+  width: min(380px, calc(100vw - 32px));
+  padding: 18px;
+  border: 1px solid #ded0f5;
+  border-radius: 12px;
+  background: white;
+  color: #17213b;
+  box-shadow: 0 8px 32px #17213b24;
+  font:
+    14px/1.65 'Be Vietnam Pro',
+    Arial,
+    sans-serif;
+}
+.logoutRecovery > p {
+  margin: 0 0 14px;
+}
+.logoutRecovery .notice {
+  padding: 14px;
 }
