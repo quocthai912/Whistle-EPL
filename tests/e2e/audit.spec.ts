@@ -30,7 +30,7 @@ test('traces real administration and authentication events across pages and tech
     await login(outsider, staff);
     await outsider.goto('/admin/audit');
     await expect(outsider.getByRole('alert')).toContainText(
-      'Bạn đã đăng nhập. Chức năng này yêu cầu quyền riêng; liên hệ Quản trị viên nếu cần sử dụng.',
+      'Chức năng này yêu cầu quyền được phân công. Vui lòng liên hệ Quản trị viên nếu bạn cần sử dụng.',
     );
     expect(await auditStatus(outsider)).toBe(403);
     await outsider.getByRole('button', { name: 'Đăng xuất' }).click();
@@ -241,7 +241,7 @@ test('traces real administration and authentication events across pages and tech
     await login(page, staff);
     await page.goto('/admin/audit');
     await expect(page.getByRole('alert')).toContainText(
-      'Bạn đã đăng nhập. Chức năng này yêu cầu quyền riêng; liên hệ Quản trị viên nếu cần sử dụng.',
+      'Chức năng này yêu cầu quyền được phân công. Vui lòng liên hệ Quản trị viên nếu bạn cần sử dụng.',
     );
     await expect(table).toHaveCount(0);
     expect(

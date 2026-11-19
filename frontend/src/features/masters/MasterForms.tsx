@@ -40,7 +40,10 @@ function CorrectionImpact({ master, id }: { master: Master; id: string }) {
   );
   const selected = eligible.find((season) => season.id === seasonId) ?? eligible[0];
   return (
-    <section className={reviewCss.review} aria-label="Nghiệp vụ cần rà soát">
+    <section
+      className={`${reviewCss.review} ${reviewCss.impactReview}`}
+      aria-label="Nghiệp vụ cần rà soát"
+    >
       <strong>Nghiệp vụ cần rà soát</strong>
       <ListFeedback
         loading={seasons.loading}

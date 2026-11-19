@@ -1,0 +1,87 @@
+{
+  "baseline": "eb6fbddec8545bbf8f84ef899213e797b738ee6c",
+  "scope": "Final targeted visual polish, followed by the separately approved welcome/access mockup implementation on 2026-11-20",
+  "files": [
+    {
+      "path": "frontend/src/features/accounts/Administration.module.css",
+      "sha256": "788a6b6db33ea7f3533d6d79a0e71aae28530b26fecfd8cbbe42eb481c7ca06c"
+    },
+    {
+      "path": "frontend/src/features/accounts/AdministrationLayout.tsx",
+      "sha256": "a3d4cb08e8111b1ec3c091691b4c3731a598948cf9bfc58bf75afc84cb1dc813"
+    },
+    {
+      "path": "frontend/src/features/accounts/WorkspaceDialog.module.css",
+      "sha256": "6038b6fcf57ea305724f97976ec3c63b3a22cf7df9a449433b2d3ffb9f39836b"
+    },
+    {
+      "path": "frontend/src/features/auth/Auth.module.css",
+      "sha256": "db761fc352021e971e52f0de01b149d04a1df8f9cd3882e4307d7cff1ad8780d"
+    },
+    {
+      "path": "frontend/src/features/auth/AuthLayout.tsx",
+      "sha256": "d85539abdc63b68c7d9fdd0334cd90d540b3cc9a232975cd1b74db87fc58d3db"
+    },
+    {
+      "path": "frontend/src/features/auth/LoginPage.tsx",
+      "sha256": "ed91ff87321c5d35c1522577e77e494b59145dff056c3e4b3976e92691a6d31f"
+    },
+    {
+      "path": "frontend/src/features/masters/MasterForms.module.css",
+      "sha256": "96fc21cf8ca62db1f30b89569298af263c8c67e7eeb0d2942eb061a1971f6c33"
+    },
+    {
+      "path": "frontend/src/features/masters/MasterForms.tsx",
+      "sha256": "f93aaecaa660426a718975c9977a492349f13c530c5badf49a7ccdccc03251d0"
+    },
+    {
+      "path": "frontend/src/features/regulations/RegulationVersionsPage.module.css",
+      "sha256": "798b1f653269febd940153746c53dd87031a9379c95976cea51f6a4dea67bd09"
+    },
+    {
+      "path": "frontend/tests/administration.spec.tsx",
+      "sha256": "aba7d78cecc2875711f806d6a34247c47e30422c74a419cb0d5e793ef3ff603c"
+    },
+    {
+      "path": "frontend/tests/audit-page.spec.tsx",
+      "sha256": "09e9ebdf68149aa58ca2f21e9d40a9aa87b4155dfb6dc43d815c257d92921a3e"
+    },
+    {
+      "path": "frontend/tests/phase-2-regulations.spec.tsx",
+      "sha256": "3a4d00da7be7a0520fe3949c6787069cb1b26c472a69f47dbb5b316a156ba665"
+    },
+    {
+      "path": "frontend/tests/phase-2-season-create.spec.tsx",
+      "sha256": "4f38c8fc5116b804f82369a790de334b9f909251fb4a174e83a6b1bd64bd60ce"
+    },
+    {
+      "path": "tests/e2e/administration.spec.ts",
+      "sha256": "2edf0dfae9263aaab13d124b98bc84429ff52b19363ccfc54682ea3bd1ce11ab"
+    },
+    {
+      "path": "tests/e2e/audit.spec.ts",
+      "sha256": "ab8bdb47b0d353c99d4818eb4e49f565522f1b48ecbb0b24f8dabef3881adcae"
+    },
+    {
+      "path": "tests/e2e/phase-2-masters.spec.ts",
+      "sha256": "b1572e5d60ec302e6e383732db462b1936430bb038115fee5bbde09d0282e701"
+    }
+  ],
+  "preservedControls": [
+    {
+      "path": "frontend/src/features/accounts/AdminSelect.tsx",
+      "sha256": "5b0aabc14f81f6ecfce36d134df246e51e3b8bbbacdf4b2d36fe3aa6eacb3f9b",
+      "unchangedFromBaseline": true
+    },
+    {
+      "path": "frontend/src/shared/DatePickers.tsx",
+      "sha256": "57b55cb941b309f105e530b6db6fb3fafb15c6f5c1af188451c9ae3625d6315f",
+      "unchangedFromBaseline": true
+    },
+    {
+      "path": "frontend/src/shared/date-format.ts",
+      "sha256": "541d89c1fa07b96b58e5a8289e55578ffe6f0537facd8c2ed3f58790fa4edc42",
+      "unchangedFromBaseline": true
+    }
+  ]
+}

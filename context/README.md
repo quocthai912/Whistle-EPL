@@ -36,7 +36,7 @@ One evolving, English-only Context Package is maintained in this directory for h
 | Media or future external APIs | [Media](design/media.md), [integration](design/integrations.md) |
 | Quality, acceptance or Phase selection | [Quality](quality.md), [Progress Checker](progress-checker.md) |
 | Current administration/authentication UI and search/filter verification | [UI refinement evidence](../docs/verification/phase-1/ui-refinement.md), [REST contract](../specs/001-phase-1-operational-foundation/contracts/rest.md) |
-| Post-acceptance PHASE 1–2 visual review and local UI refinement | [Final review follow-up](../docs/verification/phase-2/ui-final-review.md), [first refinement evidence](../docs/verification/phase-2/ui-review-refinement.md) |
+| Post-acceptance PHASE 1–2 visual review and local UI refinement | [Final targeted polish](../docs/verification/phase-2/ui-final-polish.md), [final review follow-up](../docs/verification/phase-2/ui-final-review.md), [first refinement evidence](../docs/verification/phase-2/ui-review-refinement.md) |
 | Implemented PHASE 1 audit before/after fields and latest regression | [Audit field catalog](../specs/001-phase-1-operational-foundation/contracts/rest.md#phase-1-audit-change-summaries), [2026-11-08 regression](../docs/verification/phase-1/ui-refinement.md#audit-completeness-and-full-regression--2026-11-08) |
 | CI/merge policy or PHASE 1 preparation readiness | [D098](design/architecture.md#d098---required-ci-and-protected-integration-branches), [readiness](progress-checker.md#phase-1-specification-readiness-and-foundation-verification) |
 | Unresolved work | [Open decisions](open-decisions.md) |

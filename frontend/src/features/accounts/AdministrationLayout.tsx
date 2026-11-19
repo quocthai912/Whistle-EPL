@@ -37,6 +37,14 @@ export default function AdministrationLayout({
   const hasSeasonRole = !!session?.seasonRoles?.length || manager;
   const canCreateSeason = !!session?.canCreateSeason;
   const regulationSeasonIds = regulationSeasonScope(session);
+  const hasWorkspaceAccess = !!(
+    admin ||
+    hasSeasonRole ||
+    canCreateSeason ||
+    canReadClubs ||
+    canReadStadiums ||
+    regulationSeasonIds.size
+  );
   const permitted =
     page === 'home'
       ? true
@@ -137,20 +145,26 @@ export default function AdministrationLayout({
       <main className={css.workspace}>
         {permitted ? (
           page === 'home' ? (
-            <section className={`${css.panel} ${css.homePanel}`}>
-              <h1>Xin chào, {session?.account.fullName}.</h1>
-              <p>Chọn chức năng trong thanh điều hướng để bắt đầu làm việc.</p>
-              {!admin &&
-                !hasSeasonRole &&
-                !canCreateSeason &&
-                !canReadClubs &&
-                !canReadStadiums && (
-                  <p className={css.notice}>
-                    Tài khoản chưa được phân công quyền nghiệp vụ. Liên hệ Quản trị viên để được
-                    phân công.
-                  </p>
-                )}
-              <Link to="/change-password">Đổi mật khẩu</Link>
+            <section className={css.messagePanel}>
+              <div className={css.messageHeader}>
+                <span className={css.messageIcon} aria-hidden="true">
+                  <img src="/images/Whistle-EPL-Logo.png" alt="" />
+                </span>
+                <div>
+                  <p className={css.messageEyebrow}>KHÔNG GIAN LÀM VIỆC</p>
+                  <h1>Xin chào, {session?.account.fullName}.</h1>
+                </div>
+              </div>
+              <p className={css.messageDescription}>
+                {hasWorkspaceAccess
+                  ? 'Chọn chức năng trong thanh điều hướng để bắt đầu làm việc.'
+                  : 'Tài khoản của bạn chưa được phân công quyền nghiệp vụ. Vui lòng liên hệ Quản trị viên để được phân công.'}
+              </p>
+              <div className={css.messageActions}>
+                <Link to="/change-password" className={css.workspaceLink}>
+                  Đổi mật khẩu
+                </Link>
+              </div>
             </section>
           ) : page === 'audit' ? (
             <AuditPage />
@@ -168,13 +182,25 @@ export default function AdministrationLayout({
             <SeasonsPage />
           )
         ) : (
-          <section className={css.panel}>
-            <h1>Chức năng cần quyền được phân công</h1>
-            <p role="alert">
-              Bạn đã đăng nhập. Chức năng này yêu cầu quyền riêng; liên hệ Quản trị viên nếu cần sử
-              dụng.
+          <section className={css.messagePanel}>
+            <div className={css.messageHeader}>
+              <span className={css.messageIcon} aria-hidden="true">
+                <img src="/images/Whistle-EPL-Logo.png" alt="" />
+              </span>
+              <div>
+                <p className={css.messageEyebrow}>QUYỀN TRUY CẬP</p>
+                <h1>Bạn chưa có quyền truy cập</h1>
+              </div>
+            </div>
+            <p className={css.messageDescription} role="alert">
+              Chức năng này yêu cầu quyền được phân công. Vui lòng liên hệ Quản trị viên nếu bạn cần
+              sử dụng.
             </p>
-            <NavLink to="/internal">Về trang làm việc</NavLink>
+            <div className={css.messageActions}>
+              <NavLink to="/internal" className={css.workspaceLink}>
+                <span aria-hidden="true">←</span> Về trang làm việc
+              </NavLink>
+            </div>
           </section>
         )}
       </main>

@@ -24,7 +24,7 @@ it('denies direct audit navigation without requesting records for ordinary accou
   vi.stubGlobal('fetch', fetcher);
   openAudit();
   await screen.findByText(
-    'Bạn đã đăng nhập. Chức năng này yêu cầu quyền riêng; liên hệ Quản trị viên nếu cần sử dụng.',
+    'Chức năng này yêu cầu quyền được phân công. Vui lòng liên hệ Quản trị viên nếu bạn cần sử dụng.',
     undefined,
     { timeout: 5000 },
   );

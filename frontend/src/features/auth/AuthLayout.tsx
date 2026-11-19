@@ -14,13 +14,17 @@ export function AuthLayout({
   children,
   change = false,
   action,
+  recovery = false,
 }: {
   children: ReactNode;
   change?: boolean;
   action?: ReactNode;
+  recovery?: boolean;
 }) {
   return (
-    <div className={`${styles.page} ${change ? styles.change : ''}`}>
+    <div
+      className={`${styles.page} ${change ? styles.change : ''} ${recovery ? styles.recovery : ''}`}
+    >
       <header className={styles.header}>
         <div className={styles.brand}>
           <img src="/images/Whistle-EPL-Logo.png" alt="Whistle-EPL Logo" />

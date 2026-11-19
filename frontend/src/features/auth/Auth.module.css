@@ -502,6 +502,12 @@
   flex: 1;
   justify-content: center;
 }
+.recovery .visualContent .strips {
+  flex: 0 0 auto;
+}
+.recovery .visualContent > p {
+  margin: 8px 0 0;
+}
 .logoutGroup {
   position: relative;
   flex-shrink: 0;

@@ -100,7 +100,7 @@ test('administrator-only status does not grant season discovery or creation', as
 
   expect(
     await screen.findByText(
-      'Bạn đã đăng nhập. Chức năng này yêu cầu quyền riêng; liên hệ Quản trị viên nếu cần sử dụng.',
+      'Chức năng này yêu cầu quyền được phân công. Vui lòng liên hệ Quản trị viên nếu bạn cần sử dụng.',
       undefined,
       wait,
     ),
@@ -288,7 +288,8 @@ test('date order is checked locally and invalid values remain available for corr
   expect(within(dialog).getByLabelText(/^Ngày bắt đầu \*/)).toHaveValue('23/05/2029');
   expect(within(dialog).getByLabelText(/^Ngày kết thúc \*/)).toHaveValue('15/08/2028');
   expect(fetcher.mock.calls.map(([path]) => path)).toEqual(['/api/v1/auth/session']);
-});
+  // Two date-validation cycles exceed the default 5s in isolated Windows JSDOM.
+}, 15_000);
 
 test.each(['ß', 'ſ'])(
   'season codes reject non-ASCII characters before uppercase conversion: %s',

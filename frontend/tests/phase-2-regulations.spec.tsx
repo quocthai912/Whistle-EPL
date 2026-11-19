@@ -676,7 +676,8 @@ test('revision conflict keeps draft values and requires review before rebasing a
     wait,
   );
   expect(patches).toHaveLength(2);
-}, 15_000);
+  // Full editor and picker interactions exceed 15s in isolated Windows JSDOM runs.
+}, 30_000);
 
 test('action confirmation stays on its reviewed version across refresh and cancels on selection change', async () => {
   const secondVersionId = '00000000-0000-4000-8000-000000000094';

@@ -1035,20 +1035,106 @@
   }
 }
 
-.homePanel {
-  min-height: 480px;
-  position: relative;
-  isolation: isolate;
-  overflow: hidden;
+.messagePanel {
+  width: min(100%, 720px);
+  margin: 32px auto 0;
+  padding: 32px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: white;
+  box-shadow: 0 2px 8px #17213b06;
 }
-.homePanel::after {
-  content: '';
-  position: absolute;
-  z-index: -1;
-  inset: 130px 0 0;
-  background: url('/images/Whistle-EPL-Lion-Background.svg#auth') center / contain no-repeat;
-  opacity: 0.8;
-  pointer-events: none;
+.messageHeader {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+.messageHeader > div {
+  min-width: 0;
+}
+.messageIcon {
+  display: flex;
+  flex: 0 0 56px;
+  width: 56px;
+  height: 56px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  background: white;
+}
+.messageIcon img {
+  width: 38px;
+  height: 38px;
+  object-fit: contain;
+}
+.messageEyebrow {
+  margin: 0 0 6px;
+  color: #552cb6;
+  font-size: 12px;
+  font-weight: 600;
+}
+.messageHeader h1 {
+  margin: 0;
+  font-size: 24px;
+  line-height: 1.45;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+.messageDescription {
+  margin: 24px 0;
+  color: #65718a;
+  font-size: 15px;
+  line-height: 1.7;
+}
+.messageActions {
+  padding-top: 20px;
+  border-top: 1px solid var(--line);
+}
+.workspaceLink {
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: center;
+  min-height: 42px;
+  padding: 9px 16px;
+  border: 1px solid #552cb6;
+  border-radius: 8px;
+  color: white;
+  background: #552cb6;
+  font: inherit;
+  font-weight: 600;
+  text-decoration: none;
+}
+.workspaceLink:hover {
+  color: white;
+  background: #452196;
+  border-color: #452196;
+}
+.workspaceLink:focus-visible {
+  outline: 2px solid #8663d8;
+  outline-offset: 3px;
+}
+@media (max-width: 600px) {
+  .messagePanel {
+    margin-top: 12px;
+    padding: 24px;
+  }
+  .messageHeader {
+    align-items: flex-start;
+    gap: 14px;
+  }
+  .messageHeader h1 {
+    font-size: 21px;
+  }
+  .messageIcon {
+    flex-basis: 44px;
+    width: 44px;
+    height: 44px;
+  }
+  .messageIcon img {
+    width: 30px;
+    height: 30px;
+  }
 }
 .details > details {
   margin-top: 0;

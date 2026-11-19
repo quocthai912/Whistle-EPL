@@ -17,6 +17,15 @@
   border: 1px solid #e3e7f2;
   border-radius: 10px;
 }
+.impactReview {
+  display: grid;
+  gap: 16px;
+  padding: 20px;
+}
+.impactReview > p,
+.impactReview > ul {
+  margin: 0;
+}
 .review {
   background: #f6f3fc;
   overflow-wrap: anywhere;

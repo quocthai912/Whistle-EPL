@@ -12,11 +12,13 @@
   border: 1px solid #e3e7f2;
   border-radius: 14px;
 }
-.dialog :global(.ant-modal-header) {
+.dialog.dialog :global(.ant-modal-header) {
   margin: 0;
   padding: 20px 24px;
   background: #f2f4f8;
   border-bottom: 1px solid #e3e7f2;
+  overflow-y: hidden;
+  scrollbar-gutter: stable both-edges;
 }
 .dialog :global(.ant-modal-title) {
   padding-right: 28px;
@@ -26,17 +28,19 @@
     sans-serif;
   color: #17213b;
 }
-.dialog :global(.ant-modal-body) {
+.dialog.dialog :global(.ant-modal-body) {
   padding: 24px;
   box-sizing: border-box;
   max-height: calc(100dvh - 160px);
-  scrollbar-gutter: stable;
+  scrollbar-gutter: stable both-edges;
   overflow-y: auto;
 }
-.dialog :global(.ant-modal-footer) {
+.dialog.dialog :global(.ant-modal-footer) {
   margin: 0;
   padding: 16px 24px;
   border-top: 1px solid #e3e7f2;
+  overflow-y: hidden;
+  scrollbar-gutter: stable both-edges;
 }
 .dialog form {
   display: grid;
