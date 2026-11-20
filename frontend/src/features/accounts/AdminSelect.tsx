@@ -11,6 +11,7 @@ export function AdminSelect({
   disabled,
   required,
   hideLabel = true,
+  searchable = false,
   className,
 }: {
   label: string;
@@ -20,6 +21,7 @@ export function AdminSelect({
   disabled?: boolean;
   required?: boolean;
   hideLabel?: boolean;
+  searchable?: boolean;
   className?: string;
 }) {
   const id = useId();
@@ -44,7 +46,17 @@ export function AdminSelect({
             root: { minWidth: 'min(220px, calc(100vw - 24px))', maxWidth: 'calc(100vw - 24px)' },
           },
         }}
-        showSearch={false}
+        showSearch={
+          searchable
+            ? {
+                optionFilterProp: 'label',
+                filterOption: (input, option) =>
+                  String(option?.label ?? '')
+                    .toLowerCase()
+                    .includes(input.trim().toLowerCase()),
+              }
+            : false
+        }
         notFoundContent="Không có lựa chọn phù hợp"
       />
     </div>

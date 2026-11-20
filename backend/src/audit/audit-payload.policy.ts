@@ -175,6 +175,61 @@ const businessPolicies = {
   MEDIA_ASSET_REPLACED: ['assetId', 'previousAssetId', 'currentAssetId', 'ownerKind', 'ownerId'],
   MEDIA_ASSET_DETACHED: ['assetId', 'currentAssetId', 'ownerKind', 'ownerId'],
   MEDIA_ASSET_CLEANED: ['assetId', 'contentDeletedAt'],
+  PLAYER_CREATED: ['code', 'fullName', 'birthDate', 'nationalityCode', 'positionCode'],
+  PLAYER_UPDATED: ['fullName', 'birthDate', 'nationalityCode', 'positionCode'],
+  PLAYER_CORRECTED: [
+    'fullName',
+    'birthDate',
+    'nationalityCode',
+    'positionCode',
+    'correctionBasis',
+    'duplicateReviewReason',
+  ],
+  CLUB_APPLICATION_DRAFT_CREATED: ['caseId', 'clubId', 'versionId', 'versionNumber', 'state'],
+  CLUB_APPLICATION_DRAFT_UPDATED: ['caseId', 'versionId', 'versionNumber', 'state', 'revision'],
+  CLUB_APPLICATION_RECEIVED: [
+    'caseId',
+    'versionId',
+    'versionNumber',
+    'state',
+    'receivedAt',
+    'receiptTimingStatus',
+    'receiptRegulationVersionId',
+  ],
+  CLUB_APPLICATION_SUBMITTED: ['caseId', 'versionId', 'versionNumber', 'state', 'submittedAt'],
+  CLUB_APPLICATION_RETURNED: ['caseId', 'versionId', 'versionNumber', 'state', 'decidedAt'],
+  CLUB_APPLICATION_WITHDRAWN: ['caseId', 'versionId', 'versionNumber', 'state', 'decidedAt'],
+  CLUB_APPLICATION_CANCELLED: ['caseId', 'versionId', 'versionNumber', 'state', 'decidedAt'],
+  CLUB_APPLICATION_REJECTED: ['caseId', 'versionId', 'versionNumber', 'state', 'decidedAt'],
+  CLUB_APPLICATION_APPROVED: [
+    'caseId',
+    'versionId',
+    'versionNumber',
+    'state',
+    'approvedAt',
+    'approvalRegulationVersionId',
+    'receiptExceptionVersionId',
+  ],
+  RECEIPT_EXCEPTION_DRAFT_CREATED: [
+    'caseId',
+    'versionId',
+    'versionNumber',
+    'state',
+    'targetKind',
+    'targetVersionId',
+  ],
+  RECEIPT_EXCEPTION_SUBMITTED: ['caseId', 'versionId', 'versionNumber', 'state', 'targetVersionId'],
+  RECEIPT_EXCEPTION_RETURNED: ['caseId', 'versionId', 'versionNumber', 'state', 'targetVersionId'],
+  RECEIPT_EXCEPTION_WITHDRAWN: ['caseId', 'versionId', 'versionNumber', 'state', 'targetVersionId'],
+  RECEIPT_EXCEPTION_REJECTED: ['caseId', 'versionId', 'versionNumber', 'state', 'targetVersionId'],
+  RECEIPT_EXCEPTION_APPROVED: [
+    'caseId',
+    'versionId',
+    'versionNumber',
+    'state',
+    'targetVersionId',
+    'approvedAt',
+  ],
 } as const;
 const policies = { ...existingPolicies, ...businessPolicies } as const;
 export type AuditAction = keyof typeof policies;
@@ -187,6 +242,9 @@ export const businessHistoryKinds = [
   'Club',
   'Stadium',
   'MediaAsset',
+  'Player',
+  'ClubApplication',
+  'ReceiptExceptionCase',
 ] as const;
 export type BusinessHistoryKind = (typeof businessHistoryKinds)[number];
 
@@ -229,6 +287,24 @@ const objectKindByAction: Partial<Record<AuditAction, BusinessHistoryKind>> = {
   MEDIA_ASSET_REPLACED: 'MediaAsset',
   MEDIA_ASSET_DETACHED: 'MediaAsset',
   MEDIA_ASSET_CLEANED: 'MediaAsset',
+  PLAYER_CREATED: 'Player',
+  PLAYER_UPDATED: 'Player',
+  PLAYER_CORRECTED: 'Player',
+  CLUB_APPLICATION_DRAFT_CREATED: 'ClubApplication',
+  CLUB_APPLICATION_DRAFT_UPDATED: 'ClubApplication',
+  CLUB_APPLICATION_RECEIVED: 'ClubApplication',
+  CLUB_APPLICATION_SUBMITTED: 'ClubApplication',
+  CLUB_APPLICATION_RETURNED: 'ClubApplication',
+  CLUB_APPLICATION_WITHDRAWN: 'ClubApplication',
+  CLUB_APPLICATION_CANCELLED: 'ClubApplication',
+  CLUB_APPLICATION_REJECTED: 'ClubApplication',
+  CLUB_APPLICATION_APPROVED: 'ClubApplication',
+  RECEIPT_EXCEPTION_DRAFT_CREATED: 'ReceiptExceptionCase',
+  RECEIPT_EXCEPTION_SUBMITTED: 'ReceiptExceptionCase',
+  RECEIPT_EXCEPTION_RETURNED: 'ReceiptExceptionCase',
+  RECEIPT_EXCEPTION_WITHDRAWN: 'ReceiptExceptionCase',
+  RECEIPT_EXCEPTION_REJECTED: 'ReceiptExceptionCase',
+  RECEIPT_EXCEPTION_APPROVED: 'ReceiptExceptionCase',
 };
 
 const requiredAfterFields: Partial<Record<AuditAction, readonly string[]>> = {
@@ -312,6 +388,34 @@ const requiredAfterFields: Partial<Record<AuditAction, readonly string[]>> = {
   MEDIA_ASSET_REPLACED: ['assetId', 'previousAssetId', 'currentAssetId', 'ownerKind', 'ownerId'],
   MEDIA_ASSET_DETACHED: ['assetId', 'currentAssetId', 'ownerKind', 'ownerId'],
   MEDIA_ASSET_CLEANED: ['assetId', 'contentDeletedAt'],
+  PLAYER_CREATED: ['code', 'fullName', 'birthDate', 'nationalityCode', 'positionCode'],
+  PLAYER_CORRECTED: ['correctionBasis'],
+  CLUB_APPLICATION_DRAFT_CREATED: ['caseId', 'clubId', 'versionId', 'versionNumber', 'state'],
+  CLUB_APPLICATION_RECEIVED: [
+    'caseId',
+    'versionId',
+    'versionNumber',
+    'state',
+    'receivedAt',
+    'receiptTimingStatus',
+    'receiptRegulationVersionId',
+  ],
+  CLUB_APPLICATION_APPROVED: [
+    'caseId',
+    'versionId',
+    'versionNumber',
+    'state',
+    'approvedAt',
+    'approvalRegulationVersionId',
+  ],
+  RECEIPT_EXCEPTION_APPROVED: [
+    'caseId',
+    'versionId',
+    'versionNumber',
+    'state',
+    'targetVersionId',
+    'approvedAt',
+  ],
 };
 
 const reasonRequired = new Set<AuditAction>([
@@ -333,6 +437,15 @@ const reasonRequired = new Set<AuditAction>([
   'STADIUM_RESUMED',
   'CLUB_CORRECTED',
   'STADIUM_CORRECTED',
+  'PLAYER_CORRECTED',
+  'CLUB_APPLICATION_RETURNED',
+  'CLUB_APPLICATION_CANCELLED',
+  'CLUB_APPLICATION_REJECTED',
+  'CLUB_APPLICATION_APPROVED',
+  'RECEIPT_EXCEPTION_SUBMITTED',
+  'RECEIPT_EXCEPTION_RETURNED',
+  'RECEIPT_EXCEPTION_REJECTED',
+  'RECEIPT_EXCEPTION_APPROVED',
 ]);
 const beforeRequired = new Set<AuditAction>([
   'SEASON_UPDATED',
@@ -362,6 +475,10 @@ const beforeRequired = new Set<AuditAction>([
   'MEDIA_ASSET_REPLACED',
   'MEDIA_ASSET_DETACHED',
   'MEDIA_ASSET_CLEANED',
+  'PLAYER_UPDATED',
+  'PLAYER_CORRECTED',
+  'CLUB_APPLICATION_APPROVED',
+  'RECEIPT_EXCEPTION_APPROVED',
 ]);
 
 const allowedActorKinds: Partial<
@@ -421,7 +538,7 @@ function advancesVersionRevision(before: Record<string, unknown>, after: Record<
 }
 
 function validateMasterSummary(
-  kind: 'Season' | 'Club' | 'Stadium',
+  kind: 'Season' | 'Club' | 'Stadium' | 'Player',
   payload: Record<string, unknown>,
   action: AuditAction,
   after = true,
@@ -452,6 +569,25 @@ function validateMasterSummary(
       (!after && hasBasis)
     )
       throw new Error('Club correction summaries require a bounded basis.');
+    return;
+  }
+  if (kind === 'Player') {
+    if (
+      ('code' in payload && !boundedText(payload.code, 32)) ||
+      ('fullName' in payload && !boundedText(payload.fullName, 200)) ||
+      ('birthDate' in payload && !validDateOnly(payload.birthDate)) ||
+      ('nationalityCode' in payload && !boundedText(payload.nationalityCode, 32)) ||
+      ('positionCode' in payload && !boundedText(payload.positionCode, 16)) ||
+      ('correctionBasis' in payload && !boundedText(payload.correctionBasis, 2000))
+    )
+      throw new Error('Player audit summaries require bounded typed fields.');
+    const hasBasis = Object.hasOwn(payload, 'correctionBasis');
+    if (
+      (after && action === 'PLAYER_CORRECTED' && !hasBasis) ||
+      (after && action !== 'PLAYER_CORRECTED' && hasBasis) ||
+      (!after && hasBasis)
+    )
+      throw new Error('Player correction summaries require a bounded basis.');
     return;
   }
   if (
@@ -500,9 +636,13 @@ export function validateAuditEvent(event: {
     if (event.seasonId !== event.objectId)
       throw new Error('Season audit events require their exact season reference.');
   } else if (
-    ['RegulationVersion', 'RegulationChangeRequest', 'SeasonLifecycleRequest'].includes(
-      event.objectKind,
-    ) &&
+    [
+      'RegulationVersion',
+      'RegulationChangeRequest',
+      'SeasonLifecycleRequest',
+      'ClubApplication',
+      'ReceiptExceptionCase',
+    ].includes(event.objectKind) &&
     (!event.seasonId || !UUID4.test(event.seasonId))
   ) {
     throw new Error('Season-scoped business audit events require a season reference.');
@@ -711,6 +851,16 @@ export function validateAuditEvent(event: {
         if (!isRecord(event.before) || !sameChangedFieldKeys(event.before, after))
           throw new Error('Stadium update summaries must describe matching changed fields.');
         validateMasterSummary('Stadium', event.before, event.action, false);
+      }
+      break;
+    case 'PLAYER_CREATED':
+    case 'PLAYER_UPDATED':
+    case 'PLAYER_CORRECTED':
+      validateMasterSummary('Player', after, event.action);
+      if (event.action !== 'PLAYER_CREATED') {
+        if (!isRecord(event.before) || !sameChangedFieldKeys(event.before, after))
+          throw new Error('Player update summaries must describe matching changed fields.');
+        validateMasterSummary('Player', event.before, event.action, false);
       }
       break;
     case 'CLUB_RESUMED':
