@@ -6,6 +6,7 @@ import { ApplicationError } from '../platform/application-error';
 import type { HttpBusinessExecutionAdapter } from '../platform/http-business-execution';
 import { MissingLockResource, type LockResource } from '../platform/transaction-context';
 import { requireClubRead, requireClubWrite } from '../registry-registration/clubs.service';
+import { requirePlayerMasterRead } from '../registry-registration/registration-execution';
 import { LocalMediaStore, mediaChecksum } from './local-media.store';
 import { normalizeClubLogo } from './media-validation';
 
@@ -156,28 +157,50 @@ export class MediaService {
         request,
         {
           locks: [],
-          authorize: requireClubRead,
+          authorize: async (context, accountId, now) => {
+            const asset = await context.db.mediaAsset.findUnique({
+              where: { id },
+              select: { clubId: true, playerId: true },
+            });
+            if (!asset) throw missing();
+            if (asset.clubId) {
+              await requireClubRead(context, accountId, now);
+              return;
+            }
+            if (asset.playerId) {
+              await requirePlayerMasterRead(context, accountId, now);
+              return;
+            }
+            throw missing();
+          },
           discover: async (db): Promise<LockResource[]> => {
             const asset = await db.mediaAsset.findUnique({
               where: { id },
-              select: { clubId: true },
+              select: { clubId: true, playerId: true },
             });
-            return asset
-              ? [
-                  { kind: 'club', key: asset.clubId, mode: 'shared' },
-                  { kind: 'mediaAsset', key: id, mode: 'shared' },
-                ]
-              : [];
+            if (!asset) return [];
+            const ownerLock: LockResource | null = asset.clubId
+              ? { kind: 'club', key: asset.clubId, mode: 'shared' }
+              : asset.playerId
+                ? { kind: 'player', key: asset.playerId, mode: 'shared' }
+                : null;
+            return ownerLock ? [ownerLock, { kind: 'mediaAsset', key: id, mode: 'shared' }] : [];
           },
         },
         async (context) => {
           const asset = await context.db.mediaAsset.findUnique({
             where: { id },
-            include: { club: { select: { currentLogoId: true } } },
+            include: {
+              club: { select: { currentLogoId: true } },
+              player: { select: { currentPortraitId: true } },
+            },
           });
+          const isCurrentClubLogo = !!asset?.clubId && asset.club?.currentLogoId === asset.id;
+          const isCurrentPlayerPortrait =
+            !!asset?.playerId && asset.player?.currentPortraitId === asset.id;
           if (
             !asset ||
-            asset.club.currentLogoId !== asset.id ||
+            (!isCurrentClubLogo && !isCurrentPlayerPortrait) ||
             asset.contentDeletedAt ||
             asset.unreferencedAt
           )
@@ -186,7 +209,9 @@ export class MediaService {
             throw new ApplicationError(
               503,
               'MEDIA_UNAVAILABLE',
-              'Tạm thời không thể truy cập nội dung logo.',
+              isCurrentPlayerPortrait
+                ? 'Tạm thời không thể truy cập nội dung ảnh chân dung.'
+                : 'Tạm thời không thể truy cập nội dung logo.',
             );
           return this.storage.read(asset.objectKey, asset.byteSize, asset.checksum);
         },

@@ -22,7 +22,16 @@ type LockKind =
   | 'seasonLifecycleVersion'
   | 'seasonSummaryCase'
   | 'seasonSummaryVersion'
-  | 'mediaAsset';
+  | 'mediaAsset'
+  | 'clubApplication'
+  | 'clubApplicationVersion'
+  | 'playerRegistration'
+  | 'registrationVersion'
+  | 'receiptExceptionCase'
+  | 'receiptExceptionVersion'
+  | 'registrationCorrectionCase'
+  | 'registrationCorrectionVersion'
+  | 'transferOperation';
 export type LockResource = {
   kind: LockKind;
   key: string;
@@ -107,6 +116,45 @@ const resources = {
     keyType: 'uuid',
   },
   mediaAsset: { order: 8, table: 'media_asset', column: 'id', keyType: 'uuid' },
+  clubApplication: { order: 8, table: 'club_application', column: 'id', keyType: 'uuid' },
+  clubApplicationVersion: {
+    order: 8,
+    table: 'club_application_version',
+    column: 'id',
+    keyType: 'uuid',
+  },
+  playerRegistration: { order: 8, table: 'player_registration', column: 'id', keyType: 'uuid' },
+  registrationVersion: {
+    order: 8,
+    table: 'registration_version',
+    column: 'id',
+    keyType: 'uuid',
+  },
+  receiptExceptionCase: {
+    order: 8,
+    table: 'receipt_exception_case',
+    column: 'id',
+    keyType: 'uuid',
+  },
+  receiptExceptionVersion: {
+    order: 8,
+    table: 'receipt_exception_version',
+    column: 'id',
+    keyType: 'uuid',
+  },
+  registrationCorrectionCase: {
+    order: 8,
+    table: 'registration_correction_case',
+    column: 'id',
+    keyType: 'uuid',
+  },
+  registrationCorrectionVersion: {
+    order: 8,
+    table: 'registration_correction_version',
+    column: 'id',
+    keyType: 'uuid',
+  },
+  transferOperation: { order: 8, table: 'transfer_operation', column: 'id', keyType: 'uuid' },
 } as const;
 
 const UUID4 = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;

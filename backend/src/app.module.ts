@@ -44,9 +44,20 @@ import { RegulationDecisionService } from './season-regulations/regulation-decis
 import { RegulationJobsService } from './season-regulations/regulation-jobs.service';
 import { RegulationChangesController } from './season-regulations/regulation-changes.controller';
 import { RegulationChangeService } from './season-regulations/regulation-change.service';
+import { registryRegistrationDependencyModule } from './registry-registration/registration-dependency-facts';
+import { ReceiptExceptionsController } from './registry-registration/receipt-exceptions.controller';
+import { RegistrationIntakeService } from './registry-registration/registration-intake.service';
+import { ClubApplicationsController } from './registry-registration/club-applications.controller';
+import { ClubApplicationsService } from './registry-registration/club-applications.service';
+import { PlayersController } from './registry-registration/players.controller';
+import { PlayersService } from './registry-registration/players.service';
+import { PlayerPortraitsController } from './registry-registration/player-portraits.controller';
+import { PlayerPortraitsService } from './registry-registration/player-portraits.service';
 
-// Later Phase writer modules remain deliberately absent until their workflows are implemented.
-const installedDependencyModules: readonly DependencyModuleRegistration[] = [];
+// Register live PHASE 3 dependency facts before exposing owning writers; later phases remain absent.
+const installedDependencyModules: readonly DependencyModuleRegistration[] = [
+  registryRegistrationDependencyModule,
+];
 
 /** Builds the current static source catalog and checks it when a database is configured. */
 export async function createSeasonDependenciesService(
@@ -107,8 +118,56 @@ class ReadinessController {
     MediaController,
     RegulationsController,
     RegulationChangesController,
+    ReceiptExceptionsController,
+    ClubApplicationsController,
+    PlayersController,
+    PlayerPortraitsController,
   ],
   providers: [
+    {
+      provide: PlayersService,
+      inject: [HttpBusinessExecutionAdapter, AuditWriterService, BusinessHistoryService],
+      useFactory: (
+        execution: HttpBusinessExecutionAdapter,
+        audit: AuditWriterService,
+        history: BusinessHistoryService,
+      ) => new PlayersService(execution, audit, history),
+    },
+    {
+      provide: PlayerPortraitsService,
+      inject: [HttpBusinessExecutionAdapter, AuditWriterService, LocalMediaStore],
+      useFactory: (
+        execution: HttpBusinessExecutionAdapter,
+        audit: AuditWriterService,
+        storage: LocalMediaStore,
+      ) => new PlayerPortraitsService(execution, audit, storage),
+    },
+    {
+      provide: RegistrationIntakeService,
+      inject: [HttpBusinessExecutionAdapter, RegulationActivationService, AuditWriterService],
+      useFactory: (
+        execution: HttpBusinessExecutionAdapter,
+        activation: RegulationActivationService,
+        audit: AuditWriterService,
+      ) => new RegistrationIntakeService(execution, activation, audit),
+    },
+    {
+      provide: ClubApplicationsService,
+      inject: [
+        HttpBusinessExecutionAdapter,
+        RegulationActivationService,
+        RegistrationIntakeService,
+        AuditWriterService,
+        BusinessHistoryService,
+      ],
+      useFactory: (
+        execution: HttpBusinessExecutionAdapter,
+        activation: RegulationActivationService,
+        intake: RegistrationIntakeService,
+        audit: AuditWriterService,
+        history: BusinessHistoryService,
+      ) => new ClubApplicationsService(execution, activation, intake, audit, history),
+    },
     {
       provide: MasterCorrectionImpactService,
       inject: [HttpBusinessExecutionAdapter, SeasonDependenciesService],

@@ -269,16 +269,29 @@ describe('PHASE 2 shared business execution security', () => {
 
   it('checks only installed source adapters at startup and leaves later owners unavailable', async () => {
     const dependencies = await createSeasonDependenciesService(database);
-    const discovery = await database.client.$transaction((context) =>
+    const installedDiscovery = await database.client.$transaction((context) =>
       dependencies.discover('registrationCompatibility', context, {
         seasonId: randomUUID(),
         candidateVersionId: randomUUID(),
       }),
     );
-    expect(discovery).toMatchObject({
+    expect(installedDiscovery).toMatchObject({
+      status: 'KNOWN',
+      basis: {
+        presentRelations: ['player_registration', 'registration_version'],
+        registeredWriters: ['registry-registration'],
+      },
+    });
+    const laterOwnerDiscovery = await database.client.$transaction((context) =>
+      dependencies.discover('scheduleFreeze', context, {
+        seasonId: randomUUID(),
+        candidateVersionId: randomUUID(),
+      }),
+    );
+    expect(laterOwnerDiscovery).toMatchObject({
       status: 'VERIFIED_NOT_INTRODUCED',
       basis: {
-        absentRelations: ['player_registration', 'registration_version'],
+        absentRelations: ['schedule_case', 'schedule_version', 'match'],
         registeredWriters: [],
       },
     });

@@ -53,9 +53,22 @@ model Account {
   lifecycleDecidedVersions         SeasonLifecycleVersion[]        @relation("lifecycleDecider")
   lifecycleVersionEdits            SeasonLifecycleVersionEditor[]  @relation("seasonLifecycleVersionEditorAccount")
   summaryPreparedVersions          SeasonSummaryVersion[]          @relation("summaryPreparer")
-  summaryDecidedVersions           SeasonSummaryVersion[]          @relation("summaryDecider")
-  summaryVersionEdits              SeasonSummaryVersionEditor[]    @relation("seasonSummaryVersionEditorAccount")
-  storedMediaAssets                MediaAsset[]                    @relation("mediaAssetStoredBy")
+  summaryDecidedVersions              SeasonSummaryVersion[]                @relation("summaryDecider")
+  summaryVersionEdits                 SeasonSummaryVersionEditor[]          @relation("seasonSummaryVersionEditorAccount")
+  storedMediaAssets                   MediaAsset[]                          @relation("mediaAssetStoredBy")
+  clubApplicationPreparedVersions     ClubApplicationVersion[]              @relation("clubAppPreparer")
+  clubApplicationDecidedVersions      ClubApplicationVersion[]              @relation("clubAppDecider")
+  clubApplicationVersionEdits         ClubApplicationVersionEditor[]        @relation("clubAppVersionEditorAccount")
+  registrationPreparedVersions        RegistrationVersion[]                 @relation("registrationPreparer")
+  registrationDecidedVersions         RegistrationVersion[]                 @relation("registrationDecider")
+  registrationVerifiedVersions        RegistrationVersion[]                 @relation("registrationVerifier")
+  transferOperations                  TransferOperation[]                   @relation("transferActor")
+  receiptExceptionPreparedVersions    ReceiptExceptionVersion[]             @relation("receiptExceptionPreparer")
+  receiptExceptionDecidedVersions     ReceiptExceptionVersion[]             @relation("receiptExceptionDecider")
+  receiptExceptionVersionEdits        ReceiptExceptionVersionEditor[]       @relation("receiptExceptionVersionEditorAccount")
+  registrationCorrectionPrepared      RegistrationCorrectionVersion[]       @relation("registrationCorrectionPreparer")
+  registrationCorrectionDecided       RegistrationCorrectionVersion[]       @relation("registrationCorrectionDecider")
+  registrationCorrectionVersionEdits  RegistrationCorrectionVersionEditor[] @relation("registrationCorrectionVersionEditorAccount")
 
   @@map("account")
 }
@@ -131,9 +144,13 @@ model Season {
   regulationCase             RegulationCase?
   regulationVersions         RegulationVersion[]       @relation("seasonRegulationVersions")
   currentRegulationVersion   RegulationVersion?        @relation("seasonCurrentRegulation", fields: [id, currentRegulationVersionId], references: [seasonId, id], onDelete: NoAction, onUpdate: NoAction)
-  regulationChanges          RegulationChangeRequest[]
-  lifecycleRequests          SeasonLifecycleRequest[]
-  summaryCase                SeasonSummaryCase?
+  regulationChanges           RegulationChangeRequest[]
+  lifecycleRequests           SeasonLifecycleRequest[]
+  summaryCase                 SeasonSummaryCase?
+  clubApplications            ClubApplication[]
+  playerRegistrations         PlayerRegistration[]
+  receiptExceptionCases       ReceiptExceptionCase[]
+  registrationCorrectionCases RegistrationCorrectionCase[]
 
   @@unique([id, currentRegulationVersionId])
   @@map("season")
@@ -206,8 +223,13 @@ model RegulationVersion {
   rankingPriority           RankingPriority[]
   goalTypes                 GoalType[]
   cardTypes                 CardType[]
-  waitingChangeVersions     RegulationChangeVersion[] @relation("changeWaitingVersion")
-  replacementChangeVersions RegulationChangeVersion[] @relation("changeReplacementVersion")
+  waitingChangeVersions             RegulationChangeVersion[]       @relation("changeWaitingVersion")
+  replacementChangeVersions         RegulationChangeVersion[]       @relation("changeReplacementVersion")
+  clubApplicationReceiptVersions    ClubApplicationVersion[]        @relation("clubAppReceiptRegulation")
+  clubApplicationApprovalVersions   ClubApplicationVersion[]        @relation("clubAppApprovalRegulation")
+  registrationReceiptVersions       RegistrationVersion[]           @relation("registrationReceiptRegulation")
+  registrationDecisionVersions      RegistrationVersion[]           @relation("registrationDecisionRegulation")
+  registrationCorrectionSegments    RegistrationCorrectionSegment[] @relation("correctionSegmentRegulation")
 
   @@unique([caseId, versionNumber])
   @@unique([caseId, id])
@@ -231,13 +253,16 @@ model RegulationVersionEditor {
 }
 
 model RegistrationWindow {
-  id                  String            @id @default(uuid(4)) @db.Uuid
-  regulationVersionId String            @map("regulation_version_id") @db.Uuid
-  version             RegulationVersion @relation(fields: [regulationVersionId], references: [id], onDelete: Restrict, onUpdate: NoAction)
-  intakeKind          String            @map("intake_kind")
-  opensAt             DateTime          @map("opens_at") @db.Timestamptz(6)
-  closesAt            DateTime          @map("closes_at") @db.Timestamptz(6)
+  id                     String                   @id @default(uuid(4)) @db.Uuid
+  regulationVersionId    String                   @map("regulation_version_id") @db.Uuid
+  version                RegulationVersion        @relation(fields: [regulationVersionId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  intakeKind             String                   @map("intake_kind")
+  opensAt                DateTime                 @map("opens_at") @db.Timestamptz(6)
+  closesAt               DateTime                 @map("closes_at") @db.Timestamptz(6)
+  clubApplicationWindows ClubApplicationVersion[] @relation("clubAppReceiptWindow")
+  registrationWindows    RegistrationVersion[]    @relation("registrationReceiptWindow")
 
+  @@unique([regulationVersionId, id])
   @@index([regulationVersionId, intakeKind])
   @@map("registration_window")
 }
@@ -476,17 +501,19 @@ model SeasonSummaryVersionEditor {
 }
 
 model Club {
-  id             String       @id @default(uuid(4)) @db.Uuid
-  code           String       @unique
-  name           String
-  abbreviation   String
-  discontinuedAt DateTime?    @map("discontinued_at") @db.Timestamptz(6)
-  currentLogoId  String?      @map("current_logo_id") @db.Uuid
-  revision       BigInt       @default(1)
-  createdAt      DateTime     @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt      DateTime     @default(now()) @map("updated_at") @db.Timestamptz(6)
-  mediaAssets    MediaAsset[] @relation("clubMediaAssets")
-  currentLogo    MediaAsset?  @relation("clubCurrentLogo", fields: [id, currentLogoId], references: [clubId, id], onDelete: NoAction, onUpdate: NoAction)
+  id                  String               @id @default(uuid(4)) @db.Uuid
+  code                String               @unique
+  name                String
+  abbreviation        String
+  discontinuedAt      DateTime?            @map("discontinued_at") @db.Timestamptz(6)
+  currentLogoId       String?              @map("current_logo_id") @db.Uuid
+  revision            BigInt               @default(1)
+  createdAt           DateTime             @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt           DateTime             @default(now()) @map("updated_at") @db.Timestamptz(6)
+  mediaAssets         MediaAsset[]         @relation("clubMediaAssets")
+  currentLogo         MediaAsset?          @relation("clubCurrentLogo", fields: [id, currentLogoId], references: [clubId, id], onDelete: NoAction, onUpdate: NoAction)
+  clubApplications    ClubApplication[]
+  playerRegistrations PlayerRegistration[]
 
   @@unique([id, currentLogoId])
   @@index([name, id], map: "club_name_id_idx")
@@ -494,24 +521,474 @@ model Club {
 }
 
 model Stadium {
-  id             String    @id @default(uuid(4)) @db.Uuid
-  code           String    @unique
-  name           String
-  location       String?
-  discontinuedAt DateTime? @map("discontinued_at") @db.Timestamptz(6)
-  revision       BigInt    @default(1)
-  createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt      DateTime  @default(now()) @map("updated_at") @db.Timestamptz(6)
+  id                      String                   @id @default(uuid(4)) @db.Uuid
+  code                    String                   @unique
+  name                    String
+  location                String?
+  discontinuedAt          DateTime?                @map("discontinued_at") @db.Timestamptz(6)
+  revision                BigInt                   @default(1)
+  createdAt               DateTime                 @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt               DateTime                 @default(now()) @map("updated_at") @db.Timestamptz(6)
+  clubApplicationVersions ClubApplicationVersion[] @relation("clubAppHomeStadium")
 
   @@index([name, id], map: "stadium_name_id_idx")
   @@map("stadium")
 }
 
+model Position {
+  code            String   @id
+  displayName     String   @map("display_name")
+  vietnameseLabel String   @map("vietnamese_label")
+  catalogVersion  String   @map("catalog_version")
+  players         Player[]
+
+  @@map("position")
+}
+
+model Nationality {
+  code            String   @id
+  displayName     String   @map("display_name")
+  vietnameseLabel String   @map("vietnamese_label")
+  catalogVersion  String   @map("catalog_version")
+  players         Player[]
+
+  @@map("nationality")
+}
+
+model Player {
+  id                  String               @id @default(uuid(4)) @db.Uuid
+  code                String               @unique
+  fullName            String               @map("full_name")
+  birthDate           DateTime             @map("birth_date") @db.Date
+  nationalityCode     String               @map("nationality_code")
+  nationality         Nationality          @relation(fields: [nationalityCode], references: [code], onDelete: Restrict, onUpdate: NoAction)
+  positionCode        String               @map("position_code")
+  position            Position             @relation(fields: [positionCode], references: [code], onDelete: Restrict, onUpdate: NoAction)
+  currentPortraitId   String?              @map("current_portrait_id") @db.Uuid
+  revision            BigInt               @default(1)
+  createdAt           DateTime             @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt           DateTime             @default(now()) @map("updated_at") @db.Timestamptz(6)
+  mediaAssets         MediaAsset[]         @relation("playerMediaAssets")
+  currentPortrait     MediaAsset?          @relation("playerCurrentPortrait", fields: [id, currentPortraitId], references: [playerId, id], onDelete: NoAction, onUpdate: NoAction)
+  proposedItems       ProposedPlayerItem[]
+  playerRegistrations PlayerRegistration[]
+  transferOperations  TransferOperation[]
+
+  @@unique([id, currentPortraitId])
+  @@index([fullName, birthDate, nationalityCode], map: "player_duplicate_review_idx")
+  @@index([nationalityCode])
+  @@index([positionCode])
+  @@map("player")
+}
+
+model ClubApplication {
+  id                       String                   @id @default(uuid(4)) @db.Uuid
+  seasonId                 String                   @map("season_id") @db.Uuid
+  season                   Season                   @relation(fields: [seasonId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  clubId                   String                   @map("club_id") @db.Uuid
+  club                     Club                     @relation(fields: [clubId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  currentDraftVersionId    String?                  @map("current_draft_version_id") @db.Uuid
+  currentDraftVersion      ClubApplicationVersion?  @relation("clubAppCurrentDraft", fields: [id, currentDraftVersionId], references: [caseId, id], onDelete: NoAction, onUpdate: NoAction)
+  currentAcceptedVersionId String?                  @map("current_accepted_version_id") @db.Uuid
+  currentAcceptedVersion   ClubApplicationVersion?  @relation("clubAppCurrentAccepted", fields: [id, currentAcceptedVersionId], references: [caseId, id], onDelete: NoAction, onUpdate: NoAction)
+  versions                 ClubApplicationVersion[] @relation("clubAppCaseVersions")
+  revision                 BigInt                   @default(1)
+  createdAt                DateTime                 @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt                DateTime                 @default(now()) @map("updated_at") @db.Timestamptz(6)
+
+  @@unique([seasonId, clubId])
+  @@unique([seasonId, id])
+  @@unique([id, currentDraftVersionId])
+  @@unique([id, currentAcceptedVersionId])
+  @@index([clubId])
+  @@map("club_application")
+}
+
+model ClubApplicationVersion {
+  id                         String                         @id @default(uuid(4)) @db.Uuid
+  seasonId                   String                         @map("season_id") @db.Uuid
+  caseId                     String                         @map("case_id") @db.Uuid
+  application                ClubApplication                @relation("clubAppCaseVersions", fields: [seasonId, caseId], references: [seasonId, id], onDelete: Restrict, onUpdate: NoAction)
+  currentDraftFor            ClubApplication[]              @relation("clubAppCurrentDraft")
+  currentAcceptedFor         ClubApplication[]              @relation("clubAppCurrentAccepted")
+  versionNumber              Int                            @map("version_number")
+  versionKind                String                         @default("INITIAL") @map("version_kind")
+  preparedBy                 String                         @map("prepared_by") @db.Uuid
+  preparer                   Account                        @relation("clubAppPreparer", fields: [preparedBy], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  predecessorVersionId       String?                        @map("predecessor_version_id") @db.Uuid
+  predecessor                ClubApplicationVersion?        @relation("clubAppPredecessor", fields: [caseId, predecessorVersionId], references: [caseId, id], onDelete: NoAction, onUpdate: NoAction)
+  successors                 ClubApplicationVersion[]       @relation("clubAppPredecessor")
+  baseAcceptedVersionId      String?                        @map("base_accepted_version_id") @db.Uuid
+  baseAccepted               ClubApplicationVersion?        @relation("clubAppBaseAccepted", fields: [caseId, baseAcceptedVersionId], references: [caseId, id], onDelete: NoAction, onUpdate: NoAction)
+  correctionSuccessors       ClubApplicationVersion[]       @relation("clubAppBaseAccepted")
+  revision                   BigInt                         @default(1)
+  state                      String                         @default("DRAFT")
+  receivedAt                 DateTime?                      @map("received_at") @db.Timestamptz(6)
+  submittedAt                DateTime?                      @map("submitted_at") @db.Timestamptz(6)
+  decidedAt                  DateTime?                      @map("decided_at") @db.Timestamptz(6)
+  decidedBy                  String?                        @map("decided_by") @db.Uuid
+  decider                    Account?                       @relation("clubAppDecider", fields: [decidedBy], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  decisionReason             String?                        @map("decision_reason")
+  coachName                  String?                        @map("coach_name")
+  homeStadiumId              String?                        @map("home_stadium_id") @db.Uuid
+  homeStadium                Stadium?                       @relation("clubAppHomeStadium", fields: [homeStadiumId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  representativeName         String?                        @map("representative_name")
+  representativePhone        String?                        @map("representative_phone")
+  contactAddress             String?                        @map("contact_address")
+  notes                      String?
+  correctionReason           String?                        @map("correction_reason")
+  correctionEvidence         String?                        @map("correction_evidence")
+  affectedReferences         Json?                          @map("affected_references") @db.JsonB
+  receiptRegulationVersionId String?                        @map("receipt_regulation_version_id") @db.Uuid
+  receiptRegulationVersion   RegulationVersion?             @relation("clubAppReceiptRegulation", fields: [seasonId, receiptRegulationVersionId], references: [seasonId, id], onDelete: Restrict, onUpdate: NoAction)
+  receiptTimingStatus        String?                        @map("receipt_timing_status")
+  receiptWindowId            String?                        @map("receipt_window_id") @db.Uuid
+  receiptWindow              RegistrationWindow?            @relation("clubAppReceiptWindow", fields: [receiptRegulationVersionId, receiptWindowId], references: [regulationVersionId, id], onDelete: Restrict, onUpdate: NoAction)
+  approvalRegulationVersionId String?                       @map("approval_regulation_version_id") @db.Uuid
+  approvalRegulationVersion  RegulationVersion?             @relation("clubAppApprovalRegulation", fields: [seasonId, approvalRegulationVersionId], references: [seasonId, id], onDelete: Restrict, onUpdate: NoAction)
+  officialSnapshot           Json?                          @map("official_snapshot") @db.JsonB
+  createdAt                  DateTime                       @default(now()) @map("created_at") @db.Timestamptz(6)
+  editors                    ClubApplicationVersionEditor[]
+  proposedPlayers            ProposedPlayerItem[]
+  receiptExceptions          ReceiptExceptionVersion[]      @relation("receiptExceptionClubAppTarget")
+
+  @@unique([caseId, versionNumber])
+  @@unique([caseId, id])
+  @@unique([seasonId, id])
+  @@unique([seasonId, caseId, id])
+  @@index([seasonId, state])
+  @@index([preparedBy])
+  @@index([decidedBy])
+  @@index([homeStadiumId])
+  @@map("club_application_version")
+}
+
+model ClubApplicationVersionEditor {
+  versionId     String                 @map("version_id") @db.Uuid
+  version       ClubApplicationVersion @relation(fields: [versionId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  accountId     String                 @map("account_id") @db.Uuid
+  account       Account                @relation("clubAppVersionEditorAccount", fields: [accountId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  firstEditedAt DateTime               @default(now()) @map("first_edited_at") @db.Timestamptz(6)
+
+  @@id([versionId, accountId])
+  @@index([accountId])
+  @@map("club_application_version_editor")
+}
+
+model ProposedPlayerItem {
+  id                   String                 @id @default(uuid(4)) @db.Uuid
+  applicationVersionId String                 @map("application_version_id") @db.Uuid
+  applicationVersion   ClubApplicationVersion @relation(fields: [applicationVersionId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  playerId             String                 @map("player_id") @db.Uuid
+  player               Player                 @relation(fields: [playerId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  positionOrder        Int                    @map("position_order")
+  shirtNumber          Int?                   @map("shirt_number")
+  notes                String?
+
+  @@unique([applicationVersionId, playerId])
+  @@unique([applicationVersionId, positionOrder])
+  @@index([playerId])
+  @@map("proposed_player_item")
+}
+
+model PlayerRegistration {
+  id                        String                       @id @default(uuid(4)) @db.Uuid
+  seasonId                  String                       @map("season_id") @db.Uuid
+  season                    Season                       @relation(fields: [seasonId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  clubId                    String                       @map("club_id") @db.Uuid
+  club                      Club                         @relation(fields: [clubId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  playerId                  String                       @map("player_id") @db.Uuid
+  player                    Player                       @relation(fields: [playerId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  currentDraftVersionId     String?                      @map("current_draft_version_id") @db.Uuid
+  currentDraftVersion       RegistrationVersion?         @relation("registrationCurrentDraft", fields: [id, currentDraftVersionId], references: [caseId, id], onDelete: NoAction, onUpdate: NoAction)
+  currentValidatedVersionId String?                      @map("current_validated_version_id") @db.Uuid
+  currentValidatedVersion   RegistrationVersion?         @relation("registrationCurrentValidated", fields: [id, currentValidatedVersionId], references: [caseId, id], onDelete: NoAction, onUpdate: NoAction)
+  versions                  RegistrationVersion[]        @relation("registrationCaseVersions")
+  outgoingTransfers         TransferOperation[]          @relation("transferOldCase")
+  incomingTransfers         TransferOperation[]          @relation("transferNewCase")
+  correctionCases           RegistrationCorrectionCase[]
+  revision                  BigInt                       @default(1)
+  createdAt                 DateTime                     @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt                 DateTime                     @default(now()) @map("updated_at") @db.Timestamptz(6)
+
+  @@unique([seasonId, id])
+  @@unique([id, currentDraftVersionId])
+  @@unique([id, currentValidatedVersionId])
+  @@index([seasonId, clubId])
+  @@index([playerId, seasonId])
+  @@map("player_registration")
+}
+
+model RegistrationVersion {
+  id                          String                          @id @default(uuid(4)) @db.Uuid
+  seasonId                    String                          @map("season_id") @db.Uuid
+  caseId                      String                          @map("case_id") @db.Uuid
+  registration                PlayerRegistration              @relation("registrationCaseVersions", fields: [seasonId, caseId], references: [seasonId, id], onDelete: Restrict, onUpdate: NoAction)
+  currentDraftFor             PlayerRegistration[]            @relation("registrationCurrentDraft")
+  currentValidatedFor         PlayerRegistration[]            @relation("registrationCurrentValidated")
+  versionNumber               Int                             @map("version_number")
+  preparedBy                  String                          @map("prepared_by") @db.Uuid
+  preparer                    Account                         @relation("registrationPreparer", fields: [preparedBy], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  predecessorVersionId        String?                         @map("predecessor_version_id") @db.Uuid
+  predecessor                 RegistrationVersion?            @relation("registrationPredecessor", fields: [caseId, predecessorVersionId], references: [caseId, id], onDelete: NoAction, onUpdate: NoAction)
+  successors                  RegistrationVersion[]           @relation("registrationPredecessor")
+  revision                    BigInt                          @default(1)
+  state                       String                          @default("DRAFT")
+  receivedAt                  DateTime?                       @map("received_at") @db.Timestamptz(6)
+  submittedAt                 DateTime?                       @map("submitted_at") @db.Timestamptz(6)
+  decidedAt                   DateTime?                       @map("decided_at") @db.Timestamptz(6)
+  decidedBy                   String?                         @map("decided_by") @db.Uuid
+  decider                     Account?                        @relation("registrationDecider", fields: [decidedBy], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  decisionReason              String?                         @map("decision_reason")
+  shirtNumber                 Int?                            @map("shirt_number")
+  playingStart                DateTime?                       @map("playing_start") @db.Timestamptz(6)
+  playingEnd                  DateTime?                       @map("playing_end") @db.Timestamptz(6)
+  u21Finding                  Boolean?                        @map("u21_finding")
+  homegrownFinding            Boolean?                        @map("homegrown_finding")
+  nonHomegrownOptIn           Boolean                         @default(false) @map("non_homegrown_opt_in")
+  evidenceBranch              String?                         @map("evidence_branch")
+  qualifyingValue             Int?                            @map("qualifying_value")
+  evidenceSummary             String?                         @map("evidence_summary")
+  evidenceReference           String?                         @map("evidence_reference")
+  verifiedBy                  String?                         @map("verified_by") @db.Uuid
+  verifier                    Account?                        @relation("registrationVerifier", fields: [verifiedBy], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  verifiedAt                  DateTime?                       @map("verified_at") @db.Timestamptz(6)
+  receiptRegulationVersionId  String?                         @map("receipt_regulation_version_id") @db.Uuid
+  receiptRegulationVersion    RegulationVersion?              @relation("registrationReceiptRegulation", fields: [seasonId, receiptRegulationVersionId], references: [seasonId, id], onDelete: Restrict, onUpdate: NoAction)
+  receiptTimingStatus         String?                         @map("receipt_timing_status")
+  receiptWindowId             String?                         @map("receipt_window_id") @db.Uuid
+  receiptWindow               RegistrationWindow?             @relation("registrationReceiptWindow", fields: [receiptRegulationVersionId, receiptWindowId], references: [regulationVersionId, id], onDelete: Restrict, onUpdate: NoAction)
+  decisionRegulationVersionId String?                         @map("decision_regulation_version_id") @db.Uuid
+  decisionRegulationVersion   RegulationVersion?              @relation("registrationDecisionRegulation", fields: [seasonId, decisionRegulationVersionId], references: [seasonId, id], onDelete: Restrict, onUpdate: NoAction)
+  officialSnapshot            Json?                           @map("official_snapshot") @db.JsonB
+  playingDisposition          String?                         @map("playing_disposition")
+  notes                       String?
+  createdAt                   DateTime                        @default(now()) @map("created_at") @db.Timestamptz(6)
+  transferOldBefore           TransferOperation[]             @relation("transferOldBeforeVersion")
+  transferOldAfter            TransferOperation[]             @relation("transferOldAfterVersion")
+  transferNew                 TransferOperation[]             @relation("transferNewVersion")
+  receiptExceptions           ReceiptExceptionVersion[]       @relation("receiptExceptionRegistrationTarget")
+  correctionTargets           RegistrationCorrectionVersion[] @relation("correctionTargetVersion")
+  correctionProposals         RegistrationCorrectionVersion[] @relation("correctionProposedVersion")
+
+  @@unique([caseId, versionNumber])
+  @@unique([caseId, id])
+  @@unique([seasonId, id])
+  @@unique([seasonId, caseId, id])
+  @@index([seasonId, state, playingStart, playingEnd])
+  @@index([preparedBy])
+  @@index([decidedBy])
+  @@index([verifiedBy])
+  @@map("registration_version")
+}
+
+model TransferOperation {
+  id                    String              @id @default(uuid(4)) @db.Uuid
+  playerId              String              @map("player_id") @db.Uuid
+  player                Player              @relation(fields: [playerId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  oldCaseId             String              @map("old_case_id") @db.Uuid
+  oldCase               PlayerRegistration  @relation("transferOldCase", fields: [oldCaseId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  newCaseId             String              @map("new_case_id") @db.Uuid
+  newCase               PlayerRegistration  @relation("transferNewCase", fields: [newCaseId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  oldBeforeVersionId    String              @map("old_before_version_id") @db.Uuid
+  oldBeforeVersion      RegistrationVersion @relation("transferOldBeforeVersion", fields: [oldCaseId, oldBeforeVersionId], references: [caseId, id], onDelete: Restrict, onUpdate: NoAction)
+  oldAfterVersionId     String              @map("old_after_version_id") @db.Uuid
+  oldAfterVersion       RegistrationVersion @relation("transferOldAfterVersion", fields: [oldCaseId, oldAfterVersionId], references: [caseId, id], onDelete: Restrict, onUpdate: NoAction)
+  newVersionId          String              @map("new_version_id") @db.Uuid
+  newVersion            RegistrationVersion @relation("transferNewVersion", fields: [newCaseId, newVersionId], references: [caseId, id], onDelete: Restrict, onUpdate: NoAction)
+  effectiveAt           DateTime            @map("effective_at") @db.Timestamptz(6)
+  operationKind         String              @default("TRANSFER") @map("operation_kind")
+  reason                String
+  actorId               String              @map("actor_id") @db.Uuid
+  actor                 Account             @relation("transferActor", fields: [actorId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  supersedesOperationId String?             @map("supersedes_operation_id") @db.Uuid
+  supersedesOperation   TransferOperation?  @relation("transferSupersedes", fields: [supersedesOperationId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  supersededBy          TransferOperation[] @relation("transferSupersedes")
+  createdAt             DateTime            @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  @@index([playerId, createdAt])
+  @@index([oldCaseId])
+  @@index([newCaseId])
+  @@index([actorId])
+  @@map("transfer_operation")
+}
+
+model ReceiptExceptionCase {
+  id                String                    @id @default(uuid(4)) @db.Uuid
+  seasonId          String                    @map("season_id") @db.Uuid
+  season            Season                    @relation(fields: [seasonId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  currentVersionId  String?                   @map("current_version_id") @db.Uuid
+  currentVersion    ReceiptExceptionVersion?  @relation("receiptExceptionCurrentVersion", fields: [id, currentVersionId], references: [caseId, id], onDelete: NoAction, onUpdate: NoAction)
+  approvedVersionId String?                   @map("approved_version_id") @db.Uuid
+  approvedVersion   ReceiptExceptionVersion?  @relation("receiptExceptionApprovedVersion", fields: [id, approvedVersionId], references: [caseId, id], onDelete: NoAction, onUpdate: NoAction)
+  versions          ReceiptExceptionVersion[] @relation("receiptExceptionCaseVersions")
+  revision          BigInt                    @default(1)
+  createdAt         DateTime                  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt         DateTime                  @default(now()) @map("updated_at") @db.Timestamptz(6)
+
+  @@unique([seasonId, id])
+  @@unique([id, currentVersionId])
+  @@unique([id, approvedVersionId])
+  @@index([seasonId])
+  @@map("receipt_exception_case")
+}
+
+model ReceiptExceptionVersion {
+  id                       String                          @id @default(uuid(4)) @db.Uuid
+  seasonId                 String                          @map("season_id") @db.Uuid
+  caseId                   String                          @map("case_id") @db.Uuid
+  exceptionCase            ReceiptExceptionCase            @relation("receiptExceptionCaseVersions", fields: [seasonId, caseId], references: [seasonId, id], onDelete: Restrict, onUpdate: NoAction)
+  currentFor               ReceiptExceptionCase[]          @relation("receiptExceptionCurrentVersion")
+  approvedFor              ReceiptExceptionCase[]          @relation("receiptExceptionApprovedVersion")
+  versionNumber            Int                             @map("version_number")
+  preparedBy               String                          @map("prepared_by") @db.Uuid
+  preparer                 Account                         @relation("receiptExceptionPreparer", fields: [preparedBy], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  predecessorVersionId     String?                         @map("predecessor_version_id") @db.Uuid
+  predecessor              ReceiptExceptionVersion?        @relation("receiptExceptionPredecessor", fields: [caseId, predecessorVersionId], references: [caseId, id], onDelete: NoAction, onUpdate: NoAction)
+  successors               ReceiptExceptionVersion[]       @relation("receiptExceptionPredecessor")
+  revision                 BigInt                          @default(1)
+  state                    String                          @default("DRAFT")
+  submittedAt              DateTime?                       @map("submitted_at") @db.Timestamptz(6)
+  decidedAt                DateTime?                       @map("decided_at") @db.Timestamptz(6)
+  decidedBy                String?                         @map("decided_by") @db.Uuid
+  decider                  Account?                        @relation("receiptExceptionDecider", fields: [decidedBy], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  decisionReason           String?                         @map("decision_reason")
+  clubApplicationVersionId String?                         @map("club_application_version_id") @db.Uuid
+  clubApplicationVersion   ClubApplicationVersion?         @relation("receiptExceptionClubAppTarget", fields: [seasonId, clubApplicationVersionId], references: [seasonId, id], onDelete: Restrict, onUpdate: NoAction)
+  registrationVersionId    String?                         @map("registration_version_id") @db.Uuid
+  registrationVersion      RegistrationVersion?            @relation("receiptExceptionRegistrationTarget", fields: [seasonId, registrationVersionId], references: [seasonId, id], onDelete: Restrict, onUpdate: NoAction)
+  reason                   String?
+  basis                    String?
+  createdAt                DateTime                        @default(now()) @map("created_at") @db.Timestamptz(6)
+  editors                  ReceiptExceptionVersionEditor[]
+
+  @@unique([caseId, versionNumber])
+  @@unique([caseId, id])
+  @@unique([seasonId, caseId, id])
+  @@index([clubApplicationVersionId])
+  @@index([registrationVersionId])
+  @@index([preparedBy])
+  @@index([decidedBy])
+  @@map("receipt_exception_version")
+}
+
+model ReceiptExceptionVersionEditor {
+  versionId     String                  @map("version_id") @db.Uuid
+  version       ReceiptExceptionVersion @relation(fields: [versionId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  accountId     String                  @map("account_id") @db.Uuid
+  account       Account                 @relation("receiptExceptionVersionEditorAccount", fields: [accountId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  firstEditedAt DateTime                @default(now()) @map("first_edited_at") @db.Timestamptz(6)
+
+  @@id([versionId, accountId])
+  @@index([accountId])
+  @@map("receipt_exception_version_editor")
+}
+
+model RegistrationCorrectionCase {
+  id               String                          @id @default(uuid(4)) @db.Uuid
+  seasonId         String                          @map("season_id") @db.Uuid
+  season           Season                          @relation(fields: [seasonId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  registrationId   String                          @map("registration_id") @db.Uuid
+  registration     PlayerRegistration              @relation(fields: [seasonId, registrationId], references: [seasonId, id], onDelete: Restrict, onUpdate: NoAction)
+  currentVersionId String?                         @map("current_version_id") @db.Uuid
+  currentVersion   RegistrationCorrectionVersion?  @relation("registrationCorrectionCurrentVersion", fields: [id, currentVersionId], references: [caseId, id], onDelete: NoAction, onUpdate: NoAction)
+  versions         RegistrationCorrectionVersion[] @relation("registrationCorrectionCaseVersions")
+  revision         BigInt                          @default(1)
+  createdAt        DateTime                        @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt        DateTime                        @default(now()) @map("updated_at") @db.Timestamptz(6)
+
+  @@unique([seasonId, id])
+  @@unique([registrationId, id])
+  @@unique([seasonId, registrationId, id])
+  @@unique([id, currentVersionId])
+  @@index([seasonId, registrationId])
+  @@map("registration_correction_case")
+}
+
+model RegistrationCorrectionVersion {
+  id                   String                                @id @default(uuid(4)) @db.Uuid
+  seasonId             String                                @map("season_id") @db.Uuid
+  registrationId       String                                @map("registration_id") @db.Uuid
+  caseId               String                                @map("case_id") @db.Uuid
+  correctionCase       RegistrationCorrectionCase            @relation("registrationCorrectionCaseVersions", fields: [seasonId, registrationId, caseId], references: [seasonId, registrationId, id], onDelete: Restrict, onUpdate: NoAction)
+  currentFor           RegistrationCorrectionCase[]          @relation("registrationCorrectionCurrentVersion")
+  versionNumber        Int                                   @map("version_number")
+  preparedBy           String                                @map("prepared_by") @db.Uuid
+  preparer             Account                               @relation("registrationCorrectionPreparer", fields: [preparedBy], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  predecessorVersionId String?                               @map("predecessor_version_id") @db.Uuid
+  predecessor          RegistrationCorrectionVersion?        @relation("registrationCorrectionPredecessor", fields: [caseId, predecessorVersionId], references: [caseId, id], onDelete: NoAction, onUpdate: NoAction)
+  successors           RegistrationCorrectionVersion[]       @relation("registrationCorrectionPredecessor")
+  revision             BigInt                                @default(1)
+  state                String                                @default("DRAFT")
+  submittedAt          DateTime?                             @map("submitted_at") @db.Timestamptz(6)
+  decidedAt            DateTime?                             @map("decided_at") @db.Timestamptz(6)
+  decidedBy            String?                               @map("decided_by") @db.Uuid
+  decider              Account?                              @relation("registrationCorrectionDecider", fields: [decidedBy], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  decisionReason       String?                               @map("decision_reason")
+  targetVersionId      String                                @map("target_version_id") @db.Uuid
+  targetVersion        RegistrationVersion                   @relation("correctionTargetVersion", fields: [registrationId, targetVersionId], references: [caseId, id], onDelete: Restrict, onUpdate: NoAction)
+  proposedVersionId    String                                @map("proposed_version_id") @db.Uuid
+  proposedVersion      RegistrationVersion                   @relation("correctionProposedVersion", fields: [registrationId, proposedVersionId], references: [caseId, id], onDelete: Restrict, onUpdate: NoAction)
+  reason               String?
+  basis                String?
+  disposition          String?
+  beforeSummary        Json?                                 @map("before_summary") @db.JsonB
+  afterSummary         Json?                                 @map("after_summary") @db.JsonB
+  affectedReferences   Json?                                 @map("affected_references") @db.JsonB
+  createdAt            DateTime                              @default(now()) @map("created_at") @db.Timestamptz(6)
+  editors              RegistrationCorrectionVersionEditor[]
+  segments             RegistrationCorrectionSegment[]
+
+  @@unique([caseId, versionNumber])
+  @@unique([caseId, id])
+  @@unique([seasonId, id])
+  @@index([preparedBy])
+  @@index([decidedBy])
+  @@index([targetVersionId])
+  @@index([proposedVersionId])
+  @@map("registration_correction_version")
+}
+
+model RegistrationCorrectionVersionEditor {
+  versionId     String                        @map("version_id") @db.Uuid
+  version       RegistrationCorrectionVersion @relation(fields: [versionId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  accountId     String                        @map("account_id") @db.Uuid
+  account       Account                       @relation("registrationCorrectionVersionEditorAccount", fields: [accountId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  firstEditedAt DateTime                      @default(now()) @map("first_edited_at") @db.Timestamptz(6)
+
+  @@id([versionId, accountId])
+  @@index([accountId])
+  @@map("registration_correction_version_editor")
+}
+
+model RegistrationCorrectionSegment {
+  id                  String                        @id @default(uuid(4)) @db.Uuid
+  seasonId            String                        @map("season_id") @db.Uuid
+  correctionVersionId String                        @map("correction_version_id") @db.Uuid
+  correctionVersion   RegistrationCorrectionVersion @relation(fields: [seasonId, correctionVersionId], references: [seasonId, id], onDelete: Restrict, onUpdate: NoAction)
+  segmentOrder        Int                           @map("segment_order")
+  segmentStart        DateTime                      @map("segment_start") @db.Timestamptz(6)
+  segmentEnd          DateTime?                     @map("segment_end") @db.Timestamptz(6)
+  regulationVersionId String                        @map("regulation_version_id") @db.Uuid
+  regulationVersion   RegulationVersion             @relation("correctionSegmentRegulation", fields: [seasonId, regulationVersionId], references: [seasonId, id], onDelete: Restrict, onUpdate: NoAction)
+  outcome             String
+  findings            Json                          @db.JsonB
+  requiredDisposition String?                       @map("required_disposition")
+  createdAt           DateTime                      @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  @@unique([correctionVersionId, segmentOrder])
+  @@index([regulationVersionId])
+  @@map("registration_correction_segment")
+}
+
 model MediaAsset {
   id               String    @id @default(uuid(4)) @db.Uuid
-  clubId           String    @map("club_id") @db.Uuid
-  club             Club      @relation("clubMediaAssets", fields: [clubId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  clubId           String?   @map("club_id") @db.Uuid
+  club             Club?     @relation("clubMediaAssets", fields: [clubId], references: [id], onDelete: Restrict, onUpdate: NoAction)
   currentFor       Club?     @relation("clubCurrentLogo")
+  playerId         String?   @map("player_id") @db.Uuid
+  player           Player?   @relation("playerMediaAssets", fields: [playerId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  currentForPlayer Player?   @relation("playerCurrentPortrait")
   provider         String    @default("LOCAL")
   objectKey        String    @map("object_key")
   mimeType         String    @map("mime_type")
@@ -527,7 +1004,9 @@ model MediaAsset {
 
   @@unique([provider, objectKey])
   @@unique([clubId, id])
+  @@unique([playerId, id])
   @@index([clubId, createdAt])
+  @@index([playerId, createdAt])
   @@index([storedBy])
   @@index([unreferencedAt])
   @@map("media_asset")

@@ -67,6 +67,24 @@ export const actions: Record<string, string> = {
   MEDIA_ASSET_REPLACED: 'Thay tệp hình ảnh',
   MEDIA_ASSET_DETACHED: 'Gỡ tệp hình ảnh',
   MEDIA_ASSET_CLEANED: 'Dọn tệp hình ảnh',
+  PLAYER_CREATED: 'Tạo hồ sơ cầu thủ',
+  PLAYER_UPDATED: 'Cập nhật hồ sơ cầu thủ',
+  PLAYER_CORRECTED: 'Đính chính hồ sơ cầu thủ',
+  CLUB_APPLICATION_DRAFT_CREATED: 'Tạo bản nháp hồ sơ tham dự',
+  CLUB_APPLICATION_DRAFT_UPDATED: 'Cập nhật bản nháp hồ sơ tham dự',
+  CLUB_APPLICATION_RECEIVED: 'Tiếp nhận hồ sơ tham dự',
+  CLUB_APPLICATION_SUBMITTED: 'Trình phê duyệt hồ sơ tham dự',
+  CLUB_APPLICATION_RETURNED: 'Yêu cầu bổ sung hồ sơ tham dự',
+  CLUB_APPLICATION_WITHDRAWN: 'Rút hồ sơ tham dự',
+  CLUB_APPLICATION_CANCELLED: 'Hủy hồ sơ tham dự',
+  CLUB_APPLICATION_REJECTED: 'Từ chối hồ sơ tham dự',
+  CLUB_APPLICATION_APPROVED: 'Phê duyệt hồ sơ tham dự',
+  RECEIPT_EXCEPTION_DRAFT_CREATED: 'Tạo đề xuất ngoại lệ tiếp nhận',
+  RECEIPT_EXCEPTION_SUBMITTED: 'Gửi duyệt ngoại lệ tiếp nhận',
+  RECEIPT_EXCEPTION_RETURNED: 'Trả lại đề xuất ngoại lệ tiếp nhận',
+  RECEIPT_EXCEPTION_WITHDRAWN: 'Rút đề xuất ngoại lệ tiếp nhận',
+  RECEIPT_EXCEPTION_REJECTED: 'Từ chối ngoại lệ tiếp nhận',
+  RECEIPT_EXCEPTION_APPROVED: 'Phê duyệt ngoại lệ tiếp nhận',
 };
 
 export const filterableObjectKinds = {
@@ -84,6 +102,9 @@ export const objectKinds: Record<string, string> = {
   Club: 'Câu lạc bộ',
   Stadium: 'Sân vận động',
   MediaAsset: 'Tệp hình ảnh',
+  Player: 'Cầu thủ',
+  ClubApplication: 'Hồ sơ tham dự câu lạc bộ',
+  ReceiptExceptionCase: 'Ngoại lệ tiếp nhận',
 };
 
 export const initialFilters = {

@@ -1,16 +1,19 @@
 import sharp from 'sharp';
 import { ApplicationError } from '../platform/application-error';
 
-export const CLUB_LOGO_MAX_BYTES = 2_097_152;
+export const MANAGED_IMAGE_MAX_BYTES = 2_097_152;
+export const CLUB_LOGO_MAX_BYTES = MANAGED_IMAGE_MAX_BYTES;
+export const PLAYER_PORTRAIT_MAX_BYTES = MANAGED_IMAGE_MAX_BYTES;
 const MAX_DIMENSION = 2048;
 const PNG_SIGNATURE = Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]);
 
-function invalidLogo() {
-  return new ApplicationError(
-    400,
-    'VALIDATION_FAILED',
-    'Logo phải là ảnh PNG, JPEG hoặc WebP tĩnh, tối đa 2 MiB và 2048 pixel mỗi chiều.',
-  );
+const CLUB_LOGO_ERROR =
+  'Logo phải là ảnh PNG, JPEG hoặc WebP tĩnh, tối đa 2 MiB và 2048 pixel mỗi chiều.';
+const PLAYER_PORTRAIT_ERROR =
+  'Ảnh chân dung phải là ảnh PNG, JPEG hoặc WebP tĩnh, tối đa 2 MiB và 2048 pixel mỗi chiều.';
+
+function invalidImage(message: string) {
+  return new ApplicationError(400, 'VALIDATION_FAILED', message);
 }
 
 /** Reject APNG even if the decoder would silently select its fallback frame. */
@@ -66,7 +69,7 @@ function staticJpeg(bytes: Buffer): boolean {
   return false;
 }
 
-function inputFormat(bytes: Buffer): 'png' | 'jpeg' | 'webp' {
+function inputFormat(bytes: Buffer, errorMessage: string): 'png' | 'jpeg' | 'webp' {
   if (bytes.subarray(0, 8).equals(PNG_SIGNATURE) && staticPng(bytes)) return 'png';
   if (
     bytes.length >= 12 &&
@@ -76,12 +79,13 @@ function inputFormat(bytes: Buffer): 'png' | 'jpeg' | 'webp' {
   )
     return 'webp';
   if (bytes[0] === 0xff && bytes[1] === 0xd8 && staticJpeg(bytes)) return 'jpeg';
-  throw invalidLogo();
+  throw invalidImage(errorMessage);
 }
 
-export async function normalizeClubLogo(input: Buffer) {
-  if (input.length === 0 || input.length > CLUB_LOGO_MAX_BYTES) throw invalidLogo();
-  const format = inputFormat(input);
+async function normalizeStaticImage(input: Buffer, errorMessage: string) {
+  if (input.length === 0 || input.length > MANAGED_IMAGE_MAX_BYTES)
+    throw invalidImage(errorMessage);
+  const format = inputFormat(input, errorMessage);
   try {
     const image = sharp(input, {
       failOn: 'warning',
@@ -98,14 +102,22 @@ export async function normalizeClubLogo(input: Buffer) {
       (meta.pages ?? 1) !== 1 ||
       (meta.delay?.length ?? 0) > 0
     )
-      throw invalidLogo();
+      throw invalidImage(errorMessage);
     const { data, info } = await image
       .autoOrient()
       .webp({ quality: 82 })
       .toBuffer({ resolveWithObject: true });
-    if (!data.length || data.length > CLUB_LOGO_MAX_BYTES) throw invalidLogo();
+    if (!data.length || data.length > MANAGED_IMAGE_MAX_BYTES) throw invalidImage(errorMessage);
     return { bytes: data, width: info.width, height: info.height };
   } catch {
-    throw invalidLogo();
+    throw invalidImage(errorMessage);
   }
+}
+
+export async function normalizeClubLogo(input: Buffer) {
+  return normalizeStaticImage(input, CLUB_LOGO_ERROR);
+}
+
+export async function normalizePlayerPortrait(input: Buffer) {
+  return normalizeStaticImage(input, PLAYER_PORTRAIT_ERROR);
 }

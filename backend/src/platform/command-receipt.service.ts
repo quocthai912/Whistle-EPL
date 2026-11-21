@@ -37,6 +37,39 @@ const rules = {
     required: ['expectedRevision', 'submittedVersionId', 'action', 'reason'],
     optional: ['readinessBasisReference'],
   },
+  CLUB_APPLICATION_APPROVED: {
+    target: 'uuid',
+    required: ['expectedRevision', 'submittedVersionId', 'reason'],
+    optional: ['receiptExceptionVersionId'],
+  },
+  CLUB_APPLICATION_CORRECTION_APPROVED: {
+    target: 'uuid',
+    required: ['expectedRevision', 'submittedVersionId', 'baseAcceptedVersionId', 'reason'],
+  },
+  RECEIPT_EXCEPTION_APPROVED: {
+    target: 'uuid',
+    required: ['expectedRevision', 'submittedVersionId', 'targetVersionId', 'reason'],
+  },
+  PLAYER_REGISTRATION_CONFIRMED: {
+    target: 'uuid',
+    required: ['expectedRevision', 'submittedVersionId', 'playingStart'],
+    optional: ['playingEnd', 'receiptExceptionVersionId'],
+  },
+  PLAYER_TRANSFER_EXECUTED: {
+    target: 'uuid',
+    required: ['expectedRevision', 'oldVersionId', 'newVersionId', 'effectiveAt', 'reason'],
+  },
+  REGISTRATION_CORRECTION_APPROVED: {
+    target: 'uuid',
+    required: [
+      'expectedRevision',
+      'submittedVersionId',
+      'targetVersionId',
+      'proposedVersionId',
+      'reason',
+    ],
+    optional: ['disposition'],
+  },
 } as const;
 export type ReceiptAction = keyof typeof rules;
 export type ReceiptCommand = {
@@ -158,7 +191,12 @@ export class CommandReceiptService {
         payload[key] = normalizeSingleLine(value, 200);
       } else if (key === 'startDate' || key === 'endDate') {
         payload[key] = normalizeDate(value);
-      } else if (key === 'proposedEffectiveAt') {
+      } else if (
+        key === 'proposedEffectiveAt' ||
+        key === 'playingStart' ||
+        key === 'playingEnd' ||
+        key === 'effectiveAt'
+      ) {
         payload[key] = normalizeInstant(value);
       } else if (key === 'reason') {
         payload[key] = normalizeMultilineText(value);
@@ -166,7 +204,8 @@ export class CommandReceiptService {
         key === 'effectiveMode' ||
         key === 'action' ||
         key === 'roleCode' ||
-        key === 'kind'
+        key === 'kind' ||
+        key === 'disposition'
       ) {
         payload[key] = value.trim().toUpperCase();
       } else if (key === 'readinessBasisReference') {
