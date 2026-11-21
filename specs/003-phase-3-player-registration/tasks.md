@@ -9,6 +9,8 @@
 
 **Source publication verified, 2026-11-12 (Asia/Bangkok):** The approved PHASE 3 package is published at [428b4ed](https://github.com/quocthai912/Whistle-EPL/commit/428b4ed4f67ba3dd679eae4ffde18dc19fe1df7b). The remote branch and all 13 checked source blobs match the published revision. All 28 Issues link to the pinned Spec, Plan, Tasks and verification documents. Read-back confirmed the Issue states, labels, acceptance criteria and all 51 blocking links in the bodies.
 
+**T001–T011 completion verified, 2026-11-21 (Asia/Bangkok):** Published at [ac8cc10](https://github.com/quocthai912/Whistle-EPL/commit/ac8cc107ace6a5a8f62146ffaafccd8f3c759d8a) on `feat/phase-3-foundation-club-intake-and-player-profiles`. GitHub read-back confirmed all 11 Issues (#103–#108, #110–#111, #113–#115) are Closed with reason Completed, checked Acceptance Criteria, label `completed` and `ready-for-agent` removed. T012–T028 remain open.
+
 **Inputs**: [approved Specification](spec.md), [approved Plan](plan.md), [research](research.md), [data model](data-model.md), [contracts](contracts/rest.md), [verification](verification.md) and [validation guide](quickstart.md).
 
 Task IDs are local to this file. One GitHub Issue per approved canonical Task, with exact acceptance criteria and native blocking edges where available. Planned paths are implementation targets. All Tasks remain unchecked until the required execution evidence exists.
