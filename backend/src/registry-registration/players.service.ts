@@ -404,6 +404,7 @@ export class PlayersService {
         }
 
         await checkPlayerDuplicate(context.db, fullName, birthDate.iso, nationalityCode, review);
+        await context.recheckAuthority();
 
         const player = await context.db.player.create({
           data: {
@@ -549,6 +550,11 @@ export class PlayersService {
             'nationalityCode' in afterSummary;
 
           if (review && !duplicateTupleChanged) throw invalid();
+          if ('birthDate' in afterSummary && (!reason || !basis)) {
+            throw invalid(
+              'Vui lòng nhập lý do và căn cứ đính chính khi thay đổi ngày sinh cầu thủ.',
+            );
+          }
           if (!Object.keys(afterSummary).length) {
             return { id, revision: current.revision.toString() };
           }
@@ -563,6 +569,8 @@ export class PlayersService {
               id,
             );
           }
+
+          await context.recheckAuthority();
 
           const updated = await context.db.player.update({
             where: { id },

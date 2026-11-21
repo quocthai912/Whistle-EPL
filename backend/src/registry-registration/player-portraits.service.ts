@@ -16,7 +16,6 @@ export class PlayerPortraitsService {
   ) {}
 
   async upload(request: Request, playerId: string, expectedRevision: string, input: Buffer) {
-    const normalized = await normalizePlayerPortrait(input);
     const assetId = randomUUID();
     const objectKey = `${assetId}.webp`;
     try {
@@ -42,7 +41,7 @@ export class PlayerPortraitsService {
           const { db } = context;
           const player = await db.player.findUniqueOrThrow({ where: { id: playerId } });
           assertRevision(player.revision, expectedRevision);
-          const { bytes, width, height } = normalized;
+          const { bytes, width, height } = await normalizePlayerPortrait(input);
           await this.storage.put(objectKey, bytes);
           await context.recheckAuthority();
           const now = await context.now();
@@ -127,6 +126,7 @@ export class PlayerPortraitsService {
           assertRevision(player.revision, expectedRevision);
           if (player.currentPortraitId !== mediaAssetId.toLowerCase())
             throw conflict('BASIS_CHANGED');
+          await context.recheckAuthority();
           const now = await context.now();
           const saved = await db.player.update({
             where: { id: playerId },

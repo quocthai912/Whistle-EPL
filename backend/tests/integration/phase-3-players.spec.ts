@@ -242,6 +242,14 @@ describe('PHASE 3 US2 — Shared Player profile management and D036 correction (
     // Close ALL seasons to verify D074: shared Player master edits remain available while seasons are Closed!
     await fixture.database.client.season.updateMany({ data: { state: 'CLOSED' } });
 
+    // Changing birthDate without correctionReason and correctionBasis is rejected (D036 / FR-007)
+    await fixture
+      .apiRequest(grantee, 'patch', `/players/${playerId}`, {
+        expectedRevision: '1',
+        birthDate: '1997-04-10',
+      })
+      .expect(400);
+
     // D036 correction with reason + basis while seasons are CLOSED
     const correction = await fixture
       .apiRequest(grantee, 'patch', `/players/${playerId}`, {

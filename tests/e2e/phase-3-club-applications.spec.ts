@@ -214,6 +214,48 @@ async function seedClubApplicationScenario(options: { lateWindow?: boolean } = {
       },
     });
 
+    if (!options.lateWindow) {
+      for (let i = 1; i <= 21; i++) {
+        const bgClubId = randomUUID();
+        const bgCaseId = randomUUID();
+        const bgVerId = randomUUID();
+        const pad = String(i).padStart(2, '0');
+        await db.client.club.create({
+          data: {
+            id: bgClubId,
+            code: `PG_${suffix}_${pad}`,
+            name: `Câu lạc bộ Phân trang ${pad}`,
+            abbreviation: `P${pad}`,
+          },
+        });
+        await db.client.clubApplication.create({
+          data: {
+            id: bgCaseId,
+            seasonId: season.id,
+            clubId: bgClubId,
+            createdAt: new Date(now.getTime() - i * 60_000),
+            updatedAt: new Date(now.getTime() - i * 60_000),
+          },
+        });
+        await db.client.clubApplicationVersion.create({
+          data: {
+            id: bgVerId,
+            seasonId: season.id,
+            caseId: bgCaseId,
+            versionNumber: 1,
+            preparedBy: accounts[1].id,
+            state: 'DRAFT',
+            coachName: `HLV Phân trang ${pad}`,
+            createdAt: new Date(now.getTime() - i * 60_000),
+          },
+        });
+        await db.client.clubApplication.update({
+          where: { id: bgCaseId },
+          data: { currentDraftVersionId: bgVerId },
+        });
+      }
+    }
+
     return { officer, manager, outsider, season, otherSeason, club, stadium, player };
   } finally {
     await db.close();
@@ -307,10 +349,16 @@ test('T008: BM1 draft, supplementation round, independent approval, safe direct 
     .click();
   await expect(drawer.getByText('Phiên bản 2 · Chờ phê duyệt')).toBeVisible();
 
-  // Close drawer, search Vietnamese club name, capture screenshot
+  // Close drawer, verify >20 pagination (Next/Prev) and Vietnamese club name search filtering
   await drawer.getByRole('button', { name: 'Đóng' }).last().click();
-  await page.getByLabel('Tìm hồ sơ tham dự').fill(club.code);
+  await expect(page.getByText('Câu lạc bộ Phân trang 01')).toBeVisible();
+  await page.getByRole('button', { name: 'Sau' }).click();
+  await expect(page.getByText('Câu lạc bộ Phân trang 21')).toBeVisible();
+  await page.getByRole('button', { name: 'Trước' }).click();
+
+  await page.getByLabel('Tìm hồ sơ tham dự').fill(club.name);
   await expect(page.getByText(club.name)).toBeVisible();
+  await expect(page.getByText('Câu lạc bộ Phân trang 01')).toHaveCount(0);
 
   if (process.env.E2E_CAPTURE_SCREENSHOTS === '1') {
     await mkdir('.verification', { recursive: true });
@@ -386,6 +434,16 @@ test('T008: Late-received BM1 requires independent timing exception approval bef
   await page.getByRole('button', { name: 'Xác nhận tiếp nhận' }).click();
   await expect(drawer.getByText(/Tiếp nhận ngoài hạn/)).toBeVisible();
 
+  // Attempt submission BEFORE exception approval -> rejected and remains RECEIVED
+  await drawer.getByRole('button', { name: 'Trình phê duyệt' }).click();
+  const blockedSubmitDialog = page.getByRole('dialog', { name: 'Trình phê duyệt hồ sơ tham dự' });
+  await blockedSubmitDialog.getByRole('button', { name: 'Trình phê duyệt' }).click();
+  await expect(
+    blockedSubmitDialog.getByText(/chưa có ngoại lệ tiếp nhận được phê duyệt/),
+  ).toBeVisible();
+  await blockedSubmitDialog.getByRole('button', { name: 'Hủy' }).click();
+  await expect(drawer.getByText('Phiên bản 1 · Đã tiếp nhận')).toBeVisible();
+
   // Propose timing exception
   await drawer.getByRole('button', { name: 'Đề xuất ngoại lệ tiếp nhận' }).click();
   const exDialog = page.getByRole('dialog', { name: 'Đề xuất ngoại lệ tiếp nhận ngoài hạn' });
@@ -409,4 +467,21 @@ test('T008: Late-received BM1 requires independent timing exception approval bef
   await approveEx.getByLabel(/Lý do/).fill('Chấp thuận ngoại lệ cho đúng phiên bản 1.');
   await approveEx.getByRole('button', { name: 'Phê duyệt ngoại lệ' }).click();
   await expect(managerDrawer.getByText(/Đã phê duyệt ngoại lệ tiếp nhận/)).toBeVisible();
+
+  // Officer logs back in and submits Version 1 now that the exception is approved
+  await managerDrawer.getByRole('button', { name: 'Đóng' }).last().click();
+  await page.getByRole('button', { name: 'Đăng xuất' }).click();
+  await expect(page).toHaveURL(/\/login$/);
+  await login(page, officer);
+  await page.goto(`/workspace/seasons/${season.id}/club-applications`);
+  await page.getByLabel('Tìm hồ sơ tham dự').fill(club.code);
+  await page.getByRole('button', { name: `Chi tiết hồ sơ ${club.name}` }).click();
+
+  const officerDrawer = page.getByRole('dialog').filter({ hasText: club.name });
+  await officerDrawer.getByRole('button', { name: 'Trình phê duyệt' }).click();
+  await page
+    .getByRole('dialog', { name: 'Trình phê duyệt hồ sơ tham dự' })
+    .getByRole('button', { name: 'Trình phê duyệt' })
+    .click();
+  await expect(officerDrawer.getByText('Phiên bản 1 · Chờ phê duyệt')).toBeVisible();
 });

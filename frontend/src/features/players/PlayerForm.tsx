@@ -179,7 +179,17 @@ export function PlayerForm({
       : 'Cập nhật hồ sơ cầu thủ';
 
   return (
-    <Modal open title={title} onCancel={onClose} footer={null}>
+    <Modal
+      open
+      title={title}
+      closable={!busy}
+      maskClosable={!busy}
+      keyboard={!busy}
+      onCancel={() => {
+        if (!busy) onClose();
+      }}
+      footer={null}
+    >
       <form
         ref={feedbackRef}
         id={formId}
@@ -370,9 +380,14 @@ export function PlayerForm({
           <button type="button" onClick={onClose} disabled={busy}>
             Hủy
           </button>
-          {reloadRequired && onRevisionConflict ? (
-            <button type="button" className={css.primary} data-primary onClick={onRevisionConflict}>
-              Tải lại hồ sơ
+          {reloadRequired ? (
+            <button
+              type="button"
+              className={css.primary}
+              data-primary
+              onClick={onRevisionConflict ?? onSaved}
+            >
+              {onRevisionConflict ? 'Tải lại hồ sơ' : 'Tải lại danh sách'}
             </button>
           ) : (
             <button type="submit" className={css.primary} disabled={busy}>

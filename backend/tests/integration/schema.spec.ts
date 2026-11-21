@@ -532,7 +532,7 @@ describe('deployed PostgreSQL foundation schema', () => {
       appV1,
       appCaseId,
     ]);
-    // D100 correction requires explicit base_accepted_version_id in same case
+    // D100 correction requires explicit base_accepted_version_id in same case referencing an APPROVED version
     await expect(
       db.query(
         `INSERT INTO club_application_version(id,season_id,case_id,version_number,version_kind,prepared_by,state)
@@ -546,6 +546,21 @@ describe('deployed PostgreSQL foundation schema', () => {
        VALUES($1,$2,$3,2,'CORRECTION',$4,$5,$5,'DRAFT')`,
       [appV2, seasonA, appCaseId, accountId, appV1],
     );
+    // Reject D100 correction pointing to a non-APPROVED baseline (appV2 is DRAFT)
+    await expect(
+      db.query(
+        `INSERT INTO club_application_version(id,season_id,case_id,version_number,version_kind,prepared_by,predecessor_version_id,base_accepted_version_id,state)
+         VALUES($1,$2,$3,3,'CORRECTION',$4,$5,$5,'DRAFT')`,
+        [randomUUID(), seasonA, appCaseId, accountId, appV2],
+      ),
+    ).rejects.toMatchObject({ code: '23514' });
+    // Freeze APPROVED official_snapshot and decision metadata
+    await expect(
+      db.query(
+        `UPDATE club_application_version SET official_snapshot='{"tampered":true}'::jsonb WHERE id=$1`,
+        [appV1],
+      ),
+    ).rejects.toMatchObject({ code: '23514' });
 
     // ReceiptException requires already received same-season single target
     const exCaseId = randomUUID();
@@ -600,6 +615,14 @@ describe('deployed PostgreSQL foundation schema', () => {
     );
     const regV1 = randomUUID();
     const regV2 = randomUUID();
+    // VALID registration version requires non-null playing_start
+    await expect(
+      db.query(
+        `INSERT INTO registration_version(id,season_id,case_id,version_number,prepared_by,state,shirt_number)
+         VALUES ($1,$2,$3,1,$4,'VALID',9)`,
+        [randomUUID(), seasonA, regCase1, accountId],
+      ),
+    ).rejects.toMatchObject({ code: '23514' });
     await db.query(
       `INSERT INTO registration_version(id,season_id,case_id,version_number,prepared_by,state,shirt_number,playing_start,playing_end)
        VALUES ($1,$2,$3,1,$4,'VALID',9,'2026-08-01T00:00:00Z','2026-12-01T00:00:00Z'),
@@ -666,6 +689,9 @@ describe('deployed PostgreSQL foundation schema', () => {
         logoId,
       ]);
       expect(assetAfter.rows[0]).toEqual({ club_id: clubId, player_id: null });
+    } catch (error) {
+      await db.query('ROLLBACK').catch(() => undefined);
+      throw error;
     } finally {
       await db.query(`SET search_path TO "${schema}", public`);
       await db.query(`DROP SCHEMA "${popSchema}" CASCADE`);

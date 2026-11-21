@@ -450,6 +450,9 @@ CREATE UNIQUE INDEX "receipt_exception_version_season_id_case_id_id_key" ON "rec
 CREATE INDEX "receipt_exception_version_editor_account_id_idx" ON "receipt_exception_version_editor"("account_id");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "registration_window_regulation_version_id_id_key" ON "registration_window"("regulation_version_id", "id");
+
+-- CreateIndex
 CREATE INDEX "registration_correction_case_season_id_registration_id_idx" ON "registration_correction_case"("season_id", "registration_id");
 
 -- CreateIndex
@@ -457,6 +460,9 @@ CREATE UNIQUE INDEX "registration_correction_case_season_id_id_key" ON "registra
 
 -- CreateIndex
 CREATE UNIQUE INDEX "registration_correction_case_registration_id_id_key" ON "registration_correction_case"("registration_id", "id");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "registration_correction_case_season_id_registration_id_id_key" ON "registration_correction_case"("season_id", "registration_id", "id");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "registration_correction_case_id_current_version_id_key" ON "registration_correction_case"("id", "current_version_id");
@@ -540,7 +546,7 @@ ALTER TABLE "club_application_version" ADD CONSTRAINT "club_application_version_
 ALTER TABLE "club_application_version" ADD CONSTRAINT "club_application_version_season_id_receipt_regulation_vers_fkey" FOREIGN KEY ("season_id", "receipt_regulation_version_id") REFERENCES "regulation_version"("season_id", "id") ON DELETE RESTRICT ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "club_application_version" ADD CONSTRAINT "club_application_version_receipt_window_id_fkey" FOREIGN KEY ("receipt_window_id") REFERENCES "registration_window"("id") ON DELETE RESTRICT ON UPDATE NO ACTION;
+ALTER TABLE "club_application_version" ADD CONSTRAINT "club_application_version_receipt_regulation_version_id_rec_fkey" FOREIGN KEY ("receipt_regulation_version_id", "receipt_window_id") REFERENCES "registration_window"("regulation_version_id", "id") ON DELETE RESTRICT ON UPDATE NO ACTION;
 
 -- AddForeignKey
 ALTER TABLE "club_application_version" ADD CONSTRAINT "club_application_version_season_id_approval_regulation_ver_fkey" FOREIGN KEY ("season_id", "approval_regulation_version_id") REFERENCES "regulation_version"("season_id", "id") ON DELETE RESTRICT ON UPDATE NO ACTION;
@@ -591,7 +597,7 @@ ALTER TABLE "registration_version" ADD CONSTRAINT "registration_version_verified
 ALTER TABLE "registration_version" ADD CONSTRAINT "registration_version_season_id_receipt_regulation_version__fkey" FOREIGN KEY ("season_id", "receipt_regulation_version_id") REFERENCES "regulation_version"("season_id", "id") ON DELETE RESTRICT ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "registration_version" ADD CONSTRAINT "registration_version_receipt_window_id_fkey" FOREIGN KEY ("receipt_window_id") REFERENCES "registration_window"("id") ON DELETE RESTRICT ON UPDATE NO ACTION;
+ALTER TABLE "registration_version" ADD CONSTRAINT "registration_version_receipt_regulation_version_id_receipt_fkey" FOREIGN KEY ("receipt_regulation_version_id", "receipt_window_id") REFERENCES "registration_window"("regulation_version_id", "id") ON DELETE RESTRICT ON UPDATE NO ACTION;
 
 -- AddForeignKey
 ALTER TABLE "registration_version" ADD CONSTRAINT "registration_version_season_id_decision_regulation_version_fkey" FOREIGN KEY ("season_id", "decision_regulation_version_id") REFERENCES "regulation_version"("season_id", "id") ON DELETE RESTRICT ON UPDATE NO ACTION;
@@ -663,7 +669,7 @@ ALTER TABLE "registration_correction_case" ADD CONSTRAINT "registration_correcti
 ALTER TABLE "registration_correction_case" ADD CONSTRAINT "registration_correction_case_id_current_version_id_fkey" FOREIGN KEY ("id", "current_version_id") REFERENCES "registration_correction_version"("case_id", "id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "registration_correction_version" ADD CONSTRAINT "registration_correction_version_registration_id_case_id_fkey" FOREIGN KEY ("registration_id", "case_id") REFERENCES "registration_correction_case"("registration_id", "id") ON DELETE RESTRICT ON UPDATE NO ACTION;
+ALTER TABLE "registration_correction_version" ADD CONSTRAINT "registration_correction_version_season_id_registration_id__fkey" FOREIGN KEY ("season_id", "registration_id", "case_id") REFERENCES "registration_correction_case"("season_id", "registration_id", "id") ON DELETE RESTRICT ON UPDATE NO ACTION;
 
 -- AddForeignKey
 ALTER TABLE "registration_correction_version" ADD CONSTRAINT "registration_correction_version_prepared_by_fkey" FOREIGN KEY ("prepared_by") REFERENCES "account"("id") ON DELETE RESTRICT ON UPDATE NO ACTION;
@@ -1072,6 +1078,9 @@ ALTER TABLE club_application_version
   ADD CONSTRAINT club_application_version_receipt_timing CHECK (
     receipt_timing_status IS NULL OR receipt_timing_status IN ('ON_TIME', 'LATE')
   ),
+  ADD CONSTRAINT club_application_version_receipt_window_basis CHECK (
+    receipt_window_id IS NULL OR receipt_regulation_version_id IS NOT NULL
+  ),
   ADD CONSTRAINT club_application_version_coach_name CHECK (
     coach_name IS NULL OR (char_length(coach_name) BETWEEN 1 AND 200 AND coach_name = normalize(btrim(regexp_replace(coach_name, '\s+', ' ', 'g')), NFC))
   ),
@@ -1116,9 +1125,22 @@ CREATE TRIGGER club_application_version_seed_editor
   FOR EACH ROW EXECUTE FUNCTION seed_club_application_version_editor();
 
 CREATE FUNCTION preserve_club_application_version() RETURNS trigger LANGUAGE plpgsql AS $$
+DECLARE
+  baseline_state TEXT;
 BEGIN
   IF TG_OP = 'DELETE' THEN
     RAISE EXCEPTION 'ClubApplicationVersion history is retained' USING ERRCODE = '23514';
+  END IF;
+  IF NEW.base_accepted_version_id IS NOT NULL THEN
+    SELECT state INTO baseline_state
+    FROM club_application_version
+    WHERE id = NEW.base_accepted_version_id AND case_id = NEW.case_id;
+    IF baseline_state IS DISTINCT FROM 'APPROVED' THEN
+      RAISE EXCEPTION 'D100 correction baseline must reference an APPROVED version' USING ERRCODE = '23514';
+    END IF;
+  END IF;
+  IF TG_OP = 'INSERT' THEN
+    RETURN NEW;
   END IF;
   IF (NEW.id, NEW.season_id, NEW.case_id, NEW.version_number, NEW.version_kind, NEW.prepared_by,
       NEW.predecessor_version_id, NEW.base_accepted_version_id, NEW.created_at)
@@ -1146,15 +1168,28 @@ BEGIN
   ) THEN
     RAISE EXCEPTION 'Recorded receipt basis is immutable' USING ERRCODE = '23514';
   END IF;
-  IF OLD.state IN ('APPROVED', 'REJECTED', 'CANCELLED', 'WITHDRAWN', 'NEEDS_SUPPLEMENTATION') AND NEW.state IS DISTINCT FROM OLD.state THEN
+  IF OLD.state IN ('APPROVED', 'REJECTED', 'CANCELLED', 'WITHDRAWN') AND NEW.state IS DISTINCT FROM OLD.state THEN
     RAISE EXCEPTION 'Terminal ClubApplicationVersion state is immutable' USING ERRCODE = '23514';
+  END IF;
+  IF OLD.state = 'NEEDS_SUPPLEMENTATION' AND NEW.state IS DISTINCT FROM OLD.state AND NEW.state <> 'CANCELLED' THEN
+    RAISE EXCEPTION 'Returned ClubApplicationVersion state can only transition to CANCELLED' USING ERRCODE = '23514';
+  END IF;
+  IF OLD.state IN ('APPROVED', 'REJECTED', 'CANCELLED', 'WITHDRAWN') AND (
+    NEW.submitted_at IS DISTINCT FROM OLD.submitted_at OR
+    NEW.decided_at IS DISTINCT FROM OLD.decided_at OR
+    NEW.decided_by IS DISTINCT FROM OLD.decided_by OR
+    NEW.decision_reason IS DISTINCT FROM OLD.decision_reason OR
+    NEW.approval_regulation_version_id IS DISTINCT FROM OLD.approval_regulation_version_id OR
+    NEW.official_snapshot IS DISTINCT FROM OLD.official_snapshot
+  ) THEN
+    RAISE EXCEPTION 'Decided ClubApplicationVersion approval and decision metadata are immutable' USING ERRCODE = '23514';
   END IF;
   RETURN NEW;
 END;
 $$;
 
 CREATE TRIGGER club_application_version_immutable
-  BEFORE UPDATE OR DELETE ON club_application_version
+  BEFORE INSERT OR UPDATE OR DELETE ON club_application_version
   FOR EACH ROW EXECUTE FUNCTION preserve_club_application_version();
 
 CREATE FUNCTION preserve_version_editor_history() RETURNS trigger LANGUAGE plpgsql AS $$
@@ -1199,6 +1234,9 @@ DECLARE
   parent_id UUID;
   parent_state TEXT;
 BEGIN
+  IF TG_OP = 'UPDATE' AND NEW.application_version_id IS DISTINCT FROM OLD.application_version_id THEN
+    RAISE EXCEPTION 'ProposedPlayerItem parent application_version_id is immutable' USING ERRCODE = '23514';
+  END IF;
   parent_id := COALESCE(NEW.application_version_id, OLD.application_version_id);
   SELECT state INTO parent_state FROM club_application_version WHERE id = parent_id;
   IF parent_state IS DISTINCT FROM 'DRAFT' THEN
@@ -1224,7 +1262,9 @@ ALTER TABLE registration_version
   ),
   ADD CONSTRAINT registration_version_shirt CHECK (shirt_number IS NULL OR shirt_number BETWEEN 1 AND 99),
   ADD CONSTRAINT registration_version_interval CHECK (
-    playing_start IS NULL OR playing_end IS NULL OR playing_start < playing_end
+    (state <> 'VALID' OR playing_start IS NOT NULL)
+    AND (playing_start IS NULL OR playing_end IS NULL OR playing_start < playing_end)
+    AND (playing_end IS NULL OR playing_start IS NOT NULL)
   ),
   ADD CONSTRAINT registration_version_evidence_branch CHECK (
     evidence_branch IS NULL OR evidence_branch IN ('SEASONS', 'MONTHS')
@@ -1234,6 +1274,9 @@ ALTER TABLE registration_version
   ),
   ADD CONSTRAINT registration_version_receipt_timing CHECK (
     receipt_timing_status IS NULL OR receipt_timing_status IN ('ON_TIME', 'LATE')
+  ),
+  ADD CONSTRAINT registration_version_receipt_window_basis CHECK (
+    receipt_window_id IS NULL OR receipt_regulation_version_id IS NOT NULL
   ),
   ADD CONSTRAINT registration_version_disposition CHECK (
     playing_disposition IS NULL OR playing_disposition IN (
@@ -1512,6 +1555,9 @@ DECLARE
   parent_id UUID;
   parent_state TEXT;
 BEGIN
+  IF TG_OP = 'UPDATE' AND NEW.correction_version_id IS DISTINCT FROM OLD.correction_version_id THEN
+    RAISE EXCEPTION 'RegistrationCorrectionSegment parent correction_version_id is immutable' USING ERRCODE = '23514';
+  END IF;
   parent_id := COALESCE(NEW.correction_version_id, OLD.correction_version_id);
   SELECT state INTO parent_state FROM registration_correction_version WHERE id = parent_id;
   IF parent_state IS DISTINCT FROM 'DRAFT' THEN

@@ -77,6 +77,14 @@ describe('PHASE 3 US2 — Protected Player portraits and current delivery (T010)
       'image/svg+xml',
     ).expect(400);
     await uploadPortrait(playerGrantee, player.id, '1', Buffer.from('not-an-image')).expect(400);
+    await uploadPortrait(
+      playerGrantee,
+      player.id,
+      '1',
+      Buffer.alloc(2_097_153, 1),
+      'oversized.png',
+      'image/png',
+    ).expect(413);
 
     // Upload valid PNG -> normalized WebP served with Cache-Control: no-store
     const up1 = await uploadPortrait(playerGrantee, player.id, '1', png).expect(200);

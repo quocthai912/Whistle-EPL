@@ -58,6 +58,7 @@ type DraftPlayerRow = {
 export type InitialDraftValues = {
   caseId?: string;
   versionId?: string;
+  versionNumber?: number;
   versionRevision?: string;
   clubId: string;
   coachName: string;
@@ -88,17 +89,20 @@ export function ClubApplicationForm({
 }) {
   const { client } = useSession();
   const formId = useId();
-  const [clubId, setClubId] = useState(initial?.clubId ?? '');
-  const [coachName, setCoachName] = useState(initial?.coachName ?? '');
-  const [homeStadiumId, setHomeStadiumId] = useState(initial?.homeStadiumId ?? '');
-  const [representativeName, setRepresentativeName] = useState(initial?.representativeName ?? '');
-  const [representativePhone, setRepresentativePhone] = useState(
-    initial?.representativePhone ?? '',
+  const [frozenInitial] = useState(() => initial);
+  const [clubId, setClubId] = useState(frozenInitial?.clubId ?? '');
+  const [coachName, setCoachName] = useState(frozenInitial?.coachName ?? '');
+  const [homeStadiumId, setHomeStadiumId] = useState(frozenInitial?.homeStadiumId ?? '');
+  const [representativeName, setRepresentativeName] = useState(
+    frozenInitial?.representativeName ?? '',
   );
-  const [contactAddress, setContactAddress] = useState(initial?.contactAddress ?? '');
-  const [notes, setNotes] = useState(initial?.notes ?? '');
+  const [representativePhone, setRepresentativePhone] = useState(
+    frozenInitial?.representativePhone ?? '',
+  );
+  const [contactAddress, setContactAddress] = useState(frozenInitial?.contactAddress ?? '');
+  const [notes, setNotes] = useState(frozenInitial?.notes ?? '');
   const [rows, setRows] = useState<DraftPlayerRow[]>(
-    (initial?.proposedPlayers ?? []).map((item, idx) => ({
+    (frozenInitial?.proposedPlayers ?? []).map((item, idx) => ({
       key: `init-${idx}-${item.playerId}`,
       playerId: item.playerId,
       shirtNumber: item.shirtNumber ? String(item.shirtNumber) : '',
@@ -165,12 +169,17 @@ export function ClubApplicationForm({
     setBusy(true);
     setError('');
     try {
-      if (mode === 'edit' && initial?.caseId && initial?.versionId && initial?.versionRevision) {
-        await client.request(`/club-applications/${initial.caseId}/draft`, {
+      if (
+        mode === 'edit' &&
+        frozenInitial?.caseId &&
+        frozenInitial?.versionId &&
+        frozenInitial?.versionRevision
+      ) {
+        await client.request(`/club-applications/${frozenInitial.caseId}/draft`, {
           method: 'PATCH',
           body: {
-            versionId: initial.versionId,
-            expectedRevision: initial.versionRevision,
+            versionId: frozenInitial.versionId,
+            expectedRevision: frozenInitial.versionRevision,
             coachName: coachName.trim() || null,
             homeStadiumId: homeStadiumId || null,
             representativeName: representativeName.trim() || null,
@@ -180,7 +189,7 @@ export function ClubApplicationForm({
             proposedPlayers,
           },
         });
-        onSaved(initial.caseId);
+        onSaved(frozenInitial.caseId);
       } else {
         const response = await client.request<{ caseId: string }>(
           `/seasons/${seasonId}/club-applications`,
@@ -223,7 +232,17 @@ export function ClubApplicationForm({
         : 'Tạo hồ sơ đăng ký tham dự câu lạc bộ';
 
   return (
-    <Modal open title={title} onCancel={onClose} footer={null}>
+    <Modal
+      open
+      title={title}
+      closable={!busy}
+      maskClosable={!busy}
+      keyboard={!busy}
+      onCancel={() => {
+        if (!busy) onClose();
+      }}
+      footer={null}
+    >
       <form
         ref={feedbackRef}
         id={formId}
@@ -233,6 +252,13 @@ export function ClubApplicationForm({
         {error && (
           <p role="alert" className={css.error}>
             {error}
+          </p>
+        )}
+
+        {mode === 'new-round' && frozenInitial?.versionNumber && (
+          <p className={pageCss.metaNote}>
+            Khởi tạo dữ liệu từ Phiên bản {frozenInitial.versionNumber}. Phiên bản bổ sung mới sẽ
+            nối tiếp vòng xử lý gần nhất của hồ sơ này.
           </p>
         )}
 
@@ -381,9 +407,14 @@ export function ClubApplicationForm({
           <button type="button" onClick={onClose} disabled={busy}>
             Hủy
           </button>
-          {reloadRequired && onConflictReload ? (
-            <button type="button" className={css.primary} data-primary onClick={onConflictReload}>
-              Tải lại hồ sơ
+          {reloadRequired ? (
+            <button
+              type="button"
+              className={css.primary}
+              data-primary
+              onClick={onConflictReload ?? onClose}
+            >
+              {onConflictReload ? 'Tải lại hồ sơ' : 'Tải lại danh sách'}
             </button>
           ) : (
             <button type="submit" className={css.primary} disabled={busy}>

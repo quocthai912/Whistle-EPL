@@ -8,6 +8,7 @@ import {
   invalid,
   listQuery,
   missing,
+  uuid,
 } from '../identity-access/accounts.dto';
 import type { HttpBusinessExecutionAdapter } from '../platform/http-business-execution';
 import { withPaginationMeta } from '../platform/response-envelope.interceptor';
@@ -29,6 +30,7 @@ import {
   requireSeasonRegistrationOfficer,
   requireSeasonRegistrationReader,
   resolveEffectiveRegulationForWrite,
+  resolveEffectiveRegulationWithInstant,
 } from './registration-execution';
 import { requiredBoundedText } from './registration-validation';
 
@@ -150,6 +152,7 @@ export class RegistrationIntakeService {
       )
     )
       throw invalid();
+    const targetVersionId = values.targetVersionId ? uuid(values.targetVersionId) : undefined;
 
     try {
       return await this.execution.read(
@@ -160,22 +163,29 @@ export class RegistrationIntakeService {
             requireSeasonRegistrationReader(context, accountId, seasonId),
         },
         async (context) => {
+          const versionPredicates: Prisma.ReceiptExceptionVersionWhereInput[] = [];
+          if (values.targetKind === 'CLUB_APPLICATION') {
+            versionPredicates.push({ clubApplicationVersionId: { not: null } });
+          } else if (values.targetKind === 'PLAYER_REGISTRATION') {
+            versionPredicates.push({ registrationVersionId: { not: null } });
+          }
+          if (targetVersionId) {
+            versionPredicates.push({
+              OR: [
+                { clubApplicationVersionId: targetVersionId },
+                { registrationVersionId: targetVersionId },
+              ],
+            });
+          }
           const where: Prisma.ReceiptExceptionCaseWhereInput = {
             seasonId,
-            ...(values.targetKind === 'CLUB_APPLICATION'
-              ? { versions: { some: { clubApplicationVersionId: { not: null } } } }
-              : values.targetKind === 'PLAYER_REGISTRATION'
-                ? { versions: { some: { registrationVersionId: { not: null } } } }
-                : {}),
-            ...(values.targetVersionId
+            ...(versionPredicates.length > 0
               ? {
                   versions: {
-                    some: {
-                      OR: [
-                        { clubApplicationVersionId: values.targetVersionId },
-                        { registrationVersionId: values.targetVersionId },
-                      ],
-                    },
+                    some:
+                      versionPredicates.length === 1
+                        ? versionPredicates[0]
+                        : { AND: versionPredicates },
                   },
                 }
               : {}),
@@ -316,6 +326,7 @@ export class RegistrationIntakeService {
             );
           }
 
+          await context.recheckAuthority();
           const now = await context.now();
           let caseId: string;
           let versionNumber = 1;
@@ -546,7 +557,11 @@ export class RegistrationIntakeService {
               exceptionCase.seasonId,
               targetVersionId,
             );
-            const now = await context.now();
+            const { resolvedAt: now } = await resolveEffectiveRegulationWithInstant(
+              context,
+              exceptionCase.seasonId,
+              this.activation,
+            );
             const saved = await context.db.receiptExceptionVersion.update({
               where: { id: version.id },
               data: {
@@ -626,8 +641,6 @@ export class RegistrationIntakeService {
           : 'PLAYER_REGISTRATION';
         const targetVersionId = version.clubApplicationVersionId ?? version.registrationVersionId!;
 
-        const now = await context.now();
-
         if (normalizedAction === 'submit') {
           if (version.state !== 'DRAFT') {
             throw conflict(
@@ -644,6 +657,8 @@ export class RegistrationIntakeService {
             exceptionCase.seasonId,
             targetVersionId,
           );
+          await context.recheckAuthority();
+          const now = await context.now();
           const saved = await context.db.receiptExceptionVersion.update({
             where: { id: version.id },
             data: { state: 'SUBMITTED', submittedAt: now, revision: { increment: 1 } },
@@ -678,7 +693,14 @@ export class RegistrationIntakeService {
           };
         }
 
-        if (version.state !== 'SUBMITTED') {
+        if (normalizedAction === 'withdraw') {
+          if (version.state !== 'SUBMITTED' && version.state !== 'DRAFT') {
+            throw conflict(
+              'STATE_CONFLICT',
+              'Chỉ có thể rút đề xuất ngoại lệ ở trạng thái Nháp hoặc Chờ phê duyệt.',
+            );
+          }
+        } else if (version.state !== 'SUBMITTED') {
           throw conflict(
             'STATE_CONFLICT',
             'Đề xuất ngoại lệ không còn ở trạng thái Chờ phê duyệt.',
@@ -692,6 +714,9 @@ export class RegistrationIntakeService {
             accountId,
           );
         }
+
+        await context.recheckAuthority();
+        const now = await context.now();
 
         const nextState =
           normalizedAction === 'withdraw'

@@ -96,11 +96,20 @@ export function PlayersPage() {
           <p>Tra cứu, cập nhật hồ sơ gốc và quản lý ảnh chân dung cầu thủ.</p>
         </div>
         {list.data?.capabilities.canEdit && (
-          <button type="button" className={css.primary} onClick={() => setCreating(true)}>
+          <button
+            type="button"
+            className={css.primary}
+            disabled={!catalogsQuery.data || !!catalogsQuery.error}
+            onClick={() => setCreating(true)}
+          >
             <AdminIcon name="plus" /> Thêm cầu thủ
           </button>
         )}
       </div>
+
+      {catalogsQuery.error && (
+        <ListFeedback loading={false} error={catalogsQuery.error} onRetry={catalogsQuery.reload} />
+      )}
 
       <div className={css.filters}>
         <label className={css.search}>
@@ -340,11 +349,16 @@ function PlayerProfileDrawer({
                 <button
                   type="button"
                   className={css.primary}
+                  disabled={!catalogs.positions.length || !catalogs.nationalities.length}
                   onClick={() => setFormMode({ detail, correcting: false })}
                 >
                   Cập nhật thông tin
                 </button>
-                <button type="button" onClick={() => setFormMode({ detail, correcting: true })}>
+                <button
+                  type="button"
+                  disabled={!catalogs.positions.length || !catalogs.nationalities.length}
+                  onClick={() => setFormMode({ detail, correcting: true })}
+                >
                   Hiệu chỉnh thông tin sai sót
                 </button>
                 <button

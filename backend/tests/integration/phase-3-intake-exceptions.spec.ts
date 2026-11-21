@@ -226,6 +226,35 @@ describe('PHASE 3 US1 — Shared exact-version intake timing and D053 receipt ex
       })
       .expect(409);
 
+    // Save a DRAFT exception for v2 and withdraw it while still in DRAFT
+    const ex2Draft = await fixture
+      .apiRequest(officerA, 'post', `/seasons/${seasonA}/receipt-exceptions`, {
+        targetKind: 'CLUB_APPLICATION',
+        targetVersionId: v2,
+        reason: 'Nháp ngoại lệ v2 để rút.',
+        basis: 'Căn cứ nháp v2.',
+        submitImmediately: false,
+      })
+      .expect(201);
+    await fixture
+      .apiRequest(officerA, 'post', `/receipt-exceptions/${ex2Draft.body.data.caseId}/withdraw`, {
+        versionId: ex2Draft.body.data.versionId,
+        expectedRevision: '1',
+        reason: 'Rút bản nháp ngoại lệ.',
+      })
+      .expect(200);
+
+    // Submit a new exception proposal for v2 while v2 is still RECEIVED
+    const ex2Submitted = await fixture
+      .apiRequest(officerA, 'post', `/seasons/${seasonA}/receipt-exceptions`, {
+        targetKind: 'CLUB_APPLICATION',
+        targetVersionId: v2,
+        reason: 'Đề xuất ngoại lệ cho v2 trước khi hủy v2.',
+        basis: 'Căn cứ v2.',
+        submitImmediately: true,
+      })
+      .expect(201);
+
     // Cancel v2 -> cannot propose or approve an exception for cancelled v2
     await fixture
       .apiRequest(officerA, 'post', `/club-applications/${caseId}/cancel`, {
@@ -234,6 +263,21 @@ describe('PHASE 3 US1 — Shared exact-version intake timing and D053 receipt ex
         reason: 'Hủy phiên bản 2.',
       })
       .expect(200);
+
+    // Manager attempts to approve the already-submitted exception for cancelled v2 -> rejected with 409!
+    await fixture
+      .apiRequest(
+        managerA,
+        'post',
+        `/receipt-exceptions/${ex2Submitted.body.data.caseId}/approve`,
+        {
+          versionId: ex2Submitted.body.data.versionId,
+          expectedRevision: '1',
+          reason: 'Thử duyệt ngoại lệ cho phiên bản đã hủy.',
+        },
+        randomUUID(),
+      )
+      .expect(409);
 
     await fixture
       .apiRequest(officerA, 'post', `/seasons/${seasonA}/receipt-exceptions`, {

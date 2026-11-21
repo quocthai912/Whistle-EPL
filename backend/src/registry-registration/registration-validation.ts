@@ -21,6 +21,10 @@ export function parseBirthDate(raw: string, nowUtc: Date): { iso: string; date: 
   const trimmed = raw.trim();
   const match = DATE_ONLY_PATTERN.exec(trimmed);
   if (!match) throw invalid('Ngày sinh phải có định dạng YYYY-MM-DD.');
+  const year = Number(match[1]);
+  if (year < 1900) {
+    throw invalid('Ngày sinh không phải là ngày hợp lệ trên lịch.');
+  }
   const date = new Date(`${trimmed}T00:00:00.000Z`);
   if (!Number.isFinite(date.getTime()) || date.toISOString().slice(0, 10) !== trimmed) {
     throw invalid('Ngày sinh không phải là ngày hợp lệ trên lịch.');
@@ -72,6 +76,7 @@ export function optionalBoundedText(
 export function requiredBoundedText(raw: string, max: number, message?: string): string {
   if (typeof raw !== 'string') throw invalid(message);
   const normalized = normalizeMultilineText(raw);
-  if (!normalized || [...normalized].length > max) throw invalid(message);
+  if (!normalized || normalized.includes('\0') || [...normalized].length > max)
+    throw invalid(message);
   return normalized;
 }

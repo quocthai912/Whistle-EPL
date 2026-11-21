@@ -427,6 +427,25 @@ describe('PHASE 3 US1 — Club participation applications (BM1) intake and appro
         expectedRevision: recLate.body.data.revision,
       })
       .expect(400);
+
+    // Return v2 for supplementation -> NEEDS_SUPPLEMENTATION, then cancel v2 before starting a new round (D055)
+    const ret2 = await fixture
+      .apiRequest(officerInWindow, 'post', `/club-applications/${caseId}/return`, {
+        versionId: v2,
+        expectedRevision: recLate.body.data.revision,
+        reason: 'Trả lại để hủy vòng bổ sung.',
+      })
+      .expect(200);
+    expect(ret2.body.data.state).toBe('NEEDS_SUPPLEMENTATION');
+
+    const can2 = await fixture
+      .apiRequest(officerInWindow, 'post', `/club-applications/${caseId}/cancel`, {
+        versionId: v2,
+        expectedRevision: ret2.body.data.revision,
+        reason: 'Hủy vòng hồ sơ sau khi đã trả lại bổ sung.',
+      })
+      .expect(200);
+    expect(can2.body.data.state).toBe('CANCELLED');
   });
 
   it('rejects approval on D099 club/stadium discontinuation, wrong season, no effective rule and Closed season', async () => {
@@ -525,13 +544,16 @@ describe('PHASE 3 US1 — Club participation applications (BM1) intake and appro
       )
       .expect(409);
 
-    // 4. Closed season rejects BM1 writes
+    // 4. Closed season rejects BM1 writes even for an active/available club
+    const { club: activeClub } = await fixture.seedClubAndStadium('CLSD');
     await fixture.database.client.season.update({
       where: { id: seasonB },
       data: { state: 'CLOSED' },
     });
     await fixture
-      .apiRequest(officerB, 'post', `/seasons/${seasonB}/club-applications`, { clubId: club.id })
+      .apiRequest(officerB, 'post', `/seasons/${seasonB}/club-applications`, {
+        clubId: activeClub.id,
+      })
       .expect(409);
   });
 });

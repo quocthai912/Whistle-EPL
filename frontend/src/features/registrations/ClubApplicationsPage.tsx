@@ -1,4 +1,4 @@
-import { useId, useState, type FormEvent } from 'react';
+import { useEffect, useId, useState, type FormEvent, type KeyboardEvent } from 'react';
 import { Link, useNavigate, useParams } from 'react-router';
 import { HttpFailure } from '../../shared/http/client';
 import { useSession } from '../../shared/http/use-session';
@@ -203,11 +203,170 @@ function statePillClass(state: ApplicationState): string {
   return pageCss.pill;
 }
 
+function missingSubmissionFields(version: ClubApplicationVersionDetail): string[] {
+  const missing: string[] = [];
+  if (!version.coachName) missing.push('Huấn luyện viên trưởng');
+  if (!version.homeStadiumId) missing.push('Sân nhà đăng ký');
+  if (!version.representativeName) missing.push('Người đại diện');
+  if (!version.representativePhone) missing.push('Số điện thoại đại diện');
+  if (!version.contactAddress) missing.push('Địa chỉ liên hệ');
+  if (!version.proposedPlayers.length)
+    missing.push('Danh sách cầu thủ dự kiến (ít nhất 1 cầu thủ)');
+  return missing;
+}
+
+function buildInitialDraftValues(
+  detail: ClubApplicationDetail,
+  sourceVersion: ClubApplicationVersionDetail,
+): InitialDraftValues {
+  return {
+    caseId: detail.id,
+    versionId: sourceVersion.id,
+    versionNumber: sourceVersion.versionNumber,
+    versionRevision: sourceVersion.revision,
+    clubId: detail.club.id,
+    coachName: sourceVersion.coachName ?? '',
+    homeStadiumId: sourceVersion.homeStadiumId ?? '',
+    representativeName: sourceVersion.representativeName ?? '',
+    representativePhone: sourceVersion.representativePhone ?? '',
+    contactAddress: sourceVersion.contactAddress ?? '',
+    notes: sourceVersion.notes ?? '',
+    proposedPlayers: sourceVersion.proposedPlayers.map((p) => ({
+      playerId: p.playerId,
+      shirtNumber: p.shirtNumber,
+      notes: p.notes,
+    })),
+  };
+}
+
+type DisplayedProposedPlayer = {
+  key: string;
+  positionOrder: number;
+  fullName: string;
+  code: string;
+  positionCode: string;
+  shirtNumber: number | null;
+  notes: string | null;
+};
+
+function resolveDisplayedVersionFacts(
+  detail: ClubApplicationDetail,
+  version: ClubApplicationVersionDetail,
+) {
+  const snap =
+    version.state === 'APPROVED' &&
+    version.officialSnapshot &&
+    typeof version.officialSnapshot === 'object'
+      ? version.officialSnapshot
+      : null;
+
+  const snapClub =
+    snap?.club && typeof snap.club === 'object'
+      ? (snap.club as { code?: unknown; name?: unknown })
+      : null;
+  const clubName = typeof snapClub?.name === 'string' ? snapClub.name : detail.club.name;
+  const clubCode = typeof snapClub?.code === 'string' ? snapClub.code : detail.club.code;
+
+  const snapStadium =
+    snap?.homeStadium && typeof snap.homeStadium === 'object'
+      ? (snap.homeStadium as { code?: unknown; name?: unknown })
+      : null;
+  const homeStadiumLabel =
+    snapStadium && typeof snapStadium.name === 'string' && typeof snapStadium.code === 'string'
+      ? `${snapStadium.name} (${snapStadium.code})${version.homeStadium?.discontinuedAt ? ' · Đã ngừng sử dụng' : ''}`
+      : version.homeStadium
+        ? `${version.homeStadium.name} (${version.homeStadium.code})${version.homeStadium.discontinuedAt ? ' · Đã ngừng sử dụng' : ''}`
+        : 'Chưa chọn';
+
+  const coachName =
+    snap && typeof snap.coachName === 'string' ? snap.coachName : (version.coachName ?? null);
+  const representativeName =
+    snap && typeof snap.representativeName === 'string'
+      ? snap.representativeName
+      : (version.representativeName ?? null);
+  const representativePhone =
+    snap && typeof snap.representativePhone === 'string'
+      ? snap.representativePhone
+      : (version.representativePhone ?? null);
+  const contactAddress =
+    snap && typeof snap.contactAddress === 'string'
+      ? snap.contactAddress
+      : (version.contactAddress ?? null);
+  const notes = snap && typeof snap.notes === 'string' ? snap.notes : (version.notes ?? null);
+
+  let proposedPlayers: DisplayedProposedPlayer[];
+  if (snap && Array.isArray(snap.proposedPlayers)) {
+    proposedPlayers = snap.proposedPlayers.map((raw, idx) => {
+      const entry = (raw && typeof raw === 'object' ? raw : {}) as Record<string, unknown>;
+      return {
+        key: `snap-${idx}-${String(entry.playerId ?? idx)}`,
+        positionOrder: typeof entry.positionOrder === 'number' ? entry.positionOrder : idx + 1,
+        fullName: typeof entry.fullName === 'string' ? entry.fullName : '—',
+        code: typeof entry.code === 'string' ? entry.code : '—',
+        positionCode: typeof entry.positionCode === 'string' ? entry.positionCode : '—',
+        shirtNumber: typeof entry.shirtNumber === 'number' ? entry.shirtNumber : null,
+        notes: typeof entry.notes === 'string' ? entry.notes : null,
+      };
+    });
+  } else {
+    proposedPlayers = version.proposedPlayers.map((item) => ({
+      key: item.id,
+      positionOrder: item.positionOrder,
+      fullName: item.player.fullName,
+      code: item.player.code,
+      positionCode: item.player.positionCode,
+      shirtNumber: item.shirtNumber,
+      notes: item.notes,
+    }));
+  }
+
+  return {
+    clubName,
+    clubCode,
+    homeStadiumLabel,
+    coachName,
+    representativeName,
+    representativePhone,
+    contactAddress,
+    notes,
+    proposedPlayers,
+  };
+}
+
 export function ClubApplicationsPage() {
   const { seasonId } = useParams();
-  const { session } = useSession();
+  const { session, client } = useSession();
   const navigate = useNavigate();
   const seasonsQuery = useAdminList<SeasonList, SeasonHistoryMeta>('/seasons?page=1&pageSize=100');
+  const [extraSeasons, setExtraSeasons] = useState<SeasonList['items']>([]);
+
+  const totalSeasons = seasonsQuery.meta?.total ?? 0;
+  const seasonPageSize = seasonsQuery.meta?.pageSize ?? 100;
+
+  useEffect(() => {
+    if (!seasonsQuery.data || totalSeasons <= seasonPageSize) {
+      return;
+    }
+    let cancelled = false;
+    const totalPages = Math.ceil(totalSeasons / seasonPageSize);
+    void (async () => {
+      try {
+        const pages = await Promise.all(
+          Array.from({ length: totalPages - 1 }, (_, idx) =>
+            client.request<SeasonList>(`/seasons?page=${idx + 2}&pageSize=${seasonPageSize}`),
+          ),
+        );
+        if (!cancelled) {
+          setExtraSeasons(pages.flatMap((res) => res.data.items));
+        }
+      } catch {
+        if (!cancelled) setExtraSeasons([]);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [client, seasonPageSize, seasonsQuery.data, totalSeasons]);
 
   const allowedSeasonIds = new Set<string>([
     ...(session?.seasonManagerIds ?? []),
@@ -217,7 +376,16 @@ export function ClubApplicationsPage() {
       )
       .map((role) => role.seasonId) ?? []),
   ]);
-  const seasons = (seasonsQuery.data?.items ?? []).filter((s) => allowedSeasonIds.has(s.id));
+  const allSeasons = [
+    ...(seasonsQuery.data?.items ?? []),
+    ...(totalSeasons > seasonPageSize ? extraSeasons : []),
+  ];
+  const seenSeasonIds = new Set<string>();
+  const seasons = allSeasons.filter((s) => {
+    if (!allowedSeasonIds.has(s.id) || seenSeasonIds.has(s.id)) return false;
+    seenSeasonIds.add(s.id);
+    return true;
+  });
   const selectedSeason = seasons.find((s) => s.id === seasonId);
 
   return (
@@ -319,6 +487,9 @@ function SeasonClubApplicationsList({ seasonId }: { seasonId: string }) {
 
   return (
     <div style={{ display: 'grid', gap: 16 }}>
+      {references.error && (
+        <ListFeedback loading={false} error={references.error} onRetry={references.reload} />
+      )}
       {refData && (
         <div
           className={`${pageCss.banner} ${seasonOpen && !refData.effectiveRegulation ? pageCss.bannerWarn : ''}`}
@@ -532,6 +703,11 @@ function SeasonClubApplicationsList({ seasonId }: { seasonId: string }) {
           references={refData}
           mode="create"
           onClose={() => setCreating(false)}
+          onConflictReload={() => {
+            setCreating(false);
+            list.reload();
+            references.reload();
+          }}
           onSaved={(caseId) => {
             setCreating(false);
             setPage(1);
@@ -541,11 +717,13 @@ function SeasonClubApplicationsList({ seasonId }: { seasonId: string }) {
         />
       )}
 
-      {selectedCaseId && refData && (
+      {selectedCaseId && (
         <ClubApplicationDrawer
           caseId={selectedCaseId}
           seasonId={seasonId}
-          references={refData}
+          references={refData ?? null}
+          referencesError={references.error}
+          onReloadReferences={references.reload}
           onClose={() => setSelectedCaseId(undefined)}
           onChange={list.reload}
         />
@@ -582,12 +760,16 @@ function ClubApplicationDrawer({
   caseId,
   seasonId,
   references,
+  referencesError,
+  onReloadReferences,
   onClose,
   onChange,
 }: {
   caseId: string;
   seasonId: string;
-  references: ClubApplicationReferences;
+  references: ClubApplicationReferences | null;
+  referencesError?: string;
+  onReloadReferences: () => void;
   onClose: () => void;
   onChange: () => void;
 }) {
@@ -596,11 +778,15 @@ function ClubApplicationDrawer({
   const detail = resource.data;
   const [selectedVersionId, setSelectedVersionId] = useState<string>();
   const [historyOpen, setHistoryOpen] = useState(false);
-  const [editMode, setEditMode] = useState<'edit' | 'new-round'>();
+  const [editDraftState, setEditDraftState] = useState<{
+    mode: 'edit' | 'new-round';
+    initial: InitialDraftValues;
+  }>();
   const [modalAction, setModalAction] = useState<PendingActionModal>();
 
   const activeVersion =
     detail?.versions.find((v) => v.id === selectedVersionId) ?? detail?.versions[0];
+  const latestVersion = detail?.versions[0];
   const currentAccountId = session?.account.id;
   const seasonOpen = detail?.season.state === 'OPEN';
 
@@ -615,270 +801,240 @@ function ClubApplicationDrawer({
   const openException = activeVersion?.receiptExceptions.find(
     (ex) => ex.state === 'DRAFT' || ex.state === 'SUBMITTED',
   );
+  const displayedFacts =
+    detail && activeVersion ? resolveDisplayedVersionFacts(detail, activeVersion) : null;
+  const missingD059Fields = activeVersion ? missingSubmissionFields(activeVersion) : [];
 
-  const initialForForm: InitialDraftValues | undefined =
-    detail && activeVersion
-      ? {
-          caseId: detail.id,
-          versionId: activeVersion.id,
-          versionRevision: activeVersion.revision,
-          clubId: detail.club.id,
-          coachName: activeVersion.coachName ?? '',
-          homeStadiumId: activeVersion.homeStadiumId ?? '',
-          representativeName: activeVersion.representativeName ?? '',
-          representativePhone: activeVersion.representativePhone ?? '',
-          contactAddress: activeVersion.contactAddress ?? '',
-          notes: activeVersion.notes ?? '',
-          proposedPlayers: activeVersion.proposedPlayers.map((p) => ({
-            playerId: p.playerId,
-            shirtNumber: p.shirtNumber,
-            notes: p.notes,
-          })),
-        }
-      : undefined;
+  function handleVersionTabKeyDown(
+    event: KeyboardEvent<HTMLButtonElement>,
+    versions: ClubApplicationVersionDetail[],
+    currentIndex: number,
+  ) {
+    if (!versions.length) return;
+    let nextIndex = -1;
+    if (event.key === 'ArrowRight') {
+      nextIndex = (currentIndex + 1) % versions.length;
+    } else if (event.key === 'ArrowLeft') {
+      nextIndex = (currentIndex - 1 + versions.length) % versions.length;
+    } else if (event.key === 'Home') {
+      nextIndex = 0;
+    } else if (event.key === 'End') {
+      nextIndex = versions.length - 1;
+    }
+    if (nextIndex >= 0) {
+      event.preventDefault();
+      const target = versions[nextIndex];
+      setSelectedVersionId(target.id);
+      document.getElementById(`version-tab-${target.id}`)?.focus();
+    }
+  }
 
   return (
     <AdminDrawer
       width={820}
-      title={detail ? `${detail.club.name} (${detail.club.code})` : 'Hồ sơ tham dự câu lạc bộ'}
+      title={
+        displayedFacts
+          ? `${displayedFacts.clubName} (${displayedFacts.clubCode})`
+          : detail
+            ? `${detail.club.name} (${detail.club.code})`
+            : 'Hồ sơ tham dự câu lạc bộ'
+      }
       subtitle={detail ? `Mùa giải ${detail.season.name}` : 'Chi tiết hồ sơ'}
       icon={<AdminIcon name="application" />}
       onClose={onClose}
     >
       <ListFeedback loading={resource.loading} error={resource.error} onRetry={resource.reload} />
+      {referencesError && (
+        <ListFeedback loading={false} error={referencesError} onRetry={onReloadReferences} />
+      )}
 
-      {detail && activeVersion && (
+      {detail && activeVersion && displayedFacts && (
         <div className={css.details}>
           {/* Version switcher */}
           <div className={pageCss.versionTabs} role="tablist" aria-label="Các phiên bản hồ sơ">
-            {detail.versions.map((v) => (
+            {detail.versions.map((v, idx) => (
               <button
                 key={v.id}
+                id={`version-tab-${v.id}`}
                 type="button"
                 role="tab"
                 aria-selected={v.id === activeVersion.id}
+                aria-controls="version-tabpanel"
+                tabIndex={v.id === activeVersion.id ? 0 : -1}
                 className={v.id === activeVersion.id ? pageCss.versionTabActive : undefined}
                 onClick={() => setSelectedVersionId(v.id)}
+                onKeyDown={(event) => handleVersionTabKeyDown(event, detail.versions, idx)}
               >
                 Phiên bản {v.versionNumber} · {stateLabels[v.state]}
               </button>
             ))}
           </div>
 
-          <div className={css.actions}>
-            <span className={statePillClass(activeVersion.state)}>
-              {stateLabels[activeVersion.state]}
-            </span>
-            {activeVersion.receiptTimingStatus === 'ON_TIME' && (
-              <span className={`${pageCss.pill} ${pageCss.pillOk}`}>
-                Tiếp nhận đúng hạn · {formatSeasonInstant(activeVersion.receivedAt!)}
+          <div
+            id="version-tabpanel"
+            role="tabpanel"
+            aria-labelledby={`version-tab-${activeVersion.id}`}
+            style={{ display: 'grid', gap: 16 }}
+          >
+            <div className={css.actions}>
+              <span className={statePillClass(activeVersion.state)}>
+                {stateLabels[activeVersion.state]}
               </span>
-            )}
-            {activeVersion.receiptTimingStatus === 'LATE' && (
-              <span className={`${pageCss.pill} ${pageCss.pillLate}`}>
-                Tiếp nhận ngoài hạn · {formatSeasonInstant(activeVersion.receivedAt!)}
-              </span>
-            )}
-            {detail.currentAcceptedVersionId === activeVersion.id && (
-              <span className={`${pageCss.pill} ${pageCss.pillApproved}`}>Nội dung chính thức</span>
-            )}
-          </div>
+              {activeVersion.receiptTimingStatus === 'ON_TIME' && (
+                <span className={`${pageCss.pill} ${pageCss.pillOk}`}>
+                  Tiếp nhận đúng hạn · {formatSeasonInstant(activeVersion.receivedAt!)}
+                </span>
+              )}
+              {activeVersion.receiptTimingStatus === 'LATE' && (
+                <span className={`${pageCss.pill} ${pageCss.pillLate}`}>
+                  Tiếp nhận ngoài hạn · {formatSeasonInstant(activeVersion.receivedAt!)}
+                </span>
+              )}
+              {detail.currentAcceptedVersionId === activeVersion.id && (
+                <span className={`${pageCss.pill} ${pageCss.pillApproved}`}>
+                  Nội dung chính thức
+                </span>
+              )}
+            </div>
 
-          <dl className={css.detailGrid}>
-            <div>
-              <dt>Huấn luyện viên trưởng</dt>
-              <dd>{activeVersion.coachName ?? 'Chưa nhập'}</dd>
-            </div>
-            <div>
-              <dt>Sân nhà đăng ký</dt>
-              <dd>
-                {activeVersion.homeStadium
-                  ? `${activeVersion.homeStadium.name} (${activeVersion.homeStadium.code})${activeVersion.homeStadium.discontinuedAt ? ' · Đã ngừng sử dụng' : ''}`
-                  : 'Chưa chọn'}
-              </dd>
-            </div>
-            <div>
-              <dt>Người đại diện</dt>
-              <dd>{activeVersion.representativeName ?? 'Chưa nhập'}</dd>
-            </div>
-            <div>
-              <dt>Số điện thoại đại diện</dt>
-              <dd>{activeVersion.representativePhone ?? 'Chưa nhập'}</dd>
-            </div>
-            <div className={clubCss.full}>
-              <dt>Địa chỉ liên hệ</dt>
-              <dd>{activeVersion.contactAddress ?? 'Chưa nhập'}</dd>
-            </div>
-            {activeVersion.notes && (
-              <div className={clubCss.full}>
-                <dt>Ghi chú</dt>
-                <dd>{activeVersion.notes}</dd>
-              </div>
-            )}
-            <div>
-              <dt>Người soạn thảo</dt>
-              <dd>{activeVersion.preparer.fullName}</dd>
-            </div>
-            {activeVersion.decider && (
-              <div>
-                <dt>Người xử lý quyết định</dt>
-                <dd>
-                  {activeVersion.decider.fullName}
-                  {activeVersion.decidedAt
-                    ? ` · ${formatSeasonInstant(activeVersion.decidedAt)}`
-                    : ''}
-                </dd>
-              </div>
-            )}
-            {activeVersion.decisionReason && (
-              <div className={clubCss.full}>
-                <dt>Lý do quyết định</dt>
-                <dd>{activeVersion.decisionReason}</dd>
-              </div>
-            )}
-          </dl>
-
-          {/* Proposed Players */}
-          <section className={reviewCss.review} aria-label="Danh sách cầu thủ dự kiến">
-            <strong>Danh sách cầu thủ dự kiến ({activeVersion.proposedPlayers.length})</strong>
-            {activeVersion.proposedPlayers.length === 0 ? (
-              <p className={pageCss.metaNote} style={{ marginTop: 8 }}>
-                Chưa có cầu thủ dự kiến nào trong phiên bản này.
+            {activeVersion.state === 'RECEIVED' && missingD059Fields.length > 0 && (
+              <p className={pageCss.metaNote} role="status">
+                Phiên bản đã tiếp nhận còn thiếu thông tin bắt buộc để trình duyệt:{' '}
+                {missingD059Fields.join(', ')}. Hãy chọn &ldquo;Yêu cầu bổ sung&rdquo; để tạo phiên
+                bản bổ sung mới.
               </p>
-            ) : (
-              <ul>
-                {activeVersion.proposedPlayers.map((item) => (
-                  <li key={item.id}>
-                    <strong>
-                      {item.positionOrder}. {item.player.fullName}
-                    </strong>{' '}
-                    ({item.player.code} · {item.player.positionCode})
-                    {item.shirtNumber ? ` · Số áo dự kiến: ${item.shirtNumber}` : ''}
-                    {item.notes ? ` · ${item.notes}` : ''}
-                  </li>
-                ))}
-              </ul>
             )}
-          </section>
 
-          {/* Late Receipt Exception Section */}
-          {activeVersion.receiptTimingStatus === 'LATE' && (
-            <section className={reviewCss.review} aria-label="Ngoại lệ tiếp nhận ngoài hạn">
-              <strong>
-                Ngoại lệ tiếp nhận ngoài hạn (gắn riêng cho Phiên bản {activeVersion.versionNumber})
-              </strong>
-              {approvedException ? (
-                <p style={{ marginTop: 8 }}>
-                  Đã phê duyệt ngoại lệ tiếp nhận bởi {approvedException.decider?.fullName}
-                  {approvedException.decidedAt
-                    ? ` lúc ${formatSeasonInstant(approvedException.decidedAt)}`
-                    : ''}
-                  . Có thể tiếp tục trình phê duyệt phiên bản này.
+            <dl className={css.detailGrid}>
+              <div>
+                <dt>Huấn luyện viên trưởng</dt>
+                <dd>{displayedFacts.coachName ?? 'Chưa nhập'}</dd>
+              </div>
+              <div>
+                <dt>Sân nhà đăng ký</dt>
+                <dd>{displayedFacts.homeStadiumLabel}</dd>
+              </div>
+              <div>
+                <dt>Người đại diện</dt>
+                <dd>{displayedFacts.representativeName ?? 'Chưa nhập'}</dd>
+              </div>
+              <div>
+                <dt>Số điện thoại đại diện</dt>
+                <dd>{displayedFacts.representativePhone ?? 'Chưa nhập'}</dd>
+              </div>
+              <div className={clubCss.full}>
+                <dt>Địa chỉ liên hệ</dt>
+                <dd>{displayedFacts.contactAddress ?? 'Chưa nhập'}</dd>
+              </div>
+              {displayedFacts.notes && (
+                <div className={clubCss.full}>
+                  <dt>Ghi chú</dt>
+                  <dd>{displayedFacts.notes}</dd>
+                </div>
+              )}
+              <div>
+                <dt>Người soạn thảo</dt>
+                <dd>{activeVersion.preparer.fullName}</dd>
+              </div>
+              {activeVersion.decider && (
+                <div>
+                  <dt>Người xử lý quyết định</dt>
+                  <dd>
+                    {activeVersion.decider.fullName}
+                    {activeVersion.decidedAt
+                      ? ` · ${formatSeasonInstant(activeVersion.decidedAt)}`
+                      : ''}
+                  </dd>
+                </div>
+              )}
+              {activeVersion.decisionReason && (
+                <div className={clubCss.full}>
+                  <dt>Lý do quyết định</dt>
+                  <dd>{activeVersion.decisionReason}</dd>
+                </div>
+              )}
+            </dl>
+
+            {/* Proposed Players */}
+            <section className={reviewCss.review} aria-label="Danh sách cầu thủ dự kiến">
+              <strong>Danh sách cầu thủ dự kiến ({displayedFacts.proposedPlayers.length})</strong>
+              {displayedFacts.proposedPlayers.length === 0 ? (
+                <p className={pageCss.metaNote} style={{ marginTop: 8 }}>
+                  Chưa có cầu thủ dự kiến nào trong phiên bản này.
                 </p>
               ) : (
-                <p className={pageCss.metaNote} style={{ marginTop: 8 }}>
-                  Phiên bản này được tiếp nhận ngoài khung thời gian quy định. Cần có ngoại lệ tiếp
-                  nhận được quản lý mùa giải độc lập phê duyệt cho đúng phiên bản này trước khi
-                  trình duyệt.
-                </p>
-              )}
-
-              {activeVersion.receiptExceptions.length > 0 && (
                 <ul>
-                  {activeVersion.receiptExceptions.map((ex) => {
-                    const exIsSelf =
-                      !!currentAccountId &&
-                      (ex.preparedBy === currentAccountId ||
-                        ex.editorIds.includes(currentAccountId));
-                    return (
-                      <li key={ex.id}>
-                        <div>
-                          <strong>Đề xuất lần {ex.versionNumber}</strong> ·{' '}
-                          {exceptionStateLabels[ex.state] ?? ex.state}
-                        </div>
-                        {ex.reason && <div>Lý do: {ex.reason}</div>}
-                        {ex.basis && <div>Căn cứ: {ex.basis}</div>}
-                        {ex.decisionReason && <div>Ý kiến xử lý: {ex.decisionReason}</div>}
-                        {seasonOpen && ex.state === 'DRAFT' && detail.capabilities.canPrepare && (
-                          <div className={css.actions} style={{ marginTop: 8 }}>
-                            <button
-                              type="button"
-                              className={css.primary}
-                              onClick={() =>
-                                setModalAction({
-                                  kind: 'exception-action',
-                                  action: 'submit',
-                                  exception: ex,
-                                  requireReason: false,
-                                  title: 'Gửi duyệt ngoại lệ tiếp nhận',
-                                  submitLabel: 'Gửi duyệt ngoại lệ',
-                                })
-                              }
-                            >
-                              Gửi duyệt ngoại lệ
-                            </button>
+                  {displayedFacts.proposedPlayers.map((item) => (
+                    <li key={item.key}>
+                      <strong>
+                        {item.positionOrder}. {item.fullName}
+                      </strong>{' '}
+                      ({item.code} · {item.positionCode})
+                      {item.shirtNumber ? ` · Số áo dự kiến: ${item.shirtNumber}` : ''}
+                      {item.notes ? ` · ${item.notes}` : ''}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </section>
+
+            {/* Late Receipt Exception Section */}
+            {activeVersion.receiptTimingStatus === 'LATE' && (
+              <section className={reviewCss.review} aria-label="Ngoại lệ tiếp nhận ngoài hạn">
+                <strong>
+                  Ngoại lệ tiếp nhận ngoài hạn (gắn riêng cho Phiên bản{' '}
+                  {activeVersion.versionNumber})
+                </strong>
+                {approvedException ? (
+                  <p style={{ marginTop: 8 }}>
+                    Đã phê duyệt ngoại lệ tiếp nhận bởi {approvedException.decider?.fullName}
+                    {approvedException.decidedAt
+                      ? ` lúc ${formatSeasonInstant(approvedException.decidedAt)}`
+                      : ''}
+                    . Có thể tiếp tục trình phê duyệt phiên bản này.
+                  </p>
+                ) : (
+                  <p className={pageCss.metaNote} style={{ marginTop: 8 }}>
+                    Phiên bản này được tiếp nhận ngoài khung thời gian quy định. Cần có ngoại lệ
+                    tiếp nhận được quản lý mùa giải độc lập phê duyệt cho đúng phiên bản này trước
+                    khi trình duyệt.
+                  </p>
+                )}
+
+                {activeVersion.receiptExceptions.length > 0 && (
+                  <ul>
+                    {activeVersion.receiptExceptions.map((ex) => {
+                      const exIsSelf =
+                        !!currentAccountId &&
+                        (ex.preparedBy === currentAccountId ||
+                          ex.editorIds.includes(currentAccountId));
+                      return (
+                        <li key={ex.id}>
+                          <div>
+                            <strong>Đề xuất lần {ex.versionNumber}</strong> ·{' '}
+                            {exceptionStateLabels[ex.state] ?? ex.state}
                           </div>
-                        )}
-                        {seasonOpen && ex.state === 'SUBMITTED' && (
-                          <div className={css.actions} style={{ marginTop: 8 }}>
-                            {detail.capabilities.canApprove && !exIsSelf && (
-                              <>
-                                <button
-                                  type="button"
-                                  className={css.primary}
-                                  onClick={() =>
-                                    setModalAction({
-                                      kind: 'exception-action',
-                                      action: 'approve',
-                                      exception: ex,
-                                      requireReason: true,
-                                      critical: true,
-                                      title: 'Phê duyệt ngoại lệ tiếp nhận',
-                                      submitLabel: 'Phê duyệt ngoại lệ',
-                                    })
-                                  }
-                                >
-                                  Phê duyệt ngoại lệ
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={() =>
-                                    setModalAction({
-                                      kind: 'exception-action',
-                                      action: 'return',
-                                      exception: ex,
-                                      requireReason: true,
-                                      title: 'Trả lại đề xuất ngoại lệ',
-                                      submitLabel: 'Trả lại ngoại lệ',
-                                    })
-                                  }
-                                >
-                                  Trả lại ngoại lệ
-                                </button>
-                                <button
-                                  type="button"
-                                  className={css.danger}
-                                  onClick={() =>
-                                    setModalAction({
-                                      kind: 'exception-action',
-                                      action: 'reject',
-                                      exception: ex,
-                                      requireReason: true,
-                                      title: 'Từ chối đề xuất ngoại lệ',
-                                      submitLabel: 'Từ chối ngoại lệ',
-                                    })
-                                  }
-                                >
-                                  Từ chối ngoại lệ
-                                </button>
-                              </>
-                            )}
-                            {detail.capabilities.canApprove && exIsSelf && (
-                              <span className={pageCss.metaNote}>
-                                Người đề xuất ngoại lệ không thể tự phê duyệt.
-                              </span>
-                            )}
-                            {detail.capabilities.canPrepare && (
+                          {ex.reason && <div>Lý do: {ex.reason}</div>}
+                          {ex.basis && <div>Căn cứ: {ex.basis}</div>}
+                          {ex.decisionReason && <div>Ý kiến xử lý: {ex.decisionReason}</div>}
+                          {seasonOpen && ex.state === 'DRAFT' && detail.capabilities.canPrepare && (
+                            <div className={css.actions} style={{ marginTop: 8 }}>
+                              <button
+                                type="button"
+                                className={css.primary}
+                                onClick={() =>
+                                  setModalAction({
+                                    kind: 'exception-action',
+                                    action: 'submit',
+                                    exception: ex,
+                                    requireReason: false,
+                                    title: 'Gửi duyệt ngoại lệ tiếp nhận',
+                                    submitLabel: 'Gửi duyệt ngoại lệ',
+                                  })
+                                }
+                              >
+                                Gửi duyệt ngoại lệ
+                              </button>
                               <button
                                 type="button"
                                 onClick={() =>
@@ -894,132 +1050,166 @@ function ClubApplicationDrawer({
                               >
                                 Rút đề xuất
                               </button>
-                            )}
-                          </div>
-                        )}
-                      </li>
-                    );
-                  })}
-                </ul>
+                            </div>
+                          )}
+                          {seasonOpen && ex.state === 'SUBMITTED' && (
+                            <div className={css.actions} style={{ marginTop: 8 }}>
+                              {detail.capabilities.canApprove && !exIsSelf && (
+                                <>
+                                  <button
+                                    type="button"
+                                    className={css.primary}
+                                    onClick={() =>
+                                      setModalAction({
+                                        kind: 'exception-action',
+                                        action: 'approve',
+                                        exception: ex,
+                                        requireReason: true,
+                                        critical: true,
+                                        title: 'Phê duyệt ngoại lệ tiếp nhận',
+                                        submitLabel: 'Phê duyệt ngoại lệ',
+                                      })
+                                    }
+                                  >
+                                    Phê duyệt ngoại lệ
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      setModalAction({
+                                        kind: 'exception-action',
+                                        action: 'return',
+                                        exception: ex,
+                                        requireReason: true,
+                                        title: 'Trả lại đề xuất ngoại lệ',
+                                        submitLabel: 'Trả lại ngoại lệ',
+                                      })
+                                    }
+                                  >
+                                    Trả lại ngoại lệ
+                                  </button>
+                                  <button
+                                    type="button"
+                                    className={css.danger}
+                                    onClick={() =>
+                                      setModalAction({
+                                        kind: 'exception-action',
+                                        action: 'reject',
+                                        exception: ex,
+                                        requireReason: true,
+                                        title: 'Từ chối đề xuất ngoại lệ',
+                                        submitLabel: 'Từ chối ngoại lệ',
+                                      })
+                                    }
+                                  >
+                                    Từ chối ngoại lệ
+                                  </button>
+                                </>
+                              )}
+                              {detail.capabilities.canApprove && exIsSelf && (
+                                <span className={pageCss.metaNote}>
+                                  Người đề xuất ngoại lệ không thể tự phê duyệt.
+                                </span>
+                              )}
+                              {detail.capabilities.canPrepare && (
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    setModalAction({
+                                      kind: 'exception-action',
+                                      action: 'withdraw',
+                                      exception: ex,
+                                      requireReason: false,
+                                      title: 'Rút đề xuất ngoại lệ',
+                                      submitLabel: 'Rút đề xuất',
+                                    })
+                                  }
+                                >
+                                  Rút đề xuất
+                                </button>
+                              )}
+                            </div>
+                          )}
+                        </li>
+                      );
+                    })}
+                  </ul>
+                )}
+
+                {seasonOpen &&
+                  detail.capabilities.canPrepare &&
+                  !approvedException &&
+                  !openException &&
+                  (activeVersion.state === 'RECEIVED' ||
+                    activeVersion.state === 'PENDING_APPROVAL') && (
+                    <div className={css.actions} style={{ marginTop: 10 }}>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setModalAction({ kind: 'exception-propose', version: activeVersion })
+                        }
+                      >
+                        Đề xuất ngoại lệ tiếp nhận
+                      </button>
+                    </div>
+                  )}
+              </section>
+            )}
+
+            {/* Action Toolbar */}
+            <div className={`${css.actions} ${css.profileActions} ${pageCss.drawerActionsRow}`}>
+              {seasonOpen && detail.capabilities.canPrepare && activeVersion.state === 'DRAFT' && (
+                <>
+                  <button
+                    type="button"
+                    disabled={!references}
+                    onClick={() =>
+                      setEditDraftState({
+                        mode: 'edit',
+                        initial: buildInitialDraftValues(detail, activeVersion),
+                      })
+                    }
+                  >
+                    Chỉnh sửa
+                  </button>
+                  <button
+                    type="button"
+                    className={css.primary}
+                    onClick={() =>
+                      setModalAction({
+                        kind: 'application',
+                        action: 'receive',
+                        version: activeVersion,
+                        requireReason: false,
+                        title: 'Ghi nhận tiếp nhận hồ sơ',
+                        submitLabel: 'Xác nhận tiếp nhận',
+                      })
+                    }
+                  >
+                    Ghi nhận tiếp nhận
+                  </button>
+                  <button
+                    type="button"
+                    className={css.danger}
+                    onClick={() =>
+                      setModalAction({
+                        kind: 'application',
+                        action: 'cancel',
+                        version: activeVersion,
+                        requireReason: true,
+                        title: 'Hủy vòng hồ sơ tham dự',
+                        submitLabel: 'Xác nhận hủy',
+                      })
+                    }
+                  >
+                    Hủy vòng
+                  </button>
+                </>
               )}
 
               {seasonOpen &&
                 detail.capabilities.canPrepare &&
-                !approvedException &&
-                !openException &&
-                (activeVersion.state === 'RECEIVED' ||
-                  activeVersion.state === 'PENDING_APPROVAL') && (
-                  <div className={css.actions} style={{ marginTop: 10 }}>
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setModalAction({ kind: 'exception-propose', version: activeVersion })
-                      }
-                    >
-                      Đề xuất ngoại lệ tiếp nhận
-                    </button>
-                  </div>
-                )}
-            </section>
-          )}
-
-          {/* Action Toolbar */}
-          <div className={`${css.actions} ${css.profileActions} ${pageCss.drawerActionsRow}`}>
-            {seasonOpen && detail.capabilities.canPrepare && activeVersion.state === 'DRAFT' && (
-              <>
-                <button type="button" onClick={() => setEditMode('edit')}>
-                  Chỉnh sửa
-                </button>
-                <button
-                  type="button"
-                  className={css.primary}
-                  onClick={() =>
-                    setModalAction({
-                      kind: 'application',
-                      action: 'receive',
-                      version: activeVersion,
-                      requireReason: false,
-                      title: 'Ghi nhận tiếp nhận hồ sơ',
-                      submitLabel: 'Xác nhận tiếp nhận',
-                    })
-                  }
-                >
-                  Ghi nhận tiếp nhận
-                </button>
-                <button
-                  type="button"
-                  className={css.danger}
-                  onClick={() =>
-                    setModalAction({
-                      kind: 'application',
-                      action: 'cancel',
-                      version: activeVersion,
-                      requireReason: true,
-                      title: 'Hủy vòng hồ sơ tham dự',
-                      submitLabel: 'Xác nhận hủy',
-                    })
-                  }
-                >
-                  Hủy vòng
-                </button>
-              </>
-            )}
-
-            {seasonOpen && detail.capabilities.canPrepare && activeVersion.state === 'RECEIVED' && (
-              <>
-                <button
-                  type="button"
-                  className={css.primary}
-                  onClick={() =>
-                    setModalAction({
-                      kind: 'application',
-                      action: 'submit',
-                      version: activeVersion,
-                      requireReason: false,
-                      title: 'Trình phê duyệt hồ sơ tham dự',
-                      submitLabel: 'Trình phê duyệt',
-                    })
-                  }
-                >
-                  Trình phê duyệt
-                </button>
-                <button
-                  type="button"
-                  onClick={() =>
-                    setModalAction({
-                      kind: 'application',
-                      action: 'return',
-                      version: activeVersion,
-                      requireReason: true,
-                      title: 'Yêu cầu bổ sung hồ sơ',
-                      submitLabel: 'Yêu cầu bổ sung',
-                    })
-                  }
-                >
-                  Yêu cầu bổ sung
-                </button>
-                <button
-                  type="button"
-                  className={css.danger}
-                  onClick={() =>
-                    setModalAction({
-                      kind: 'application',
-                      action: 'cancel',
-                      version: activeVersion,
-                      requireReason: true,
-                      title: 'Hủy vòng hồ sơ tham dự',
-                      submitLabel: 'Xác nhận hủy',
-                    })
-                  }
-                >
-                  Hủy vòng
-                </button>
-              </>
-            )}
-
-            {seasonOpen && activeVersion.state === 'PENDING_APPROVAL' && (
-              <>
-                {detail.capabilities.canApprove && !isFormerEditor && (
+                activeVersion.state === 'RECEIVED' && (
                   <>
                     <button
                       type="button"
@@ -1027,16 +1217,15 @@ function ClubApplicationDrawer({
                       onClick={() =>
                         setModalAction({
                           kind: 'application',
-                          action: 'approve',
+                          action: 'submit',
                           version: activeVersion,
-                          requireReason: true,
-                          critical: true,
-                          title: 'Phê duyệt hồ sơ tham dự câu lạc bộ',
-                          submitLabel: 'Phê duyệt hồ sơ',
+                          requireReason: false,
+                          title: 'Trình phê duyệt hồ sơ tham dự',
+                          submitLabel: 'Trình phê duyệt',
                         })
                       }
                     >
-                      Phê duyệt hồ sơ
+                      Trình phê duyệt
                     </button>
                     <button
                       type="button"
@@ -1046,52 +1235,12 @@ function ClubApplicationDrawer({
                           action: 'return',
                           version: activeVersion,
                           requireReason: true,
-                          title: 'Trả lại hồ sơ để bổ sung',
-                          submitLabel: 'Trả lại bổ sung',
+                          title: 'Yêu cầu bổ sung hồ sơ',
+                          submitLabel: 'Yêu cầu bổ sung',
                         })
                       }
                     >
-                      Trả lại bổ sung
-                    </button>
-                    <button
-                      type="button"
-                      className={pageCss.dangerSolid}
-                      onClick={() =>
-                        setModalAction({
-                          kind: 'application',
-                          action: 'reject',
-                          version: activeVersion,
-                          requireReason: true,
-                          title: 'Từ chối hồ sơ tham dự',
-                          submitLabel: 'Từ chối hồ sơ',
-                        })
-                      }
-                    >
-                      Từ chối
-                    </button>
-                  </>
-                )}
-                {detail.capabilities.canApprove && isFormerEditor && (
-                  <p className={pageCss.metaNote} role="status">
-                    Nhân sự từng soạn thảo hoặc chỉnh sửa phiên bản này không thể tự phê duyệt.
-                  </p>
-                )}
-                {detail.capabilities.canPrepare && (
-                  <>
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setModalAction({
-                          kind: 'application',
-                          action: 'withdraw',
-                          version: activeVersion,
-                          requireReason: false,
-                          title: 'Rút hồ sơ đang chờ phê duyệt',
-                          submitLabel: 'Rút hồ sơ',
-                        })
-                      }
-                    >
-                      Rút hồ sơ
+                      Yêu cầu bổ sung
                     </button>
                     <button
                       type="button"
@@ -1111,44 +1260,168 @@ function ClubApplicationDrawer({
                     </button>
                   </>
                 )}
-              </>
-            )}
 
-            {detail.capabilities.canStartNewRound && (
+              {seasonOpen && activeVersion.state === 'PENDING_APPROVAL' && (
+                <>
+                  {detail.capabilities.canApprove && !isFormerEditor && (
+                    <>
+                      <button
+                        type="button"
+                        className={css.primary}
+                        onClick={() =>
+                          setModalAction({
+                            kind: 'application',
+                            action: 'approve',
+                            version: activeVersion,
+                            requireReason: true,
+                            critical: true,
+                            title: 'Phê duyệt hồ sơ tham dự câu lạc bộ',
+                            submitLabel: 'Phê duyệt hồ sơ',
+                          })
+                        }
+                      >
+                        Phê duyệt hồ sơ
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setModalAction({
+                            kind: 'application',
+                            action: 'return',
+                            version: activeVersion,
+                            requireReason: true,
+                            title: 'Trả lại hồ sơ để bổ sung',
+                            submitLabel: 'Trả lại bổ sung',
+                          })
+                        }
+                      >
+                        Trả lại bổ sung
+                      </button>
+                      <button
+                        type="button"
+                        className={pageCss.dangerSolid}
+                        onClick={() =>
+                          setModalAction({
+                            kind: 'application',
+                            action: 'reject',
+                            version: activeVersion,
+                            requireReason: true,
+                            title: 'Từ chối hồ sơ tham dự',
+                            submitLabel: 'Từ chối hồ sơ',
+                          })
+                        }
+                      >
+                        Từ chối
+                      </button>
+                    </>
+                  )}
+                  {detail.capabilities.canApprove && isFormerEditor && (
+                    <p className={pageCss.metaNote} role="status">
+                      Nhân sự từng soạn thảo hoặc chỉnh sửa phiên bản này không thể tự phê duyệt.
+                    </p>
+                  )}
+                  {detail.capabilities.canPrepare && (
+                    <>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setModalAction({
+                            kind: 'application',
+                            action: 'withdraw',
+                            version: activeVersion,
+                            requireReason: false,
+                            title: 'Rút hồ sơ đang chờ phê duyệt',
+                            submitLabel: 'Rút hồ sơ',
+                          })
+                        }
+                      >
+                        Rút hồ sơ
+                      </button>
+                      <button
+                        type="button"
+                        className={css.danger}
+                        onClick={() =>
+                          setModalAction({
+                            kind: 'application',
+                            action: 'cancel',
+                            version: activeVersion,
+                            requireReason: true,
+                            title: 'Hủy vòng hồ sơ tham dự',
+                            submitLabel: 'Xác nhận hủy',
+                          })
+                        }
+                      >
+                        Hủy vòng
+                      </button>
+                    </>
+                  )}
+                </>
+              )}
+
+              {detail.capabilities.canStartNewRound && latestVersion && (
+                <button
+                  type="button"
+                  className={css.primary}
+                  disabled={!references}
+                  onClick={() =>
+                    setEditDraftState({
+                      mode: 'new-round',
+                      initial: buildInitialDraftValues(detail, latestVersion),
+                    })
+                  }
+                >
+                  Tạo phiên bản bổ sung mới
+                </button>
+              )}
+
+              {seasonOpen &&
+                detail.capabilities.canPrepare &&
+                activeVersion.state === 'NEEDS_SUPPLEMENTATION' &&
+                !detail.currentAcceptedVersionId && (
+                  <button
+                    type="button"
+                    className={css.danger}
+                    onClick={() =>
+                      setModalAction({
+                        kind: 'application',
+                        action: 'cancel',
+                        version: activeVersion,
+                        requireReason: true,
+                        title: 'Hủy vòng hồ sơ tham dự',
+                        submitLabel: 'Xác nhận hủy',
+                      })
+                    }
+                  >
+                    Hủy vòng
+                  </button>
+                )}
+
               <button
                 type="button"
-                className={css.primary}
-                onClick={() => setEditMode('new-round')}
+                aria-expanded={historyOpen}
+                onClick={() => setHistoryOpen(!historyOpen)}
               >
-                Tạo phiên bản bổ sung mới
+                Lịch sử
               </button>
-            )}
-
-            <button
-              type="button"
-              aria-expanded={historyOpen}
-              onClick={() => setHistoryOpen(!historyOpen)}
-            >
-              Lịch sử
-            </button>
+            </div>
           </div>
 
           {historyOpen && <ClubApplicationHistory caseId={detail.id} key={detail.revision} />}
 
-          {editMode && initialForForm && (
+          {editDraftState && references && (
             <ClubApplicationForm
               seasonId={seasonId}
               references={references}
-              mode={editMode}
-              initial={initialForForm}
-              onClose={() => setEditMode(undefined)}
+              mode={editDraftState.mode}
+              initial={editDraftState.initial}
+              onClose={() => setEditDraftState(undefined)}
               onConflictReload={() => {
-                setEditMode(undefined);
+                setEditDraftState(undefined);
                 resource.reload();
                 onChange();
               }}
               onSaved={() => {
-                setEditMode(undefined);
+                setEditDraftState(undefined);
                 setSelectedVersionId(undefined);
                 resource.reload();
                 onChange();
@@ -1283,7 +1556,17 @@ function WorkflowActionModal({
   }
 
   return (
-    <Modal open title={title} onCancel={onClose} footer={null}>
+    <Modal
+      open
+      title={title}
+      closable={!busy}
+      maskClosable={!busy}
+      keyboard={!busy}
+      onCancel={() => {
+        if (!busy) onClose();
+      }}
+      footer={null}
+    >
       <form ref={feedbackRef} id={formId} className={css.form} onSubmit={(e) => void submit(e)}>
         {error && (
           <p role="alert" className={css.error}>

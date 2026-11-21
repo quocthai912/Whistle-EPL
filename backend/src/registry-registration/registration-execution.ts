@@ -3,7 +3,10 @@ import { conflict, denied, missing } from '../identity-access/accounts.dto';
 import { hasSeasonRole } from '../identity-access/authority.policy';
 import { assertAvailableForNewUse } from '../platform/master-availability';
 import type { LockResource, TransactionContext } from '../platform/transaction-context';
-import type { RegulationActivationService } from '../season-regulations/regulation-activation.service';
+import {
+  unresolvedRegulationBasis,
+  type RegulationActivationService,
+} from '../season-regulations/regulation-activation.service';
 import { loadRegulationContent } from '../season-regulations/regulation-content';
 import { validateCompleteRegulationContent } from '../season-regulations/regulation-validation';
 
@@ -127,17 +130,43 @@ export async function resolveEffectiveRegulationForWrite(
       'Mùa giải chưa có quy định đang có hiệu lực để tiếp nhận hoặc xác nhận.',
     );
 
-  const effective = await context.db.regulationVersion.findFirst({
-    where: {
-      id: refreshed.currentRegulationVersionId,
-      seasonId,
-      state: 'EFFECTIVE',
-    },
+  const effective = await context.db.regulationVersion.findUnique({
+    where: { id: refreshed.currentRegulationVersionId },
     include: { registrationWindows: { orderBy: [{ opensAt: 'asc' }, { id: 'asc' }] } },
   });
-  if (!effective)
+  if (!effective || effective.seasonId !== seasonId || effective.state !== 'EFFECTIVE')
     throw conflict('BASIS_CHANGED', 'Không xác định được phiên bản quy định đang có hiệu lực.');
   return effective;
+}
+
+/**
+ * Resolves due waiting regulations, rechecks authority at the final write decision point,
+ * samples one authoritative post-lock instant, and ensures no waiting regulation crossed
+ * effectivity between the rule read and that final decision instant.
+ */
+export async function resolveEffectiveRegulationWithInstant(
+  context: TransactionContext,
+  seasonId: string,
+  activation: RegulationActivationService,
+) {
+  let regulation = await resolveEffectiveRegulationForWrite(context, seasonId, activation);
+  await context.recheckAuthority();
+  let resolvedAt = await context.now();
+  const lateDue = await context.db.regulationVersion.findFirst({
+    where: { seasonId, state: 'APPROVED_WAITING', proposedEffectiveAt: { lte: resolvedAt } },
+    select: { id: true },
+  });
+  if (lateDue) {
+    regulation = await resolveEffectiveRegulationForWrite(context, seasonId, activation);
+    await context.recheckAuthority();
+    resolvedAt = await context.now();
+    const stillDue = await context.db.regulationVersion.findFirst({
+      where: { seasonId, state: 'APPROVED_WAITING', proposedEffectiveAt: { lte: resolvedAt } },
+      select: { id: true },
+    });
+    if (stillDue) throw unresolvedRegulationBasis();
+  }
+  return { regulation, resolvedAt };
 }
 
 export async function requireOpenSeason(

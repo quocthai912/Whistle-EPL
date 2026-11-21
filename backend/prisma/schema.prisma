@@ -262,6 +262,7 @@ model RegistrationWindow {
   clubApplicationWindows ClubApplicationVersion[] @relation("clubAppReceiptWindow")
   registrationWindows    RegistrationVersion[]    @relation("registrationReceiptWindow")
 
+  @@unique([regulationVersionId, id])
   @@index([regulationVersionId, intakeKind])
   @@map("registration_window")
 }
@@ -642,7 +643,7 @@ model ClubApplicationVersion {
   receiptRegulationVersion   RegulationVersion?             @relation("clubAppReceiptRegulation", fields: [seasonId, receiptRegulationVersionId], references: [seasonId, id], onDelete: Restrict, onUpdate: NoAction)
   receiptTimingStatus        String?                        @map("receipt_timing_status")
   receiptWindowId            String?                        @map("receipt_window_id") @db.Uuid
-  receiptWindow              RegistrationWindow?            @relation("clubAppReceiptWindow", fields: [receiptWindowId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  receiptWindow              RegistrationWindow?            @relation("clubAppReceiptWindow", fields: [receiptRegulationVersionId, receiptWindowId], references: [regulationVersionId, id], onDelete: Restrict, onUpdate: NoAction)
   approvalRegulationVersionId String?                       @map("approval_regulation_version_id") @db.Uuid
   approvalRegulationVersion  RegulationVersion?             @relation("clubAppApprovalRegulation", fields: [seasonId, approvalRegulationVersionId], references: [seasonId, id], onDelete: Restrict, onUpdate: NoAction)
   officialSnapshot           Json?                          @map("official_snapshot") @db.JsonB
@@ -756,7 +757,7 @@ model RegistrationVersion {
   receiptRegulationVersion    RegulationVersion?              @relation("registrationReceiptRegulation", fields: [seasonId, receiptRegulationVersionId], references: [seasonId, id], onDelete: Restrict, onUpdate: NoAction)
   receiptTimingStatus         String?                         @map("receipt_timing_status")
   receiptWindowId             String?                         @map("receipt_window_id") @db.Uuid
-  receiptWindow               RegistrationWindow?             @relation("registrationReceiptWindow", fields: [receiptWindowId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  receiptWindow               RegistrationWindow?             @relation("registrationReceiptWindow", fields: [receiptRegulationVersionId, receiptWindowId], references: [regulationVersionId, id], onDelete: Restrict, onUpdate: NoAction)
   decisionRegulationVersionId String?                         @map("decision_regulation_version_id") @db.Uuid
   decisionRegulationVersion   RegulationVersion?              @relation("registrationDecisionRegulation", fields: [seasonId, decisionRegulationVersionId], references: [seasonId, id], onDelete: Restrict, onUpdate: NoAction)
   officialSnapshot            Json?                           @map("official_snapshot") @db.JsonB
@@ -898,6 +899,7 @@ model RegistrationCorrectionCase {
 
   @@unique([seasonId, id])
   @@unique([registrationId, id])
+  @@unique([seasonId, registrationId, id])
   @@unique([id, currentVersionId])
   @@index([seasonId, registrationId])
   @@map("registration_correction_case")
@@ -908,7 +910,7 @@ model RegistrationCorrectionVersion {
   seasonId             String                                @map("season_id") @db.Uuid
   registrationId       String                                @map("registration_id") @db.Uuid
   caseId               String                                @map("case_id") @db.Uuid
-  correctionCase       RegistrationCorrectionCase            @relation("registrationCorrectionCaseVersions", fields: [registrationId, caseId], references: [registrationId, id], onDelete: Restrict, onUpdate: NoAction)
+  correctionCase       RegistrationCorrectionCase            @relation("registrationCorrectionCaseVersions", fields: [seasonId, registrationId, caseId], references: [seasonId, registrationId, id], onDelete: Restrict, onUpdate: NoAction)
   currentFor           RegistrationCorrectionCase[]          @relation("registrationCorrectionCurrentVersion")
   versionNumber        Int                                   @map("version_number")
   preparedBy           String                                @map("prepared_by") @db.Uuid

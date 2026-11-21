@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { mkdtemp, readdir, rmdir, unlink } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { isAbsolute, join, resolve } from 'node:path';
+import { isAbsolute, join, relative, resolve } from 'node:path';
 import type { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import sharp from 'sharp';
@@ -44,6 +44,11 @@ export const DECLARED_TEST_ONLY_REGULATION = Object.freeze({
   relegationCount: 3,
 });
 
+function isPathContainedIn(parent: string, child: string): boolean {
+  const rel = relative(parent, child);
+  return rel === '' || (!rel.startsWith('..') && !isAbsolute(rel));
+}
+
 /** Guards isolated media roots so tests never touch operational or repository directories. */
 export function assertIsolatedMediaRoot(mediaRoot: string): string {
   if (!mediaRoot || !isAbsolute(mediaRoot))
@@ -55,7 +60,8 @@ export function assertIsolatedMediaRoot(mediaRoot: string): string {
   if (
     normalized.includes('var\\lib\\whistle') ||
     normalized.includes('/var/lib/whistle') ||
-    (!normalized.startsWith(allowedTmp) && !normalized.startsWith(allowedVerification))
+    (!isPathContainedIn(allowedTmp, normalized) &&
+      !isPathContainedIn(allowedVerification, normalized))
   )
     throw new Error(
       'Isolated test media root must reside under temporary or .verification storage.',

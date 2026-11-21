@@ -2,6 +2,7 @@ import { Type } from 'class-transformer';
 import {
   IsArray,
   IsInt,
+  IsObject,
   IsOptional,
   IsString,
   IsUUID,
@@ -55,8 +56,9 @@ export class CreateClubApplicationDto {
   @IsString()
   notes?: string | null;
 
-  @IsOptional()
+  @ValidateIf((_, value: unknown) => value !== undefined)
   @IsArray()
+  @IsObject({ each: true })
   @ValidateNested({ each: true })
   @Type(() => ProposedPlayerItemDto)
   proposedPlayers?: ProposedPlayerItemDto[];
@@ -90,8 +92,9 @@ export class UpdateClubApplicationDraftDto extends RevisionDto {
   @IsString()
   notes?: string | null;
 
-  @IsOptional()
+  @ValidateIf((_, value: unknown) => value !== undefined)
   @IsArray()
+  @IsObject({ each: true })
   @ValidateNested({ each: true })
   @Type(() => ProposedPlayerItemDto)
   proposedPlayers?: ProposedPlayerItemDto[];

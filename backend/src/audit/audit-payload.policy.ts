@@ -907,6 +907,28 @@ export function validateAuditEvent(event: {
       )
         throw new Error('Media cleanup audit events require a verified deletion transition.');
       break;
+    case 'CLUB_APPLICATION_APPROVED':
+      if (
+        !exactObjectReference('caseId') ||
+        !exactUuid('versionId') ||
+        !Number.isSafeInteger(after.versionNumber) ||
+        Number(after.versionNumber) < 1 ||
+        after.state !== 'APPROVED' ||
+        !exactInstant('approvedAt') ||
+        !exactUuid('approvalRegulationVersionId') ||
+        (after.receiptExceptionVersionId !== undefined &&
+          after.receiptExceptionVersionId !== null &&
+          !exactUuid('receiptExceptionVersionId')) ||
+        !isRecord(event.before) ||
+        event.before.caseId !== after.caseId ||
+        event.before.versionId !== after.versionId ||
+        event.before.versionNumber !== after.versionNumber ||
+        event.before.state !== 'PENDING_APPROVAL'
+      )
+        throw new Error(
+          'Club application approval audit events require exact version, approval basis and transition.',
+        );
+      break;
   }
 }
 

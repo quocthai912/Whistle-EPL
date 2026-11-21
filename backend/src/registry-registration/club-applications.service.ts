@@ -33,7 +33,7 @@ import {
   requireSeasonManager,
   requireSeasonRegistrationOfficer,
   requireSeasonRegistrationReader,
-  resolveEffectiveRegulationForWrite,
+  resolveEffectiveRegulationWithInstant,
 } from './registration-execution';
 import type { RegistrationIntakeService } from './registration-intake.service';
 import {
@@ -738,7 +738,6 @@ export class ClubApplicationsService {
             },
           });
 
-          const now = await context.now();
           let caseId: string;
           let versionNumber = 1;
           let predecessorVersionId: string | null = null;
@@ -764,6 +763,11 @@ export class ClubApplicationsService {
             }
           } else {
             caseId = randomUUID();
+          }
+
+          await context.recheckAuthority();
+          const now = await context.now();
+          if (!existing) {
             await context.db.clubApplication.create({
               data: { id: caseId, seasonId, clubId, createdAt: now, updatedAt: now },
             });
@@ -918,6 +922,7 @@ export class ClubApplicationsService {
             );
           }
 
+          await context.recheckAuthority();
           const now = await context.now();
           const { proposedPlayers, ...scalarUpdates } = fields;
 
@@ -1093,11 +1098,6 @@ export class ClubApplicationsService {
                 club: { select: { id: true, code: true, name: true, abbreviation: true } },
               },
             });
-            const effectiveRegulation = await resolveEffectiveRegulationForWrite(
-              context,
-              app.seasonId,
-              this.activation,
-            );
             const version = await context.db.clubApplicationVersion.findFirst({
               where: { id: versionId, caseId },
               include: {
@@ -1152,7 +1152,8 @@ export class ClubApplicationsService {
                 version,
               );
 
-            const now = await context.now();
+            const { regulation: effectiveRegulation, resolvedAt: now } =
+              await resolveEffectiveRegulationWithInstant(context, app.seasonId, this.activation);
             const officialSnapshot = {
               club: {
                 id: app.club.id,
@@ -1260,13 +1261,6 @@ export class ClubApplicationsService {
           },
         });
 
-        const effectiveRegulation = needsRuleResolution
-          ? await resolveEffectiveRegulationForWrite(context, app.seasonId, this.activation)
-          : null;
-        if (!needsRuleResolution) {
-          await requireOpenSeason(context, app.seasonId);
-        }
-
         const version = await context.db.clubApplicationVersion.findFirst({
           where: { id: versionId, caseId },
           include: {
@@ -1292,7 +1286,6 @@ export class ClubApplicationsService {
         if (!version) throw missing();
         assertRevision(version.revision, input.expectedRevision);
 
-        const now = await context.now();
         const editorIds = version.editors.map((e) => e.accountId);
 
         if (normalizedAction === 'receive') {
@@ -1302,8 +1295,10 @@ export class ClubApplicationsService {
               'Chỉ có thể tiếp nhận phiên bản hồ sơ ở trạng thái Nháp.',
             );
           }
+          const { regulation: effectiveRegulation, resolvedAt: now } =
+            await resolveEffectiveRegulationWithInstant(context, app.seasonId, this.activation);
           const timing = this.intake.assessReceiptTiming(
-            effectiveRegulation!.registrationWindows,
+            effectiveRegulation.registrationWindows,
             'CLUB_APPLICATION',
             now,
           );
@@ -1312,7 +1307,7 @@ export class ClubApplicationsService {
             data: {
               state: 'RECEIVED',
               receivedAt: now,
-              receiptRegulationVersionId: effectiveRegulation!.id,
+              receiptRegulationVersionId: effectiveRegulation.id,
               receiptTimingStatus: timing.receiptTimingStatus,
               receiptWindowId: timing.receiptWindowId,
               revision: { increment: 1 },
@@ -1342,7 +1337,7 @@ export class ClubApplicationsService {
               state: 'RECEIVED',
               receivedAt: now.toISOString(),
               receiptTimingStatus: timing.receiptTimingStatus,
-              receiptRegulationVersionId: effectiveRegulation!.id,
+              receiptRegulationVersionId: effectiveRegulation.id,
             },
           });
           return {
@@ -1352,7 +1347,7 @@ export class ClubApplicationsService {
             state: 'RECEIVED',
             receivedAt: now.toISOString(),
             receiptTimingStatus: timing.receiptTimingStatus,
-            receiptRegulationVersionId: effectiveRegulation!.id,
+            receiptRegulationVersionId: effectiveRegulation.id,
             receiptWindowId: timing.receiptWindowId,
           };
         }
@@ -1367,6 +1362,11 @@ export class ClubApplicationsService {
             'CLUB_APPLICATION',
             app.seasonId,
             version,
+          );
+          const { resolvedAt: now } = await resolveEffectiveRegulationWithInstant(
+            context,
+            app.seasonId,
+            this.activation,
           );
           const updated = await context.db.clubApplicationVersion.update({
             where: { id: version.id },
@@ -1420,6 +1420,9 @@ export class ClubApplicationsService {
           if (version.state === 'PENDING_APPROVAL') {
             assertIndependentApprover(version.preparedBy, editorIds, accountId);
           }
+          await requireOpenSeason(context, app.seasonId);
+          await context.recheckAuthority();
+          const now = await context.now();
           const updated = await context.db.clubApplicationVersion.update({
             where: { id: version.id },
             data: {
@@ -1467,6 +1470,9 @@ export class ClubApplicationsService {
             );
           }
           assertIndependentApprover(version.preparedBy, editorIds, accountId);
+          await requireOpenSeason(context, app.seasonId);
+          await context.recheckAuthority();
+          const now = await context.now();
           const updated = await context.db.clubApplicationVersion.update({
             where: { id: version.id },
             data: {
@@ -1513,6 +1519,9 @@ export class ClubApplicationsService {
               'Chỉ có thể rút hồ sơ đang ở trạng thái Chờ phê duyệt.',
             );
           }
+          await requireOpenSeason(context, app.seasonId);
+          await context.recheckAuthority();
+          const now = await context.now();
           const updated = await context.db.clubApplicationVersion.update({
             where: { id: version.id },
             data: {
@@ -1556,6 +1565,9 @@ export class ClubApplicationsService {
         if (app.currentAcceptedVersionId || !CANCELLABLE_STATES.has(version.state)) {
           throw conflict('STATE_CONFLICT', 'Chỉ có thể hủy vòng hồ sơ chưa được phê duyệt.');
         }
+        await requireOpenSeason(context, app.seasonId);
+        await context.recheckAuthority();
+        const now = await context.now();
         const updated = await context.db.clubApplicationVersion.update({
           where: { id: version.id },
           data: {

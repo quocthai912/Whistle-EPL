@@ -25,7 +25,7 @@ export class PlayerPortraitsController {
   @UseInterceptors(
     FileInterceptor('file', {
       limits: {
-        fileSize: PLAYER_PORTRAIT_MAX_BYTES + 1,
+        fileSize: PLAYER_PORTRAIT_MAX_BYTES,
         files: 1,
         fields: 1,
         fieldSize: 64,

@@ -87,12 +87,22 @@ function uniqueSorted(values: readonly string[]): string[] {
 
 export const registrationCompatibilityProvider: DependencyProvider<'registrationCompatibility'> = {
   async discoverLocks(db, request) {
-    const rows = await db.playerRegistration.findMany({
-      where: { seasonId: request.seasonId, currentValidatedVersionId: { not: null } },
-      select: { id: true, currentValidatedVersionId: true },
-    });
+    const [rows, candidate] = await Promise.all([
+      db.playerRegistration.findMany({
+        where: { seasonId: request.seasonId, currentValidatedVersionId: { not: null } },
+        select: { id: true, playerId: true, currentValidatedVersionId: true },
+      }),
+      db.regulationVersion.findFirst({
+        where: { id: request.candidateVersionId, seasonId: request.seasonId },
+        select: { id: true },
+      }),
+    ]);
     const locks: LockResource[] = [{ kind: 'season', key: request.seasonId, mode: 'shared' }];
+    if (candidate) {
+      locks.push({ kind: 'regulationVersion', key: candidate.id, mode: 'shared' });
+    }
     for (const row of rows) {
+      locks.push({ kind: 'player', key: row.playerId, mode: 'shared' });
       locks.push({ kind: 'playerRegistration', key: row.id, mode: 'shared' });
       if (row.currentValidatedVersionId) {
         locks.push({
@@ -106,35 +116,97 @@ export const registrationCompatibilityProvider: DependencyProvider<'registration
   },
 
   async read(context, request) {
-    const rows = await context.db.playerRegistration.findMany({
-      where: { seasonId: request.seasonId, currentValidatedVersionId: { not: null } },
-      select: {
-        id: true,
-        revision: true,
-        clubId: true,
-        playerId: true,
-        currentValidatedVersion: {
-          select: {
-            id: true,
-            revision: true,
-            state: true,
-            playingStart: true,
-            playingEnd: true,
-            u21Finding: true,
-            homegrownFinding: true,
-            playingDisposition: true,
+    const [rows, candidate] = await Promise.all([
+      context.db.playerRegistration.findMany({
+        where: { seasonId: request.seasonId, currentValidatedVersionId: { not: null } },
+        select: {
+          id: true,
+          revision: true,
+          clubId: true,
+          playerId: true,
+          player: {
+            select: {
+              birthDate: true,
+              revision: true,
+            },
+          },
+          currentValidatedVersion: {
+            select: {
+              id: true,
+              revision: true,
+              state: true,
+              playingStart: true,
+              playingEnd: true,
+              u21Finding: true,
+              homegrownFinding: true,
+              evidenceBranch: true,
+              qualifyingValue: true,
+              decisionRegulationVersion: {
+                select: {
+                  homegrownAgeStart: true,
+                  homegrownAgeEnd: true,
+                },
+              },
+              playingDisposition: true,
+            },
           },
         },
-      },
-      orderBy: { id: 'asc' },
-    });
+        orderBy: { id: 'asc' },
+      }),
+      context.db.regulationVersion.findFirst({
+        where: { id: request.candidateVersionId, seasonId: request.seasonId },
+        select: {
+          u21Cutoff: true,
+          homegrownSeasons: true,
+          homegrownMonths: true,
+          homegrownAgeStart: true,
+          homegrownAgeEnd: true,
+        },
+      }),
+    ]);
+
+    const candidateU21CutoffIso = candidate?.u21Cutoff
+      ? candidate.u21Cutoff.toISOString().slice(0, 10)
+      : null;
 
     const active: ActiveValidatedRegistration[] = [];
     const revParts: string[] = [];
     for (const row of rows) {
       const version = row.currentValidatedVersion;
       if (!version || version.state !== 'VALID' || !version.playingStart) continue;
-      revParts.push(`${row.id}:${row.revision}:${version.revision}`);
+      revParts.push(`${row.id}:${row.revision}:${version.revision}:${row.player.revision}`);
+
+      const birthDateIso = row.player.birthDate.toISOString().slice(0, 10);
+      const u21Finding = candidate
+        ? candidateU21CutoffIso
+          ? birthDateIso >= candidateU21CutoffIso
+          : null
+        : version.u21Finding;
+
+      let homegrownFinding = version.homegrownFinding;
+      if (candidate && u21Finding === false && homegrownFinding === true) {
+        const decisionRule = version.decisionRegulationVersion;
+        if (
+          decisionRule &&
+          (candidate.homegrownAgeStart !== decisionRule.homegrownAgeStart ||
+            candidate.homegrownAgeEnd !== decisionRule.homegrownAgeEnd)
+        ) {
+          homegrownFinding = null;
+        } else if (
+          version.evidenceBranch === 'SEASONS' &&
+          candidate.homegrownSeasons !== null &&
+          (version.qualifyingValue === null || version.qualifyingValue < candidate.homegrownSeasons)
+        ) {
+          homegrownFinding = false;
+        } else if (
+          version.evidenceBranch === 'MONTHS' &&
+          candidate.homegrownMonths !== null &&
+          (version.qualifyingValue === null || version.qualifyingValue < candidate.homegrownMonths)
+        ) {
+          homegrownFinding = false;
+        }
+      }
+
       active.push({
         id: row.id,
         revision: row.revision,
@@ -145,8 +217,8 @@ export const registrationCompatibilityProvider: DependencyProvider<'registration
           revision: version.revision,
           playingStart: version.playingStart,
           playingEnd: version.playingEnd,
-          u21Finding: version.u21Finding,
-          homegrownFinding: version.homegrownFinding,
+          u21Finding,
+          homegrownFinding,
           playingDisposition: version.playingDisposition,
         },
       });
