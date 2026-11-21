@@ -1,4 +1,4 @@
-import { useEffect, useId, useState, type FormEvent, type KeyboardEvent } from 'react';
+import { useEffect, useId, useMemo, useState, type FormEvent, type KeyboardEvent } from 'react';
 import { Link, useNavigate, useParams } from 'react-router';
 import { HttpFailure } from '../../shared/http/client';
 import { useSession } from '../../shared/http/use-session';
@@ -338,35 +338,69 @@ export function ClubApplicationsPage() {
   const { session, client } = useSession();
   const navigate = useNavigate();
   const seasonsQuery = useAdminList<SeasonList, SeasonHistoryMeta>('/seasons?page=1&pageSize=100');
-  const [extraSeasons, setExtraSeasons] = useState<SeasonList['items']>([]);
-
   const totalSeasons = seasonsQuery.meta?.total ?? 0;
   const seasonPageSize = seasonsQuery.meta?.pageSize ?? 100;
+  const extraSeasonQuery = useMemo(
+    () => ({
+      client,
+      pageSize: seasonPageSize,
+      pages: Array.from(
+        {
+          length: seasonsQuery.data ? Math.max(0, Math.ceil(totalSeasons / seasonPageSize) - 1) : 0,
+        },
+        (_, index) => index + 2,
+      ),
+    }),
+    [client, seasonPageSize, seasonsQuery.data, totalSeasons],
+  );
+  type PageResult = { items: SeasonList['items'] } | { error: string; retry: () => void };
+  const [extraSeasonResults, setExtraSeasonResults] = useState<{
+    query: typeof extraSeasonQuery;
+    pages: Partial<Record<number, PageResult>>;
+  }>();
 
   useEffect(() => {
-    if (!seasonsQuery.data || totalSeasons <= seasonPageSize) {
-      return;
-    }
-    let cancelled = false;
-    const totalPages = Math.ceil(totalSeasons / seasonPageSize);
-    void (async () => {
-      try {
-        const pages = await Promise.all(
-          Array.from({ length: totalPages - 1 }, (_, idx) =>
-            client.request<SeasonList>(`/seasons?page=${idx + 2}&pageSize=${seasonPageSize}`),
-          ),
-        );
-        if (!cancelled) {
-          setExtraSeasons(pages.flatMap((res) => res.data.items));
-        }
-      } catch {
-        if (!cancelled) setExtraSeasons([]);
+    let active = true;
+    function setPage(page: number, result?: PageResult) {
+      if (active) {
+        setExtraSeasonResults((previous) => ({
+          query: extraSeasonQuery,
+          pages: {
+            ...(previous?.query === extraSeasonQuery ? previous.pages : {}),
+            [page]: result,
+          },
+        }));
       }
-    })();
+    }
+    async function loadPage(page: number) {
+      try {
+        const { data } = await extraSeasonQuery.client.request<SeasonList>(
+          `/seasons?page=${page}&pageSize=${extraSeasonQuery.pageSize}`,
+        );
+        setPage(page, { items: data.items });
+      } catch {
+        setPage(page, {
+          error: `Không thể tải danh sách mùa giải (trang ${page}).`,
+          retry: () => {
+            if (!active) return;
+            setPage(page);
+            void loadPage(page);
+          },
+        });
+      }
+    }
+    for (const page of extraSeasonQuery.pages) void loadPage(page);
     return () => {
-      cancelled = true;
+      active = false;
     };
-  }, [client, seasonPageSize, seasonsQuery.data, totalSeasons]);
+  }, [extraSeasonQuery]);
+
+  const extraPages = extraSeasonQuery.pages.map((page) => ({
+    page,
+    result:
+      extraSeasonResults?.query === extraSeasonQuery ? extraSeasonResults.pages[page] : undefined,
+  }));
+  const allExtraPagesLoaded = extraPages.every(({ result }) => result && 'items' in result);
 
   const allowedSeasonIds = new Set<string>([
     ...(session?.seasonManagerIds ?? []),
@@ -378,7 +412,7 @@ export function ClubApplicationsPage() {
   ]);
   const allSeasons = [
     ...(seasonsQuery.data?.items ?? []),
-    ...(totalSeasons > seasonPageSize ? extraSeasons : []),
+    ...extraPages.flatMap(({ result }) => (result && 'items' in result ? result.items : [])),
   ];
   const seenSeasonIds = new Set<string>();
   const seasons = allSeasons.filter((s) => {
@@ -430,9 +464,20 @@ export function ClubApplicationsPage() {
         onRetry={seasonsQuery.reload}
       />
 
+      {extraPages.map(({ page, result }) =>
+        result && 'items' in result ? null : (
+          <ListFeedback
+            key={page}
+            loading={!result}
+            error={result?.error}
+            onRetry={result?.retry ?? seasonsQuery.reload}
+          />
+        ),
+      )}
+
       {seasonId ? (
         <SeasonClubApplicationsList key={seasonId} seasonId={seasonId} />
-      ) : !seasonsQuery.loading && seasons.length > 0 ? (
+      ) : seasons.length > 0 ? (
         <ul className={regCss.seasonChoices} aria-label="Danh sách mùa giải">
           {seasons.map((season) => (
             <li key={season.id}>
@@ -450,7 +495,8 @@ export function ClubApplicationsPage() {
         </ul>
       ) : (
         !seasonsQuery.loading &&
-        !seasonsQuery.error && <p>Bạn chưa được phân công mùa giải nào để quản lý hồ sơ tham dự.</p>
+        !seasonsQuery.error &&
+        allExtraPagesLoaded && <p>Bạn chưa được phân công mùa giải nào để quản lý hồ sơ tham dự.</p>
       )}
     </section>
   );
@@ -789,6 +835,11 @@ function ClubApplicationDrawer({
   const latestVersion = detail?.versions[0];
   const currentAccountId = session?.account.id;
   const seasonOpen = detail?.season.state === 'OPEN';
+  const canTargetException =
+    seasonOpen &&
+    !!activeVersion?.receivedAt &&
+    activeVersion.receiptTimingStatus === 'LATE' &&
+    (activeVersion.state === 'RECEIVED' || activeVersion.state === 'PENDING_APPROVAL');
 
   const isFormerEditor = !!(
     activeVersion &&
@@ -873,6 +924,7 @@ function ClubApplicationDrawer({
           <div
             id="version-tabpanel"
             role="tabpanel"
+            tabIndex={0}
             aria-labelledby={`version-tab-${activeVersion.id}`}
             style={{ display: 'grid', gap: 16 }}
           >
@@ -991,15 +1043,15 @@ function ClubApplicationDrawer({
                     {approvedException.decidedAt
                       ? ` lúc ${formatSeasonInstant(approvedException.decidedAt)}`
                       : ''}
-                    . Có thể tiếp tục trình phê duyệt phiên bản này.
+                    .{canTargetException && ' Có thể tiếp tục trình phê duyệt phiên bản này.'}
                   </p>
-                ) : (
+                ) : canTargetException ? (
                   <p className={pageCss.metaNote} style={{ marginTop: 8 }}>
                     Phiên bản này được tiếp nhận ngoài khung thời gian quy định. Cần có ngoại lệ
                     tiếp nhận được quản lý mùa giải độc lập phê duyệt cho đúng phiên bản này trước
                     khi trình duyệt.
                   </p>
-                )}
+                ) : null}
 
                 {activeVersion.receiptExceptions.length > 0 && (
                   <ul>
@@ -1019,22 +1071,24 @@ function ClubApplicationDrawer({
                           {ex.decisionReason && <div>Ý kiến xử lý: {ex.decisionReason}</div>}
                           {seasonOpen && ex.state === 'DRAFT' && detail.capabilities.canPrepare && (
                             <div className={css.actions} style={{ marginTop: 8 }}>
-                              <button
-                                type="button"
-                                className={css.primary}
-                                onClick={() =>
-                                  setModalAction({
-                                    kind: 'exception-action',
-                                    action: 'submit',
-                                    exception: ex,
-                                    requireReason: false,
-                                    title: 'Gửi duyệt ngoại lệ tiếp nhận',
-                                    submitLabel: 'Gửi duyệt ngoại lệ',
-                                  })
-                                }
-                              >
-                                Gửi duyệt ngoại lệ
-                              </button>
+                              {canTargetException && (
+                                <button
+                                  type="button"
+                                  className={css.primary}
+                                  onClick={() =>
+                                    setModalAction({
+                                      kind: 'exception-action',
+                                      action: 'submit',
+                                      exception: ex,
+                                      requireReason: false,
+                                      title: 'Gửi duyệt ngoại lệ tiếp nhận',
+                                      submitLabel: 'Gửi duyệt ngoại lệ',
+                                    })
+                                  }
+                                >
+                                  Gửi duyệt ngoại lệ
+                                </button>
+                              )}
                               <button
                                 type="button"
                                 onClick={() =>
@@ -1056,23 +1110,25 @@ function ClubApplicationDrawer({
                             <div className={css.actions} style={{ marginTop: 8 }}>
                               {detail.capabilities.canApprove && !exIsSelf && (
                                 <>
-                                  <button
-                                    type="button"
-                                    className={css.primary}
-                                    onClick={() =>
-                                      setModalAction({
-                                        kind: 'exception-action',
-                                        action: 'approve',
-                                        exception: ex,
-                                        requireReason: true,
-                                        critical: true,
-                                        title: 'Phê duyệt ngoại lệ tiếp nhận',
-                                        submitLabel: 'Phê duyệt ngoại lệ',
-                                      })
-                                    }
-                                  >
-                                    Phê duyệt ngoại lệ
-                                  </button>
+                                  {canTargetException && (
+                                    <button
+                                      type="button"
+                                      className={css.primary}
+                                      onClick={() =>
+                                        setModalAction({
+                                          kind: 'exception-action',
+                                          action: 'approve',
+                                          exception: ex,
+                                          requireReason: true,
+                                          critical: true,
+                                          title: 'Phê duyệt ngoại lệ tiếp nhận',
+                                          submitLabel: 'Phê duyệt ngoại lệ',
+                                        })
+                                      }
+                                    >
+                                      Phê duyệt ngoại lệ
+                                    </button>
+                                  )}
                                   <button
                                     type="button"
                                     onClick={() =>
@@ -1106,7 +1162,7 @@ function ClubApplicationDrawer({
                                   </button>
                                 </>
                               )}
-                              {detail.capabilities.canApprove && exIsSelf && (
+                              {canTargetException && detail.capabilities.canApprove && exIsSelf && (
                                 <span className={pageCss.metaNote}>
                                   Người đề xuất ngoại lệ không thể tự phê duyệt.
                                 </span>
@@ -1136,12 +1192,10 @@ function ClubApplicationDrawer({
                   </ul>
                 )}
 
-                {seasonOpen &&
+                {canTargetException &&
                   detail.capabilities.canPrepare &&
                   !approvedException &&
-                  !openException &&
-                  (activeVersion.state === 'RECEIVED' ||
-                    activeVersion.state === 'PENDING_APPROVAL') && (
+                  !openException && (
                     <div className={css.actions} style={{ marginTop: 10 }}>
                       <button
                         type="button"

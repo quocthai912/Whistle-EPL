@@ -75,12 +75,14 @@ export function PlayerForm({
 
   const normalizedCode = normalizeCodePreview(code);
   const isEdit = !!detail;
+  const birthIso = parseDisplayDate(birthDateText);
+  const needsCorrectionEvidence =
+    correcting || (!!detail && !!birthIso && birthIso !== detail.birthDate);
 
   async function submit(event: FormEvent) {
     event.preventDefault();
     if (busy || reloadRequired) return;
 
-    const birthIso = parseDisplayDate(birthDateText);
     if (!isEdit && !/^[A-Za-z0-9][A-Za-z0-9_-]{0,31}$/.test(normalizedCode)) {
       setError(
         'Mã cầu thủ dài 1–32 ký tự, bắt đầu bằng chữ hoặc số và chỉ gồm chữ Latin, số, gạch dưới hoặc gạch ngang.',
@@ -103,7 +105,7 @@ export function PlayerForm({
       setError('Vui lòng chọn vị trí thi đấu.');
       return;
     }
-    if (correcting && (!correctionReason.trim() || !correctionBasis.trim())) {
+    if (needsCorrectionEvidence && (!correctionReason.trim() || !correctionBasis.trim())) {
       setError('Vui lòng nhập đầy đủ lý do và căn cứ hiệu chỉnh.');
       return;
     }
@@ -130,7 +132,7 @@ export function PlayerForm({
           birthDate: birthIso,
           nationalityCode,
           positionCode,
-          ...(correcting
+          ...(needsCorrectionEvidence
             ? {
                 correctionReason: correctionReason.trim(),
                 correctionBasis: correctionBasis.trim(),
@@ -285,7 +287,7 @@ export function PlayerForm({
           onChange={setPositionCode}
         />
 
-        {correcting && (
+        {needsCorrectionEvidence && (
           <div className={reviewCss.review}>
             <strong>Thông tin hiệu chỉnh</strong>
             <p>

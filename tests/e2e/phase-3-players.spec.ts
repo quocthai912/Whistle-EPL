@@ -156,6 +156,21 @@ test('T011: Player profile creation, distinct-person duplicate review, D036 corr
   await drawer.getByRole('button', { name: 'Xác nhận gỡ ảnh' }).click();
   await expect(drawer.getByRole('img', { name: /chưa có ảnh khả dụng/ })).toBeVisible();
 
+  // A changed birth date also needs correction evidence in the ordinary edit form.
+  await drawer.getByRole('button', { name: 'Cập nhật thông tin' }).click();
+  const editDialog = page.getByRole('dialog', { name: 'Cập nhật hồ sơ cầu thủ' });
+  await expect(editDialog.getByLabel('Lý do hiệu chỉnh')).toHaveCount(0);
+  const editBirthDate = editDialog.getByLabel('Ngày sinh');
+  await editBirthDate.fill('13/04/1999');
+  await editBirthDate.press('Tab');
+  await editDialog.getByRole('button', { name: 'Lưu thay đổi' }).click();
+  await expect(editDialog.getByRole('alert')).toContainText('nhập đầy đủ lý do và căn cứ');
+  await editDialog.getByLabel('Lý do hiệu chỉnh').fill('Sửa ngày sinh theo hồ sơ gốc.');
+  await editDialog.getByLabel('Căn cứ hiệu chỉnh').fill('Giấy khai sinh đã đối chiếu.');
+  await editDialog.getByRole('button', { name: 'Lưu thay đổi' }).click();
+  await expect(editDialog).not.toBeVisible();
+  await expect(drawer.getByText('13/04/1999', { exact: true })).toBeVisible();
+
   // 6. D036 Correction with reason + basis & verify history
   await drawer.getByRole('button', { name: 'Hiệu chỉnh thông tin sai sót' }).click();
   const corrDialog = page.getByRole('dialog', { name: 'Hiệu chỉnh thông tin sai sót' });
@@ -166,8 +181,8 @@ test('T011: Player profile creation, distinct-person duplicate review, D036 corr
   await expect(corrDialog).not.toBeVisible();
 
   await drawer.getByRole('button', { name: 'Lịch sử' }).click();
-  await expect(drawer.getByText('Đính chính hồ sơ cầu thủ')).toBeVisible();
-  await expect(drawer.getByText(/CAM → RW/)).toBeVisible();
+  const positionCorrection = drawer.getByRole('article').filter({ hasText: 'CAM → RW' });
+  await expect(positionCorrection.getByText('Đính chính hồ sơ cầu thủ')).toBeVisible();
 });
 
 test('T011: Vietnamese search and scoped pagination across >20 players without horizontal overflow', async ({

@@ -349,16 +349,42 @@ test('T008: BM1 draft, supplementation round, independent approval, safe direct 
     .click();
   await expect(drawer.getByText('Phiên bản 2 · Chờ phê duyệt')).toBeVisible();
 
+  const firstVersionTab = drawer.getByRole('tab', { name: /Phiên bản 1/ });
+  const secondVersionTab = drawer.getByRole('tab', { name: /Phiên bản 2/ });
+  await secondVersionTab.press('ArrowLeft');
+  await expect(firstVersionTab).toBeFocused();
+  await expect(firstVersionTab).toHaveAttribute('aria-selected', 'true');
+  await firstVersionTab.press('ArrowRight');
+  await expect(secondVersionTab).toBeFocused();
+  await secondVersionTab.press('Tab');
+  await expect(drawer.getByRole('tabpanel')).toBeFocused();
+
   // Close drawer, verify >20 pagination (Next/Prev) and Vietnamese club name search filtering
   await drawer.getByRole('button', { name: 'Đóng' }).last().click();
-  await expect(page.getByText('Câu lạc bộ Phân trang 01')).toBeVisible();
+  const rows = page.getByRole('table').locator('tbody').getByRole('row');
+  const firstPageRow = rows.filter({ hasText: 'Câu lạc bộ Phân trang 01' });
+  const secondPageRow = rows.filter({ hasText: 'Câu lạc bộ Phân trang 21' });
+  await expect(firstPageRow).toBeVisible();
+  await expect(secondPageRow).toHaveCount(0);
   await page.getByRole('button', { name: 'Sau' }).click();
-  await expect(page.getByText('Câu lạc bộ Phân trang 21')).toBeVisible();
+  await expect(secondPageRow).toBeVisible();
+  await expect(firstPageRow).toHaveCount(0);
   await page.getByRole('button', { name: 'Trước' }).click();
+  await expect(firstPageRow).toBeVisible();
+  await expect(secondPageRow).toHaveCount(0);
 
+  const searchResponse = page.waitForResponse((response) => {
+    const url = new URL(response.url());
+    return (
+      response.request().method() === 'GET' &&
+      url.pathname === `/api/v1/seasons/${season.id}/club-applications` &&
+      url.searchParams.get('search') === club.name
+    );
+  });
   await page.getByLabel('Tìm hồ sơ tham dự').fill(club.name);
-  await expect(page.getByText(club.name)).toBeVisible();
-  await expect(page.getByText('Câu lạc bộ Phân trang 01')).toHaveCount(0);
+  expect((await searchResponse).ok()).toBe(true);
+  await expect(rows).toHaveCount(1);
+  await expect(rows.first().getByText(club.name, { exact: true })).toBeVisible();
 
   if (process.env.E2E_CAPTURE_SCREENSHOTS === '1') {
     await mkdir('.verification', { recursive: true });

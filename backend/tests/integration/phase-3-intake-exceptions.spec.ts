@@ -280,6 +280,19 @@ describe('PHASE 3 US1 — Shared exact-version intake timing and D053 receipt ex
       .expect(409);
 
     await fixture
+      .apiRequest(
+        officerA,
+        'post',
+        `/receipt-exceptions/${ex2Submitted.body.data.caseId}/withdraw`,
+        {
+          versionId: ex2Submitted.body.data.versionId,
+          expectedRevision: ex2Submitted.body.data.revision,
+          reason: 'Rút đề xuất ngoại lệ cho phiên bản đã hủy.',
+        },
+      )
+      .expect(200);
+
+    const cancelledProposal = await fixture
       .apiRequest(officerA, 'post', `/seasons/${seasonA}/receipt-exceptions`, {
         targetKind: 'CLUB_APPLICATION',
         targetVersionId: v2,
@@ -287,6 +300,10 @@ describe('PHASE 3 US1 — Shared exact-version intake timing and D053 receipt ex
         basis: 'Căn cứ không hợp lệ',
       })
       .expect(409);
+    expect(cancelledProposal.body.error).toMatchObject({
+      code: 'STATE_CONFLICT',
+      message: 'Không thể xử lý ngoại lệ cho phiên bản hồ sơ đã kết thúc hoặc bị hủy.',
+    });
   });
 
   it('activates an overdue waiting regulation inside receive and evaluates timing against the newly effective calendar', async () => {

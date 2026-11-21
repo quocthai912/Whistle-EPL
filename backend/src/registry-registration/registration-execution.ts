@@ -140,9 +140,8 @@ export async function resolveEffectiveRegulationForWrite(
 }
 
 /**
- * Resolves due waiting regulations, rechecks authority at the final write decision point,
- * samples one authoritative post-lock instant, and ensures no waiting regulation crossed
- * effectivity between the rule read and that final decision instant.
+ * Resolves due waiting regulations and samples a post-lock decision instant.
+ * Ensures no waiting regulation crossed effectivity by that instant, then rechecks authority.
  */
 export async function resolveEffectiveRegulationWithInstant(
   context: TransactionContext,
@@ -166,6 +165,7 @@ export async function resolveEffectiveRegulationWithInstant(
     });
     if (stillDue) throw unresolvedRegulationBasis();
   }
+  await context.recheckAuthority();
   return { regulation, resolvedAt };
 }
 
