@@ -210,6 +210,80 @@ const businessPolicies = {
     'approvalRegulationVersionId',
     'receiptExceptionVersionId',
   ],
+  CLUB_APPLICATION_CORRECTION_DRAFT_CREATED: [
+    'caseId',
+    'versionId',
+    'versionNumber',
+    'baseAcceptedVersionId',
+    'state',
+  ],
+  CLUB_APPLICATION_CORRECTION_DRAFT_UPDATED: [
+    'caseId',
+    'versionId',
+    'versionNumber',
+    'baseAcceptedVersionId',
+    'state',
+    'revision',
+  ],
+  CLUB_APPLICATION_CORRECTION_SUBMITTED: [
+    'caseId',
+    'versionId',
+    'versionNumber',
+    'baseAcceptedVersionId',
+    'state',
+    'submittedAt',
+  ],
+  CLUB_APPLICATION_CORRECTION_RETURNED: [
+    'caseId',
+    'versionId',
+    'versionNumber',
+    'baseAcceptedVersionId',
+    'state',
+    'decidedAt',
+  ],
+  CLUB_APPLICATION_CORRECTION_WITHDRAWN: [
+    'caseId',
+    'versionId',
+    'versionNumber',
+    'baseAcceptedVersionId',
+    'state',
+    'decidedAt',
+  ],
+  CLUB_APPLICATION_CORRECTION_CANCELLED: [
+    'caseId',
+    'versionId',
+    'versionNumber',
+    'baseAcceptedVersionId',
+    'state',
+    'decidedAt',
+  ],
+  CLUB_APPLICATION_CORRECTION_REJECTED: [
+    'caseId',
+    'versionId',
+    'versionNumber',
+    'baseAcceptedVersionId',
+    'state',
+    'decidedAt',
+  ],
+  CLUB_APPLICATION_CORRECTION_APPROVED: [
+    'caseId',
+    'versionId',
+    'versionNumber',
+    'baseAcceptedVersionId',
+    'state',
+    'approvedAt',
+    'approvalRegulationVersionId',
+    'changedFields',
+    'correctionEvidence',
+    'affectedReferenceCount',
+    'venueReviewRequired',
+    'coachName',
+    'homeStadiumId',
+    'representativeName',
+    'representativePhone',
+    'contactAddress',
+    'notes',
+  ],
   RECEIPT_EXCEPTION_DRAFT_CREATED: [
     'caseId',
     'versionId',
@@ -299,6 +373,14 @@ const objectKindByAction: Partial<Record<AuditAction, BusinessHistoryKind>> = {
   CLUB_APPLICATION_CANCELLED: 'ClubApplication',
   CLUB_APPLICATION_REJECTED: 'ClubApplication',
   CLUB_APPLICATION_APPROVED: 'ClubApplication',
+  CLUB_APPLICATION_CORRECTION_DRAFT_CREATED: 'ClubApplication',
+  CLUB_APPLICATION_CORRECTION_DRAFT_UPDATED: 'ClubApplication',
+  CLUB_APPLICATION_CORRECTION_SUBMITTED: 'ClubApplication',
+  CLUB_APPLICATION_CORRECTION_RETURNED: 'ClubApplication',
+  CLUB_APPLICATION_CORRECTION_WITHDRAWN: 'ClubApplication',
+  CLUB_APPLICATION_CORRECTION_CANCELLED: 'ClubApplication',
+  CLUB_APPLICATION_CORRECTION_REJECTED: 'ClubApplication',
+  CLUB_APPLICATION_CORRECTION_APPROVED: 'ClubApplication',
   RECEIPT_EXCEPTION_DRAFT_CREATED: 'ReceiptExceptionCase',
   RECEIPT_EXCEPTION_SUBMITTED: 'ReceiptExceptionCase',
   RECEIPT_EXCEPTION_RETURNED: 'ReceiptExceptionCase',
@@ -408,6 +490,23 @@ const requiredAfterFields: Partial<Record<AuditAction, readonly string[]>> = {
     'approvedAt',
     'approvalRegulationVersionId',
   ],
+  CLUB_APPLICATION_CORRECTION_DRAFT_CREATED: [
+    'caseId',
+    'versionId',
+    'versionNumber',
+    'baseAcceptedVersionId',
+    'state',
+  ],
+  CLUB_APPLICATION_CORRECTION_APPROVED: [
+    'caseId',
+    'versionId',
+    'versionNumber',
+    'baseAcceptedVersionId',
+    'state',
+    'approvedAt',
+    'approvalRegulationVersionId',
+    'changedFields',
+  ],
   RECEIPT_EXCEPTION_APPROVED: [
     'caseId',
     'versionId',
@@ -442,6 +541,11 @@ const reasonRequired = new Set<AuditAction>([
   'CLUB_APPLICATION_CANCELLED',
   'CLUB_APPLICATION_REJECTED',
   'CLUB_APPLICATION_APPROVED',
+  'CLUB_APPLICATION_CORRECTION_DRAFT_CREATED',
+  'CLUB_APPLICATION_CORRECTION_RETURNED',
+  'CLUB_APPLICATION_CORRECTION_CANCELLED',
+  'CLUB_APPLICATION_CORRECTION_REJECTED',
+  'CLUB_APPLICATION_CORRECTION_APPROVED',
   'RECEIPT_EXCEPTION_SUBMITTED',
   'RECEIPT_EXCEPTION_RETURNED',
   'RECEIPT_EXCEPTION_REJECTED',
@@ -478,6 +582,7 @@ const beforeRequired = new Set<AuditAction>([
   'PLAYER_UPDATED',
   'PLAYER_CORRECTED',
   'CLUB_APPLICATION_APPROVED',
+  'CLUB_APPLICATION_CORRECTION_APPROVED',
   'RECEIPT_EXCEPTION_APPROVED',
 ]);
 
@@ -927,6 +1032,28 @@ export function validateAuditEvent(event: {
       )
         throw new Error(
           'Club application approval audit events require exact version, approval basis and transition.',
+        );
+      break;
+    case 'CLUB_APPLICATION_CORRECTION_APPROVED':
+      if (
+        !exactObjectReference('caseId') ||
+        !exactUuid('versionId') ||
+        !exactUuid('baseAcceptedVersionId') ||
+        !Number.isSafeInteger(after.versionNumber) ||
+        Number(after.versionNumber) < 1 ||
+        after.state !== 'APPROVED' ||
+        !exactInstant('approvedAt') ||
+        !exactUuid('approvalRegulationVersionId') ||
+        !boundedText(after.changedFields, 500) ||
+        !isRecord(event.before) ||
+        event.before.caseId !== after.caseId ||
+        event.before.versionId !== after.versionId ||
+        event.before.versionNumber !== after.versionNumber ||
+        event.before.baseAcceptedVersionId !== after.baseAcceptedVersionId ||
+        event.before.state !== 'PENDING_APPROVAL'
+      )
+        throw new Error(
+          'Club application correction approval audit events require exact version, accepted baseline, approval basis and transition.',
         );
       break;
   }

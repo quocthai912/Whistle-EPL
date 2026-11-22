@@ -47,6 +47,8 @@ import { RegulationChangeService } from './season-regulations/regulation-change.
 import { registryRegistrationDependencyModule } from './registry-registration/registration-dependency-facts';
 import { ReceiptExceptionsController } from './registry-registration/receipt-exceptions.controller';
 import { RegistrationIntakeService } from './registry-registration/registration-intake.service';
+import { ClubApplicationCorrectionsController } from './registry-registration/club-application-corrections.controller';
+import { ClubApplicationCorrectionsService } from './registry-registration/club-application-corrections.service';
 import { ClubApplicationsController } from './registry-registration/club-applications.controller';
 import { ClubApplicationsService } from './registry-registration/club-applications.service';
 import { PlayersController } from './registry-registration/players.controller';
@@ -119,6 +121,7 @@ class ReadinessController {
     RegulationsController,
     RegulationChangesController,
     ReceiptExceptionsController,
+    ClubApplicationCorrectionsController,
     ClubApplicationsController,
     PlayersController,
     PlayerPortraitsController,
@@ -150,6 +153,15 @@ class ReadinessController {
         activation: RegulationActivationService,
         audit: AuditWriterService,
       ) => new RegistrationIntakeService(execution, activation, audit),
+    },
+    {
+      provide: ClubApplicationCorrectionsService,
+      inject: [HttpBusinessExecutionAdapter, RegulationActivationService, AuditWriterService],
+      useFactory: (
+        execution: HttpBusinessExecutionAdapter,
+        activation: RegulationActivationService,
+        audit: AuditWriterService,
+      ) => new ClubApplicationCorrectionsService(execution, activation, audit),
     },
     {
       provide: ClubApplicationsService,

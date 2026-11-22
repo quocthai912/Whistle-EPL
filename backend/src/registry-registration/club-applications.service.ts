@@ -577,6 +577,9 @@ export class ClubApplicationsService {
               representativePhone: v.representativePhone,
               contactAddress: v.contactAddress,
               notes: v.notes,
+              correctionReason: v.correctionReason,
+              correctionEvidence: v.correctionEvidence,
+              affectedReferences: v.affectedReferences,
               receiptRegulationVersionId: v.receiptRegulationVersionId,
               receiptTimingStatus: v.receiptTimingStatus,
               receiptWindow: v.receiptWindow
@@ -900,9 +903,21 @@ export class ClubApplicationsService {
 
           const version = await context.db.clubApplicationVersion.findFirst({
             where: { id: versionId, caseId },
-            select: { id: true, versionNumber: true, revision: true, state: true },
+            select: {
+              id: true,
+              versionNumber: true,
+              versionKind: true,
+              revision: true,
+              state: true,
+            },
           });
           if (!version) throw missing();
+          if (version.versionKind !== 'INITIAL') {
+            throw conflict(
+              'STATE_CONFLICT',
+              'Phiên bản đính chính D100 phải được chỉnh sửa qua quy trình đính chính riêng.',
+            );
+          }
           if (version.state !== 'DRAFT' || app.currentDraftVersionId !== version.id) {
             throw conflict(
               'STATE_CONFLICT',
@@ -1121,6 +1136,12 @@ export class ClubApplicationsService {
               },
             });
             if (!version) throw missing();
+            if (version.versionKind !== 'INITIAL') {
+              throw conflict(
+                'STATE_CONFLICT',
+                'Phiên bản đính chính D100 phải được phê duyệt qua quy trình đính chính riêng.',
+              );
+            }
             assertRevision(version.revision, input.expectedRevision);
             if (version.state !== 'PENDING_APPROVAL') {
               throw conflict(
@@ -1284,6 +1305,12 @@ export class ClubApplicationsService {
           },
         });
         if (!version) throw missing();
+        if (version.versionKind !== 'INITIAL') {
+          throw conflict(
+            'STATE_CONFLICT',
+            'Phiên bản đính chính D100 phải được xử lý qua quy trình đính chính riêng.',
+          );
+        }
         assertRevision(version.revision, input.expectedRevision);
 
         const editorIds = version.editors.map((e) => e.accountId);
