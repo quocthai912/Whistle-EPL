@@ -1,4 +1,12 @@
-import { useEffect, useId, useMemo, useState, type FormEvent, type KeyboardEvent } from 'react';
+import {
+  useEffect,
+  useId,
+  useMemo,
+  useRef,
+  useState,
+  type FormEvent,
+  type KeyboardEvent,
+} from 'react';
 import { Link, useNavigate, useParams } from 'react-router';
 import { formatDisplayDate } from '../../shared/date-format';
 import { HttpFailure, type FieldErrorDetail } from '../../shared/http/client';
@@ -880,19 +888,27 @@ function PlayerRegistrationDrawer({
 }) {
   const { client, session } = useSession();
   const resource = useAdminList<RegistrationDetail>(`/player-registrations/${caseId}`);
-  const detail = resource.data;
+  const detail = resource.error ? null : resource.data;
 
   const [selectedVersionId, setSelectedVersionId] = useState<string>();
   const [editingDraft, setEditingDraft] = useState<RegistrationInitialDraftValues>();
   const [modalAction, setModalAction] = useState<PendingModalAction>();
   const [historyOpen, setHistoryOpen] = useState(false);
 
+  const precheckSeqRef = useRef(0);
   const [precheckBusy, setPrecheckBusy] = useState(false);
   const [precheckError, setPrecheckError] = useState('');
   const [precheckResult, setPrecheckResult] = useState<{
     versionId: string;
     assessment: EligibilityAssessment;
   } | null>(null);
+
+  function clearPrecheck() {
+    precheckSeqRef.current += 1;
+    setPrecheckBusy(false);
+    setPrecheckResult(null);
+    setPrecheckError('');
+  }
 
   const activeVersion =
     detail?.versions.find((v) => v.id === selectedVersionId) ?? detail?.versions[0];
@@ -942,7 +958,9 @@ function PlayerRegistrationDrawer({
   }
 
   async function runPrecheck(version: RegistrationVersionDetail) {
+    const seq = ++precheckSeqRef.current;
     setPrecheckBusy(true);
+    setPrecheckResult(null);
     setPrecheckError('');
     try {
       const response = await client.request<EligibilityAssessment>(
@@ -952,15 +970,19 @@ function PlayerRegistrationDrawer({
           body: { versionId: version.id },
         },
       );
+      if (precheckSeqRef.current !== seq) return;
       setPrecheckResult({ versionId: version.id, assessment: response.data });
     } catch (caught) {
+      if (precheckSeqRef.current !== seq) return;
       if (caught instanceof HttpFailure) {
         setPrecheckError(cleanBusinessCopy(caught.message));
       } else {
         setPrecheckError('Không thể kiểm tra điều kiện đăng ký lúc này. Vui lòng thử lại.');
       }
     } finally {
-      setPrecheckBusy(false);
+      if (precheckSeqRef.current === seq) {
+        setPrecheckBusy(false);
+      }
     }
   }
 
@@ -985,7 +1007,9 @@ function PlayerRegistrationDrawer({
   }
 
   const displayedPrecheck =
-    activeVersion && precheckResult?.versionId === activeVersion.id
+    activeVersion &&
+    activeVersion.state !== 'VALID' &&
+    precheckResult?.versionId === activeVersion.id
       ? precheckResult.assessment
       : null;
   const officialCriteria = activeVersion?.officialSnapshot?.criteria ?? null;
@@ -1331,6 +1355,28 @@ function PlayerRegistrationDrawer({
                                   : ''}
                               </p>
                             )}
+                            {seasonOpen &&
+                              ex.state === 'DRAFT' &&
+                              detail.capabilities.canManage && (
+                                <div className={css.actions} style={{ marginTop: 8 }}>
+                                  <button
+                                    type="button"
+                                    className={css.primary}
+                                    onClick={() =>
+                                      setModalAction({
+                                        kind: 'exception-action',
+                                        action: 'submit',
+                                        exception: ex,
+                                        requireReason: false,
+                                        title: 'Gửi đề xuất ngoại lệ tiếp nhận',
+                                        submitLabel: 'Gửi đề xuất',
+                                      })
+                                    }
+                                  >
+                                    Gửi đề xuất ngoại lệ
+                                  </button>
+                                </div>
+                              )}
                             {seasonOpen && ex.state === 'SUBMITTED' && (
                               <div className={css.actions} style={{ marginTop: 8 }}>
                                 {detail.capabilities.canDecideExceptions && !exIsSelf && (
@@ -1621,45 +1667,23 @@ function PlayerRegistrationDrawer({
                 !hasOpenSibling &&
                 (activeVersion.state === 'NEEDS_SUPPLEMENTATION' ||
                   activeVersion.state === 'CANCELLED') && (
-                  <>
-                    <button
-                      type="button"
-                      className={css.primary}
-                      disabled={resource.loading}
-                      onClick={() =>
-                        setModalAction({
-                          kind: 'registration',
-                          action: 'supplement',
-                          version: activeVersion,
-                          requireReason: false,
-                          title: 'Tạo phiên bản bổ sung mới',
-                          submitLabel: 'Tạo phiên bản bổ sung',
-                        })
-                      }
-                    >
-                      Tạo phiên bản bổ sung
-                    </button>
-                    {activeVersion.state === 'NEEDS_SUPPLEMENTATION' && (
-                      <button
-                        type="button"
-                        className={css.danger}
-                        disabled={resource.loading}
-                        onClick={() =>
-                          setModalAction({
-                            kind: 'registration',
-                            action: 'cancel',
-                            version: activeVersion,
-                            requireReason: true,
-                            danger: true,
-                            title: 'Hủy hồ sơ đăng ký trước xác nhận',
-                            submitLabel: 'Xác nhận hủy',
-                          })
-                        }
-                      >
-                        Hủy hồ sơ
-                      </button>
-                    )}
-                  </>
+                  <button
+                    type="button"
+                    className={css.primary}
+                    disabled={resource.loading}
+                    onClick={() =>
+                      setModalAction({
+                        kind: 'registration',
+                        action: 'supplement',
+                        version: activeVersion,
+                        requireReason: false,
+                        title: 'Tạo phiên bản bổ sung mới',
+                        submitLabel: 'Tạo phiên bản bổ sung',
+                      })
+                    }
+                  >
+                    Tạo phiên bản bổ sung
+                  </button>
                 )}
 
               <button type="button" onClick={() => setHistoryOpen(true)}>
@@ -1684,7 +1708,7 @@ function PlayerRegistrationDrawer({
           }}
           onSaved={() => {
             setEditingDraft(undefined);
-            setPrecheckResult(null);
+            clearPrecheck();
             resource.reload();
             onChange();
           }}
@@ -1701,13 +1725,13 @@ function PlayerRegistrationDrawer({
           onClose={() => setModalAction(undefined)}
           onReload={() => {
             setModalAction(undefined);
-            setPrecheckResult(null);
+            clearPrecheck();
             resource.reload();
             onChange();
           }}
           onDone={(nextVersionId) => {
             setModalAction(undefined);
-            setPrecheckResult(null);
+            clearPrecheck();
             if (nextVersionId) setSelectedVersionId(nextVersionId);
             resource.reload();
             onChange();

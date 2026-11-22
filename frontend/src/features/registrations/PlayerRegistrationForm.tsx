@@ -143,6 +143,13 @@ export function PlayerRegistrationForm({
   const [reloadRequired, setReloadRequired] = useState(false);
   const feedbackRef = useDialogFeedback(error);
 
+  function clearValidationFeedback() {
+    if (!reloadRequired) {
+      if (error) setError('');
+      if (errorDetails.length > 0) setErrorDetails([]);
+    }
+  }
+
   const selectedPlayer = references.players.find((p) => p.id === playerId);
   const effectiveReg = references.effectiveRegulation;
   const playerIsU21 =
@@ -152,6 +159,8 @@ export function PlayerRegistrationForm({
 
   async function submit(event: FormEvent) {
     event.preventDefault();
+    setError('');
+    setErrorDetails([]);
     if (!clubId) {
       setError('Vui lòng chọn câu lạc bộ.');
       return;
@@ -295,6 +304,7 @@ export function PlayerRegistrationForm({
         id={formId}
         ref={feedbackRef}
         onSubmit={submit}
+        onChange={clearValidationFeedback}
         className={`${css.form} ${dialogCss.form}`}
         noValidate
       >

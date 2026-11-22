@@ -56,7 +56,7 @@ const ALLOWED_STATES = [
   'VALID',
   'CANCELLED',
 ] as const;
-const CANCELLABLE_PRE_VALID_STATES = new Set(['DRAFT', 'RECEIVED', 'NEEDS_SUPPLEMENTATION']);
+const CANCELLABLE_PRE_VALID_STATES = new Set(['DRAFT', 'RECEIVED']);
 const SUPPLEMENTABLE_STATES = new Set(['NEEDS_SUPPLEMENTATION', 'CANCELLED']);
 const ALLOWED_PLAYING_STATUSES = [
   'ALL',
@@ -198,6 +198,7 @@ function resolveHomegrownEvidenceInput(
     qualifyingValue: number | null;
     evidenceSummary: string | null;
     evidenceReference: string | null;
+    affiliatedAssociationBasis: boolean | null;
     verifiedBy: string | null;
     verifiedAt: Date | null;
     homegrownFinding: boolean | null;
@@ -232,26 +233,20 @@ function resolveHomegrownEvidenceInput(
       ? override.evidenceReference
       : version.evidenceReference;
 
+  const affiliatedAssociationBasis =
+    override.affiliatedAssociationBasis !== undefined
+      ? override.affiliatedAssociationBasis
+      : version.affiliatedAssociationBasis;
+
   const hasAnyEvidenceField =
     evidenceBranch !== null ||
     qualifyingValue !== null ||
     !!evidenceSummary ||
     !!evidenceReference ||
-    override.affiliatedAssociationBasis !== undefined;
+    affiliatedAssociationBasis !== null;
 
   if (!hasAnyEvidenceField) {
     return { nonHomegrownOptIn, evidence: null, hasEvidenceOverride };
-  }
-
-  let affiliatedAssociationBasis: boolean | null;
-  if (override.affiliatedAssociationBasis !== undefined) {
-    affiliatedAssociationBasis = override.affiliatedAssociationBasis;
-  } else if (version.homegrownFinding === false && !version.nonHomegrownOptIn) {
-    affiliatedAssociationBasis = false;
-  } else if (version.verifiedBy && version.verifiedAt) {
-    affiliatedAssociationBasis = true;
-  } else {
-    affiliatedAssociationBasis = null;
   }
 
   const verifiedBy = hasEvidenceOverride ? fallbackActor.accountId : version.verifiedBy;
@@ -492,10 +487,16 @@ export class PlayerRegistrationsService {
                   ? [{ id: 'asc' }]
                   : [{ updatedAt: 'desc' }, { id: 'asc' }];
 
-          const [rows, clubApps, canManage, canDecideExceptions] = await Promise.all([
+          const canPageInDb =
+            (!values.state || values.state === 'ALL') &&
+            (!values.playingStatus || values.playingStatus === 'ALL') &&
+            sort !== 'shirtNumber:asc';
+
+          const [rows, dbTotal, clubApps, canManage, canDecideExceptions] = await Promise.all([
             context.db.playerRegistration.findMany({
               where,
               orderBy,
+              ...(canPageInDb ? { skip, take } : {}),
               include: {
                 club: {
                   select: {
@@ -545,6 +546,7 @@ export class PlayerRegistrationsService {
                 },
               },
             }),
+            canPageInDb ? context.db.playerRegistration.count({ where }) : Promise.resolve(0),
             context.db.clubApplication.findMany({
               where: { seasonId },
               select: { clubId: true, currentAcceptedVersionId: true },
@@ -617,15 +619,17 @@ export class PlayerRegistrationsService {
             };
           });
 
-          const filtered = mapped.filter((item) => {
-            if (values.state && values.state !== 'ALL') {
-              if (item.latestVersion?.state !== values.state) return false;
-            }
-            if (values.playingStatus && values.playingStatus !== 'ALL') {
-              if (item.playingEffectivityStatus !== values.playingStatus) return false;
-            }
-            return true;
-          });
+          const filtered = canPageInDb
+            ? mapped
+            : mapped.filter((item) => {
+                if (values.state && values.state !== 'ALL') {
+                  if (item.latestVersion?.state !== values.state) return false;
+                }
+                if (values.playingStatus && values.playingStatus !== 'ALL') {
+                  if (item.playingEffectivityStatus !== values.playingStatus) return false;
+                }
+                return true;
+              });
 
           if (sort === 'shirtNumber:asc') {
             filtered.sort((a, b) => {
@@ -635,8 +639,8 @@ export class PlayerRegistrationsService {
             });
           }
 
-          const total = filtered.length;
-          const items = filtered.slice(skip, skip + take);
+          const total = canPageInDb ? dbTotal : filtered.length;
+          const items = canPageInDb ? filtered : filtered.slice(skip, skip + take);
 
           return withPaginationMeta(
             {
@@ -786,12 +790,7 @@ export class PlayerRegistrationsService {
               verifiedBy: v.verifiedBy,
               verifier: v.verifier,
               verifiedAt: v.verifiedAt?.toISOString() ?? null,
-              affiliatedAssociationBasis:
-                v.homegrownFinding === false && !v.nonHomegrownOptIn
-                  ? false
-                  : v.verifiedBy && v.verifiedAt
-                    ? true
-                    : null,
+              affiliatedAssociationBasis: v.affiliatedAssociationBasis,
               receiptRegulationVersionId: v.receiptRegulationVersionId,
               receiptRegulationVersion: v.receiptRegulationVersion,
               receiptTimingStatus: v.receiptTimingStatus,
@@ -953,8 +952,6 @@ export class PlayerRegistrationsService {
           const verificationRegId = hasAffiliationDecision
             ? (fields.verifiedRegulationVersionId ?? season.currentRegulationVersionId ?? null)
             : null;
-          const draftHomegrownMarker =
-            fields.affiliatedAssociationBasis === false && !fields.nonHomegrownOptIn ? false : null;
 
           await context.db.playerRegistration.create({
             data: {
@@ -983,10 +980,10 @@ export class PlayerRegistrationsService {
               qualifyingValue: fields.qualifyingValue ?? null,
               evidenceSummary: fields.evidenceSummary ?? null,
               evidenceReference: fields.evidenceReference ?? null,
+              affiliatedAssociationBasis: fields.affiliatedAssociationBasis ?? null,
               verifiedBy,
               verifiedAt,
               decisionRegulationVersionId: verificationRegId,
-              homegrownFinding: draftHomegrownMarker,
               notes: fields.notes ?? null,
               createdAt: now,
             },
@@ -1100,7 +1097,6 @@ export class PlayerRegistrationsService {
           await context.recheckAuthority();
           const now = await context.now();
 
-          const nextNonHomegrownOptIn = fields.nonHomegrownOptIn ?? version.nonHomegrownOptIn;
           const updateData: Prisma.RegistrationVersionUncheckedUpdateInput = {
             ...(fields.shirtNumber !== undefined ? { shirtNumber: fields.shirtNumber } : {}),
             ...(fields.playingStart !== undefined ? { playingStart: fields.playingStart } : {}),
@@ -1124,24 +1120,40 @@ export class PlayerRegistrationsService {
             revision: { increment: 1 },
           };
 
+          const evidenceOrBasisChanged =
+            (fields.evidenceBranch !== undefined &&
+              fields.evidenceBranch !== version.evidenceBranch) ||
+            (fields.qualifyingValue !== undefined &&
+              fields.qualifyingValue !== version.qualifyingValue) ||
+            (fields.evidenceSummary !== undefined &&
+              fields.evidenceSummary !== version.evidenceSummary) ||
+            (fields.evidenceReference !== undefined &&
+              fields.evidenceReference !== version.evidenceReference) ||
+            (fields.verifiedRegulationVersionId !== undefined &&
+              fields.verifiedRegulationVersionId !== version.decisionRegulationVersionId);
+
           if (fields.affiliatedAssociationBasis !== undefined) {
             if (fields.affiliatedAssociationBasis === null) {
+              updateData.affiliatedAssociationBasis = null;
               updateData.verifiedBy = null;
               updateData.verifiedAt = null;
               updateData.decisionRegulationVersionId = null;
-              updateData.homegrownFinding = null;
             } else {
+              updateData.affiliatedAssociationBasis = fields.affiliatedAssociationBasis;
               updateData.verifiedBy = accountId;
               updateData.verifiedAt = now;
               updateData.decisionRegulationVersionId =
                 fields.verifiedRegulationVersionId ?? reg.season.currentRegulationVersionId ?? null;
-              updateData.homegrownFinding =
-                fields.affiliatedAssociationBasis === false && !nextNonHomegrownOptIn
-                  ? false
-                  : null;
             }
-          } else if (fields.verifiedRegulationVersionId !== undefined) {
-            updateData.decisionRegulationVersionId = fields.verifiedRegulationVersionId;
+          } else if (evidenceOrBasisChanged) {
+            // Evidence or regulation basis changed without renewing verification: invalidate prior verification.
+            updateData.affiliatedAssociationBasis = null;
+            updateData.verifiedBy = null;
+            updateData.verifiedAt = null;
+            updateData.decisionRegulationVersionId =
+              fields.verifiedRegulationVersionId !== undefined
+                ? fields.verifiedRegulationVersionId
+                : null;
           }
 
           const updated = await context.db.registrationVersion.update({
@@ -1443,6 +1455,7 @@ export class PlayerRegistrationsService {
               qualifyingValue: version.qualifyingValue,
               evidenceSummary: version.evidenceSummary,
               evidenceReference: version.evidenceReference,
+              affiliatedAssociationBasis: version.affiliatedAssociationBasis,
               verifiedBy: version.verifiedBy,
               verifiedAt: version.verifiedAt,
               decisionRegulationVersionId: version.decisionRegulationVersionId,

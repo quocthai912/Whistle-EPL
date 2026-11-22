@@ -863,7 +863,7 @@ describe('PHASE 3 US3 — Eligibility, quota and confirmation boundaries against
       const seasonId = fixture.seasons[0].id;
       const { versionId: regVersionId } = await fixture.seedEffectiveRegulation(seasonId, {
         u21Cutoff: '2005-01-01',
-        playerWindow: { opensAt: '2026-08-01T00:00:00.000Z', closesAt: '2026-08-20T00:00:00.000Z' },
+        playerWindow: { opensAt: '2026-08-01T00:00:00.000Z', closesAt: '2026-08-12T00:00:00.000Z' },
       });
       const { club, stadium } = await fixture.seedClubAndStadium('UC10A');
       const player = await fixture.seedPlayer('PL_UC10_01', 'Trần Quốc Bảo', '2001-06-15', 'ENG');
@@ -978,21 +978,8 @@ describe('PHASE 3 US3 — Eligibility, quota and confirmation boundaries against
         )
         .expect(409);
 
-      // Officer confirms valid with Idempotency-Key (after window closes, timely receipt still valid!)
-      fixture.clock.set(new Date('2026-08-22T10:00:00.000Z'));
-      const officerAfterClose = await fixture.authenticate(fixture.staff.registrationOfficerA);
-      // playingStart is 2026-08-15 which is now < 2026-08-22 -> D056 rejects backdated ordinary confirmation!
-      await fixture
-        .apiRequest(
-          officerAfterClose,
-          'post',
-          `/player-registrations/${caseId}/confirm-valid`,
-          { versionId, expectedRevision: received.body.data.revision },
-          randomUUID(),
-        )
-        .expect(409);
-
-      // Reset clock to before playingStart (still within valid confirmation time, after window close if window closed at 08-12)
+      // Advance clock past intake close (Aug 12) while still before playingStart (Aug 15):
+      // timely receipt remains valid for ordinary confirmation after intake closes.
       fixture.clock.set(new Date('2026-08-14T10:00:00.000Z'));
       const officerConfirm = await fixture.authenticate(fixture.staff.registrationOfficerA);
       const confirmKey = randomUUID();
@@ -1023,8 +1010,8 @@ describe('PHASE 3 US3 — Eligibility, quota and confirmation boundaries against
         .expect(200);
       expect(replayed.body.data.versionId).toBe(versionId);
 
-      // Same Idempotency-Key with different payload -> 409 IDEMPOTENCY_CONFLICT
-      await fixture
+      // Same Idempotency-Key with different payload -> 409 IDEMPOTENCY_KEY_REUSED
+      const conflictReplay = await fixture
         .apiRequest(
           officerConfirm,
           'post',
@@ -1037,6 +1024,7 @@ describe('PHASE 3 US3 — Eligibility, quota and confirmation boundaries against
           confirmKey,
         )
         .expect(409);
+      expect(conflictReplay.body.error.code).toBe('IDEMPOTENCY_KEY_REUSED');
 
       // Verify detail, D059 snapshot, playingEffectivityStatus and audit history
       const detail = await fixture

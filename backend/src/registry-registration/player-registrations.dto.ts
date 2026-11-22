@@ -33,7 +33,7 @@ export class CreatePlayerRegistrationDto {
   @IsISO8601({ strict: true })
   playingEnd?: string | null;
 
-  @IsOptional()
+  @ValidateIf((_, value: unknown) => value !== undefined)
   @IsBoolean()
   nonHomegrownOptIn?: boolean;
 
@@ -86,7 +86,7 @@ export class UpdatePlayerRegistrationDraftDto extends RevisionDto {
   @IsISO8601({ strict: true })
   playingEnd?: string | null;
 
-  @IsOptional()
+  @ValidateIf((_, value: unknown) => value !== undefined)
   @IsBoolean()
   nonHomegrownOptIn?: boolean;
 
@@ -147,7 +147,7 @@ export class PlayerRegistrationActionDto {
   @IsISO8601({ strict: true })
   playingEnd?: string | null;
 
-  @IsOptional()
+  @ValidateIf((_, value: unknown) => value !== undefined)
   @IsBoolean()
   nonHomegrownOptIn?: boolean;
 
