@@ -36,7 +36,7 @@ export class ProposeClubApplicationCorrectionDto {
   @IsUUID('4')
   baseAcceptedVersionId!: string;
 
-  @IsOptional()
+  @ValidateIf((_, value: unknown) => value !== undefined)
   @IsString()
   correctionKind?: string;
 
@@ -70,7 +70,7 @@ export class ProposeClubApplicationCorrectionDto {
   @IsString()
   correctionEvidence!: string;
 
-  @IsOptional()
+  @ValidateIf((_, value: unknown) => value !== undefined)
   @IsArray()
   @IsObject({ each: true })
   @ValidateNested({ each: true })
@@ -79,7 +79,7 @@ export class ProposeClubApplicationCorrectionDto {
 }
 
 export class UpdateClubApplicationCorrectionDraftDto extends RevisionDto {
-  @IsOptional()
+  @ValidateIf((_, value: unknown) => value !== undefined)
   @IsString()
   correctionKind?: string;
 
@@ -107,15 +107,15 @@ export class UpdateClubApplicationCorrectionDraftDto extends RevisionDto {
   @IsString()
   notes?: string | null;
 
-  @IsOptional()
+  @ValidateIf((_, value: unknown) => value !== undefined)
   @IsString()
   correctionReason?: string;
 
-  @IsOptional()
+  @ValidateIf((_, value: unknown) => value !== undefined)
   @IsString()
   correctionEvidence?: string;
 
-  @IsOptional()
+  @ValidateIf((_, value: unknown) => value !== undefined)
   @IsArray()
   @IsObject({ each: true })
   @ValidateNested({ each: true })

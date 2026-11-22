@@ -779,9 +779,21 @@ export class RegistrationIntakeService {
     if (targetKind === 'CLUB_APPLICATION') {
       const target = await context.db.clubApplicationVersion.findFirst({
         where: { id: targetVersionId, seasonId },
-        select: { id: true, state: true, receivedAt: true, receiptTimingStatus: true },
+        select: {
+          id: true,
+          versionKind: true,
+          state: true,
+          receivedAt: true,
+          receiptTimingStatus: true,
+        },
       });
       if (!target) throw missing();
+      if (target.versionKind !== 'INITIAL') {
+        throw conflict(
+          'STATE_CONFLICT',
+          'Phiên bản đính chính D100 không thuộc diện áp dụng ngoại lệ tiếp nhận D053.',
+        );
+      }
       if (!target.receivedAt) {
         throw conflict('STATE_CONFLICT', 'Chỉ có thể đề xuất ngoại lệ cho phiên bản đã tiếp nhận.');
       }

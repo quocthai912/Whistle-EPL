@@ -781,13 +781,33 @@ describe('PHASE 3 US5 — D100 controlled BM1 corrections (T019/T020)', () => {
       })
       .expect(400);
 
-    // 3b. Null on non-nullable descriptive field returns 400 VALIDATION_FAILED (not 500)
+    // 3b. Null on non-nullable fields returns 400 VALIDATION_FAILED (not 500)
     await fixture
       .apiRequest(officer, 'post', `/club-applications/${caseId}/corrections`, {
         baseAcceptedVersionId: v1Id,
         homeStadiumId: null,
         correctionReason: 'Thử xóa sân nhà.',
         correctionEvidence: 'Bằng chứng.',
+      })
+      .expect(400);
+
+    await fixture
+      .apiRequest(officer, 'post', `/club-applications/${caseId}/corrections`, {
+        baseAcceptedVersionId: v1Id,
+        correctionKind: null,
+        coachName: 'HLV Test Null',
+        correctionReason: 'Thử gửi correctionKind null.',
+        correctionEvidence: 'Bằng chứng.',
+      })
+      .expect(400);
+
+    await fixture
+      .apiRequest(officer, 'post', `/club-applications/${caseId}/corrections`, {
+        baseAcceptedVersionId: v1Id,
+        coachName: 'HLV Test Null',
+        correctionReason: 'Thử gửi affectedReferences null.',
+        correctionEvidence: 'Bằng chứng.',
+        affectedReferences: null,
       })
       .expect(400);
 
@@ -907,5 +927,198 @@ describe('PHASE 3 US5 — D100 controlled BM1 corrections (T019/T020)', () => {
       )
       .expect(200);
     expect(approved.body.data.state).toBe('APPROVED');
+  });
+
+  it('carries forward accepted snapshots, originalApprovedAt and receiptExceptionVersionId across chained D100 corrections and blocks D053 exceptions on CORRECTION versions', async () => {
+    const seasonId = fixture.seasons[0].id;
+    await fixture.seedEffectiveRegulation(seasonId, {
+      clubWindow: { opensAt: '2026-08-01T00:00:00.000Z', closesAt: '2026-08-03T00:00:00.000Z' },
+    });
+    const { club, stadium: stadium1 } = await fixture.seedClubAndStadium('CHN1');
+    const player = await fixture.seedPlayer('PL_CHN_01', 'Lê Minh Khôi', '2000-02-02');
+
+    // Receive v1 LATE (2026-08-05 > closesAt 2026-08-03) and approve via D053 receipt exception
+    const officer = await fixture.authenticate(fixture.staff.registrationOfficerA);
+    const manager = await fixture.authenticate(fixture.staff.seasonManagerA);
+
+    const created = await fixture
+      .apiRequest(officer, 'post', `/seasons/${seasonId}/club-applications`, {
+        clubId: club.id,
+        coachName: 'HLV Gốc Muộn',
+        homeStadiumId: stadium1.id,
+        representativeName: 'Đại Diện Gốc',
+        representativePhone: '0901112233',
+        contactAddress: '10 Đường Gốc',
+        proposedPlayers: [{ playerId: player.id, shirtNumber: 7 }],
+      })
+      .expect(201);
+    const caseId = created.body.data.caseId as string;
+    const v1Id = created.body.data.versionId as string;
+
+    const rec = await fixture
+      .apiRequest(officer, 'post', `/club-applications/${caseId}/receive`, {
+        versionId: v1Id,
+        expectedRevision: '1',
+      })
+      .expect(200);
+    expect(rec.body.data.receiptTimingStatus).toBe('LATE');
+
+    const exDraft = await fixture
+      .apiRequest(officer, 'post', `/seasons/${seasonId}/receipt-exceptions`, {
+        targetKind: 'CLUB_APPLICATION',
+        targetVersionId: v1Id,
+        reason: 'Ngoại lệ tiếp nhận muộn cho v1.',
+        basis: 'Công văn chấp thuận gia hạn số 09.',
+      })
+      .expect(201);
+    const exCaseId = exDraft.body.data.caseId as string;
+    const exVersionId = exDraft.body.data.versionId as string;
+
+    await fixture
+      .apiRequest(
+        manager,
+        'post',
+        `/receipt-exceptions/${exCaseId}/approve`,
+        {
+          versionId: exVersionId,
+          expectedRevision: exDraft.body.data.revision,
+          reason: 'Chấp thuận ngoại lệ tiếp nhận cho v1.',
+        },
+        randomUUID(),
+      )
+      .expect(200);
+
+    const sub1 = await fixture
+      .apiRequest(officer, 'post', `/club-applications/${caseId}/submit`, {
+        versionId: v1Id,
+        expectedRevision: rec.body.data.revision,
+      })
+      .expect(200);
+    await fixture
+      .apiRequest(
+        manager,
+        'post',
+        `/club-applications/${caseId}/approve`,
+        {
+          versionId: v1Id,
+          expectedRevision: sub1.body.data.revision,
+          reason: 'Phê duyệt v1 kèm ngoại lệ D053.',
+        },
+        randomUUID(),
+      )
+      .expect(200);
+    const v1ApprovedAt = (
+      await fixture.database.client.clubApplicationVersion.findUniqueOrThrow({
+        where: { id: v1Id },
+        select: { decidedAt: true },
+      })
+    ).decidedAt!.toISOString();
+
+    // Mutate live Club, Stadium and Player names AFTER v1 approval to verify D100 carries forward accepted snapshots
+    await fixture.database.client.club.update({
+      where: { id: club.id },
+      data: { name: 'CLB Đổi Tên Sau Duyệt' },
+    });
+    await fixture.database.client.stadium.update({
+      where: { id: stadium1.id },
+      data: { name: 'Sân Đổi Tên Sau Duyệt' },
+    });
+    await fixture.database.client.player.update({
+      where: { id: player.id },
+      data: { fullName: 'Cầu Thủ Đổi Tên Sau Duyệt' },
+    });
+
+    // First D100 correction v2 at a later timestamp
+    fixture.clock.set(new Date('2026-09-01T10:00:00.000Z'));
+    const officerLater = await fixture.authenticate(fixture.staff.registrationOfficerA);
+    const managerLater = await fixture.authenticate(fixture.staff.seasonManagerA);
+
+    const c2 = await fixture
+      .apiRequest(officerLater, 'post', `/club-applications/${caseId}/corrections`, {
+        baseAcceptedVersionId: v1Id,
+        coachName: 'HLV Đính Chính V2',
+        correctionReason: 'Đính chính HLV lần 1.',
+        correctionEvidence: 'Bản gốc BM1.',
+        affectedReferences: [],
+      })
+      .expect(201);
+    const v2Id = c2.body.data.versionId as string;
+
+    const c2Sub = await fixture
+      .apiRequest(officerLater, 'post', `/club-applications/${caseId}/corrections/${v2Id}/submit`, {
+        expectedRevision: c2.body.data.revision,
+      })
+      .expect(200);
+
+    // D053 receipt exception targeting a CORRECTION version must be rejected (409)
+    await fixture
+      .apiRequest(officerLater, 'post', `/seasons/${seasonId}/receipt-exceptions`, {
+        targetKind: 'CLUB_APPLICATION',
+        targetVersionId: v2Id,
+        reason: 'Thử tạo ngoại lệ D053 cho phiên bản đính chính.',
+        basis: 'Không hợp lệ.',
+      })
+      .expect(409);
+
+    await fixture
+      .apiRequest(
+        managerLater,
+        'post',
+        `/club-applications/${caseId}/corrections/${v2Id}/approve`,
+        {
+          expectedRevision: c2Sub.body.data.revision,
+          baseAcceptedVersionId: v1Id,
+          reason: 'Phê duyệt đính chính v2.',
+        },
+        randomUUID(),
+      )
+      .expect(200);
+
+    // Second chained D100 correction v3 based on v2 at an even later timestamp
+    fixture.clock.set(new Date('2026-09-10T10:00:00.000Z'));
+    const officerV3 = await fixture.authenticate(fixture.staff.registrationOfficerA);
+    const managerV3 = await fixture.authenticate(fixture.staff.seasonManagerA);
+
+    const c3 = await fixture
+      .apiRequest(officerV3, 'post', `/club-applications/${caseId}/corrections`, {
+        baseAcceptedVersionId: v2Id,
+        representativeName: 'Đại Diện Đính Chính V3',
+        correctionReason: 'Đính chính người đại diện lần 2.',
+        correctionEvidence: 'Bản gốc BM1 xác nhận lần 2.',
+      })
+      .expect(201);
+    const v3Id = c3.body.data.versionId as string;
+
+    const c3Sub = await fixture
+      .apiRequest(officerV3, 'post', `/club-applications/${caseId}/corrections/${v3Id}/submit`, {
+        expectedRevision: c3.body.data.revision,
+      })
+      .expect(200);
+    await fixture
+      .apiRequest(
+        managerV3,
+        'post',
+        `/club-applications/${caseId}/corrections/${v3Id}/approve`,
+        {
+          expectedRevision: c3Sub.body.data.revision,
+          baseAcceptedVersionId: v2Id,
+          reason: 'Phê duyệt đính chính v3.',
+        },
+        randomUUID(),
+      )
+      .expect(200);
+
+    const v3 = await fixture.database.client.clubApplicationVersion.findUniqueOrThrow({
+      where: { id: v3Id },
+      select: { officialSnapshot: true },
+    });
+    expect(v3.officialSnapshot).toMatchObject({
+      baseAcceptedVersionId: v2Id,
+      originalApprovedAt: v1ApprovedAt,
+      receiptExceptionVersionId: exVersionId,
+      club: { name: 'Câu lạc bộ Kiểm thử CHN1' },
+      homeStadium: { name: 'Sân vận động Kiểm thử CHN1' },
+      proposedPlayers: [{ playerId: player.id, fullName: 'Lê Minh Khôi' }],
+    });
   });
 });

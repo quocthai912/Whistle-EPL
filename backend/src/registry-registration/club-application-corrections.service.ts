@@ -967,6 +967,7 @@ export class ClubApplicationCorrectionsService {
               app.seasonId,
               app.clubId,
             );
+            await context.recheckAuthority();
             const declared = readStoredDeclaredReferences(version.affectedReferences);
             const snapshotAffectedReferences: StoredAffectedReferences = {
               declared,
@@ -974,21 +975,61 @@ export class ClubApplicationCorrectionsService {
               venueReviewRequired: diff.venueReviewRequired,
             };
 
+            const baselineSnapshot =
+              baseline.officialSnapshot &&
+              typeof baseline.officialSnapshot === 'object' &&
+              !Array.isArray(baseline.officialSnapshot)
+                ? (baseline.officialSnapshot as Record<string, unknown>)
+                : null;
+            const clubSnapshot =
+              baselineSnapshot?.club &&
+              typeof baselineSnapshot.club === 'object' &&
+              !Array.isArray(baselineSnapshot.club)
+                ? baselineSnapshot.club
+                : {
+                    id: app.club.id,
+                    code: app.club.code,
+                    name: app.club.name,
+                    abbreviation: app.club.abbreviation,
+                  };
+            const homeStadiumSnapshot =
+              version.homeStadiumId === baseline.homeStadiumId &&
+              baselineSnapshot &&
+              'homeStadium' in baselineSnapshot
+                ? baselineSnapshot.homeStadium
+                : version.homeStadium
+                  ? {
+                      id: version.homeStadium.id,
+                      code: version.homeStadium.code,
+                      name: version.homeStadium.name,
+                      location: version.homeStadium.location,
+                    }
+                  : null;
+            const proposedPlayersSnapshot = Array.isArray(baselineSnapshot?.proposedPlayers)
+              ? baselineSnapshot.proposedPlayers
+              : version.proposedPlayers.map((item) => ({
+                  playerId: item.playerId,
+                  code: item.player.code,
+                  fullName: item.player.fullName,
+                  birthDate: formatDateOnly(item.player.birthDate),
+                  nationalityCode: item.player.nationalityCode,
+                  positionCode: item.player.positionCode,
+                  positionOrder: item.positionOrder,
+                  shirtNumber: item.shirtNumber,
+                  notes: item.notes,
+                }));
+            const originalApprovedAt =
+              typeof baselineSnapshot?.originalApprovedAt === 'string'
+                ? baselineSnapshot.originalApprovedAt
+                : (baseline.decidedAt?.toISOString() ?? null);
+            const receiptExceptionVersionId =
+              typeof baselineSnapshot?.receiptExceptionVersionId === 'string'
+                ? baselineSnapshot.receiptExceptionVersionId
+                : null;
+
             const officialSnapshot = {
-              club: {
-                id: app.club.id,
-                code: app.club.code,
-                name: app.club.name,
-                abbreviation: app.club.abbreviation,
-              },
-              homeStadium: version.homeStadium
-                ? {
-                    id: version.homeStadium.id,
-                    code: version.homeStadium.code,
-                    name: version.homeStadium.name,
-                    location: version.homeStadium.location,
-                  }
-                : null,
+              club: clubSnapshot,
+              homeStadium: homeStadiumSnapshot,
               coachName: version.coachName,
               representativeName: version.representativeName,
               representativePhone: version.representativePhone,
@@ -998,8 +1039,9 @@ export class ClubApplicationCorrectionsService {
               receiptTimingStatus: version.receiptTimingStatus,
               receiptRegulationVersionId: version.receiptRegulationVersionId,
               receiptWindowId: version.receiptWindowId,
+              receiptExceptionVersionId,
               baseAcceptedVersionId: baseline.id,
-              originalApprovedAt: baseline.decidedAt?.toISOString() ?? null,
+              originalApprovedAt,
               correctionReason: version.correctionReason,
               correctionEvidence: version.correctionEvidence,
               affectedReferences: snapshotAffectedReferences,
@@ -1010,17 +1052,7 @@ export class ClubApplicationCorrectionsService {
               },
               approvalRegulationVersionId: effectiveRegulation.id,
               approvedAt: now.toISOString(),
-              proposedPlayers: version.proposedPlayers.map((item) => ({
-                playerId: item.playerId,
-                code: item.player.code,
-                fullName: item.player.fullName,
-                birthDate: formatDateOnly(item.player.birthDate),
-                nationalityCode: item.player.nationalityCode,
-                positionCode: item.player.positionCode,
-                positionOrder: item.positionOrder,
-                shirtNumber: item.shirtNumber,
-                notes: item.notes,
-              })),
+              proposedPlayers: proposedPlayersSnapshot,
             };
 
             const updated = await context.db.clubApplicationVersion.update({
