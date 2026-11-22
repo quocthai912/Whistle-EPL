@@ -6,7 +6,7 @@ The [Q99-Q103 extension](README.md#phase-1-preparation-approval---q99-q103), app
 
 This is the current Phase ledger for one evolving package, not a Spec/Plan/Task. See [business](business.md), [quality](quality.md), [UC navigation](README.md) and [source matrix](sources.md). PHASE 1-PHASE 10 remain the same organizational units; their current statuses and checklist states follow the dated evidence below.
 
-**Latest implementation and acceptance update** 2026-11-18 (Asia/Bangkok). PHASE 2 is `COMPLETED` for the explicitly accepted scope, with T001–T030 complete and published; Issues #96–#101 are synchronized as completed. See the [PHASE 2 implementation and acceptance evidence](#phase-2---seasons-catalogs-and-regulations). PHASE 1 is `COMPLETED` for the accepted foundation scope, including [T038–T048 verification and review](#phase-1-audit-and-verification-evidence---2026-11-06). PHASE 3–PHASE 10 remain `NOT_STARTED`; operational inputs and later integration gates remain with their owners.
+**Latest implementation and acceptance update** 2026-11-22 (Asia/Bangkok). PHASE 3 is `IN_PROGRESS`: T001–T015 and T019–T020 are implemented, verified and published with their linked Issues closed (`#103–#118`, `#120`), while T016–T018, T021–T028 and whole-PHASE 3 acceptance remain open. See the [PHASE 3 execution evidence](#phase-3---profiles-and-player-registration). PHASE 2 is `COMPLETED` for the explicitly accepted scope, with T001–T030 complete and published; Issues #96–#101 are synchronized as completed. See the [PHASE 2 implementation and acceptance evidence](#phase-2---seasons-catalogs-and-regulations). PHASE 1 is `COMPLETED` for the accepted foundation scope, including [T038–T048 verification and review](#phase-1-audit-and-verification-evidence---2026-11-06). PHASE 4–PHASE 10 remain `NOT_STARTED`; operational inputs and later integration gates remain with their owners.
 
 **Post-acceptance regression** 2026-11-08 (Asia/Bangkok). Account confirmation and PHASE 1 audit before/after refinements passed 45 unit, 90 PostgreSQL integration, 32 Chrome/Edge E2E and five backup/scheduler tests, plus the baseline/negative authentication load checks. See the [dated refinement evidence](../docs/verification/phase-1/ui-refinement.md#audit-completeness-and-full-regression--2026-11-08) for scope, reproduction targets and limits. The accepted Phase status, checklist and historical approval remain unchanged; future-Phase audit actions are not claimed implemented or verified.
 
@@ -46,7 +46,7 @@ After G0, select a Phase with satisfied dependencies → Specification against a
 |---|---|---|---|
 | PHASE 1 - Operational foundation and access administration | Web foundation, accounts/sessions/permissions, log recording/search | G0 | `COMPLETED` |
 | PHASE 2 - Seasons, catalogs, and regulations | Seasons, club master records, stadiums, seasonal regulations | PHASE 1 | `COMPLETED` |
-| PHASE 3 - Profiles and player registration | Player profiles, seasonal club applications, registration and validation | PHASE 1, PHASE 2 | `NOT_STARTED` |
+| PHASE 3 - Profiles and player registration | Player profiles, seasonal club applications, registration and validation | PHASE 1, PHASE 2 | `IN_PROGRESS` |
 | PHASE 4 - Schedule creation and adjustment | Double round-robin schedules, conflict checks, approval, adjustment | PHASE 2, PHASE 3 | `NOT_STARTED` |
 | PHASE 5 - Official results and statistics | Match reports, results, confirmation/correction, automatic standings/statistics | PHASE 1, PHASE 2, PHASE 3, PHASE 4 | `NOT_STARTED` |
 | PHASE 6 - Competition information lookup | BM4.1-4.4, schedules, matches, clubs/players, public standings/statistics | PHASE 2, PHASE 3, PHASE 4, PHASE 5 | `NOT_STARTED` |
@@ -215,6 +215,8 @@ The [PHASE 3 verification matrix](../specs/003-phase-3-player-registration/verif
 
 **T012–T013 eligibility, quota and interval execution evidence, 2026-11-22 (Asia/Bangkok):** T012 and T013 are implemented, verified and published at [`149b349`](https://github.com/quocthai912/Whistle-EPL/commit/149b349a0f0320874b50de3f4f92f4584b3eb791) on `feat/phase-3-player-eligibility-validation`. The live remote ref matched `149b349a0f0320874b50de3f4f92f4584b3eb791` on 2026-11-22. Local verification passed `pnpm --filter @whistle-epl/backend run test:unit -- tests/unit/phase-3-eligibility.spec.ts` (`13/13`), `test:integration -- tests/integration/phase-3-confirmation.spec.ts tests/integration/phase-3-execution.spec.ts` (`4/4` + `6/6` on PostgreSQL 17.11), `typecheck`, `lint`, `build`, `prettier`, and two-axis Standards & Spec code review. Issues [#109](https://github.com/quocthai912/Whistle-EPL/issues/109) (T012) and [#112](https://github.com/quocthai912/Whistle-EPL/issues/112) (T013) were read back Closed with reason Completed, checked Acceptance Criteria, label `completed` and `ready-for-agent` removed on 2026-11-22. T014–T018, T021–T028 and whole-PHASE 3 acceptance remain open.
 
+**T014–T015 player registration confirmation and UI execution evidence, 2026-11-22 (Asia/Bangkok):** T014 and T015 are implemented, verified and published at [`be66582`](https://github.com/quocthai912/Whistle-EPL/commit/be6658231ffd2507d890f1458cd49346a0e47637) on `feat/phase-3-player-registration-confirmation`, with PR #141 CI migration-split and CodeRabbit review fixes published at [`b4e3df2`](https://github.com/quocthai912/Whistle-EPL/commit/b4e3df227014e6e97dc0eac18a2e30f900638bd7). Local verification passed `pnpm format:check`, `pnpm lint`, `pnpm typecheck`, `pnpm build` (including `verify:client`), `80/80` backend unit tests, `94/94` frontend unit tests, `16/16` PostgreSQL 17 integration tests across `schema.spec.ts` and `phase-3-confirmation.spec.ts`, and `2/2` Chrome/Edge HTTPS E2E tests (`tests/e2e/phase-3-registration.spec.ts`), plus visual review at 1366×768 and 1600×1000. Issues [#116](https://github.com/quocthai912/Whistle-EPL/issues/116) (T014) and [#118](https://github.com/quocthai912/Whistle-EPL/issues/118) (T015) were read back Closed with reason Completed, checked Acceptance Criteria, label `completed` and `ready-for-agent` removed on 2026-11-22. T016–T018, T021–T028 and whole-PHASE 3 acceptance remain open.
+
 **Implementation Status:** `IN_PROGRESS`.
 
 **Scope:** UC08-UC11, including UC09 player master profiles, seasonal club applications, approval, registration lists, and explainable UC11 eligibility checks.
@@ -230,9 +232,9 @@ The [PHASE 3 verification matrix](../specs/003-phase-3-player-registration/verif
 - [x] The profiles, registration, and approval-conditions Specification is approved.
 - [x] The seasonal-registration Implementation Plan is completed.
 - [x] Tasks and dependencies are approved and linked to Issues under the conventions.
-- [ ] UC08/UC09 manage profiles and supplementation/review/approval/rejection with correct permissions.
-- [ ] UC10/UC11 check 25/17 limits, homegrown criteria, U21, deadlines, and active registrations.
-- [ ] Boundary, insufficient-basis, not-applicable, and conflicting-registration cases return correct results.
+- [x] UC08/UC09 manage profiles and supplementation/review/approval/rejection with correct permissions.
+- [x] UC10/UC11 check 25/17 limits, homegrown criteria, U21, deadlines, and active registrations.
+- [x] Boundary, insufficient-basis, not-applicable, and conflicting-registration cases return correct results.
 - [ ] BM1, permissions/personal data, history, and two-season cross-checks pass.
 - [ ] Functional, regulation-integration, and regression/save-failure tests pass; acceptance evidence is complete.
 
