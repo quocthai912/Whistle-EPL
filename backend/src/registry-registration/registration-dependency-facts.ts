@@ -5,6 +5,10 @@ import type {
   DependencyProvider,
   RegistrationIntervalComposition,
 } from '../season-regulations/season-dependencies.port';
+import {
+  INACTIVE_PLAYING_DISPOSITIONS,
+  isActivePlayingDisposition,
+} from './registration-intervals';
 
 type ActiveValidatedRegistration = {
   id: string;
@@ -21,12 +25,6 @@ type ActiveValidatedRegistration = {
     playingDisposition: string | null;
   };
 };
-
-const INACTIVE_DISPOSITIONS = new Set(['CANCELLED_BEFORE_EFFECTIVITY', 'RECORDED_ERRONEOUS']);
-
-function isActivePlayingDisposition(disposition: string | null): boolean {
-  return disposition === null || !INACTIVE_DISPOSITIONS.has(disposition);
-}
 
 /** Partitions validated playing intervals into consecutive half-open composition windows. */
 export function buildIntervalCompositions(
@@ -563,7 +561,7 @@ export const registrationPublicMediaBasisProvider = {
           state: 'VALID',
           OR: [
             { playingDisposition: null },
-            { playingDisposition: { notIn: [...INACTIVE_DISPOSITIONS] } },
+            { playingDisposition: { notIn: [...INACTIVE_PLAYING_DISPOSITIONS] } },
           ],
         },
       },
