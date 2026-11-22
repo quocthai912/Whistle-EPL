@@ -857,4 +857,592 @@ describe('PHASE 3 US3 — Eligibility, quota and confirmation boundaries against
       discontinuedAssessment.criteria.find((c) => c.criterion === 'CLUB_PARTICIPATION')?.status,
     ).toBe('UNMET');
   });
+
+  describe('UC10 HTTP receipt, validation, supplementation, cancellation and ordinary confirmation (T014)', () => {
+    it('executes Draft -> Received -> Valid as an officer decision with D059 snapshot, audit and Idempotency-Key replay', async () => {
+      const seasonId = fixture.seasons[0].id;
+      const { versionId: regVersionId } = await fixture.seedEffectiveRegulation(seasonId, {
+        u21Cutoff: '2005-01-01',
+        playerWindow: { opensAt: '2026-08-01T00:00:00.000Z', closesAt: '2026-08-20T00:00:00.000Z' },
+      });
+      const { club, stadium } = await fixture.seedClubAndStadium('UC10A');
+      const player = await fixture.seedPlayer('PL_UC10_01', 'Trần Quốc Bảo', '2001-06-15', 'ENG');
+
+      const officer = await fixture.authenticate(fixture.staff.registrationOfficerA);
+      const manager = await fixture.authenticate(fixture.staff.seasonManagerA);
+      const wrongOfficer = await fixture.authenticate(fixture.staff.registrationOfficerSeason2);
+
+      // References endpoint exposes active regulation, clubs, players and officer capabilities
+      const refs = await fixture
+        .apiRequest(officer, 'get', `/seasons/${seasonId}/player-registrations/references`)
+        .expect(200);
+      expect(refs.body.data.effectiveRegulation.id).toBe(regVersionId);
+      expect(refs.body.data.capabilities).toEqual({
+        canManage: true,
+        canDecideExceptions: false,
+      });
+
+      // Wrong-season officer is denied read (404) and write (403)
+      await fixture
+        .apiRequest(wrongOfficer, 'get', `/seasons/${seasonId}/player-registrations`)
+        .expect(404);
+      await fixture
+        .apiRequest(wrongOfficer, 'post', `/seasons/${seasonId}/player-registrations`, {
+          clubId: club.id,
+          playerId: player.id,
+        })
+        .expect(403);
+
+      // Create draft while club BM1 is still pending (FR-012)
+      const created = await fixture
+        .apiRequest(officer, 'post', `/seasons/${seasonId}/player-registrations`, {
+          clubId: club.id,
+          playerId: player.id,
+          shirtNumber: 10,
+          playingStart: '2026-08-15T00:00:00.000Z',
+        })
+        .expect(201);
+      const caseId = created.body.data.caseId as string;
+      const versionId = created.body.data.versionId as string;
+
+      // Update draft with D054 homegrown evidence
+      const patched = await fixture
+        .apiRequest(officer, 'patch', `/player-registrations/${caseId}/draft`, {
+          versionId,
+          expectedRevision: '1',
+          evidenceBranch: 'SEASONS',
+          qualifyingValue: 3,
+          evidenceSummary: '3 mùa giải đào tạo tại CLB thuộc FA Anh',
+          evidenceReference: 'FA-HG-2026-01',
+          affiliatedAssociationBasis: true,
+          notes: 'Hồ sơ đăng ký cầu thủ nội địa.',
+        })
+        .expect(200);
+      expect(patched.body.data.revision).toBe('2');
+
+      // Receive on time inside [opensAt, closesAt)
+      const received = await fixture
+        .apiRequest(officer, 'post', `/player-registrations/${caseId}/receive`, {
+          versionId,
+          expectedRevision: '2',
+        })
+        .expect(200);
+      expect(received.body.data).toMatchObject({
+        state: 'RECEIVED',
+        receiptTimingStatus: 'ON_TIME',
+        receiptRegulationVersionId: regVersionId,
+      });
+
+      // Precheck while BM1 is pending -> read-only CLUB_PARTICIPATION UNMET
+      const precheckPending = await fixture
+        .apiRequest(officer, 'post', `/player-registrations/${caseId}/validate`, { versionId })
+        .expect(200);
+      expect(precheckPending.body.data.eligibleForConfirmation).toBe(false);
+      expect(
+        precheckPending.body.data.criteria.find(
+          (c: { criterion: string }) => c.criterion === 'CLUB_PARTICIPATION',
+        )?.status,
+      ).toBe('UNMET');
+
+      // Confirm-valid fails while BM1 is pending, leaving version RECEIVED
+      await fixture
+        .apiRequest(
+          officer,
+          'post',
+          `/player-registrations/${caseId}/confirm-valid`,
+          { versionId, expectedRevision: received.body.data.revision },
+          randomUUID(),
+        )
+        .expect(409);
+
+      // Season Manager cannot confirm-valid (initial confirmation is strictly Registration Officer decision)
+      await seedApprovedClubApplication(seasonId, club.id, stadium.id, regVersionId);
+      await fixture
+        .apiRequest(
+          manager,
+          'post',
+          `/player-registrations/${caseId}/confirm-valid`,
+          { versionId, expectedRevision: received.body.data.revision },
+          randomUUID(),
+        )
+        .expect(403);
+
+      // Stale revision rejected
+      await fixture
+        .apiRequest(
+          officer,
+          'post',
+          `/player-registrations/${caseId}/confirm-valid`,
+          { versionId, expectedRevision: '1' },
+          randomUUID(),
+        )
+        .expect(409);
+
+      // Officer confirms valid with Idempotency-Key (after window closes, timely receipt still valid!)
+      fixture.clock.set(new Date('2026-08-22T10:00:00.000Z'));
+      const officerAfterClose = await fixture.authenticate(fixture.staff.registrationOfficerA);
+      // playingStart is 2026-08-15 which is now < 2026-08-22 -> D056 rejects backdated ordinary confirmation!
+      await fixture
+        .apiRequest(
+          officerAfterClose,
+          'post',
+          `/player-registrations/${caseId}/confirm-valid`,
+          { versionId, expectedRevision: received.body.data.revision },
+          randomUUID(),
+        )
+        .expect(409);
+
+      // Reset clock to before playingStart (still within valid confirmation time, after window close if window closed at 08-12)
+      fixture.clock.set(new Date('2026-08-14T10:00:00.000Z'));
+      const officerConfirm = await fixture.authenticate(fixture.staff.registrationOfficerA);
+      const confirmKey = randomUUID();
+      const confirmed = await fixture
+        .apiRequest(
+          officerConfirm,
+          'post',
+          `/player-registrations/${caseId}/confirm-valid`,
+          { versionId, expectedRevision: received.body.data.revision },
+          confirmKey,
+        )
+        .expect(200);
+      expect(confirmed.body.data).toMatchObject({
+        caseId,
+        versionId,
+        state: 'VALID',
+      });
+
+      // Exact-intent replay with same Idempotency-Key succeeds
+      const replayed = await fixture
+        .apiRequest(
+          officerConfirm,
+          'post',
+          `/player-registrations/${caseId}/confirm-valid`,
+          { versionId, expectedRevision: received.body.data.revision },
+          confirmKey,
+        )
+        .expect(200);
+      expect(replayed.body.data.versionId).toBe(versionId);
+
+      // Same Idempotency-Key with different payload -> 409 IDEMPOTENCY_CONFLICT
+      await fixture
+        .apiRequest(
+          officerConfirm,
+          'post',
+          `/player-registrations/${caseId}/confirm-valid`,
+          {
+            versionId,
+            expectedRevision: received.body.data.revision,
+            reason: 'Lý do khác gây xung đột intent',
+          },
+          confirmKey,
+        )
+        .expect(409);
+
+      // Verify detail, D059 snapshot, playingEffectivityStatus and audit history
+      const detail = await fixture
+        .apiRequest(officerConfirm, 'get', `/player-registrations/${caseId}`)
+        .expect(200);
+      expect(detail.body.data.currentValidatedVersionId).toBe(versionId);
+      expect(detail.body.data.playingEffectivityStatus).toBe('UPCOMING');
+      expect(detail.body.data.versions[0].officialSnapshot).toMatchObject({
+        club: { id: club.id },
+        player: { id: player.id },
+        registration: { shirtNumber: 10, u21Finding: false, homegrownFinding: true },
+        basis: {
+          receiptRegulationVersionId: regVersionId,
+          decisionRegulationVersionId: regVersionId,
+        },
+      });
+
+      const history = await fixture
+        .apiRequest(officerConfirm, 'get', `/player-registrations/${caseId}/history`)
+        .expect(200);
+      const actions = history.body.data.items.map((i: { actionCode: string }) => i.actionCode);
+      expect(actions).toContain('PLAYER_REGISTRATION_DRAFT_CREATED');
+      expect(actions).toContain('PLAYER_REGISTRATION_RECEIVED');
+      expect(actions).toContain('PLAYER_REGISTRATION_CONFIRMED');
+    });
+
+    it('supports supplementation, late re-receipt with D053 exception, pre-validity cancellation and Closed season gate', async () => {
+      const seasonId = fixture.seasons[0].id;
+      const { versionId: regVersionId } = await fixture.seedEffectiveRegulation(seasonId, {
+        u21Cutoff: '2005-01-01',
+        playerWindow: { opensAt: '2026-08-01T00:00:00.000Z', closesAt: '2026-08-12T00:00:00.000Z' },
+      });
+      const { club, stadium } = await fixture.seedClubAndStadium('UC10B');
+      await seedApprovedClubApplication(seasonId, club.id, stadium.id, regVersionId);
+      const player1 = await fixture.seedPlayer('PL_UC10_SUP', 'Phạm Gia Huy', '2006-02-02', 'ENG');
+      const player2 = await fixture.seedPlayer('PL_UC10_CAN', 'Đỗ Minh Khôi', '2006-03-03', 'ENG');
+
+      const officer = await fixture.authenticate(fixture.staff.registrationOfficerA);
+
+      // 1) Create, receive ON_TIME, return for supplementation, then supplement v2
+      const created = await fixture
+        .apiRequest(officer, 'post', `/seasons/${seasonId}/player-registrations`, {
+          clubId: club.id,
+          playerId: player1.id,
+          shirtNumber: 22,
+          playingStart: '2026-08-25T00:00:00.000Z',
+        })
+        .expect(201);
+      const caseId = created.body.data.caseId as string;
+      const v1Id = created.body.data.versionId as string;
+
+      const r1 = await fixture
+        .apiRequest(officer, 'post', `/player-registrations/${caseId}/receive`, {
+          versionId: v1Id,
+          expectedRevision: '1',
+        })
+        .expect(200);
+      expect(r1.body.data.receiptTimingStatus).toBe('ON_TIME');
+
+      const returned = await fixture
+        .apiRequest(officer, 'post', `/player-registrations/${caseId}/return`, {
+          versionId: v1Id,
+          expectedRevision: r1.body.data.revision,
+          reason: 'Cần cập nhật lại số áo theo yêu cầu câu lạc bộ.',
+        })
+        .expect(200);
+      expect(returned.body.data.state).toBe('NEEDS_SUPPLEMENTATION');
+
+      const v2 = await fixture
+        .apiRequest(officer, 'post', `/player-registrations/${caseId}/supplement`, {
+          versionId: v1Id,
+          expectedRevision: returned.body.data.revision,
+        })
+        .expect(200);
+      const v2Id = v2.body.data.versionId as string;
+      expect(v2.body.data.versionNumber).toBe(2);
+      expect(v2.body.data.state).toBe('DRAFT');
+
+      // Advance clock AFTER closesAt -> v2 receipt is LATE
+      fixture.clock.set(new Date('2026-08-15T10:00:00.000Z'));
+      const officerLate = await fixture.authenticate(fixture.staff.registrationOfficerA);
+      const managerLate = await fixture.authenticate(fixture.staff.seasonManagerA);
+
+      const r2 = await fixture
+        .apiRequest(officerLate, 'post', `/player-registrations/${caseId}/receive`, {
+          versionId: v2Id,
+          expectedRevision: '1',
+        })
+        .expect(200);
+      expect(r2.body.data.receiptTimingStatus).toBe('LATE');
+
+      // Confirm v2 without D053 exception -> blocked (409)
+      await fixture
+        .apiRequest(
+          officerLate,
+          'post',
+          `/player-registrations/${caseId}/confirm-valid`,
+          { versionId: v2Id, expectedRevision: r2.body.data.revision },
+          randomUUID(),
+        )
+        .expect(409);
+
+      // Propose and independently approve D053 exception for v2
+      const exProposed = await fixture
+        .apiRequest(officerLate, 'post', `/seasons/${seasonId}/receipt-exceptions`, {
+          targetKind: 'PLAYER_REGISTRATION',
+          targetVersionId: v2Id,
+          reason: 'Bổ sung ngoài hạn theo công văn BTC.',
+          basis: 'Công văn BTC số 10/2026.',
+        })
+        .expect(201);
+      await fixture
+        .apiRequest(
+          managerLate,
+          'post',
+          `/receipt-exceptions/${exProposed.body.data.caseId}/approve`,
+          {
+            versionId: exProposed.body.data.versionId,
+            expectedRevision: exProposed.body.data.revision,
+            reason: 'Chấp thuận ngoại lệ tiếp nhận D053.',
+          },
+          randomUUID(),
+        )
+        .expect(200);
+
+      // Now confirm v2 succeeds!
+      const confirmedV2 = await fixture
+        .apiRequest(
+          officerLate,
+          'post',
+          `/player-registrations/${caseId}/confirm-valid`,
+          { versionId: v2Id, expectedRevision: r2.body.data.revision },
+          randomUUID(),
+        )
+        .expect(200);
+      expect(confirmedV2.body.data.state).toBe('VALID');
+
+      // 2) Pre-validity cancellation on a separate case
+      const cancelDraft = await fixture
+        .apiRequest(officerLate, 'post', `/seasons/${seasonId}/player-registrations`, {
+          clubId: club.id,
+          playerId: player2.id,
+          shirtNumber: 23,
+        })
+        .expect(201);
+      const cancelled = await fixture
+        .apiRequest(
+          officerLate,
+          'post',
+          `/player-registrations/${cancelDraft.body.data.caseId}/cancel`,
+          {
+            versionId: cancelDraft.body.data.versionId,
+            expectedRevision: '1',
+            reason: 'Câu lạc bộ rút yêu cầu đăng ký trước khi xác nhận.',
+          },
+        )
+        .expect(200);
+      expect(cancelled.body.data.state).toBe('CANCELLED');
+
+      // 3) Closed season blocks writes while preserving authorized reads
+      await fixture.database.client.season.update({
+        where: { id: seasonId },
+        data: { state: 'CLOSED', revision: { increment: 1n } },
+      });
+      await fixture
+        .apiRequest(officerLate, 'post', `/seasons/${seasonId}/player-registrations`, {
+          clubId: club.id,
+          playerId: player2.id,
+        })
+        .expect(409);
+      const listClosed = await fixture
+        .apiRequest(officerLate, 'get', `/seasons/${seasonId}/player-registrations`)
+        .expect(200);
+      expect(listClosed.body.data.items.length).toBeGreaterThanOrEqual(2);
+    });
+
+    it('activates due R2 atomically on HTTP confirm-valid while preserving R1 receipt basis and enforces strict command allowlists', async () => {
+      const seasonId = fixture.seasons[0].id;
+      const { versionId: r1Id, caseId: regCaseId } = await fixture.seedEffectiveRegulation(
+        seasonId,
+        {
+          u21Cutoff: '2006-01-01',
+          playerWindow: {
+            opensAt: '2026-08-01T00:00:00.000Z',
+            closesAt: '2026-08-12T00:00:00.000Z',
+          },
+        },
+      );
+      const { club, stadium } = await fixture.seedClubAndStadium('UC10C');
+      await seedApprovedClubApplication(seasonId, club.id, stadium.id, r1Id);
+      // Player born 2005-06-01: NOT U21 under R1 (2006-01-01), IS U21 under R2 (2005-01-01)!
+      const player = await fixture.seedPlayer('PL_UC10_R2', 'Lê Hoàng Minh', '2005-06-01', 'ENG');
+      const officer = await fixture.authenticate(fixture.staff.registrationOfficerA);
+
+      // Missing playingStart on confirm-valid returns 409 STATE_CONFLICT (not 400)
+      const noStartDraft = await fixture
+        .apiRequest(officer, 'post', `/seasons/${seasonId}/player-registrations`, {
+          clubId: club.id,
+          playerId: player.id,
+          shirtNumber: 31,
+        })
+        .expect(201);
+      const noStartRecv = await fixture
+        .apiRequest(
+          officer,
+          'post',
+          `/player-registrations/${noStartDraft.body.data.caseId}/receive`,
+          {
+            versionId: noStartDraft.body.data.versionId,
+            expectedRevision: '1',
+          },
+        )
+        .expect(200);
+      // Reject unexpected override field on non-validate action
+      await fixture
+        .apiRequest(
+          officer,
+          'post',
+          `/player-registrations/${noStartDraft.body.data.caseId}/confirm-valid`,
+          {
+            versionId: noStartDraft.body.data.versionId,
+            expectedRevision: noStartRecv.body.data.revision,
+            shirtNumber: 99,
+          },
+          randomUUID(),
+        )
+        .expect(400);
+      await fixture
+        .apiRequest(
+          officer,
+          'post',
+          `/player-registrations/${noStartDraft.body.data.caseId}/confirm-valid`,
+          {
+            versionId: noStartDraft.body.data.versionId,
+            expectedRevision: noStartRecv.body.data.revision,
+          },
+          randomUUID(),
+        )
+        .expect(409);
+
+      // Create timely registration under R1 with future playingStart and NO homegrown evidence
+      const created = await fixture
+        .apiRequest(officer, 'post', `/seasons/${seasonId}/player-registrations`, {
+          clubId: club.id,
+          playerId: player.id,
+          shirtNumber: 32,
+          playingStart: '2026-08-25T00:00:00.000Z',
+        })
+        .expect(201);
+      const caseId = created.body.data.caseId as string;
+      const versionId = created.body.data.versionId as string;
+
+      const received = await fixture
+        .apiRequest(officer, 'post', `/player-registrations/${caseId}/receive`, {
+          versionId,
+          expectedRevision: '1',
+        })
+        .expect(200);
+      expect(received.body.data.receiptTimingStatus).toBe('ON_TIME');
+      expect(received.body.data.receiptRegulationVersionId).toBe(r1Id);
+
+      // Seed APPROVED_WAITING R2 (u21Cutoff = 2005-01-01) due at 2026-08-14T00:00:00Z
+      const r2Id = randomUUID();
+      const now = await fixture.clock.now();
+      await fixture.database.client.regulationVersion.create({
+        data: {
+          id: r2Id,
+          seasonId,
+          caseId: regCaseId,
+          versionNumber: 2,
+          preparedBy: fixture.staff.seasonManagerA,
+          predecessorVersionId: r1Id,
+          state: 'DRAFT',
+          effectiveMode: 'SCHEDULED',
+          proposedEffectiveAt: new Date('2026-08-14T00:00:00.000Z'),
+          squadLimit: DECLARED_TEST_ONLY_REGULATION.squadLimit,
+          nonHomegrownLimit: DECLARED_TEST_ONLY_REGULATION.nonHomegrownLimit,
+          homegrownSeasons: DECLARED_TEST_ONLY_REGULATION.homegrownSeasons,
+          homegrownMonths: DECLARED_TEST_ONLY_REGULATION.homegrownMonths,
+          homegrownAgeStart: DECLARED_TEST_ONLY_REGULATION.homegrownAgeStart,
+          homegrownAgeEnd: DECLARED_TEST_ONLY_REGULATION.homegrownAgeEnd,
+          u21Cutoff: new Date('2005-01-01T00:00:00.000Z'),
+          clubCount: DECLARED_TEST_ONLY_REGULATION.clubCount,
+          formatCode: DECLARED_TEST_ONLY_REGULATION.formatCode,
+          legs: DECLARED_TEST_ONLY_REGULATION.legs,
+          plannedMinutes: DECLARED_TEST_ONLY_REGULATION.plannedMinutes,
+          preparationMinutes: DECLARED_TEST_ONLY_REGULATION.preparationMinutes,
+          releaseMinutes: DECLARED_TEST_ONLY_REGULATION.releaseMinutes,
+          winPoints: DECLARED_TEST_ONLY_REGULATION.winPoints,
+          drawPoints: DECLARED_TEST_ONLY_REGULATION.drawPoints,
+          lossPoints: DECLARED_TEST_ONLY_REGULATION.lossPoints,
+          qualificationCount: DECLARED_TEST_ONLY_REGULATION.qualificationCount,
+          relegationCount: DECLARED_TEST_ONLY_REGULATION.relegationCount,
+        },
+      });
+      await fixture.database.client.rankingPriority.createMany({
+        data: [
+          { versionId: r2Id, position: 1, criterionCode: 'POINTS' },
+          { versionId: r2Id, position: 2, criterionCode: 'GOAL_DIFFERENCE' },
+          { versionId: r2Id, position: 3, criterionCode: 'GOALS_FOR' },
+        ],
+      });
+      await fixture.database.client.goalType.createMany({
+        data: [
+          {
+            regulationVersionId: r2Id,
+            code: 'A',
+            name: 'Bàn thường',
+            isOwnGoal: false,
+            enabled: true,
+          },
+          {
+            regulationVersionId: r2Id,
+            code: 'B',
+            name: 'Phạt đền',
+            isOwnGoal: false,
+            enabled: true,
+          },
+          {
+            regulationVersionId: r2Id,
+            code: 'C',
+            name: 'Phản lưới',
+            isOwnGoal: true,
+            enabled: true,
+          },
+          {
+            regulationVersionId: r2Id,
+            code: 'D',
+            name: 'Đá phạt',
+            isOwnGoal: false,
+            enabled: true,
+          },
+        ],
+      });
+      await fixture.database.client.cardType.createMany({
+        data: [
+          {
+            regulationVersionId: r2Id,
+            code: 'Y',
+            name: 'Thẻ vàng',
+            meaning: 'YELLOW',
+            enabled: true,
+          },
+          { regulationVersionId: r2Id, code: 'R', name: 'Thẻ đỏ', meaning: 'RED', enabled: true },
+        ],
+      });
+      await fixture.database.client.registrationWindow.createMany({
+        data: [
+          {
+            regulationVersionId: r2Id,
+            intakeKind: 'CLUB_APPLICATION',
+            opensAt: new Date('2026-08-01T00:00:00.000Z'),
+            closesAt: new Date('2026-08-12T00:00:00.000Z'),
+          },
+          {
+            regulationVersionId: r2Id,
+            intakeKind: 'PLAYER_CHANGE',
+            opensAt: new Date('2026-08-01T00:00:00.000Z'),
+            closesAt: new Date('2026-08-12T00:00:00.000Z'),
+          },
+        ],
+      });
+      await fixture.database.client.regulationVersion.update({
+        where: { id: r2Id },
+        data: {
+          state: 'APPROVED_WAITING',
+          submittedAt: now,
+          approvedAt: now,
+          decidedAt: now,
+          decidedBy: fixture.staff.seasonManagerB,
+          decisionReason: 'Phê duyệt R2 nới mốc U21.',
+        },
+      });
+
+      // Advance clock AFTER window close AND AFTER R2 dueAt
+      fixture.clock.set(new Date('2026-08-15T10:00:00.000Z'));
+      const officerAfterR2 = await fixture.authenticate(fixture.staff.registrationOfficerA);
+
+      // HTTP precheck MUST NOT activate R2 -> 503
+      await fixture
+        .apiRequest(officerAfterR2, 'post', `/player-registrations/${caseId}/validate`, {
+          versionId,
+        })
+        .expect(503);
+
+      // HTTP confirm-valid atomically activates R2, confirms timely R1 version as VALID with u21Finding=true!
+      const confirmed = await fixture
+        .apiRequest(
+          officerAfterR2,
+          'post',
+          `/player-registrations/${caseId}/confirm-valid`,
+          { versionId, expectedRevision: received.body.data.revision },
+          randomUUID(),
+        )
+        .expect(200);
+      expect(confirmed.body.data.state).toBe('VALID');
+
+      const detail = await fixture
+        .apiRequest(officerAfterR2, 'get', `/player-registrations/${caseId}`)
+        .expect(200);
+      expect(detail.body.data.versions[0]).toMatchObject({
+        state: 'VALID',
+        u21Finding: true,
+        receiptRegulationVersionId: r1Id,
+        decisionRegulationVersionId: r2Id,
+      });
+    });
+  });
 });

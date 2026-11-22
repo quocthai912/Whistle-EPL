@@ -304,6 +304,44 @@ const businessPolicies = {
     'targetVersionId',
     'approvedAt',
   ],
+  PLAYER_REGISTRATION_DRAFT_CREATED: [
+    'caseId',
+    'clubId',
+    'playerId',
+    'versionId',
+    'versionNumber',
+    'state',
+  ],
+  PLAYER_REGISTRATION_DRAFT_UPDATED: ['caseId', 'versionId', 'versionNumber', 'state', 'revision'],
+  PLAYER_REGISTRATION_RECEIVED: [
+    'caseId',
+    'versionId',
+    'versionNumber',
+    'state',
+    'receivedAt',
+    'receiptTimingStatus',
+    'receiptRegulationVersionId',
+  ],
+  PLAYER_REGISTRATION_RETURNED: ['caseId', 'versionId', 'versionNumber', 'state', 'decidedAt'],
+  PLAYER_REGISTRATION_CANCELLED: ['caseId', 'versionId', 'versionNumber', 'state', 'decidedAt'],
+  PLAYER_REGISTRATION_CONFIRMED: [
+    'caseId',
+    'clubId',
+    'playerId',
+    'versionId',
+    'versionNumber',
+    'state',
+    'decidedAt',
+    'decisionRegulationVersionId',
+    'receiptRegulationVersionId',
+    'receiptExceptionVersionId',
+    'shirtNumber',
+    'playingStart',
+    'playingEnd',
+    'u21Finding',
+    'homegrownFinding',
+    'nonHomegrownOptIn',
+  ],
 } as const;
 const policies = { ...existingPolicies, ...businessPolicies } as const;
 export type AuditAction = keyof typeof policies;
@@ -319,6 +357,7 @@ export const businessHistoryKinds = [
   'Player',
   'ClubApplication',
   'ReceiptExceptionCase',
+  'PlayerRegistration',
 ] as const;
 export type BusinessHistoryKind = (typeof businessHistoryKinds)[number];
 
@@ -387,6 +426,12 @@ const objectKindByAction: Partial<Record<AuditAction, BusinessHistoryKind>> = {
   RECEIPT_EXCEPTION_WITHDRAWN: 'ReceiptExceptionCase',
   RECEIPT_EXCEPTION_REJECTED: 'ReceiptExceptionCase',
   RECEIPT_EXCEPTION_APPROVED: 'ReceiptExceptionCase',
+  PLAYER_REGISTRATION_DRAFT_CREATED: 'PlayerRegistration',
+  PLAYER_REGISTRATION_DRAFT_UPDATED: 'PlayerRegistration',
+  PLAYER_REGISTRATION_RECEIVED: 'PlayerRegistration',
+  PLAYER_REGISTRATION_RETURNED: 'PlayerRegistration',
+  PLAYER_REGISTRATION_CANCELLED: 'PlayerRegistration',
+  PLAYER_REGISTRATION_CONFIRMED: 'PlayerRegistration',
 };
 
 const requiredAfterFields: Partial<Record<AuditAction, readonly string[]>> = {
@@ -515,6 +560,36 @@ const requiredAfterFields: Partial<Record<AuditAction, readonly string[]>> = {
     'targetVersionId',
     'approvedAt',
   ],
+  PLAYER_REGISTRATION_DRAFT_CREATED: [
+    'caseId',
+    'clubId',
+    'playerId',
+    'versionId',
+    'versionNumber',
+    'state',
+  ],
+  PLAYER_REGISTRATION_RECEIVED: [
+    'caseId',
+    'versionId',
+    'versionNumber',
+    'state',
+    'receivedAt',
+    'receiptTimingStatus',
+    'receiptRegulationVersionId',
+  ],
+  PLAYER_REGISTRATION_CONFIRMED: [
+    'caseId',
+    'clubId',
+    'playerId',
+    'versionId',
+    'versionNumber',
+    'state',
+    'decidedAt',
+    'decisionRegulationVersionId',
+    'receiptRegulationVersionId',
+    'shirtNumber',
+    'playingStart',
+  ],
 };
 
 const reasonRequired = new Set<AuditAction>([
@@ -550,6 +625,8 @@ const reasonRequired = new Set<AuditAction>([
   'RECEIPT_EXCEPTION_RETURNED',
   'RECEIPT_EXCEPTION_REJECTED',
   'RECEIPT_EXCEPTION_APPROVED',
+  'PLAYER_REGISTRATION_RETURNED',
+  'PLAYER_REGISTRATION_CANCELLED',
 ]);
 const beforeRequired = new Set<AuditAction>([
   'SEASON_UPDATED',
@@ -584,6 +661,7 @@ const beforeRequired = new Set<AuditAction>([
   'CLUB_APPLICATION_APPROVED',
   'CLUB_APPLICATION_CORRECTION_APPROVED',
   'RECEIPT_EXCEPTION_APPROVED',
+  'PLAYER_REGISTRATION_CONFIRMED',
 ]);
 
 const allowedActorKinds: Partial<
@@ -1054,6 +1132,35 @@ export function validateAuditEvent(event: {
       )
         throw new Error(
           'Club application correction approval audit events require exact version, accepted baseline, approval basis and transition.',
+        );
+      break;
+    case 'PLAYER_REGISTRATION_CONFIRMED':
+      if (
+        !exactObjectReference('caseId') ||
+        !exactUuid('clubId') ||
+        !exactUuid('playerId') ||
+        !exactUuid('versionId') ||
+        !Number.isSafeInteger(after.versionNumber) ||
+        Number(after.versionNumber) < 1 ||
+        after.state !== 'VALID' ||
+        !exactInstant('decidedAt') ||
+        !exactUuid('decisionRegulationVersionId') ||
+        !exactUuid('receiptRegulationVersionId') ||
+        (after.receiptExceptionVersionId !== undefined &&
+          after.receiptExceptionVersionId !== null &&
+          !exactUuid('receiptExceptionVersionId')) ||
+        !Number.isSafeInteger(after.shirtNumber) ||
+        Number(after.shirtNumber) < 1 ||
+        Number(after.shirtNumber) > 99 ||
+        !exactInstant('playingStart') ||
+        !isRecord(event.before) ||
+        event.before.caseId !== after.caseId ||
+        event.before.versionId !== after.versionId ||
+        event.before.versionNumber !== after.versionNumber ||
+        event.before.state !== 'RECEIVED'
+      )
+        throw new Error(
+          'Player registration confirmation audit events require exact version, decision basis and transition.',
         );
       break;
   }

@@ -53,7 +53,7 @@ const rules = {
   PLAYER_REGISTRATION_CONFIRMED: {
     target: 'uuid',
     required: ['expectedRevision', 'submittedVersionId', 'playingStart'],
-    optional: ['playingEnd', 'receiptExceptionVersionId'],
+    optional: ['playingEnd', 'receiptExceptionVersionId', 'reason'],
   },
   PLAYER_TRANSFER_EXECUTED: {
     target: 'uuid',

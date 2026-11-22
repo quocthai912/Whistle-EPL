@@ -105,6 +105,20 @@ const changeLabels: Record<string, string> = {
   waitingVersionId: 'Mã phiên bản chờ',
   replacementVersionId: 'Mã phiên bản thay thế',
   action: 'Loại đề nghị',
+  caseId: 'Mã hồ sơ',
+  clubId: 'Mã câu lạc bộ',
+  playerId: 'Mã cầu thủ',
+  receivedAt: 'Thời điểm tiếp nhận',
+  receiptTimingStatus: 'Tình trạng thời hạn tiếp nhận',
+  receiptRegulationVersionId: 'Quy định tại thời điểm tiếp nhận',
+  decisionRegulationVersionId: 'Quy định tại thời điểm quyết định',
+  receiptExceptionVersionId: 'Mã ngoại lệ tiếp nhận',
+  shirtNumber: 'Số áo đăng ký',
+  playingStart: 'Bắt đầu hiệu lực thi đấu',
+  playingEnd: 'Kết thúc hiệu lực thi đấu',
+  u21Finding: 'Đạt diện cầu thủ trẻ U21',
+  homegrownFinding: 'Đạt tiêu chí đào tạo nội địa',
+  nonHomegrownOptIn: 'Chọn diện ngoài đào tạo nội địa',
 };
 /** Uses an own-property display label, preserving unknown historical codes as text. */
 const label = (names: Record<string, string>, key: string) =>
@@ -144,7 +158,21 @@ function changeValue(name: string, value: Change[string], actionCode: string, af
         ? grantStateNames
         : actionCode.startsWith('REGULATION_')
           ? { ...stateNames, ...regulationStateLabels, APPROVED: 'Đã phê duyệt' }
-          : stateNames,
+          : actionCode.startsWith('PLAYER_REGISTRATION_') ||
+              actionCode.startsWith('CLUB_APPLICATION_')
+            ? {
+                ...stateNames,
+                RECEIVED: 'Đã tiếp nhận',
+                PENDING_APPROVAL: 'Chờ phê duyệt',
+                NEEDS_SUPPLEMENTATION: 'Cần bổ sung',
+                VALID: 'Hợp lệ',
+                APPROVED: 'Đã phê duyệt',
+                REJECTED: 'Bị từ chối',
+                WITHDRAWN: 'Đã rút',
+                CANCELLED: 'Đã hủy',
+              }
+            : stateNames,
+    receiptTimingStatus: { ON_TIME: 'Đúng hạn', LATE: 'Ngoài hạn' },
     startMode: { IMMEDIATE: 'Ngay khi cấp quyền', SCHEDULED: 'Theo thời gian chỉ định' },
     effectiveMode: { IMMEDIATE: 'Hiệu lực ngay', SCHEDULED: 'Hiệu lực theo lịch' },
     action: {
@@ -169,6 +197,9 @@ function changeValue(name: string, value: Change[string], actionCode: string, af
     'approvedAt',
     'processedAt',
     'blockedAt',
+    'receivedAt',
+    'playingStart',
+    'playingEnd',
   ].includes(name) && Number.isFinite(Date.parse(value))
     ? time.format(new Date(value))
     : value;
