@@ -194,14 +194,14 @@ export function evaluateHomegrownVerification(
   options: { u21Finding?: boolean | null } = {},
 ): { homegrownFinding: boolean | null; finding: EligibilityCriterionFinding } {
   const regId = regulation?.id ?? null;
-  if (!regulation || regulation.homegrownAgeStart === null || regulation.homegrownAgeEnd === null) {
+  if (!regulation) {
     return {
       homegrownFinding: null,
       finding: {
         criterion: 'HOMEGROWN_VERIFICATION',
         status: 'INSUFFICIENT_BASIS',
-        reason: 'Thiếu cấu hình khung độ tuổi đào tạo nội địa trong quy định đang có hiệu lực.',
-        regulationVersionId: regId,
+        reason: 'Thiếu phiên bản quy định đang có hiệu lực để đánh giá tiêu chí đào tạo nội địa.',
+        regulationVersionId: null,
       },
     };
   }
@@ -220,19 +220,32 @@ export function evaluateHomegrownVerification(
     };
   }
 
+  if (!evidence && options.u21Finding === true) {
+    return {
+      homegrownFinding: null,
+      finding: {
+        criterion: 'HOMEGROWN_VERIFICATION',
+        status: 'NOT_APPLICABLE',
+        reason:
+          'Cầu thủ đạt diện U21 nên không bắt buộc xác minh tiêu chí đào tạo nội địa để loại trừ khỏi giới hạn đội hình.',
+        regulationVersionId: regId,
+      },
+    };
+  }
+
+  if (regulation.homegrownAgeStart === null || regulation.homegrownAgeEnd === null) {
+    return {
+      homegrownFinding: null,
+      finding: {
+        criterion: 'HOMEGROWN_VERIFICATION',
+        status: 'INSUFFICIENT_BASIS',
+        reason: 'Thiếu cấu hình khung độ tuổi đào tạo nội địa trong quy định đang có hiệu lực.',
+        regulationVersionId: regId,
+      },
+    };
+  }
+
   if (!evidence) {
-    if (options.u21Finding === true) {
-      return {
-        homegrownFinding: null,
-        finding: {
-          criterion: 'HOMEGROWN_VERIFICATION',
-          status: 'NOT_APPLICABLE',
-          reason:
-            'Cầu thủ đạt diện U21 nên không bắt buộc xác minh tiêu chí đào tạo nội địa để loại trừ khỏi giới hạn đội hình.',
-          regulationVersionId: regId,
-        },
-      };
-    }
     return {
       homegrownFinding: null,
       finding: {
@@ -500,14 +513,16 @@ function evaluateReceiptTiming(
 export function assessRegistrationEligibility(
   input: EligibilityAssessmentInput,
 ): RegistrationEligibilityAssessment {
-  const reg = input.regulation;
+  // Never substitute another season's regulation (UC11 Exception 2 / FR-013).
+  const reg =
+    input.regulation && input.regulation.seasonId === input.seasonId ? input.regulation : null;
   const regId = reg?.id ?? null;
   const squadLimit = reg?.squadLimit ?? null;
   const nonHomegrownLimit = reg?.nonHomegrownLimit ?? null;
   const criteria: EligibilityCriterionFinding[] = [];
 
   // 1. Effective regulation (FR-013, FR-025)
-  if (!reg || reg.seasonId !== input.seasonId) {
+  if (!reg) {
     criteria.push({
       criterion: 'EFFECTIVE_REGULATION',
       status: 'UNMET',
@@ -681,19 +696,19 @@ export function assessRegistrationEligibility(
 
   // 9 & 10. Squad limit & Non-homegrown limit across all affected composition boundaries (FR-015, D075)
   let breachedBoundaries: QuotaCompositionBoundary[] = [];
-  if (!reg || squadLimit === null || nonHomegrownLimit === null) {
+  if (!reg) {
     criteria.push({
       criterion: 'SQUAD_LIMIT',
       status: 'INSUFFICIENT_BASIS',
-      reason: 'Thiếu cấu hình giới hạn tổng số cầu thủ trong quy định đang có hiệu lực.',
-      regulationVersionId: regId,
+      reason: 'Thiếu phiên bản quy định đang có hiệu lực để đánh giá giới hạn tổng số cầu thủ.',
+      regulationVersionId: null,
     });
     criteria.push({
       criterion: 'NON_HOMEGROWN_LIMIT',
       status: 'INSUFFICIENT_BASIS',
       reason:
-        'Thiếu cấu hình giới hạn cầu thủ ngoài diện đào tạo nội địa trong quy định đang có hiệu lực.',
-      regulationVersionId: regId,
+        'Thiếu phiên bản quy định đang có hiệu lực để đánh giá giới hạn cầu thủ ngoài diện đào tạo nội địa.',
+      regulationVersionId: null,
     });
   } else if (u21Eval.u21Finding === true) {
     criteria.push({
@@ -734,7 +749,14 @@ export function assessRegistrationEligibility(
       { squadLimit, nonHomegrownLimit },
     );
 
-    if (sweep.squadBreaches.length > 0) {
+    if (squadLimit === null) {
+      criteria.push({
+        criterion: 'SQUAD_LIMIT',
+        status: 'INSUFFICIENT_BASIS',
+        reason: 'Thiếu cấu hình giới hạn tổng số cầu thủ trong quy định đang có hiệu lực.',
+        regulationVersionId: regId,
+      });
+    } else if (sweep.squadBreaches.length > 0) {
       criteria.push({
         criterion: 'SQUAD_LIMIT',
         status: 'UNMET',
@@ -775,6 +797,14 @@ export function assessRegistrationEligibility(
         status: 'INSUFFICIENT_BASIS',
         reason:
           'Chưa xác định được trạng thái đào tạo nội địa nên chưa thể kết luận giới hạn cầu thủ ngoài diện nội địa.',
+        regulationVersionId: regId,
+      });
+    } else if (nonHomegrownLimit === null) {
+      criteria.push({
+        criterion: 'NON_HOMEGROWN_LIMIT',
+        status: 'INSUFFICIENT_BASIS',
+        reason:
+          'Thiếu cấu hình giới hạn cầu thủ ngoài diện đào tạo nội địa trong quy định đang có hiệu lực.',
         regulationVersionId: regId,
       });
     } else if (sweep.nonHomegrownBreaches.length > 0) {
@@ -845,7 +875,6 @@ export type DbEligibilityEvaluationInput = {
   playerId: string;
   registrationId?: string;
   versionId?: string;
-  excludeRegistrationIds?: readonly string[];
   shirtNumber: number | null;
   playingStart: Date | null;
   playingEnd: Date | null;
@@ -881,14 +910,18 @@ function toRegulationBasis(row: DbRegulationRow | null): EligibilityRegulationBa
 }
 
 function requiredEligibilityLocks(
-  input: Pick<DbEligibilityEvaluationInput, 'seasonId' | 'playerId' | 'clubId'>,
+  input: Pick<DbEligibilityEvaluationInput, 'seasonId' | 'playerId' | 'clubId' | 'registrationId'>,
   mode: 'shared' | 'exclusive',
 ): LockResource[] {
-  return [
+  const locks: LockResource[] = [
     { kind: 'season', key: input.seasonId, mode },
     { kind: 'player', key: input.playerId, mode },
     { kind: 'club', key: input.clubId, mode },
   ];
+  if (input.registrationId) {
+    locks.push({ kind: 'playerRegistration', key: input.registrationId, mode });
+  }
+  return locks;
 }
 
 async function loadAndAssessAgainstDb(
@@ -897,15 +930,10 @@ async function loadAndAssessAgainstDb(
   regulation: EligibilityRegulationBasis | null,
   input: DbEligibilityEvaluationInput,
 ): Promise<RegistrationEligibilityAssessment> {
-  context.assertLockCoverage(
-    requiredEligibilityLocks(input, mode === 'CONFIRMATION' ? 'exclusive' : 'shared'),
-  );
-  const excludeIds = collectExcludedRegistrationIds(
-    input.registrationId,
-    input.excludeRegistrationIds,
-  );
+  const lockMode = mode === 'CONFIRMATION' ? 'exclusive' : 'shared';
+  context.assertLockCoverage(requiredEligibilityLocks(input, lockMode));
 
-  const [club, clubApp, player, version, intervals] = await Promise.all([
+  const [club, clubApp, player, version] = await Promise.all([
     context.db.club.findUnique({
       where: { id: input.clubId },
       select: { id: true, discontinuedAt: true },
@@ -940,12 +968,6 @@ async function loadAndAssessAgainstDb(
           },
         })
       : Promise.resolve(null),
-    loadCompetitionAndClubIntervals(context.db, {
-      seasonId: input.seasonId,
-      clubId: input.clubId,
-      playerId: input.playerId,
-      excludeRegistrationIds: excludeIds,
-    }),
   ]);
 
   const versionOwnershipMismatch =
@@ -958,6 +980,16 @@ async function loadAndAssessAgainstDb(
       (input.registrationId !== undefined && version.caseId !== input.registrationId));
 
   const ownedVersion = versionOwnershipMismatch ? null : version;
+  // Derive self-exclusion strictly from the verified/locked registration lineage.
+  const lockedRegistrationId = input.registrationId ?? ownedVersion?.caseId;
+  const excludeIds = lockedRegistrationId ? [lockedRegistrationId] : [];
+
+  const intervals = await loadCompetitionAndClubIntervals(context.db, {
+    seasonId: input.seasonId,
+    clubId: input.clubId,
+    playerId: input.playerId,
+    excludeRegistrationIds: excludeIds,
+  });
 
   let approvedExceptionVersionId: string | null = null;
   if (ownedVersion && ownedVersion.receiptTimingStatus === 'LATE') {

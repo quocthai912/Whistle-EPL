@@ -56,8 +56,8 @@ export type QuotaCompositionBoundary = {
   countedSquadSize: number;
   nonHomegrownCount: number;
   u21Count: number;
-  squadLimit: number;
-  nonHomegrownLimit: number;
+  squadLimit: number | null;
+  nonHomegrownLimit: number | null;
   squadExceeded: boolean;
   nonHomegrownExceeded: boolean;
   unresolvedU21Ids: string[];
@@ -234,7 +234,7 @@ export function evaluateQuotaAcrossIntervals(
     excludeRegistrationIds?: readonly string[];
   },
   existingClubSeasonRegistrations: readonly ExistingRegistrationInterval[],
-  limits: { squadLimit: number; nonHomegrownLimit: number },
+  limits: { squadLimit: number | null; nonHomegrownLimit: number | null },
 ): QuotaSweepResult {
   const candidateInterval: PlayingInterval = {
     start: candidate.playingStart,
@@ -331,8 +331,9 @@ export function evaluateQuotaAcrossIntervals(
       u21Count,
       squadLimit: limits.squadLimit,
       nonHomegrownLimit: limits.nonHomegrownLimit,
-      squadExceeded: countedSquadSize > limits.squadLimit,
-      nonHomegrownExceeded: nonHomegrownCount > limits.nonHomegrownLimit,
+      squadExceeded: limits.squadLimit !== null && countedSquadSize > limits.squadLimit,
+      nonHomegrownExceeded:
+        limits.nonHomegrownLimit !== null && nonHomegrownCount > limits.nonHomegrownLimit,
       unresolvedU21Ids: unresolvedU21InSegment.sort(),
       unresolvedHomegrownIds: unresolvedHgInSegment.sort(),
     });

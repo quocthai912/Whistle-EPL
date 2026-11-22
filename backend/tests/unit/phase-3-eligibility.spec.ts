@@ -488,10 +488,17 @@ describe('PHASE 3 US3 — Eligibility, quota and interval boundaries (T012/T013 
         'UNMET',
       );
 
-      // Null squadLimit/nonHomegrownLimit -> INSUFFICIENT_BASIS (no synthesized 25/17)
+      // Null squadLimit/nonHomegrownLimit -> INSUFFICIENT_BASIS for a non-homegrown senior (no synthesized 25/17)
       const nullLimits = assessRegistrationEligibility(
         buildBaseInput({
           regulation: { ...baseRegulation, squadLimit: null, nonHomegrownLimit: null },
+          candidate: {
+            shirtNumber: 61,
+            playingStart: new Date('2026-08-15T00:00:00.000Z'),
+            playingEnd: null,
+            nonHomegrownOptIn: true,
+            homegrownEvidence: null,
+          },
         }),
       );
       expect(nullLimits.eligibleForConfirmation).toBe(false);
@@ -763,12 +770,122 @@ describe('PHASE 3 US3 — Eligibility, quota and interval boundaries (T012/T013 
       expect(lateWithException.eligibleForConfirmation).toBe(true);
     });
 
-    it('blocks confirmation when no effective regulation exists', () => {
+    it('blocks confirmation when no effective regulation exists or regulation belongs to another season', () => {
       const noReg = assessRegistrationEligibility(buildBaseInput({ regulation: null }));
       expect(noReg.eligibleForConfirmation).toBe(false);
       expect(noReg.criteria.find((c) => c.criterion === 'EFFECTIVE_REGULATION')?.status).toBe(
         'UNMET',
       );
+
+      // Foreign-season regulation is treated as absent — never substituted for U21, homegrown or quotas
+      const foreignSeasonReg = assessRegistrationEligibility(
+        buildBaseInput({
+          regulation: { ...baseRegulation, seasonId: SEASON_2 },
+        }),
+      );
+      expect(foreignSeasonReg.eligibleForConfirmation).toBe(false);
+      expect(foreignSeasonReg.regulationVersionId).toBeNull();
+      expect(foreignSeasonReg.u21Finding).toBeNull();
+      expect(foreignSeasonReg.homegrownFinding).toBeNull();
+      expect(
+        foreignSeasonReg.criteria.find((c) => c.criterion === 'EFFECTIVE_REGULATION')?.status,
+      ).toBe('UNMET');
+      expect(
+        foreignSeasonReg.criteria.find((c) => c.criterion === 'U21_CLASSIFICATION')?.status,
+      ).toBe('INSUFFICIENT_BASIS');
+      expect(
+        foreignSeasonReg.criteria.find((c) => c.criterion === 'HOMEGROWN_VERIFICATION')?.status,
+      ).toBe('INSUFFICIENT_BASIS');
+      expect(foreignSeasonReg.criteria.find((c) => c.criterion === 'SQUAD_LIMIT')?.status).toBe(
+        'INSUFFICIENT_BASIS',
+      );
+      expect(
+        foreignSeasonReg.criteria.find((c) => c.criterion === 'NON_HOMEGROWN_LIMIT')?.status,
+      ).toBe('INSUFFICIENT_BASIS');
+    });
+
+    it('evaluates nonHomegrownOptIn, U21 exemption and independent quota limits without false missing-basis blocks', () => {
+      // Senior candidate with explicit nonHomegrownOptIn is not blocked by null training-age range
+      const optInWithNullAgeRange = assessRegistrationEligibility(
+        buildBaseInput({
+          regulation: { ...baseRegulation, homegrownAgeStart: null, homegrownAgeEnd: null },
+          candidate: {
+            shirtNumber: 19,
+            playingStart: new Date('2026-08-15T00:00:00.000Z'),
+            playingEnd: null,
+            nonHomegrownOptIn: true,
+            homegrownEvidence: null,
+          },
+        }),
+      );
+      expect(optInWithNullAgeRange.eligibleForConfirmation).toBe(true);
+      expect(
+        optInWithNullAgeRange.criteria.find((c) => c.criterion === 'HOMEGROWN_VERIFICATION')
+          ?.status,
+      ).toBe('NOT_APPLICABLE');
+      expect(
+        optInWithNullAgeRange.criteria.find((c) => c.criterion === 'SQUAD_LIMIT')?.status,
+      ).toBe('MET');
+      expect(
+        optInWithNullAgeRange.criteria.find((c) => c.criterion === 'NON_HOMEGROWN_LIMIT')?.status,
+      ).toBe('MET');
+
+      // Qualifying U21 is exempt from quotas even when quota limits are null
+      const u21WithNullQuotas = assessRegistrationEligibility(
+        buildBaseInput({
+          regulation: { ...baseRegulation, squadLimit: null, nonHomegrownLimit: null },
+          player: { id: PLAYER_1, birthDateIso: '2005-01-01' },
+          candidate: {
+            shirtNumber: 47,
+            playingStart: new Date('2026-08-15T00:00:00.000Z'),
+            playingEnd: null,
+            nonHomegrownOptIn: false,
+            homegrownEvidence: null,
+          },
+        }),
+      );
+      expect(u21WithNullQuotas.eligibleForConfirmation).toBe(true);
+      expect(u21WithNullQuotas.criteria.find((c) => c.criterion === 'SQUAD_LIMIT')?.status).toBe(
+        'NOT_APPLICABLE',
+      );
+      expect(
+        u21WithNullQuotas.criteria.find((c) => c.criterion === 'NON_HOMEGROWN_LIMIT')?.status,
+      ).toBe('NOT_APPLICABLE');
+
+      // Independent quota checks: squadLimit set + nonHomegrownLimit null
+      const homegrownWithNullNonHgLimit = assessRegistrationEligibility(
+        buildBaseInput({
+          regulation: { ...baseRegulation, nonHomegrownLimit: null },
+        }),
+      );
+      expect(homegrownWithNullNonHgLimit.eligibleForConfirmation).toBe(true);
+      expect(
+        homegrownWithNullNonHgLimit.criteria.find((c) => c.criterion === 'SQUAD_LIMIT')?.status,
+      ).toBe('MET');
+      expect(
+        homegrownWithNullNonHgLimit.criteria.find((c) => c.criterion === 'NON_HOMEGROWN_LIMIT')
+          ?.status,
+      ).toBe('NOT_APPLICABLE');
+
+      const nonHgWithNullNonHgLimit = assessRegistrationEligibility(
+        buildBaseInput({
+          regulation: { ...baseRegulation, nonHomegrownLimit: null },
+          candidate: {
+            shirtNumber: 22,
+            playingStart: new Date('2026-08-15T00:00:00.000Z'),
+            playingEnd: null,
+            nonHomegrownOptIn: true,
+            homegrownEvidence: null,
+          },
+        }),
+      );
+      expect(nonHgWithNullNonHgLimit.eligibleForConfirmation).toBe(false);
+      expect(
+        nonHgWithNullNonHgLimit.criteria.find((c) => c.criterion === 'SQUAD_LIMIT')?.status,
+      ).toBe('MET');
+      expect(
+        nonHgWithNullNonHgLimit.criteria.find((c) => c.criterion === 'NON_HOMEGROWN_LIMIT')?.status,
+      ).toBe('INSUFFICIENT_BASIS');
     });
   });
 });

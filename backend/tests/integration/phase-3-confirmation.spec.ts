@@ -750,6 +750,53 @@ describe('PHASE 3 US3 — Eligibility, quota and confirmation boundaries against
     expect(lateApproved.criteria.find((c) => c.criterion === 'RECEIPT_TIMING')?.status).toBe('MET');
     expect(lateApproved.eligibleForConfirmation).toBe(true);
 
+    // 3b) A late sibling version on the same case does NOT inherit the D053 waiver (version-specific!)
+    const lateSiblingVersionId = randomUUID();
+    await fixture.database.client.registrationVersion.create({
+      data: {
+        id: lateSiblingVersionId,
+        seasonId: season1,
+        caseId: lateCaseId,
+        versionNumber: 2,
+        predecessorVersionId: lateVersionId,
+        preparedBy: officer1,
+        state: 'RECEIVED',
+        receivedAt: now,
+        shirtNumber: 15,
+        playingStart: new Date('2026-08-20T00:00:00.000Z'),
+        playingEnd: null,
+        nonHomegrownOptIn: true,
+        receiptRegulationVersionId: reg1Id,
+        receiptTimingStatus: 'LATE',
+      },
+    });
+    const lateSiblingBlocked = await fixture.database.write(
+      [
+        { kind: 'season', key: season1, mode: 'shared' },
+        { kind: 'club', key: club.id, mode: 'shared' },
+        { kind: 'player', key: player.id, mode: 'shared' },
+      ],
+      (context) => requireSeasonRegistrationOfficer(context, officer1, season1),
+      (context) =>
+        precheckRegistrationEligibility(context, activation, {
+          seasonId: season1,
+          clubId: club.id,
+          playerId: player.id,
+          versionId: lateSiblingVersionId,
+          shirtNumber: 15,
+          playingStart: new Date('2026-08-20T00:00:00.000Z'),
+          playingEnd: null,
+          nonHomegrownOptIn: true,
+          homegrownEvidence: null,
+        }),
+      undefined,
+      { kind: 'ACCOUNT', accountId: officer1 },
+    );
+    expect(lateSiblingBlocked.eligibleForConfirmation).toBe(false);
+    expect(lateSiblingBlocked.criteria.find((c) => c.criterion === 'RECEIPT_TIMING')?.status).toBe(
+      'UNMET',
+    );
+
     // 4) Passing another player's versionId is rejected as ownership mismatch (never silently NOT_APPLICABLE)
     const mismatchAssessment = await fixture.database.write(
       [
