@@ -785,7 +785,20 @@ describe('PHASE 3 US4 — Playing intervals, paired transfers, prospective plans
       '2026-08-15T00:00:00.000Z',
     );
 
-    // 2) Attempting to transfer another player INTO discontinuedClub -> REJECTED (D099)
+    // 2) Attempting to transfer another player INTO a discontinued club in an OPEN intake window -> REJECTED (MASTER_DISCONTINUED)
+    const { club: discontinuedDestClub, stadium: stadiumDiscontinuedDest } =
+      await fixture.seedClubAndStadium('TR08B');
+    await seedApprovedClubApplication(
+      season2Id,
+      discontinuedDestClub.id,
+      stadiumDiscontinuedDest.id,
+      regV2,
+    );
+    await fixture.database.client.club.update({
+      where: { id: discontinuedDestClub.id },
+      data: { discontinuedAt: new Date('2026-08-08T00:00:00.000Z'), revision: { increment: 1n } },
+    });
+
     const player2 = await fixture.seedPlayer(
       'PL_TR_06',
       'Cầu thủ Vào CLB Ngừng',
@@ -809,14 +822,15 @@ describe('PHASE 3 US4 — Playing intervals, paired transfers, prospective plans
         expectedRevision: reg2.revision,
         effectiveMode: 'SCHEDULED',
         effectiveAt: '2026-08-16T00:00:00.000Z',
-        destinationSeasonId: season1Id,
-        destinationClubId: discontinuedClub.id,
+        destinationSeasonId: season2Id,
+        destinationClubId: discontinuedDestClub.id,
         shirtNumber: 22,
         nonHomegrownOptIn: true,
         reason: 'Thử chuyển vào câu lạc bộ đã ngừng hoạt động.',
       },
     );
     expect(transferIntoDiscontinued.status).toBe(409);
+    expect(transferIntoDiscontinued.body.error.code).toBe('MASTER_DISCONTINUED');
 
     const reg2After = await readerDb.client.playerRegistration.findUniqueOrThrow({
       where: { id: reg2.caseId },
@@ -835,8 +849,10 @@ describe('PHASE 3 US4 — Playing intervals, paired transfers, prospective plans
     const { club: clubA, stadium: stadiumA } = await fixture.seedClubAndStadium('TR09');
     const { club: clubNoBm1 } = await fixture.seedClubAndStadium('TR10');
     const { club: clubFull, stadium: stadiumFull } = await fixture.seedClubAndStadium('TR11');
+    const { club: clubOpen, stadium: stadiumOpen } = await fixture.seedClubAndStadium('TR11B');
     await seedApprovedClubApplication(seasonId, clubA.id, stadiumA.id, regVersionId);
     await seedApprovedClubApplication(seasonId, clubFull.id, stadiumFull.id, regVersionId);
+    await seedApprovedClubApplication(seasonId, clubOpen.id, stadiumOpen.id, regVersionId);
 
     const player = await fixture.seedPlayer('PL_TR_07', 'Cầu thủ Đích Lỗi', '1998-04-04', 'ENG');
     const occupant = await fixture.seedPlayer(
@@ -908,7 +924,7 @@ describe('PHASE 3 US4 — Playing intervals, paired transfers, prospective plans
     );
     expect(quotaFailRes.status).toBe(409);
 
-    // 3) Outside D053 PLAYER_CHANGE intake window without exception
+    // 3) Outside D053 PLAYER_CHANGE intake window without exception (using approved clubOpen with spare capacity)
     fixture.clock.set(new Date('2026-09-20T10:00:00.000Z'));
     const lateOfficerAuth = await fixture.authenticate(fixture.staff.registrationOfficerA);
     const lateRes = await postMutate(
@@ -920,7 +936,7 @@ describe('PHASE 3 US4 — Playing intervals, paired transfers, prospective plans
         effectiveMode: 'SCHEDULED',
         effectiveAt: '2026-09-25T00:00:00.000Z',
         destinationSeasonId: seasonId,
-        destinationClubId: clubFull.id,
+        destinationClubId: clubOpen.id,
         shirtNumber: 21,
         playingEnd: '2026-09-26T00:00:00.000Z',
         nonHomegrownOptIn: true,
@@ -928,6 +944,14 @@ describe('PHASE 3 US4 — Playing intervals, paired transfers, prospective plans
       },
     );
     expect(lateRes.status).toBe(409);
+    expect(lateRes.body.error.details).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          field: 'RECEIPT_WINDOW',
+          code: 'OUTSIDE_WINDOW',
+        }),
+      ]),
+    );
 
     // Separate committed-state reader verifies source registration untouched and zero transfer operations
     const [committedOld, opsCount] = await Promise.all([
@@ -1070,7 +1094,6 @@ describe('PHASE 3 US4 — Playing intervals, paired transfers, prospective plans
       }),
       readerDb.client.transferOperation.findMany({
         where: { playerId: player1.id },
-        orderBy: { createdAt: 'asc' },
       }),
     ]);
     expect(p1Old.currentValidatedVersion?.playingEnd?.toISOString()).toBe(
@@ -1079,9 +1102,25 @@ describe('PHASE 3 US4 — Playing intervals, paired transfers, prospective plans
     expect(p1Old.versions).toHaveLength(4);
     expect(p1New.currentValidatedVersion?.state).toBe('VALID');
     expect(p1New.currentValidatedVersion?.playingDisposition).toBe('CANCELLED_BEFORE_EFFECTIVITY');
-    expect(p1Ops.map((op) => op.operationKind)).toEqual(['TRANSFER', 'PLAN_CHANGE', 'PLAN_CANCEL']);
-    expect(p1Ops[1].supersedesOperationId).toBe(p1Ops[0].id);
-    expect(p1Ops[2].supersedesOperationId).toBe(p1Ops[1].id);
+    // Reconstruct exact lineage starting from supersedesOperationId === null without createdAt/id tiebreakers
+    const roots = p1Ops.filter((op) => op.supersedesOperationId === null);
+    expect(roots).toHaveLength(1);
+    const orderedOps: typeof p1Ops = [];
+    let currentOp: (typeof p1Ops)[number] | undefined = roots[0];
+    while (currentOp) {
+      orderedOps.push(currentOp);
+      const nextMatches = p1Ops.filter((op) => op.supersedesOperationId === currentOp!.id);
+      expect(nextMatches.length).toBeLessThanOrEqual(1);
+      currentOp = nextMatches[0];
+    }
+    expect(orderedOps).toHaveLength(p1Ops.length);
+    expect(orderedOps.map((op) => op.operationKind)).toEqual([
+      'TRANSFER',
+      'PLAN_CHANGE',
+      'PLAN_CANCEL',
+    ]);
+    expect(orderedOps[1].supersedesOperationId).toBe(orderedOps[0].id);
+    expect(orderedOps[2].supersedesOperationId).toBe(orderedOps[1].id);
 
     // 2) Cancelled-plan restoration conflict: transfer player2 out of clubA at Aug 20, then assign shirt #24 at clubA to blocker starting Aug 20!
     const t2 = await postMutate(`/player-registrations/${reg2.caseId}/transfer`, officerAuth, {
@@ -1244,7 +1283,7 @@ describe('PHASE 3 US4 — Playing intervals, paired transfers, prospective plans
     await seedApprovedClubApplication(seasonId, clubB.id, stadiumB.id, regVersionId);
     await seedApprovedClubApplication(seasonId, clubC.id, stadiumC.id, regVersionId);
 
-    // Race 1: Two players concurrently transfer into clubB competing for the LAST quota slot (squadLimit = 1) and same shirt #30
+    // Race 1A: Quota-only race (different shirts #30 vs #31 competing for the single squad slot at clubB)
     const racer1 = await fixture.seedPlayer('PL_RC_01', 'Cầu thủ Đua 1', '1999-01-01', 'ENG');
     const racer2 = await fixture.seedPlayer('PL_RC_02', 'Cầu thủ Đua 2', '1999-02-02', 'ENG');
     const regR1 = await seedValidatedRegistration({
@@ -1279,7 +1318,7 @@ describe('PHASE 3 US4 — Playing intervals, paired transfers, prospective plans
         destinationClubId: clubB.id,
         shirtNumber: 30,
         nonHomegrownOptIn: true,
-        reason: 'Đua suất đội hình và số áo #30 (yêu cầu 1).',
+        reason: 'Đua suất đội hình cuối cùng (áo #30).',
       }),
       postMutate(`/player-registrations/${regR2.caseId}/transfer`, officerB, {
         oldVersionId: regR2.versionId,
@@ -1288,14 +1327,23 @@ describe('PHASE 3 US4 — Playing intervals, paired transfers, prospective plans
         effectiveAt: '2026-08-20T00:00:00.000Z',
         destinationSeasonId: seasonId,
         destinationClubId: clubB.id,
-        shirtNumber: 30,
+        shirtNumber: 31,
         nonHomegrownOptIn: true,
-        reason: 'Đua suất đội hình và số áo #30 (yêu cầu 2).',
+        reason: 'Đua suất đội hình cuối cùng (áo #31).',
       }),
     ]);
 
     const statuses1 = [resR1.status, resR2.status].sort((a, b) => a - b);
     expect(statuses1).toEqual([200, 409]);
+    const quotaLoserRes = resR1.status === 409 ? resR1 : resR2;
+    expect(quotaLoserRes.body.error.details).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          field: 'SQUAD_LIMIT',
+          code: 'UNMET',
+        }),
+      ]),
+    );
 
     // Separate committed-state reader verifies exactly 1 registration at clubB and the loser remains active at clubA
     const clubBRegs = await readerDb.client.playerRegistration.findMany({
@@ -1309,6 +1357,94 @@ describe('PHASE 3 US4 — Playing intervals, paired transfers, prospective plans
       include: { currentValidatedVersion: true },
     });
     expect(loserReg.currentValidatedVersion?.playingEnd).toBeNull();
+
+    // Race 1B: Shirt-only race with spare squad capacity (two U21 players competing for shirt #35 at clubC)
+    const shirtRacer1 = await fixture.seedPlayer(
+      'PL_RC_SH1',
+      'Cầu thủ Đua Số Áo 1',
+      '2006-03-01',
+      'ENG',
+    );
+    const shirtRacer2 = await fixture.seedPlayer(
+      'PL_RC_SH2',
+      'Cầu thủ Đua Số Áo 2',
+      '2006-04-01',
+      'ENG',
+    );
+    const regSh1 = await seedValidatedRegistration({
+      seasonId,
+      clubId: clubA.id,
+      playerId: shirtRacer1.id,
+      regulationVersionId: regVersionId,
+      shirtNumber: 35,
+      playingStart: new Date('2026-08-05T00:00:00.000Z'),
+      playingEnd: null,
+      u21Finding: true,
+      homegrownFinding: null,
+      nonHomegrownOptIn: false,
+    });
+    const regSh2 = await seedValidatedRegistration({
+      seasonId,
+      clubId: clubA.id,
+      playerId: shirtRacer2.id,
+      regulationVersionId: regVersionId,
+      shirtNumber: 36,
+      playingStart: new Date('2026-08-05T00:00:00.000Z'),
+      playingEnd: null,
+      u21Finding: true,
+      homegrownFinding: null,
+      nonHomegrownOptIn: false,
+    });
+
+    const [resSh1, resSh2] = await Promise.all([
+      postMutate(`/player-registrations/${regSh1.caseId}/transfer`, officerA, {
+        oldVersionId: regSh1.versionId,
+        expectedRevision: regSh1.revision,
+        effectiveMode: 'SCHEDULED',
+        effectiveAt: '2026-08-20T00:00:00.000Z',
+        destinationSeasonId: seasonId,
+        destinationClubId: clubC.id,
+        shirtNumber: 35,
+        reason: 'Đua số áo #35 với quỹ đội hình còn chỗ (yêu cầu 1).',
+      }),
+      postMutate(`/player-registrations/${regSh2.caseId}/transfer`, officerB, {
+        oldVersionId: regSh2.versionId,
+        expectedRevision: regSh2.revision,
+        effectiveMode: 'SCHEDULED',
+        effectiveAt: '2026-08-20T00:00:00.000Z',
+        destinationSeasonId: seasonId,
+        destinationClubId: clubC.id,
+        shirtNumber: 35,
+        reason: 'Đua số áo #35 với quỹ đội hình còn chỗ (yêu cầu 2).',
+      }),
+    ]);
+
+    const shirtStatuses = [resSh1.status, resSh2.status].sort((a, b) => a - b);
+    expect(shirtStatuses).toEqual([200, 409]);
+    const shirtLoserRes = resSh1.status === 409 ? resSh1 : resSh2;
+    expect(shirtLoserRes.body.error.details).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          field: 'SHIRT_NUMBER',
+          code: 'UNMET',
+        }),
+      ]),
+    );
+    const clubCShirt35Regs = await readerDb.client.playerRegistration.findMany({
+      where: {
+        seasonId,
+        clubId: clubC.id,
+        currentValidatedVersion: { shirtNumber: 35 },
+      },
+      include: { currentValidatedVersion: true },
+    });
+    expect(clubCShirt35Regs).toHaveLength(1);
+    const shirtLoserCaseId = resSh1.status === 200 ? regSh2.caseId : regSh1.caseId;
+    const shirtLoserReg = await readerDb.client.playerRegistration.findUniqueOrThrow({
+      where: { id: shirtLoserCaseId },
+      include: { currentValidatedVersion: true },
+    });
+    expect(shirtLoserReg.currentValidatedVersion?.playingEnd).toBeNull();
 
     // Race 2: Same player racing two transfers to clubB vs clubC simultaneously
     const racer3 = await fixture.seedPlayer(
@@ -1412,16 +1548,31 @@ describe('PHASE 3 US4 — Playing intervals, paired transfers, prospective plans
 
     await seedSeasonOfficerRole(fixture.staff.registrationOfficerA, season2Id);
     const officerBoth = await fixture.authenticate(fixture.staff.registrationOfficerA);
+    const officerS1Only = await fixture.authenticate(fixture.staff.registrationOfficerB);
     const officerS2Only = await fixture.authenticate(fixture.staff.registrationOfficerSeason2);
     const unprivileged = await fixture.authenticate(fixture.staff.unprivilegedUser);
 
-    // 1) Terminate replay & same-key different-intent conflict
+    // 0) Reject offset-less ISO date-time string while accepting explicit numeric offset (+07:00)
+    const noOffsetRes = await postMutate(
+      `/player-registrations/${reg2.caseId}/terminate`,
+      officerBoth,
+      {
+        versionId: reg2.versionId,
+        expectedRevision: reg2.revision,
+        effectiveMode: 'SCHEDULED',
+        effectiveAt: '2026-08-25T00:00:00',
+        reason: 'Thử gửi thời gian thiếu múi giờ.',
+      },
+    );
+    expect(noOffsetRes.status).toBe(400);
+
+    // 1) Terminate replay & same-key different-intent conflict (using explicit +07:00 offset = 2026-08-25T00:00:00.000Z)
     const termKey = randomUUID();
     const termBody = {
       versionId: reg2.versionId,
       expectedRevision: reg2.revision,
       effectiveMode: 'SCHEDULED',
-      effectiveAt: '2026-08-25T00:00:00.000Z',
+      effectiveAt: '2026-08-25T07:00:00+07:00',
       reason: 'Chấm dứt để kiểm tra replay.',
     };
     const termFirst = await postMutate(
@@ -1431,6 +1582,7 @@ describe('PHASE 3 US4 — Playing intervals, paired transfers, prospective plans
       termKey,
     );
     expect(termFirst.status).toBe(200);
+    expect(termFirst.body.data.playingEnd).toBe('2026-08-25T00:00:00.000Z');
     const termReplay = await postMutate(
       `/player-registrations/${reg2.caseId}/terminate`,
       officerBoth,
@@ -1490,15 +1642,110 @@ describe('PHASE 3 US4 — Playing intervals, paired transfers, prospective plans
     expect(trKeyConflict.status).toBe(409);
     expect(trKeyConflict.body.error.code).toBe('IDEMPOTENCY_KEY_REUSED');
 
-    // Cross-season plans() from newCaseId by officerS2Only redacts oldSide while exposing newSide!
+    // Cross-season plans() redaction: destination-only reader sees restricted marker ONLY for source (no season/club/case/version/start/effectivity)
     const s2Plans = await getRead(`/player-registrations/${newCaseId}/plans`, officerS2Only);
     expect(s2Plans.status).toBe(200);
-    const activePlan = s2Plans.body.data.activeTransferPlan;
-    expect(activePlan.counterpartAccessRestricted).toBe(true);
-    expect(activePlan.oldSide.caseId).toBeNull();
-    expect(activePlan.oldSide.beforeVersion).toBeNull();
-    expect(activePlan.newSide.caseId).toBe(newCaseId);
-    expect(activePlan.newSide.version?.shirtNumber).toBe(40);
+    const s2ActivePlan = s2Plans.body.data.activeTransferPlan;
+    expect(s2ActivePlan.counterpartAccessRestricted).toBe(true);
+    expect(s2ActivePlan.oldSide).toEqual({
+      accessRestricted: true,
+      caseId: null,
+      season: null,
+      club: null,
+      beforeVersion: null,
+      afterVersion: null,
+    });
+    expect(s2ActivePlan.newSide.accessRestricted).toBe(false);
+    expect(s2ActivePlan.newSide.caseId).toBe(newCaseId);
+    expect(s2ActivePlan.newSide.version?.shirtNumber).toBe(40);
+    expect(s2Plans.body.data.dependencies).toEqual([
+      {
+        caseId: null,
+        season: null,
+        club: null,
+        shirtNumber: null,
+        playingStart: null,
+        playingEnd: null,
+        playingEffectivityStatus: null,
+        accessRestricted: true,
+      },
+    ]);
+
+    // Cross-season plans() redaction: source-only reader sees restricted marker ONLY for destination
+    const s1Plans = await getRead(`/player-registrations/${reg1.caseId}/plans`, officerS1Only);
+    expect(s1Plans.status).toBe(200);
+    const s1ActivePlan = s1Plans.body.data.activeTransferPlan;
+    expect(s1ActivePlan.counterpartAccessRestricted).toBe(true);
+    expect(s1ActivePlan.newSide).toEqual({
+      accessRestricted: true,
+      caseId: null,
+      season: null,
+      club: null,
+      version: null,
+    });
+    expect(s1ActivePlan.oldSide.accessRestricted).toBe(false);
+    expect(s1ActivePlan.oldSide.caseId).toBe(reg1.caseId);
+    expect(s1Plans.body.data.dependencies).toEqual([
+      {
+        caseId: null,
+        season: null,
+        club: null,
+        shirtNumber: null,
+        playingStart: null,
+        playingEnd: null,
+        playingEffectivityStatus: null,
+        accessRestricted: true,
+      },
+    ]);
+
+    // Dual-season reader receives full projection on both sides and dependencies
+    const bothPlans = await getRead(`/player-registrations/${newCaseId}/plans`, officerBoth);
+    expect(bothPlans.status).toBe(200);
+    expect(bothPlans.body.data.activeTransferPlan.counterpartAccessRestricted).toBe(false);
+    expect(bothPlans.body.data.activeTransferPlan.oldSide.caseId).toBe(reg1.caseId);
+    expect(bothPlans.body.data.activeTransferPlan.oldSide.season.id).toBe(season1Id);
+    expect(bothPlans.body.data.activeTransferPlan.oldSide.club.id).toBe(clubA.id);
+    expect(bothPlans.body.data.dependencies[0].accessRestricted).toBe(false);
+    expect(bothPlans.body.data.dependencies[0].caseId).toBe(reg1.caseId);
+    expect(bothPlans.body.data.dependencies[0].season.id).toBe(season1Id);
+    expect(bothPlans.body.data.dependencies[0].playingStart).toBeTruthy();
+
+    // Cross-season history() redaction: source-only and destination-only readers do NOT receive counterpartCaseId/ClubId/SeasonId
+    const [s1Hist, s2Hist, bothS1Hist, bothS2Hist] = await Promise.all([
+      getRead(`/player-registrations/${reg1.caseId}/history`, officerS1Only),
+      getRead(`/player-registrations/${newCaseId}/history`, officerS2Only),
+      getRead(`/player-registrations/${reg1.caseId}/history`, officerBoth),
+      getRead(`/player-registrations/${newCaseId}/history`, officerBoth),
+    ]);
+    expect(s1Hist.status).toBe(200);
+    expect(s2Hist.status).toBe(200);
+    const s1TransferEv = s1Hist.body.data.items.find(
+      (i: { actionCode: string }) => i.actionCode === 'PLAYER_TRANSFER_EXECUTED',
+    );
+    const s2TransferEv = s2Hist.body.data.items.find(
+      (i: { actionCode: string }) => i.actionCode === 'PLAYER_TRANSFER_EXECUTED',
+    );
+    expect(s1TransferEv).toBeDefined();
+    expect(s1TransferEv.after.counterpartCaseId).toBeUndefined();
+    expect(s1TransferEv.after.counterpartClubId).toBeUndefined();
+    expect(s1TransferEv.after.counterpartSeasonId).toBeUndefined();
+    expect(s2TransferEv).toBeDefined();
+    expect(s2TransferEv.after.counterpartCaseId).toBeUndefined();
+    expect(s2TransferEv.after.counterpartClubId).toBeUndefined();
+    expect(s2TransferEv.after.counterpartSeasonId).toBeUndefined();
+
+    const bothS1TransferEv = bothS1Hist.body.data.items.find(
+      (i: { actionCode: string }) => i.actionCode === 'PLAYER_TRANSFER_EXECUTED',
+    );
+    const bothS2TransferEv = bothS2Hist.body.data.items.find(
+      (i: { actionCode: string }) => i.actionCode === 'PLAYER_TRANSFER_EXECUTED',
+    );
+    expect(bothS1TransferEv.after.counterpartCaseId).toBe(newCaseId);
+    expect(bothS1TransferEv.after.counterpartClubId).toBe(clubB.id);
+    expect(bothS1TransferEv.after.counterpartSeasonId).toBe(season2Id);
+    expect(bothS2TransferEv.after.counterpartCaseId).toBe(reg1.caseId);
+    expect(bothS2TransferEv.after.counterpartClubId).toBe(clubA.id);
+    expect(bothS2TransferEv.after.counterpartSeasonId).toBe(season1Id);
 
     // Pre-auth security: unprivileged caller guessing transferOperationId gets 403, never 409 leak!
     const preAuthGuess = await postMutate(
@@ -1541,6 +1788,149 @@ describe('PHASE 3 US4 — Playing intervals, paired transfers, prospective plans
     );
     expect(pastOrigEnd.status).toBe(409);
 
+    // Activate a newer regulation version in season2Id before planChange to prove successor snapshot rebuilds basis/criteria
+    // from the fresh assessment while predecessor snapshot preserves its original basis/criteria untouched!
+    const predBefore = await readerDb.client.registrationVersion.findUniqueOrThrow({
+      where: { id: newVersionId },
+      select: { officialSnapshot: true },
+    });
+    const predBasisBefore = (predBefore.officialSnapshot as Record<string, unknown>)
+      .basis as Record<string, unknown>;
+    expect(predBasisBefore.squadLimit).toBe(25);
+    expect(predBasisBefore.decisionRegulationVersionId).toBe(regV2);
+    const oldRegRow = await fixture.database.client.regulationVersion.findUniqueOrThrow({
+      where: { id: regV2 },
+    });
+    const omittedRegKeys = new Set([
+      'id',
+      'revision',
+      'state',
+      'submittedAt',
+      'approvedAt',
+      'decidedAt',
+      'decidedBy',
+      'decisionReason',
+      'activeFrom',
+      'activationProcessedAt',
+      'createdAt',
+    ]);
+    const clonedRegFields = Object.fromEntries(
+      Object.entries(oldRegRow).filter(([k]) => !omittedRegKeys.has(k)),
+    ) as Omit<
+      typeof oldRegRow,
+      | 'id'
+      | 'revision'
+      | 'state'
+      | 'submittedAt'
+      | 'approvedAt'
+      | 'decidedAt'
+      | 'decidedBy'
+      | 'decisionReason'
+      | 'activeFrom'
+      | 'activationProcessedAt'
+      | 'createdAt'
+    >;
+    const regV2NextId = randomUUID();
+    const regV2NextActiveFrom = new Date('2026-08-09T00:00:00.000Z');
+    await fixture.database.client.regulationVersion.create({
+      data: {
+        ...clonedRegFields,
+        id: regV2NextId,
+        versionNumber: oldRegRow.versionNumber + 1,
+        state: 'DRAFT',
+        squadLimit: 24,
+        nonHomegrownLimit: 16,
+        createdAt: regV2NextActiveFrom,
+      },
+    });
+    await fixture.database.client.rankingPriority.createMany({
+      data: [
+        { versionId: regV2NextId, position: 1, criterionCode: 'POINTS' },
+        { versionId: regV2NextId, position: 2, criterionCode: 'GOAL_DIFFERENCE' },
+        { versionId: regV2NextId, position: 3, criterionCode: 'GOALS_FOR' },
+      ],
+    });
+    await fixture.database.client.goalType.createMany({
+      data: [
+        {
+          regulationVersionId: regV2NextId,
+          code: 'A',
+          name: 'Bàn thường',
+          isOwnGoal: false,
+          enabled: true,
+        },
+        {
+          regulationVersionId: regV2NextId,
+          code: 'B',
+          name: 'Phạt đền',
+          isOwnGoal: false,
+          enabled: true,
+        },
+        {
+          regulationVersionId: regV2NextId,
+          code: 'C',
+          name: 'Phản lưới',
+          isOwnGoal: true,
+          enabled: true,
+        },
+      ],
+    });
+    await fixture.database.client.cardType.createMany({
+      data: [
+        {
+          regulationVersionId: regV2NextId,
+          code: 'Y',
+          name: 'Thẻ vàng',
+          meaning: 'YELLOW',
+          enabled: true,
+        },
+        {
+          regulationVersionId: regV2NextId,
+          code: 'R',
+          name: 'Thẻ đỏ',
+          meaning: 'RED',
+          enabled: true,
+        },
+      ],
+    });
+    await fixture.database.client.registrationWindow.createMany({
+      data: [
+        {
+          regulationVersionId: regV2NextId,
+          intakeKind: 'CLUB_APPLICATION',
+          opensAt: new Date('2026-08-01T00:00:00.000Z'),
+          closesAt: new Date('2026-09-15T00:00:00.000Z'),
+        },
+        {
+          regulationVersionId: regV2NextId,
+          intakeKind: 'PLAYER_CHANGE',
+          opensAt: new Date('2026-08-01T00:00:00.000Z'),
+          closesAt: new Date('2026-09-15T00:00:00.000Z'),
+        },
+      ],
+    });
+    await fixture.database.client.regulationVersion.update({
+      where: { id: regV2 },
+      data: { state: 'SUPERSEDED', activeUntil: regV2NextActiveFrom },
+    });
+    await fixture.database.client.regulationVersion.update({
+      where: { id: regV2NextId },
+      data: {
+        state: 'EFFECTIVE',
+        submittedAt: regV2NextActiveFrom,
+        approvedAt: regV2NextActiveFrom,
+        decidedAt: regV2NextActiveFrom,
+        decidedBy: fixture.staff.seasonManagerB,
+        decisionReason: 'Kích hoạt quy định v2 để kiểm tra cập nhật officialSnapshot.',
+        activeFrom: regV2NextActiveFrom,
+        activationProcessedAt: regV2NextActiveFrom,
+      },
+    });
+    await fixture.database.client.season.update({
+      where: { id: season2Id },
+      data: { currentRegulationVersionId: regV2NextId },
+    });
+
     // Paired planChange succeeds within original end, replays idempotently on superseded op1Id, and rejects playingEnd: null mismatch
     const pcKey = randomUUID();
     const pcBody = {
@@ -1557,6 +1947,35 @@ describe('PHASE 3 US4 — Playing intervals, paired transfers, prospective plans
       pcKey,
     );
     expect(pcFirst.status).toBe(200);
+
+    const [predAfter, succAfter] = await Promise.all([
+      readerDb.client.registrationVersion.findUniqueOrThrow({
+        where: { id: newVersionId },
+        select: { officialSnapshot: true },
+      }),
+      readerDb.client.registrationVersion.findUniqueOrThrow({
+        where: { id: pcFirst.body.data.newVersionId },
+        select: { officialSnapshot: true },
+      }),
+    ]);
+    const predBasisAfter = (predAfter.officialSnapshot as Record<string, unknown>).basis as Record<
+      string,
+      unknown
+    >;
+    const succSnapshot = succAfter.officialSnapshot as Record<string, unknown>;
+    const succBasis = succSnapshot.basis as Record<string, unknown>;
+    const succCriteria = succSnapshot.criteria as Array<{
+      criterion: string;
+      status: string;
+      regulationVersionId: string | null;
+    }>;
+    expect(predBasisAfter.squadLimit).toBe(25);
+    expect(predBasisAfter.decisionRegulationVersionId).toBe(regV2);
+    expect(succBasis.squadLimit).toBe(24);
+    expect(succBasis.nonHomegrownLimit).toBe(16);
+    expect(succBasis.decisionRegulationVersionId).toBe(regV2NextId);
+    expect(succCriteria.some((c) => c.regulationVersionId === regV2NextId)).toBe(true);
+
     const pcReplay = await postMutate(
       `/player-registrations/${newCaseId}/plan-change`,
       officerBoth,
@@ -1606,7 +2025,7 @@ describe('PHASE 3 US4 — Playing intervals, paired transfers, prospective plans
       ]),
     );
 
-    // Paired planCancel replay on a clean transferable player
+    // Paired implicit planChange + implicit planCancel replay: succeeds while both roles active, returns 403 after counterpart role revoked!
     const playerClean = await fixture.seedPlayer(
       'PL_TR_H4',
       'Cầu thủ Replay Hủy',
@@ -1634,33 +2053,84 @@ describe('PHASE 3 US4 — Playing intervals, paired transfers, prospective plans
         destinationClubId: clubB.id,
         shirtNumber: 45,
         nonHomegrownOptIn: true,
-        reason: 'Tạo kế hoạch để kiểm tra replay thao tác hủy.',
+        reason: 'Tạo kế hoạch để kiểm tra replay thao tác ẩn định danh chuyển nhượng.',
       },
     );
     expect(trClean.status).toBe(200);
+
+    // Implicit paired planChange (omits transferOperationId, called on source case regClean.caseId)
+    const implicitPcKey = randomUUID();
+    const implicitPcBody = {
+      versionId: trClean.body.data.oldAfterVersionId,
+      expectedRevision: '1',
+      playingStart: '2026-08-25T00:00:00.000Z',
+      reason: 'Điều chỉnh kế hoạch ghép ẩn định danh chuyển nhượng.',
+    };
+    const implicitPcFirst = await postMutate(
+      `/player-registrations/${regClean.caseId}/plan-change`,
+      officerBoth,
+      implicitPcBody,
+      implicitPcKey,
+    );
+    expect(implicitPcFirst.status).toBe(200);
+
+    // Implicit paired planCancel (omits transferOperationId, supersedes the planChange above so neither is active anymore)
     const cancelKey = randomUUID();
     const cancelBody = {
-      versionId: trClean.body.data.newVersionId,
+      versionId: implicitPcFirst.body.data.oldAfterVersionId,
       expectedRevision: '1',
-      transferOperationId: trClean.body.data.transferOperationId,
-      reason: 'Hủy kế hoạch và kiểm tra replay cùng khóa.',
+      reason: 'Hủy kế hoạch ẩn định danh và kiểm tra replay cùng khóa.',
     };
     const cancelFirst = await postMutate(
-      `/player-registrations/${trClean.body.data.newCaseId}/plan-cancel`,
+      `/player-registrations/${regClean.caseId}/plan-cancel`,
       officerBoth,
       cancelBody,
       cancelKey,
     );
     expect(cancelFirst.status).toBe(200);
-    const cancelReplay = await postMutate(
-      `/player-registrations/${trClean.body.data.newCaseId}/plan-cancel`,
+
+    // While officerBoth still holds BOTH season roles, replaying BOTH inactive/superseded implicit receipts succeeds (200)
+    const implicitPcReplayOk = await postMutate(
+      `/player-registrations/${regClean.caseId}/plan-change`,
+      officerBoth,
+      implicitPcBody,
+      implicitPcKey,
+    );
+    expect(implicitPcReplayOk.status).toBe(200);
+    expect(implicitPcReplayOk.body.data.transferOperationId).toBe(
+      implicitPcFirst.body.data.transferOperationId,
+    );
+    const cancelReplayOk = await postMutate(
+      `/player-registrations/${regClean.caseId}/plan-cancel`,
       officerBoth,
       cancelBody,
       cancelKey,
     );
-    expect(cancelReplay.status).toBe(200);
-    expect(cancelReplay.body.data.transferOperationId).toBe(
+    expect(cancelReplayOk.status).toBe(200);
+    expect(cancelReplayOk.body.data.transferOperationId).toBe(
       cancelFirst.body.data.transferOperationId,
     );
+
+    // Revoke officerBoth's counterpart (season2Id) role -> replaying either implicit paired receipt MUST return 403!
+    await fixture.database.client.seasonRoleAssignment.updateMany({
+      where: { accountId: fixture.staff.registrationOfficerA, seasonId: season2Id },
+      data: { revokedAt: new Date('2026-08-10T10:05:00.000Z') },
+    });
+    const [revokedPcReplay, revokedCancelReplay] = await Promise.all([
+      postMutate(
+        `/player-registrations/${regClean.caseId}/plan-change`,
+        officerBoth,
+        implicitPcBody,
+        implicitPcKey,
+      ),
+      postMutate(
+        `/player-registrations/${regClean.caseId}/plan-cancel`,
+        officerBoth,
+        cancelBody,
+        cancelKey,
+      ),
+    ]);
+    expect(revokedPcReplay.status).toBe(403);
+    expect(revokedCancelReplay.status).toBe(403);
   });
 });

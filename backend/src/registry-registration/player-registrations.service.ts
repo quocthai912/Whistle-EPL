@@ -888,8 +888,82 @@ export class PlayerRegistrationsService {
               ...(values.occurredBefore ? { occurredBefore: values.occurredBefore } : {}),
             },
           );
+
+          const transferHistoryActions = new Set([
+            'PLAYER_TRANSFER_EXECUTED',
+            'PLAYER_REGISTRATION_PLAN_CHANGED',
+            'PLAYER_REGISTRATION_PLAN_CANCELLED',
+          ]);
+          const hasCounterpartRefs = result.items.some(
+            (item) =>
+              transferHistoryActions.has(item.actionCode) &&
+              item.after &&
+              ('counterpartSeasonId' in item.after || 'counterpartCaseId' in item.after),
+          );
+
+          let items = result.items;
+          if (hasCounterpartRefs) {
+            const [readerRoles, counterpartCases] = await Promise.all([
+              context.db.seasonRoleAssignment.findMany({
+                where: {
+                  accountId,
+                  roleCode: { in: ['REGISTRATION_OFFICER', 'SEASON_MANAGER'] },
+                  revokedAt: null,
+                },
+                select: { seasonId: true },
+              }),
+              context.db.playerRegistration.findMany({
+                where: {
+                  id: {
+                    in: result.items.flatMap((item) => {
+                      const cid = item.after?.counterpartCaseId;
+                      return typeof cid === 'string' ? [cid] : [];
+                    }),
+                  },
+                },
+                select: { id: true, seasonId: true },
+              }),
+            ]);
+            const readableSeasons = new Set(readerRoles.map((r) => r.seasonId));
+            const caseSeasonById = new Map(counterpartCases.map((c) => [c.id, c.seasonId]));
+
+            const stripCounterpart = <T extends Record<string, unknown> | null>(payload: T): T => {
+              if (!payload) return payload;
+              const next = { ...payload };
+              delete next.counterpartCaseId;
+              delete next.counterpartClubId;
+              delete next.counterpartSeasonId;
+              return next;
+            };
+
+            items = result.items.map((item) => {
+              if (!transferHistoryActions.has(item.actionCode) || !item.after) return item;
+              const directSeason =
+                typeof item.after.counterpartSeasonId === 'string'
+                  ? item.after.counterpartSeasonId
+                  : null;
+              const resolvedSeason =
+                directSeason ??
+                (typeof item.after.counterpartCaseId === 'string'
+                  ? (caseSeasonById.get(item.after.counterpartCaseId) ?? null)
+                  : null);
+              if (
+                resolvedSeason !== null
+                  ? !readableSeasons.has(resolvedSeason)
+                  : 'counterpartCaseId' in item.after || 'counterpartSeasonId' in item.after
+              ) {
+                return {
+                  ...item,
+                  before: stripCounterpart(item.before),
+                  after: stripCounterpart(item.after),
+                };
+              }
+              return item;
+            });
+          }
+
           return withPaginationMeta(
-            { items: result.items },
+            { items },
             { page: result.page, pageSize: result.pageSize, total: result.total },
           );
         },

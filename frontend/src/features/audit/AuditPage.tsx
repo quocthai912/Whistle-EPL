@@ -182,7 +182,7 @@ function changeValue(name: string, value: Change[string], actionCode: string, af
             : stateNames,
     role: { SOURCE: 'Câu lạc bộ nguồn', DESTINATION: 'Câu lạc bộ đích' },
     playingDisposition: {
-      ACTIVE: 'Đang hiệu lực',
+      ACTIVE: 'Chưa bị hủy trước hiệu lực',
       CANCELLED_BEFORE_EFFECTIVITY: 'Hủy trước hiệu lực',
     },
     receiptTimingStatus: { ON_TIME: 'Đúng hạn', LATE: 'Ngoài hạn' },

@@ -1000,7 +1000,11 @@ test('T018: Paired transfer, prospective change/cancellation, restoration confli
     name: 'Khoảng hiệu lực thi đấu và kế hoạch chuyển câu lạc bộ',
   });
   await expect(crossPlans.getByText(/Hạn chế phạm vi quyền liên mùa giải/)).toBeVisible();
-  await expect(crossPlans.getByText(/Ngoài phạm vi xem chi tiết/).first()).toBeVisible();
+  await expect(
+    crossPlans.getByText(/Ngoài phạm vi quyền tra cứu liên mùa giải/).first(),
+  ).toBeVisible();
+  await expect(crossPlans.getByText(scenario.clubSeason2.name)).toHaveCount(0);
+  await expect(crossPlans.getByText(scenario.season2.name)).toHaveCount(0);
   await expect(crossPlans.getByRole('button', { name: 'Điều chỉnh kế hoạch' })).toHaveCount(0);
   await expect(crossPlans.getByRole('button', { name: 'Hủy kế hoạch trước hiệu lực' })).toHaveCount(
     0,

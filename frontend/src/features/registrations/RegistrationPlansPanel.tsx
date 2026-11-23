@@ -1,4 +1,4 @@
-import { useMemo, useState, type FormEvent } from 'react';
+import { useMemo, useRef, useState, type FormEvent } from 'react';
 import { DateTimePicker } from '../../shared/DatePickers';
 import { HttpFailure, type FieldErrorDetail } from '../../shared/http/client';
 import { useSession } from '../../shared/http/use-session';
@@ -14,66 +14,19 @@ import { formatSeasonInstant } from '../seasons/season-model';
 import pageCss from './ClubApplicationsPage.module.css';
 import regPageCss from './PlayerRegistrationsPage.module.css';
 import planCss from './RegistrationPlansPanel.module.css';
+import { resolvePreTransferEnd, type PlanTransferItem } from './registration-plans-model';
 
 type PlayingEffectivityStatus =
   'NOT_VALIDATED' | 'UPCOMING' | 'ACTIVE' | 'ENDED' | 'CANCELLED_BEFORE_EFFECTIVITY' | 'REVOKED';
 
-type PlanSideVersion = {
-  id: string;
-  versionNumber: number;
+export type PlanDependencyItem = {
+  caseId: string | null;
+  season: { id: string; code: string; name: string } | null;
+  club: { id: string; code: string; name: string; abbreviation: string } | null;
   shirtNumber: number | null;
   playingStart: string | null;
   playingEnd: string | null;
-  playingDisposition: string | null;
-};
-
-type PlanTransferItem = {
-  id: string;
-  operationKind: 'TRANSFER' | 'PLAN_CHANGE' | 'PLAN_CANCEL';
-  effectiveAt: string;
-  reason: string;
-  supersedesOperationId: string | null;
-  isSuperseded: boolean;
-  createdAt: string;
-  actor: { id: string; fullName: string; personnelCode: string };
-  direction: 'OUTGOING' | 'INCOMING';
-  canManageBothSides: boolean;
-  counterpartAccessRestricted: boolean;
-  oldSide: {
-    caseId: string | null;
-    season: { id: string; code: string; name: string; state: 'OPEN' | 'CLOSED' };
-    club: {
-      id: string;
-      code: string;
-      name: string;
-      abbreviation: string;
-      discontinuedAt: string | null;
-    };
-    beforeVersion: PlanSideVersion | null;
-    afterVersion: PlanSideVersion | null;
-  };
-  newSide: {
-    caseId: string | null;
-    season: { id: string; code: string; name: string; state: 'OPEN' | 'CLOSED' };
-    club: {
-      id: string;
-      code: string;
-      name: string;
-      abbreviation: string;
-      discontinuedAt: string | null;
-    };
-    version: PlanSideVersion | null;
-  };
-};
-
-type PlanDependencyItem = {
-  caseId: string | null;
-  season: { id: string; code: string; name: string };
-  club: { id: string; code: string; name: string; abbreviation: string };
-  shirtNumber: number | null;
-  playingStart: string;
-  playingEnd: string | null;
-  playingEffectivityStatus: PlayingEffectivityStatus;
+  playingEffectivityStatus: PlayingEffectivityStatus | null;
   accessRestricted: boolean;
 };
 
@@ -99,7 +52,7 @@ type AuthorizedTargetSeason = {
   }[];
 };
 
-type RegistrationPlansResponse = {
+export type RegistrationPlansResponse = {
   caseId: string;
   revision: string;
   serverNow: string;
@@ -152,7 +105,30 @@ type RegistrationPlansResponse = {
 
 type CurrentValidatedVersion = NonNullable<RegistrationPlansResponse['currentValidatedVersion']>;
 
-type ActivePlanModal = 'transfer' | 'terminate' | 'plan-change' | 'plan-cancel' | null;
+type ActivePlanModal = 'transfer' | 'terminate' | 'plan-change' | 'plan-cancel';
+
+type OpenModalState = {
+  kind: ActivePlanModal;
+  plans: RegistrationPlansResponse;
+  current: CurrentValidatedVersion;
+} | null;
+
+function planRevisionKey(
+  plans: RegistrationPlansResponse | null,
+  current: CurrentValidatedVersion | null,
+): string | null {
+  if (!plans || !current) return null;
+  return `${plans.revision}:${current.id}:${current.revision}:${plans.activeTransferPlan?.id ?? ''}`;
+}
+
+function formatTransferSideSummary(
+  side: Pick<PlanTransferItem['oldSide'], 'accessRestricted' | 'club' | 'season'>,
+): string {
+  if (side.accessRestricted || !side.club || !side.season) {
+    return 'Mùa giải ngoài phạm vi quyền';
+  }
+  return `${side.club.name} (${side.season.name})`;
+}
 
 const playingStatusLabels: Record<PlayingEffectivityStatus, string> = {
   NOT_VALIDATED: 'Chưa xác nhận',
@@ -223,18 +199,20 @@ function applyMutationError(
     if (caught.unknownOutcome) {
       handlers.setUncertain(true);
       handlers.setReloadSuggested(true);
-    } else if (
-      caught.code === 'REVISION_CONFLICT' ||
-      caught.code === 'STATE_CONFLICT' ||
-      caught.code === 'BASIS_CHANGED' ||
-      caught.code === 'MASTER_DISCONTINUED'
-    ) {
-      handlers.setReloadSuggested(true);
+    } else {
+      handlers.setUncertain(false);
+      handlers.setReloadSuggested(
+        caught.code === 'REVISION_CONFLICT' ||
+          caught.code === 'STATE_CONFLICT' ||
+          caught.code === 'BASIS_CHANGED' ||
+          caught.code === 'MASTER_DISCONTINUED',
+      );
     }
   } else {
     handlers.setError(
       'Không thể xác nhận kết quả từ máy chủ. Vui lòng kiểm tra lại dữ liệu mới nhất.',
     );
+    handlers.setErrorDetails([]);
     handlers.setUncertain(true);
     handlers.setReloadSuggested(true);
   }
@@ -256,26 +234,6 @@ function formatRange(start: string | null, end: string | null): string {
     : `${formatSeasonInstant(start)} → Chưa ấn định`;
 }
 
-function resolvePreTransferEnd(
-  activePlan: PlanTransferItem | null,
-  history: readonly PlanTransferItem[],
-): { known: boolean; endIso: string | null } {
-  if (!activePlan) return { known: false, endIso: null };
-  const byId = new Map(history.map((item) => [item.id, item]));
-  let cursor: PlanTransferItem = activePlan;
-  let guard = 0;
-  while (cursor.supersedesOperationId && guard < 50) {
-    guard += 1;
-    const prev = byId.get(cursor.supersedesOperationId);
-    if (!prev) break;
-    cursor = prev;
-  }
-  if (!cursor.oldSide.beforeVersion) {
-    return { known: false, endIso: null };
-  }
-  return { known: true, endIso: cursor.oldSide.beforeVersion.playingEnd };
-}
-
 export function RegistrationPlansPanel({
   caseId,
   onChanged,
@@ -285,23 +243,31 @@ export function RegistrationPlansPanel({
 }) {
   const resource = useAdminList<RegistrationPlansResponse>(`/player-registrations/${caseId}/plans`);
   const plans = resource.error ? null : (resource.data ?? null);
-  const [activeModal, setActiveModal] = useState<ActivePlanModal>(null);
+  const [openModal, setOpenModal] = useState<OpenModalState>(null);
   const [successNotice, setSuccessNotice] = useState('');
 
   const current = plans?.currentValidatedVersion ?? null;
   const activePlan = plans?.activeTransferPlan ?? null;
-  const isProspectiveStandalone =
-    !activePlan && !!current?.playingStart && plans?.playingEffectivityStatus === 'UPCOMING';
+  const latestRevisionKey = planRevisionKey(plans, current);
+  const openedRevisionKey = openModal ? planRevisionKey(openModal.plans, openModal.current) : null;
+  const modalBasisChanged =
+    openModal !== null && latestRevisionKey !== null && latestRevisionKey !== openedRevisionKey;
+
+  function openPlanModal(kind: ActivePlanModal) {
+    if (!plans || !current || resource.loading) return;
+    setSuccessNotice('');
+    setOpenModal({ kind, plans, current });
+  }
 
   function handleMutationDone(message: string) {
-    setActiveModal(null);
+    setOpenModal(null);
     setSuccessNotice(message);
     resource.reload();
     onChanged();
   }
 
   function handleModalReload() {
-    setActiveModal(null);
+    setOpenModal(null);
     resource.reload();
     onChanged();
   }
@@ -447,7 +413,9 @@ export function RegistrationPlansPanel({
               <div className={planCss.pairedGrid}>
                 <div
                   className={`${planCss.sideBox} ${
-                    !activePlan.oldSide.afterVersion ? planCss.sideBoxMuted : ''
+                    activePlan.oldSide.accessRestricted || !activePlan.oldSide.afterVersion
+                      ? planCss.sideBoxMuted
+                      : ''
                   }`}
                 >
                   <span className={planCss.sideRole}>
@@ -455,13 +423,18 @@ export function RegistrationPlansPanel({
                     {activePlan.direction === 'OUTGOING' ? ' (Hồ sơ hiện tại)' : ''}
                   </span>
                   <span className={planCss.sideClub}>
-                    {activePlan.oldSide.club.name} ({activePlan.oldSide.club.code})
+                    {activePlan.oldSide.accessRestricted || !activePlan.oldSide.club
+                      ? 'Câu lạc bộ thuộc mùa giải ngoài phạm vi quyền'
+                      : `${activePlan.oldSide.club.name} (${activePlan.oldSide.club.code})`}
                   </span>
                   <span className={planCss.sideMeta}>
-                    Mùa giải {activePlan.oldSide.season.name}
-                    {activePlan.oldSide.afterVersion
-                      ? ` · Số áo #${activePlan.oldSide.afterVersion.shirtNumber ?? '—'} · Phiên bản ${activePlan.oldSide.afterVersion.versionNumber}`
-                      : ' · Ngoài phạm vi xem chi tiết'}
+                    {activePlan.oldSide.accessRestricted || !activePlan.oldSide.season
+                      ? 'Ngoài phạm vi quyền tra cứu liên mùa giải'
+                      : `Mùa giải ${activePlan.oldSide.season.name}${
+                          activePlan.oldSide.afterVersion
+                            ? ` · Số áo #${activePlan.oldSide.afterVersion.shirtNumber ?? '—'} · Phiên bản ${activePlan.oldSide.afterVersion.versionNumber}`
+                            : ''
+                        }`}
                   </span>
                   <div className={planCss.sideInterval}>
                     {activePlan.oldSide.afterVersion
@@ -479,7 +452,9 @@ export function RegistrationPlansPanel({
 
                 <div
                   className={`${planCss.sideBox} ${planCss.sideBoxDest} ${
-                    !activePlan.newSide.version ? planCss.sideBoxMuted : ''
+                    activePlan.newSide.accessRestricted || !activePlan.newSide.version
+                      ? planCss.sideBoxMuted
+                      : ''
                   }`}
                 >
                   <span className={planCss.sideRole}>
@@ -487,13 +462,18 @@ export function RegistrationPlansPanel({
                     {activePlan.direction === 'INCOMING' ? ' (Hồ sơ hiện tại)' : ''}
                   </span>
                   <span className={planCss.sideClub}>
-                    {activePlan.newSide.club.name} ({activePlan.newSide.club.code})
+                    {activePlan.newSide.accessRestricted || !activePlan.newSide.club
+                      ? 'Câu lạc bộ thuộc mùa giải ngoài phạm vi quyền'
+                      : `${activePlan.newSide.club.name} (${activePlan.newSide.club.code})`}
                   </span>
                   <span className={planCss.sideMeta}>
-                    Mùa giải {activePlan.newSide.season.name}
-                    {activePlan.newSide.version
-                      ? ` · Số áo #${activePlan.newSide.version.shirtNumber ?? '—'} · Phiên bản ${activePlan.newSide.version.versionNumber}`
-                      : ' · Ngoài phạm vi xem chi tiết'}
+                    {activePlan.newSide.accessRestricted || !activePlan.newSide.season
+                      ? 'Ngoài phạm vi quyền tra cứu liên mùa giải'
+                      : `Mùa giải ${activePlan.newSide.season.name}${
+                          activePlan.newSide.version
+                            ? ` · Số áo #${activePlan.newSide.version.shirtNumber ?? '—'} · Phiên bản ${activePlan.newSide.version.versionNumber}`
+                            : ''
+                        }`}
                   </span>
                   <div className={planCss.sideInterval}>
                     {activePlan.newSide.version
@@ -529,34 +509,37 @@ export function RegistrationPlansPanel({
               </div>
             ) : (
               <ul className={regPageCss.findingsList}>
-                {plans.dependencies.map((dep, idx) => (
-                  <li
-                    key={`${dep.season.id}-${dep.club.id}-${dep.playingStart}-${idx}`}
-                    className={regPageCss.findingItem}
-                  >
-                    <div>
-                      <div className={regPageCss.findingTitle}>
-                        {dep.club.name} ({dep.club.code}) · Mùa giải {dep.season.name}
-                        {!dep.accessRestricted && dep.shirtNumber
-                          ? ` · Số áo #${dep.shirtNumber}`
-                          : ''}
+                {plans.dependencies.map((dep, idx) => {
+                  const restricted = dep.accessRestricted || !dep.club || !dep.season;
+                  return (
+                    <li key={dep.caseId ?? `restricted-${idx}`} className={regPageCss.findingItem}>
+                      <div>
+                        <div className={regPageCss.findingTitle}>
+                          {restricted
+                            ? 'Hồ sơ đăng ký thuộc mùa giải ngoài phạm vi quyền'
+                            : `${dep.club!.name} (${dep.club!.code}) · Mùa giải ${dep.season!.name}${
+                                dep.shirtNumber ? ` · Số áo #${dep.shirtNumber}` : ''
+                              }`}
+                        </div>
+                        <p className={regPageCss.findingReason}>
+                          {restricted
+                            ? 'Thông tin mùa giải, câu lạc bộ và khoảng hiệu lực chi tiết được ẩn theo giới hạn phạm vi quyền.'
+                            : `Hiệu lực thi đấu: ${formatRange(dep.playingStart, dep.playingEnd)}`}
+                        </p>
                       </div>
-                      <p className={regPageCss.findingReason}>
-                        {dep.accessRestricted
-                          ? `Thuộc mùa giải ngoài phạm vi xem chi tiết · Bắt đầu từ ${formatSeasonInstant(dep.playingStart)}`
-                          : `Hiệu lực thi đấu: ${formatRange(dep.playingStart, dep.playingEnd)}`}
-                      </p>
-                    </div>
-                    <div className={regPageCss.findingBadges}>
-                      <span className={statusPillClass(dep.playingEffectivityStatus)}>
-                        {playingStatusLabels[dep.playingEffectivityStatus]}
-                      </span>
-                      {dep.accessRestricted && (
-                        <span className={regPageCss.basisTag}>Giới hạn phạm vi</span>
-                      )}
-                    </div>
-                  </li>
-                ))}
+                      <div className={regPageCss.findingBadges}>
+                        {!restricted && dep.playingEffectivityStatus && (
+                          <span className={statusPillClass(dep.playingEffectivityStatus)}>
+                            {playingStatusLabels[dep.playingEffectivityStatus]}
+                          </span>
+                        )}
+                        {restricted && (
+                          <span className={regPageCss.basisTag}>Giới hạn phạm vi</span>
+                        )}
+                      </div>
+                    </li>
+                  );
+                })}
               </ul>
             )}
           </div>
@@ -567,10 +550,8 @@ export function RegistrationPlansPanel({
               <button
                 type="button"
                 className={css.primary}
-                onClick={() => {
-                  setSuccessNotice('');
-                  setActiveModal('transfer');
-                }}
+                disabled={resource.loading}
+                onClick={() => openPlanModal('transfer')}
               >
                 {plans.club.discontinuedAt
                   ? 'Chuyển rời câu lạc bộ ngừng hoạt động'
@@ -581,10 +562,8 @@ export function RegistrationPlansPanel({
             {plans.capabilities.canTerminate && (
               <button
                 type="button"
-                onClick={() => {
-                  setSuccessNotice('');
-                  setActiveModal('terminate');
-                }}
+                disabled={resource.loading}
+                onClick={() => openPlanModal('terminate')}
               >
                 Chấm dứt hiệu lực
               </button>
@@ -594,10 +573,8 @@ export function RegistrationPlansPanel({
               <button
                 type="button"
                 className={css.primary}
-                onClick={() => {
-                  setSuccessNotice('');
-                  setActiveModal('plan-change');
-                }}
+                disabled={resource.loading}
+                onClick={() => openPlanModal('plan-change')}
               >
                 Điều chỉnh kế hoạch
               </button>
@@ -607,10 +584,8 @@ export function RegistrationPlansPanel({
               <button
                 type="button"
                 className={css.danger}
-                onClick={() => {
-                  setSuccessNotice('');
-                  setActiveModal('plan-cancel');
-                }}
+                disabled={resource.loading}
+                onClick={() => openPlanModal('plan-cancel')}
               >
                 Hủy kế hoạch trước hiệu lực
               </button>
@@ -648,8 +623,8 @@ export function RegistrationPlansPanel({
                       </span>
                     </div>
                     <div className={planCss.sideMeta}>
-                      {item.oldSide.club.name} ({item.oldSide.season.name}) →{' '}
-                      {item.newSide.club.name} ({item.newSide.season.name}) · Mốc hiệu lực chung:{' '}
+                      {formatTransferSideSummary(item.oldSide)} →{' '}
+                      {formatTransferSideSummary(item.newSide)} · Mốc hiệu lực chung:{' '}
                       <strong>{formatSeasonInstant(item.effectiveAt)}</strong>
                       {item.operationKind === 'PLAN_CANCEL'
                         ? ' · Hồ sơ đích: Hủy trước hiệu lực'
@@ -670,36 +645,43 @@ export function RegistrationPlansPanel({
       )}
 
       {/* Workflow Modals */}
-      {plans && current && activeModal === 'transfer' && (
+      {openModal && openModal.kind === 'transfer' && (
         <TransferModal
-          plans={plans}
-          current={current}
-          onClose={() => setActiveModal(null)}
+          plans={openModal.plans}
+          current={openModal.current}
+          basisChanged={modalBasisChanged}
+          onClose={() => setOpenModal(null)}
           onReload={handleModalReload}
           onDone={() => handleMutationDone('Đã ghi nhận chuyển câu lạc bộ ghép cặp thành công.')}
         />
       )}
 
-      {plans && current && activeModal === 'terminate' && (
+      {openModal && openModal.kind === 'terminate' && (
         <TerminateModal
-          plans={plans}
-          current={current}
-          onClose={() => setActiveModal(null)}
+          plans={openModal.plans}
+          current={openModal.current}
+          basisChanged={modalBasisChanged}
+          onClose={() => setOpenModal(null)}
           onReload={handleModalReload}
           onDone={() => handleMutationDone('Đã ghi nhận chấm dứt hiệu lực thi đấu thành công.')}
         />
       )}
 
-      {plans && current && activeModal === 'plan-change' && (
+      {openModal && openModal.kind === 'plan-change' && (
         <PlanChangeModal
-          plans={plans}
-          current={current}
-          isStandalone={isProspectiveStandalone}
-          onClose={() => setActiveModal(null)}
+          plans={openModal.plans}
+          current={openModal.current}
+          basisChanged={modalBasisChanged}
+          isStandalone={
+            !openModal.plans.activeTransferPlan &&
+            !!openModal.current.playingStart &&
+            openModal.plans.playingEffectivityStatus === 'UPCOMING'
+          }
+          onClose={() => setOpenModal(null)}
           onReload={handleModalReload}
           onDone={() =>
             handleMutationDone(
-              activePlan
+              openModal.plans.activeTransferPlan
                 ? 'Đã cập nhật đồng bộ cả hai phía của kế hoạch chuyển câu lạc bộ.'
                 : 'Đã cập nhật kế hoạch đăng ký tương lai thành công.',
             )
@@ -707,15 +689,16 @@ export function RegistrationPlansPanel({
         />
       )}
 
-      {plans && current && activeModal === 'plan-cancel' && (
+      {openModal && openModal.kind === 'plan-cancel' && (
         <PlanCancelModal
-          plans={plans}
-          current={current}
-          onClose={() => setActiveModal(null)}
+          plans={openModal.plans}
+          current={openModal.current}
+          basisChanged={modalBasisChanged}
+          onClose={() => setOpenModal(null)}
           onReload={handleModalReload}
           onDone={() =>
             handleMutationDone(
-              activePlan
+              openModal.plans.activeTransferPlan
                 ? 'Đã hủy kế hoạch chuyển câu lạc bộ trước hiệu lực và khôi phục hồ sơ nguồn.'
                 : 'Đã chuyển kế hoạch đăng ký tương lai sang trạng thái Hủy trước hiệu lực.',
             )
@@ -778,18 +761,21 @@ function ModalErrorBanner({
 function TransferModal({
   plans,
   current,
+  basisChanged = false,
   onClose,
   onReload,
   onDone,
 }: {
   plans: RegistrationPlansResponse;
   current: CurrentValidatedVersion;
+  basisChanged?: boolean;
   onClose: () => void;
   onReload: () => void;
   onDone: () => void;
 }) {
   const { client } = useSession();
   const [idempotencyKey] = useState(() => crypto.randomUUID());
+  const lockedSubmitRef = useRef<{ endpoint: string; body: Record<string, unknown> } | null>(null);
 
   const allReceivedCandidates = useMemo(
     () =>
@@ -854,7 +840,22 @@ function TransferModal({
     label: `${c.club.name} (${c.seasonName}) · Phiên bản ${c.versionNumber} · Số áo #${c.shirtNumber ?? '—'}${c.receiptTimingStatus === 'LATE' ? (c.hasApprovedException ? ' · Ngoài hạn (Đã duyệt ngoại lệ)' : ' · Ngoài hạn (Chưa có ngoại lệ)') : ' · Đúng hạn'}`,
   }));
 
+  function setValidationError(message: string) {
+    setError(message);
+    setErrorDetails([]);
+    setReloadSuggested(false);
+  }
+
+  function clearDefinitiveError() {
+    if (!uncertain && (error || errorDetails.length > 0 || reloadSuggested)) {
+      setError('');
+      setErrorDetails([]);
+      setReloadSuggested(false);
+    }
+  }
+
   function handleSeasonChange(nextSeasonId: string) {
+    clearDefinitiveError();
     setDestSeasonId(nextSeasonId);
     const nextSeason = plans.authorizedTargetSeasons.find((s) => s.id === nextSeasonId);
     setDestClubId(nextSeason?.eligibleClubs[0]?.id ?? '');
@@ -880,113 +881,146 @@ function TransferModal({
 
   async function submit(event: FormEvent) {
     event.preventDefault();
-    if (!reason.trim()) {
-      setError('Vui lòng nhập lý do chuyển câu lạc bộ.');
-      return;
-    }
+    let requestToSend: { endpoint: string; body: Record<string, unknown> };
 
-    const body: Record<string, unknown> = {
-      oldVersionId: current.id,
-      expectedRevision: current.revision,
-      reason: reason.trim(),
-    };
-
-    if (destMode === 'existing') {
-      if (!selectedCandidate) {
-        setError('Chưa có phiên bản đích ở trạng thái Đã tiếp nhận để ghép chuyển câu lạc bộ.');
-        return;
-      }
-      if (!selectedCandidate.playingStart) {
-        setError('Phiên bản đích đã tiếp nhận chưa có mốc bắt đầu hiệu lực thi đấu.');
-        return;
-      }
-      body.effectiveMode = 'SCHEDULED';
-      body.effectiveAt = selectedCandidate.playingStart;
-      body.destinationCaseId = selectedCandidate.caseId;
-      body.destinationVersionId = selectedCandidate.versionId;
-      body.destinationExpectedRevision = selectedCandidate.revision;
+    if (uncertain && lockedSubmitRef.current) {
+      requestToSend = lockedSubmitRef.current;
     } else {
-      if (!destSeasonId || !destClubId) {
-        setError('Vui lòng chọn mùa giải đích và câu lạc bộ đích đủ điều kiện.');
+      if (basisChanged) {
+        setError(
+          'Dữ liệu hồ sơ đã thay đổi sang phiên bản mới hơn. Vui lòng tải lại dữ liệu mới nhất trước khi gửi yêu cầu.',
+        );
+        setErrorDetails([]);
+        setReloadSuggested(true);
         return;
       }
-      const parsedShirt = Number(shirtNumber.trim());
-      if (!Number.isInteger(parsedShirt) || parsedShirt < 1 || parsedShirt > 99) {
-        setError('Số áo đăng ký đích phải là số nguyên từ 1 đến 99.');
+      if (!reason.trim()) {
+        setValidationError('Vui lòng nhập lý do chuyển câu lạc bộ.');
         return;
       }
-      let effectiveUtc: string | undefined;
-      if (effectiveMode === 'SCHEDULED') {
-        if (!effectiveAtInput.trim()) {
-          setError('Vui lòng chọn thời điểm chuyển câu lạc bộ.');
-          return;
-        }
-        const parsedEffective = hcmInputToUtcInstant(effectiveAtInput.trim());
-        if (!parsedEffective) {
-          setError('Thời điểm chuyển câu lạc bộ không đúng định dạng DD/MM/YYYY HH:mm.');
-          return;
-        }
-        effectiveUtc = parsedEffective;
-      }
-      let endUtc: string | undefined;
-      if (playingEndInput.trim()) {
-        const parsedEnd = hcmInputToUtcInstant(playingEndInput.trim());
-        if (!parsedEnd) {
-          setError('Thời điểm kết thúc đăng ký đích không đúng định dạng DD/MM/YYYY HH:mm.');
-          return;
-        }
-        endUtc = parsedEnd;
-        if (effectiveUtc && new Date(endUtc).getTime() <= new Date(effectiveUtc).getTime()) {
-          setError('Thời điểm kết thúc đăng ký đích phải lớn hơn thời điểm chuyển câu lạc bộ.');
-          return;
-        }
-      }
 
-      body.effectiveMode = effectiveMode;
-      if (effectiveUtc) body.effectiveAt = effectiveUtc;
-      body.destinationSeasonId = destSeasonId;
-      body.destinationClubId = destClubId;
-      body.shirtNumber = parsedShirt;
-      if (endUtc) body.playingEnd = endUtc;
-      body.nonHomegrownOptIn = nonHomegrownOptIn;
+      const body: Record<string, unknown> = {
+        oldVersionId: current.id,
+        expectedRevision: current.revision,
+        reason: reason.trim(),
+      };
 
-      const hasEvidenceInput =
-        !!evidenceBranch ||
-        !!qualifyingValue.trim() ||
-        !!affiliatedBasis ||
-        !!evidenceSummary.trim() ||
-        !!evidenceReference.trim();
-      if (!nonHomegrownOptIn && hasEvidenceInput) {
-        if (evidenceBranch === 'SEASONS' || evidenceBranch === 'MONTHS') {
-          body.evidenceBranch = evidenceBranch;
+      if (destMode === 'existing') {
+        if (!selectedCandidate) {
+          setValidationError(
+            'Chưa có phiên bản đích ở trạng thái Đã tiếp nhận để ghép chuyển câu lạc bộ.',
+          );
+          return;
         }
-        if (qualifyingValue.trim()) {
-          const parsedVal = Number(qualifyingValue.trim());
-          if (!Number.isInteger(parsedVal) || parsedVal <= 0 || parsedVal > 1000) {
-            setError('Giá trị thời gian đào tạo nội địa phải là số nguyên từ 1 đến 1000.');
+        if (!selectedCandidate.playingStart) {
+          setValidationError('Phiên bản đích đã tiếp nhận chưa có mốc bắt đầu hiệu lực thi đấu.');
+          return;
+        }
+        body.effectiveMode = 'SCHEDULED';
+        body.effectiveAt = selectedCandidate.playingStart;
+        body.destinationCaseId = selectedCandidate.caseId;
+        body.destinationVersionId = selectedCandidate.versionId;
+        body.destinationExpectedRevision = selectedCandidate.revision;
+      } else {
+        if (!destSeasonId || !destClubId) {
+          setValidationError('Vui lòng chọn mùa giải đích và câu lạc bộ đích đủ điều kiện.');
+          return;
+        }
+        const parsedShirt = Number(shirtNumber.trim());
+        if (!Number.isInteger(parsedShirt) || parsedShirt < 1 || parsedShirt > 99) {
+          setValidationError('Số áo đăng ký đích phải là số nguyên từ 1 đến 99.');
+          return;
+        }
+        let effectiveUtc: string | undefined;
+        if (effectiveMode === 'SCHEDULED') {
+          if (!effectiveAtInput.trim()) {
+            setValidationError('Vui lòng chọn thời điểm chuyển câu lạc bộ.');
             return;
           }
-          body.qualifyingValue = parsedVal;
+          const parsedEffective = hcmInputToUtcInstant(effectiveAtInput.trim());
+          if (!parsedEffective) {
+            setValidationError(
+              'Thời điểm chuyển câu lạc bộ không đúng định dạng DD/MM/YYYY HH:mm.',
+            );
+            return;
+          }
+          effectiveUtc = parsedEffective;
         }
-        if (affiliatedBasis === 'YES') body.affiliatedAssociationBasis = true;
-        else if (affiliatedBasis === 'NO') body.affiliatedAssociationBasis = false;
-        if (evidenceSummary.trim()) body.evidenceSummary = evidenceSummary.trim();
-        if (evidenceReference.trim()) body.evidenceReference = evidenceReference.trim();
+        let endUtc: string | undefined;
+        if (playingEndInput.trim()) {
+          const parsedEnd = hcmInputToUtcInstant(playingEndInput.trim());
+          if (!parsedEnd) {
+            setValidationError(
+              'Thời điểm kết thúc đăng ký đích không đúng định dạng DD/MM/YYYY HH:mm.',
+            );
+            return;
+          }
+          endUtc = parsedEnd;
+          if (effectiveUtc && new Date(endUtc).getTime() <= new Date(effectiveUtc).getTime()) {
+            setValidationError(
+              'Thời điểm kết thúc đăng ký đích phải lớn hơn thời điểm chuyển câu lạc bộ.',
+            );
+            return;
+          }
+        }
+
+        body.effectiveMode = effectiveMode;
+        if (effectiveUtc) body.effectiveAt = effectiveUtc;
+        body.destinationSeasonId = destSeasonId;
+        body.destinationClubId = destClubId;
+        body.shirtNumber = parsedShirt;
+        if (endUtc) body.playingEnd = endUtc;
+        body.nonHomegrownOptIn = nonHomegrownOptIn;
+
+        const hasEvidenceInput =
+          !!evidenceBranch ||
+          !!qualifyingValue.trim() ||
+          !!affiliatedBasis ||
+          !!evidenceSummary.trim() ||
+          !!evidenceReference.trim();
+        if (!nonHomegrownOptIn && hasEvidenceInput) {
+          if (evidenceBranch === 'SEASONS' || evidenceBranch === 'MONTHS') {
+            body.evidenceBranch = evidenceBranch;
+          }
+          if (qualifyingValue.trim()) {
+            const parsedVal = Number(qualifyingValue.trim());
+            if (!Number.isInteger(parsedVal) || parsedVal <= 0 || parsedVal > 1000) {
+              setValidationError(
+                'Giá trị thời gian đào tạo nội địa phải là số nguyên từ 1 đến 1000.',
+              );
+              return;
+            }
+            body.qualifyingValue = parsedVal;
+          }
+          if (affiliatedBasis === 'YES') body.affiliatedAssociationBasis = true;
+          else if (affiliatedBasis === 'NO') body.affiliatedAssociationBasis = false;
+          if (evidenceSummary.trim()) body.evidenceSummary = evidenceSummary.trim();
+          if (evidenceReference.trim()) body.evidenceReference = evidenceReference.trim();
+        }
       }
+
+      requestToSend = {
+        endpoint: `/player-registrations/${plans.caseId}/transfer`,
+        body,
+      };
+      lockedSubmitRef.current = requestToSend;
+      setError('');
+      setErrorDetails([]);
+      setReloadSuggested(false);
     }
 
     setBusy(true);
-    setError('');
-    setErrorDetails([]);
-    setReloadSuggested(false);
     try {
-      await client.request(`/player-registrations/${plans.caseId}/transfer`, {
+      await client.request(requestToSend.endpoint, {
         method: 'POST',
         requestKey: idempotencyKey,
-        body,
+        body: requestToSend.body,
       });
       onDone();
     } catch (caught) {
+      if (caught instanceof HttpFailure && !caught.unknownOutcome) {
+        lockedSubmitRef.current = null;
+      }
       applyMutationError(caught, { setError, setErrorDetails, setReloadSuggested, setUncertain });
     } finally {
       setBusy(false);
@@ -1018,6 +1052,18 @@ function TransferModal({
           reloadSuggested={reloadSuggested}
           onReload={onReload}
         />
+
+        {!uncertain && basisChanged && (
+          <div className={`${pageCss.banner} ${pageCss.bannerWarn}`} role="status">
+            <span>
+              <strong>Dữ liệu đã thay đổi:</strong> Hồ sơ đăng ký vừa được cập nhật sang phiên bản
+              mới hơn. Vui lòng tải lại dữ liệu trước khi tiếp tục thao tác.
+            </span>
+            <button type="button" onClick={onReload}>
+              Tải lại dữ liệu mới nhất
+            </button>
+          </div>
+        )}
 
         {plans.club.discontinuedAt && (
           <div className={pageCss.banner}>
@@ -1089,7 +1135,10 @@ function TransferModal({
             aria-pressed={destMode === 'inline'}
             disabled={busy || uncertain}
             className={`${planCss.segButton} ${destMode === 'inline' ? planCss.segButtonActive : ''}`}
-            onClick={() => setDestMode('inline')}
+            onClick={() => {
+              clearDefinitiveError();
+              setDestMode('inline');
+            }}
           >
             <span>Tạo đăng ký đích mới</span>
             <span className={planCss.segHint}>Áp dụng trong khung tiếp nhận đang mở</span>
@@ -1099,7 +1148,10 @@ function TransferModal({
             aria-pressed={destMode === 'existing'}
             disabled={busy || uncertain || allReceivedCandidates.length === 0}
             className={`${planCss.segButton} ${destMode === 'existing' ? planCss.segButtonActive : ''}`}
-            onClick={() => setDestMode('existing')}
+            onClick={() => {
+              clearDefinitiveError();
+              setDestMode('existing');
+            }}
           >
             <span>Ghép phiên bản đích đã tiếp nhận</span>
             <span className={planCss.segHint}>
@@ -1132,7 +1184,10 @@ function TransferModal({
                     : [{ value: '', label: 'Chưa có câu lạc bộ đủ điều kiện', disabled: true }]
                 }
                 disabled={busy || uncertain || clubOptions.length === 0}
-                onChange={setDestClubId}
+                onChange={(val) => {
+                  clearDefinitiveError();
+                  setDestClubId(val);
+                }}
               />
             </div>
 
@@ -1146,7 +1201,10 @@ function TransferModal({
                   value={shirtNumber}
                   disabled={busy || uncertain}
                   placeholder="Ví dụ: 11"
-                  onChange={(event) => setShirtNumber(event.target.value)}
+                  onChange={(event) => {
+                    clearDefinitiveError();
+                    setShirtNumber(event.target.value);
+                  }}
                 />
               </label>
               <AdminSelect
@@ -1158,7 +1216,10 @@ function TransferModal({
                   { value: 'IMMEDIATE', label: 'Hiệu lực ngay khi ghi nhận' },
                 ]}
                 disabled={busy || uncertain}
-                onChange={(val) => setEffectiveMode(val as 'SCHEDULED' | 'IMMEDIATE')}
+                onChange={(val) => {
+                  clearDefinitiveError();
+                  setEffectiveMode(val as 'SCHEDULED' | 'IMMEDIATE');
+                }}
               />
             </div>
 
@@ -1172,7 +1233,10 @@ function TransferModal({
                   value={effectiveAtInput}
                   disabled={busy || uncertain || effectiveMode === 'IMMEDIATE'}
                   required={effectiveMode === 'SCHEDULED'}
-                  onChange={setEffectiveAtInput}
+                  onChange={(val) => {
+                    clearDefinitiveError();
+                    setEffectiveAtInput(val);
+                  }}
                 />
               </div>
               <div className={dialogCss.field}>
@@ -1183,7 +1247,10 @@ function TransferModal({
                   label="Thời điểm kết thúc đăng ký đích"
                   value={playingEndInput}
                   disabled={busy || uncertain}
-                  onChange={setPlayingEndInput}
+                  onChange={(val) => {
+                    clearDefinitiveError();
+                    setPlayingEndInput(val);
+                  }}
                 />
               </div>
             </div>
@@ -1194,7 +1261,10 @@ function TransferModal({
                   type="checkbox"
                   checked={nonHomegrownOptIn}
                   disabled={busy || uncertain}
-                  onChange={(event) => setNonHomegrownOptIn(event.target.checked)}
+                  onChange={(event) => {
+                    clearDefinitiveError();
+                    setNonHomegrownOptIn(event.target.checked);
+                  }}
                 />
                 <span>Xử lý hồ sơ đích theo diện ngoài đào tạo nội địa</span>
               </label>
@@ -1216,7 +1286,10 @@ function TransferModal({
                       { value: 'MONTHS', label: 'Theo tháng' },
                     ]}
                     disabled={busy || uncertain}
-                    onChange={setEvidenceBranch}
+                    onChange={(val) => {
+                      clearDefinitiveError();
+                      setEvidenceBranch(val);
+                    }}
                   />
                   <label className={dialogCss.field}>
                     Số mùa / số tháng
@@ -1226,7 +1299,10 @@ function TransferModal({
                       max={1000}
                       value={qualifyingValue}
                       disabled={busy || uncertain}
-                      onChange={(event) => setQualifyingValue(event.target.value)}
+                      onChange={(event) => {
+                        clearDefinitiveError();
+                        setQualifyingValue(event.target.value);
+                      }}
                     />
                   </label>
                   <AdminSelect
@@ -1239,7 +1315,10 @@ function TransferModal({
                       { value: 'NO', label: 'Không đáp ứng' },
                     ]}
                     disabled={busy || uncertain}
-                    onChange={setAffiliatedBasis}
+                    onChange={(val) => {
+                      clearDefinitiveError();
+                      setAffiliatedBasis(val);
+                    }}
                   />
                 </div>
                 <div className={regPageCss.twoColRow}>
@@ -1250,7 +1329,10 @@ function TransferModal({
                       maxLength={1000}
                       value={evidenceSummary}
                       disabled={busy || uncertain}
-                      onChange={(event) => setEvidenceSummary(event.target.value)}
+                      onChange={(event) => {
+                        clearDefinitiveError();
+                        setEvidenceSummary(event.target.value);
+                      }}
                     />
                   </label>
                   <label className={dialogCss.field}>
@@ -1260,7 +1342,10 @@ function TransferModal({
                       maxLength={300}
                       value={evidenceReference}
                       disabled={busy || uncertain}
-                      onChange={(event) => setEvidenceReference(event.target.value)}
+                      onChange={(event) => {
+                        clearDefinitiveError();
+                        setEvidenceReference(event.target.value);
+                      }}
                     />
                   </label>
                 </div>
@@ -1275,7 +1360,10 @@ function TransferModal({
               value={selectedCandidateKey}
               options={candidateOptions}
               disabled={busy || uncertain}
-              onChange={setSelectedCandidateKey}
+              onChange={(val) => {
+                clearDefinitiveError();
+                setSelectedCandidateKey(val);
+              }}
             />
             <p className={pageCss.metaNote}>
               Thời điểm chuyển câu lạc bộ sẽ tự động gắn khớp chính xác với mốc bắt đầu của phiên
@@ -1292,7 +1380,10 @@ function TransferModal({
             value={reason}
             disabled={busy || uncertain}
             placeholder="Nhập lý do chuyển nhượng hoặc điều chuyển câu lạc bộ…"
-            onChange={(event) => setReason(event.target.value)}
+            onChange={(event) => {
+              clearDefinitiveError();
+              setReason(event.target.value);
+            }}
           />
         </label>
 
@@ -1300,7 +1391,11 @@ function TransferModal({
           <button type="button" disabled={busy} onClick={onClose}>
             Hủy
           </button>
-          <button type="submit" className={css.primary} disabled={busy}>
+          <button
+            type="submit"
+            className={css.primary}
+            disabled={busy || (!uncertain && basisChanged)}
+          >
             {busy
               ? 'Đang xử lý…'
               : uncertain
@@ -1316,18 +1411,21 @@ function TransferModal({
 function TerminateModal({
   plans,
   current,
+  basisChanged = false,
   onClose,
   onReload,
   onDone,
 }: {
   plans: RegistrationPlansResponse;
   current: CurrentValidatedVersion;
+  basisChanged?: boolean;
   onClose: () => void;
   onReload: () => void;
   onDone: () => void;
 }) {
   const { client } = useSession();
   const [idempotencyKey] = useState(() => crypto.randomUUID());
+  const lockedSubmitRef = useRef<{ endpoint: string; body: Record<string, unknown> } | null>(null);
 
   const [effectiveMode, setEffectiveMode] = useState<'SCHEDULED' | 'IMMEDIATE'>('SCHEDULED');
   const [effectiveAtInput, setEffectiveAtInput] = useState('');
@@ -1339,6 +1437,20 @@ function TerminateModal({
   const [uncertain, setUncertain] = useState(false);
   const feedbackRef = useDialogFeedback(error);
 
+  function setValidationError(message: string) {
+    setError(message);
+    setErrorDetails([]);
+    setReloadSuggested(false);
+  }
+
+  function clearDefinitiveError() {
+    if (!uncertain && (error || errorDetails.length > 0 || reloadSuggested)) {
+      setError('');
+      setErrorDetails([]);
+      setReloadSuggested(false);
+    }
+  }
+
   const previewEndLabel = useMemo(() => {
     if (effectiveMode === 'IMMEDIATE') return 'Ngay khi ghi nhận';
     const parsed = effectiveAtInput.trim() ? hcmInputToUtcInstant(effectiveAtInput.trim()) : null;
@@ -1347,32 +1459,39 @@ function TerminateModal({
 
   async function submit(event: FormEvent) {
     event.preventDefault();
-    if (!reason.trim()) {
-      setError('Vui lòng nhập lý do chấm dứt hiệu lực thi đấu.');
-      return;
-    }
-    let effectiveUtc: string | undefined;
-    if (effectiveMode === 'SCHEDULED') {
-      if (!effectiveAtInput.trim()) {
-        setError('Vui lòng chọn thời điểm chấm dứt hiệu lực.');
-        return;
-      }
-      const parsed = hcmInputToUtcInstant(effectiveAtInput.trim());
-      if (!parsed) {
-        setError('Thời điểm chấm dứt không đúng định dạng DD/MM/YYYY HH:mm.');
-        return;
-      }
-      effectiveUtc = parsed;
-    }
+    let requestToSend: { endpoint: string; body: Record<string, unknown> };
 
-    setBusy(true);
-    setError('');
-    setErrorDetails([]);
-    setReloadSuggested(false);
-    try {
-      await client.request(`/player-registrations/${plans.caseId}/terminate`, {
-        method: 'POST',
-        requestKey: idempotencyKey,
+    if (uncertain && lockedSubmitRef.current) {
+      requestToSend = lockedSubmitRef.current;
+    } else {
+      if (basisChanged) {
+        setError(
+          'Dữ liệu hồ sơ đã thay đổi sang phiên bản mới hơn. Vui lòng tải lại dữ liệu mới nhất trước khi gửi yêu cầu.',
+        );
+        setErrorDetails([]);
+        setReloadSuggested(true);
+        return;
+      }
+      if (!reason.trim()) {
+        setValidationError('Vui lòng nhập lý do chấm dứt hiệu lực thi đấu.');
+        return;
+      }
+      let effectiveUtc: string | undefined;
+      if (effectiveMode === 'SCHEDULED') {
+        if (!effectiveAtInput.trim()) {
+          setValidationError('Vui lòng chọn thời điểm chấm dứt hiệu lực.');
+          return;
+        }
+        const parsed = hcmInputToUtcInstant(effectiveAtInput.trim());
+        if (!parsed) {
+          setValidationError('Thời điểm chấm dứt không đúng định dạng DD/MM/YYYY HH:mm.');
+          return;
+        }
+        effectiveUtc = parsed;
+      }
+
+      requestToSend = {
+        endpoint: `/player-registrations/${plans.caseId}/terminate`,
         body: {
           versionId: current.id,
           expectedRevision: current.revision,
@@ -1380,9 +1499,25 @@ function TerminateModal({
           ...(effectiveUtc ? { effectiveAt: effectiveUtc } : {}),
           reason: reason.trim(),
         },
+      };
+      lockedSubmitRef.current = requestToSend;
+      setError('');
+      setErrorDetails([]);
+      setReloadSuggested(false);
+    }
+
+    setBusy(true);
+    try {
+      await client.request(requestToSend.endpoint, {
+        method: 'POST',
+        requestKey: idempotencyKey,
+        body: requestToSend.body,
       });
       onDone();
     } catch (caught) {
+      if (caught instanceof HttpFailure && !caught.unknownOutcome) {
+        lockedSubmitRef.current = null;
+      }
       applyMutationError(caught, { setError, setErrorDetails, setReloadSuggested, setUncertain });
     } finally {
       setBusy(false);
@@ -1415,6 +1550,18 @@ function TerminateModal({
           onReload={onReload}
         />
 
+        {!uncertain && basisChanged && (
+          <div className={`${pageCss.banner} ${pageCss.bannerWarn}`} role="status">
+            <span>
+              <strong>Dữ liệu đã thay đổi:</strong> Hồ sơ đăng ký vừa được cập nhật sang phiên bản
+              mới hơn. Vui lòng tải lại dữ liệu trước khi tiếp tục thao tác.
+            </span>
+            <button type="button" onClick={onReload}>
+              Tải lại dữ liệu mới nhất
+            </button>
+          </div>
+        )}
+
         <div className={pageCss.banner}>
           <span>
             <strong>Khoảng hiệu lực sau khi chấm dứt:</strong>{' '}
@@ -1434,7 +1581,10 @@ function TerminateModal({
               { value: 'IMMEDIATE', label: 'Chấm dứt ngay khi ghi nhận' },
             ]}
             disabled={busy || uncertain}
-            onChange={(val) => setEffectiveMode(val as 'SCHEDULED' | 'IMMEDIATE')}
+            onChange={(val) => {
+              clearDefinitiveError();
+              setEffectiveMode(val as 'SCHEDULED' | 'IMMEDIATE');
+            }}
           />
           <div className={dialogCss.field}>
             <span className={regPageCss.checkboxLabelTitle}>
@@ -1445,7 +1595,10 @@ function TerminateModal({
               value={effectiveAtInput}
               disabled={busy || uncertain || effectiveMode === 'IMMEDIATE'}
               required={effectiveMode === 'SCHEDULED'}
-              onChange={setEffectiveAtInput}
+              onChange={(val) => {
+                clearDefinitiveError();
+                setEffectiveAtInput(val);
+              }}
             />
           </div>
         </div>
@@ -1458,7 +1611,10 @@ function TerminateModal({
             value={reason}
             disabled={busy || uncertain}
             placeholder="Nhập lý do chấm dứt đăng ký thi đấu…"
-            onChange={(event) => setReason(event.target.value)}
+            onChange={(event) => {
+              clearDefinitiveError();
+              setReason(event.target.value);
+            }}
           />
         </label>
 
@@ -1466,7 +1622,11 @@ function TerminateModal({
           <button type="button" disabled={busy} onClick={onClose}>
             Hủy
           </button>
-          <button type="submit" className={css.primary} disabled={busy}>
+          <button
+            type="submit"
+            className={css.primary}
+            disabled={busy || (!uncertain && basisChanged)}
+          >
             {busy
               ? 'Đang xử lý…'
               : uncertain
@@ -1479,10 +1639,11 @@ function TerminateModal({
   );
 }
 
-function PlanChangeModal({
+export function PlanChangeModal({
   plans,
   current,
   isStandalone,
+  basisChanged = false,
   onClose,
   onReload,
   onDone,
@@ -1490,19 +1651,37 @@ function PlanChangeModal({
   plans: RegistrationPlansResponse;
   current: CurrentValidatedVersion;
   isStandalone: boolean;
+  basisChanged?: boolean;
   onClose: () => void;
   onReload: () => void;
   onDone: () => void;
 }) {
   const { client } = useSession();
-  const activePlan = plans.activeTransferPlan;
-  const [idempotencyKey] = useState(() => crypto.randomUUID());
+  const [initialBasis] = useState(() => ({
+    plans,
+    current,
+    revisionKey: planRevisionKey(plans, current),
+  }));
+  const liveRevisionKey = planRevisionKey(plans, current);
+  const propBasisChanged =
+    basisChanged ||
+    (liveRevisionKey !== null &&
+      initialBasis.revisionKey !== null &&
+      liveRevisionKey !== initialBasis.revisionKey);
 
-  const initialStartIso = activePlan ? activePlan.effectiveAt : current.playingStart;
+  const boundPlans = initialBasis.plans;
+  const boundCurrent = initialBasis.current;
+  const activePlan = boundPlans.activeTransferPlan;
+  const [idempotencyKey] = useState(() => crypto.randomUUID());
+  const lockedSubmitRef = useRef<{ endpoint: string; body: Record<string, unknown> } | null>(null);
+
+  const initialStartIso = activePlan ? activePlan.effectiveAt : boundCurrent.playingStart;
   const initialEndIso = activePlan
     ? (activePlan.newSide.version?.playingEnd ?? null)
-    : current.playingEnd;
-  const initialShirt = activePlan ? activePlan.newSide.version?.shirtNumber : current.shirtNumber;
+    : boundCurrent.playingEnd;
+  const initialShirt = activePlan
+    ? activePlan.newSide.version?.shirtNumber
+    : boundCurrent.shirtNumber;
 
   const [playingStartInput, setPlayingStartInput] = useState(() =>
     initialStartIso ? utcInstantToHcmInput(initialStartIso) : '',
@@ -1521,6 +1700,20 @@ function PlanChangeModal({
   const [uncertain, setUncertain] = useState(false);
   const feedbackRef = useDialogFeedback(error);
 
+  function setValidationError(message: string) {
+    setError(message);
+    setErrorDetails([]);
+    setReloadSuggested(false);
+  }
+
+  function clearDefinitiveError() {
+    if (!uncertain && (error || errorDetails.length > 0 || reloadSuggested)) {
+      setError('');
+      setErrorDetails([]);
+      setReloadSuggested(false);
+    }
+  }
+
   const previewStartIso = useMemo(
     () => (playingStartInput.trim() ? hcmInputToUtcInstant(playingStartInput.trim()) : null),
     [playingStartInput],
@@ -1532,65 +1725,89 @@ function PlanChangeModal({
 
   async function submit(event: FormEvent) {
     event.preventDefault();
-    if (!reason.trim()) {
-      setError('Vui lòng nhập lý do điều chỉnh kế hoạch tương lai.');
-      return;
-    }
+    let requestToSend: { endpoint: string; body: Record<string, unknown> };
 
-    const body: Record<string, unknown> = {
-      versionId: current.id,
-      expectedRevision: current.revision,
-      reason: reason.trim(),
-      ...(activePlan ? { transferOperationId: activePlan.id } : {}),
-    };
-
-    if (!playingStartInput.trim()) {
-      setError('Vui lòng chọn mốc hiệu lực mới cho kế hoạch.');
-      return;
-    }
-    const parsedStart = hcmInputToUtcInstant(playingStartInput.trim());
-    if (!parsedStart) {
-      setError('Mốc hiệu lực mới không đúng định dạng DD/MM/YYYY HH:mm.');
-      return;
-    }
-    body.playingStart = parsedStart;
-
-    if (playingEndInput.trim()) {
-      const parsedEnd = hcmInputToUtcInstant(playingEndInput.trim());
-      if (!parsedEnd) {
-        setError('Thời điểm kết thúc mới không đúng định dạng DD/MM/YYYY HH:mm.');
+    if (uncertain && lockedSubmitRef.current) {
+      // Reuse the exact payload bound to this idempotencyKey on first submit regardless of background refreshes.
+      requestToSend = lockedSubmitRef.current;
+    } else {
+      if (propBasisChanged) {
+        setError(
+          'Dữ liệu kế hoạch đã thay đổi sang phiên bản mới hơn. Vui lòng tải lại dữ liệu mới nhất trước khi gửi yêu cầu.',
+        );
+        setErrorDetails([]);
+        setReloadSuggested(true);
         return;
       }
-      if (new Date(parsedEnd).getTime() <= new Date(parsedStart).getTime()) {
-        setError('Thời điểm kết thúc mới phải lớn hơn thời điểm bắt đầu hiệu lực mới.');
+      if (!reason.trim()) {
+        setValidationError('Vui lòng nhập lý do điều chỉnh kế hoạch tương lai.');
         return;
       }
-      body.playingEnd = parsedEnd;
-    } else if (initialEndIso !== null) {
-      body.playingEnd = null;
-    }
 
-    if (shirtNumber.trim()) {
-      const parsed = Number(shirtNumber.trim());
-      if (!Number.isInteger(parsed) || parsed < 1 || parsed > 99) {
-        setError('Số áo phải là số nguyên từ 1 đến 99.');
+      const body: Record<string, unknown> = {
+        versionId: boundCurrent.id,
+        expectedRevision: boundCurrent.revision,
+        reason: reason.trim(),
+        ...(activePlan ? { transferOperationId: activePlan.id } : {}),
+      };
+
+      if (!playingStartInput.trim()) {
+        setValidationError('Vui lòng chọn mốc hiệu lực mới cho kế hoạch.');
         return;
       }
-      body.shirtNumber = parsed;
+      const parsedStart = hcmInputToUtcInstant(playingStartInput.trim());
+      if (!parsedStart) {
+        setValidationError('Mốc hiệu lực mới không đúng định dạng DD/MM/YYYY HH:mm.');
+        return;
+      }
+      body.playingStart = parsedStart;
+
+      if (playingEndInput.trim()) {
+        const parsedEnd = hcmInputToUtcInstant(playingEndInput.trim());
+        if (!parsedEnd) {
+          setValidationError('Thời điểm kết thúc mới không đúng định dạng DD/MM/YYYY HH:mm.');
+          return;
+        }
+        if (new Date(parsedEnd).getTime() <= new Date(parsedStart).getTime()) {
+          setValidationError('Thời điểm kết thúc mới phải lớn hơn thời điểm bắt đầu hiệu lực mới.');
+          return;
+        }
+        body.playingEnd = parsedEnd;
+      } else if (initialEndIso !== null) {
+        body.playingEnd = null;
+      }
+
+      if (shirtNumber.trim()) {
+        const parsed = Number(shirtNumber.trim());
+        if (!Number.isInteger(parsed) || parsed < 1 || parsed > 99) {
+          setValidationError('Số áo phải là số nguyên từ 1 đến 99.');
+          return;
+        }
+        body.shirtNumber = parsed;
+      }
+
+      requestToSend = {
+        endpoint: `/player-registrations/${boundPlans.caseId}/plan-change`,
+        body,
+      };
+      lockedSubmitRef.current = requestToSend;
+      setError('');
+      setErrorDetails([]);
+      setReloadSuggested(false);
     }
 
     setBusy(true);
-    setError('');
-    setErrorDetails([]);
-    setReloadSuggested(false);
     try {
-      await client.request(`/player-registrations/${plans.caseId}/plan-change`, {
+      await client.request(requestToSend.endpoint, {
         method: 'POST',
         requestKey: idempotencyKey,
-        body,
+        body: requestToSend.body,
       });
       onDone();
     } catch (caught) {
+      if (caught instanceof HttpFailure && !caught.unknownOutcome) {
+        lockedSubmitRef.current = null;
+      }
       applyMutationError(caught, { setError, setErrorDetails, setReloadSuggested, setUncertain });
     } finally {
       setBusy(false);
@@ -1627,6 +1844,18 @@ function PlanChangeModal({
           onReload={onReload}
         />
 
+        {!uncertain && propBasisChanged && (
+          <div className={`${pageCss.banner} ${pageCss.bannerWarn}`} role="status">
+            <span>
+              <strong>Dữ liệu đã thay đổi:</strong> Kế hoạch vừa được cập nhật sang phiên bản mới
+              hơn. Vui lòng tải lại dữ liệu trước khi tiếp tục thao tác.
+            </span>
+            <button type="button" onClick={onReload}>
+              Tải lại dữ liệu mới nhất
+            </button>
+          </div>
+        )}
+
         <div className={`${pageCss.banner} ${pageCss.bannerWarn}`}>
           <span>
             <strong>Lưu ý điều kiện tiếp nhận:</strong> Điều chỉnh kế hoạch tương lai phải thực hiện
@@ -1647,7 +1876,9 @@ function PlanChangeModal({
               <div className={planCss.sideBox}>
                 <span className={planCss.sideRole}>Câu lạc bộ nguồn</span>
                 <span className={planCss.sideClub}>
-                  {activePlan.oldSide.club.name} ({activePlan.oldSide.club.code})
+                  {activePlan.oldSide.club
+                    ? `${activePlan.oldSide.club.name} (${activePlan.oldSide.club.code})`
+                    : 'Câu lạc bộ nguồn'}
                 </span>
                 <span className={planCss.sideMeta}>
                   Hiện tại:{' '}
@@ -1672,7 +1903,9 @@ function PlanChangeModal({
               <div className={`${planCss.sideBox} ${planCss.sideBoxDest}`}>
                 <span className={planCss.sideRole}>Câu lạc bộ đích</span>
                 <span className={planCss.sideClub}>
-                  {activePlan.newSide.club.name} ({activePlan.newSide.club.code})
+                  {activePlan.newSide.club
+                    ? `${activePlan.newSide.club.name} (${activePlan.newSide.club.code})`
+                    : 'Câu lạc bộ đích'}
                 </span>
                 <span className={planCss.sideMeta}>
                   Hiện tại: {formatRange(activePlan.effectiveAt, initialEndIso)} · Số áo #
@@ -1700,13 +1933,13 @@ function PlanChangeModal({
               <div className={planCss.sideBox}>
                 <span className={planCss.sideRole}>Kế hoạch hiện tại</span>
                 <span className={planCss.sideClub}>
-                  {plans.club.name} ({plans.club.code})
+                  {boundPlans.club.name} ({boundPlans.club.code})
                 </span>
                 <span className={planCss.sideMeta}>
-                  Mùa giải {plans.season.name} · Số áo #{current.shirtNumber ?? '—'}
+                  Mùa giải {boundPlans.season.name} · Số áo #{boundCurrent.shirtNumber ?? '—'}
                 </span>
                 <div className={planCss.sideInterval}>
-                  {formatRange(current.playingStart, current.playingEnd)}
+                  {formatRange(boundCurrent.playingStart, boundCurrent.playingEnd)}
                 </div>
               </div>
               <div className={planCss.arrowCol} aria-hidden="true">
@@ -1715,10 +1948,10 @@ function PlanChangeModal({
               <div className={`${planCss.sideBox} ${planCss.sideBoxDest}`}>
                 <span className={planCss.sideRole}>Kế hoạch đề xuất</span>
                 <span className={planCss.sideClub}>
-                  {plans.club.name} ({plans.club.code})
+                  {boundPlans.club.name} ({boundPlans.club.code})
                 </span>
                 <span className={planCss.sideMeta}>
-                  Mùa giải {plans.season.name} · Số áo #{shirtNumber || '—'}
+                  Mùa giải {boundPlans.season.name} · Số áo #{shirtNumber || '—'}
                 </span>
                 <div className={planCss.sideInterval}>
                   {previewStartIso
@@ -1742,7 +1975,10 @@ function PlanChangeModal({
               value={playingStartInput}
               disabled={busy || uncertain}
               required
-              onChange={setPlayingStartInput}
+              onChange={(val) => {
+                clearDefinitiveError();
+                setPlayingStartInput(val);
+              }}
             />
           </div>
           <label className={dialogCss.field}>
@@ -1753,7 +1989,10 @@ function PlanChangeModal({
               max={99}
               value={shirtNumber}
               disabled={busy || uncertain}
-              onChange={(event) => setShirtNumber(event.target.value)}
+              onChange={(event) => {
+                clearDefinitiveError();
+                setShirtNumber(event.target.value);
+              }}
             />
           </label>
         </div>
@@ -1768,7 +2007,10 @@ function PlanChangeModal({
             label="Thời điểm kết thúc mới"
             value={playingEndInput}
             disabled={busy || uncertain}
-            onChange={setPlayingEndInput}
+            onChange={(val) => {
+              clearDefinitiveError();
+              setPlayingEndInput(val);
+            }}
           />
         </div>
 
@@ -1780,7 +2022,10 @@ function PlanChangeModal({
             value={reason}
             disabled={busy || uncertain}
             placeholder="Nhập lý do điều chỉnh mốc hiệu lực hoặc số áo…"
-            onChange={(event) => setReason(event.target.value)}
+            onChange={(event) => {
+              clearDefinitiveError();
+              setReason(event.target.value);
+            }}
           />
         </label>
 
@@ -1788,7 +2033,11 @@ function PlanChangeModal({
           <button type="button" disabled={busy} onClick={onClose}>
             Hủy
           </button>
-          <button type="submit" className={css.primary} disabled={busy}>
+          <button
+            type="submit"
+            className={css.primary}
+            disabled={busy || (!uncertain && propBasisChanged)}
+          >
             {busy
               ? 'Đang xử lý…'
               : uncertain
@@ -1804,12 +2053,14 @@ function PlanChangeModal({
 function PlanCancelModal({
   plans,
   current,
+  basisChanged = false,
   onClose,
   onReload,
   onDone,
 }: {
   plans: RegistrationPlansResponse;
   current: CurrentValidatedVersion;
+  basisChanged?: boolean;
   onClose: () => void;
   onReload: () => void;
   onDone: () => void;
@@ -1817,6 +2068,7 @@ function PlanCancelModal({
   const { client } = useSession();
   const activePlan = plans.activeTransferPlan;
   const [idempotencyKey] = useState(() => crypto.randomUUID());
+  const lockedSubmitRef = useRef<{ endpoint: string; body: Record<string, unknown> } | null>(null);
 
   const [reason, setReason] = useState('');
   const [busy, setBusy] = useState(false);
@@ -1826,32 +2078,69 @@ function PlanCancelModal({
   const [uncertain, setUncertain] = useState(false);
   const feedbackRef = useDialogFeedback(error);
 
+  function setValidationError(message: string) {
+    setError(message);
+    setErrorDetails([]);
+    setReloadSuggested(false);
+  }
+
+  function clearDefinitiveError() {
+    if (!uncertain && (error || errorDetails.length > 0 || reloadSuggested)) {
+      setError('');
+      setErrorDetails([]);
+      setReloadSuggested(false);
+    }
+  }
+
   const restoredEnd = resolvePreTransferEnd(activePlan, plans.transferHistory);
 
   async function submit(event: FormEvent) {
     event.preventDefault();
-    if (!reason.trim()) {
-      setError('Vui lòng nhập lý do hủy kế hoạch trước hiệu lực.');
-      return;
-    }
+    let requestToSend: { endpoint: string; body: Record<string, unknown> };
 
-    setBusy(true);
-    setError('');
-    setErrorDetails([]);
-    setReloadSuggested(false);
-    try {
-      await client.request(`/player-registrations/${plans.caseId}/plan-cancel`, {
-        method: 'POST',
-        requestKey: idempotencyKey,
+    if (uncertain && lockedSubmitRef.current) {
+      requestToSend = lockedSubmitRef.current;
+    } else {
+      if (basisChanged) {
+        setError(
+          'Dữ liệu kế hoạch đã thay đổi sang phiên bản mới hơn. Vui lòng tải lại dữ liệu mới nhất trước khi gửi yêu cầu.',
+        );
+        setErrorDetails([]);
+        setReloadSuggested(true);
+        return;
+      }
+      if (!reason.trim()) {
+        setValidationError('Vui lòng nhập lý do hủy kế hoạch trước hiệu lực.');
+        return;
+      }
+
+      requestToSend = {
+        endpoint: `/player-registrations/${plans.caseId}/plan-cancel`,
         body: {
           versionId: current.id,
           expectedRevision: current.revision,
           ...(activePlan ? { transferOperationId: activePlan.id } : {}),
           reason: reason.trim(),
         },
+      };
+      lockedSubmitRef.current = requestToSend;
+      setError('');
+      setErrorDetails([]);
+      setReloadSuggested(false);
+    }
+
+    setBusy(true);
+    try {
+      await client.request(requestToSend.endpoint, {
+        method: 'POST',
+        requestKey: idempotencyKey,
+        body: requestToSend.body,
       });
       onDone();
     } catch (caught) {
+      if (caught instanceof HttpFailure && !caught.unknownOutcome) {
+        lockedSubmitRef.current = null;
+      }
       applyMutationError(caught, { setError, setErrorDetails, setReloadSuggested, setUncertain });
     } finally {
       setBusy(false);
@@ -1888,18 +2177,32 @@ function PlanCancelModal({
           onReload={onReload}
         />
 
+        {!uncertain && basisChanged && (
+          <div className={`${pageCss.banner} ${pageCss.bannerWarn}`} role="status">
+            <span>
+              <strong>Dữ liệu đã thay đổi:</strong> Kế hoạch vừa được cập nhật sang phiên bản mới
+              hơn. Vui lòng tải lại dữ liệu trước khi tiếp tục thao tác.
+            </span>
+            <button type="button" onClick={onReload}>
+              Tải lại dữ liệu mới nhất
+            </button>
+          </div>
+        )}
+
         <div className={planCss.dispositionBox}>
           <strong>Hậu quả khi xác nhận hủy kế hoạch trước hiệu lực:</strong>
           <ul>
             {activePlan ? (
               <>
                 <li>
-                  Hồ sơ đích tại <strong>{activePlan.newSide.club.name}</strong> chuyển trạng thái
-                  hiệu lực sang <strong>Hủy trước hiệu lực</strong> (giữ nguyên lịch sử xác nhận
-                  trước đó, không xóa bản ghi).
+                  Hồ sơ đích tại{' '}
+                  <strong>{activePlan.newSide.club?.name ?? 'câu lạc bộ đích'}</strong> chuyển trạng
+                  thái hiệu lực sang <strong>Hủy trước hiệu lực</strong> (giữ nguyên lịch sử xác
+                  nhận trước đó, không xóa bản ghi).
                 </li>
                 <li>
-                  Hồ sơ nguồn tại <strong>{activePlan.oldSide.club.name}</strong> sẽ được{' '}
+                  Hồ sơ nguồn tại{' '}
+                  <strong>{activePlan.oldSide.club?.name ?? 'câu lạc bộ nguồn'}</strong> sẽ được{' '}
                   <strong>khôi phục thời điểm kết thúc trước chuyển câu lạc bộ</strong> (
                   <em>
                     {restoredEnd.known
@@ -1933,7 +2236,10 @@ function PlanCancelModal({
             value={reason}
             disabled={busy || uncertain}
             placeholder="Nhập lý do hủy kế hoạch trước ngày hiệu lực…"
-            onChange={(event) => setReason(event.target.value)}
+            onChange={(event) => {
+              clearDefinitiveError();
+              setReason(event.target.value);
+            }}
           />
         </label>
 
@@ -1941,7 +2247,11 @@ function PlanCancelModal({
           <button type="button" disabled={busy} onClick={onClose}>
             Đóng
           </button>
-          <button type="submit" className={`${css.danger} ${pageCss.dangerSolid}`} disabled={busy}>
+          <button
+            type="submit"
+            className={`${css.danger} ${pageCss.dangerSolid}`}
+            disabled={busy || (!uncertain && basisChanged)}
+          >
             {busy
               ? 'Đang xử lý…'
               : uncertain

@@ -1,4 +1,5 @@
 import { createHash, randomUUID } from 'node:crypto';
+import { isISO8601 } from 'class-validator';
 import type { Request } from 'express';
 import type { AuditWriterService } from '../audit/audit-writer.service';
 import type { Prisma } from '../generated/prisma/client';
@@ -163,13 +164,25 @@ function toSafeErrorText(value: string): string {
   return [...cleaned].slice(0, 80).join('') || 'không xác định';
 }
 
+const STRICT_ISO_INSTANT =
+  /^\d{4}-\d{2}-\d{2}T(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d{1,9})?(?:Z|[+-](?:[01]\d|2[0-3]):?[0-5]\d)$/i;
+
 function parseOptionalInstant(
   value: string | null | undefined,
   label: string,
 ): Date | null | undefined {
   if (value === undefined) return undefined;
   if (value === null || !value.trim()) return null;
-  const parsed = new Date(value);
+  const trimmed = value.trim();
+  if (
+    !STRICT_ISO_INSTANT.test(trimmed) ||
+    !isISO8601(trimmed, { strict: true, strictSeparator: true })
+  ) {
+    throw invalid(
+      `${label} phải là mốc thời gian ISO-8601 hợp lệ kèm múi giờ (Z hoặc độ lệch múi giờ).`,
+    );
+  }
+  const parsed = new Date(trimmed);
   if (!Number.isFinite(parsed.getTime())) {
     throw invalid(`${label} không đúng định dạng thời gian hợp lệ.`);
   }
@@ -308,6 +321,15 @@ function asSnapshotRecord(snapshot: Prisma.JsonValue | null): Record<string, unk
   return {};
 }
 
+type RevalidatedSnapshotBasis = {
+  receiptRegulationVersionId: string | null;
+  receiptTimingStatus: 'ON_TIME' | 'LATE';
+  receiptWindowId: string | null;
+  receiptExceptionVersionId: string | null;
+  decisionRegulationVersionId: string;
+  assessment: RegistrationEligibilityAssessment;
+};
+
 function buildUpdatedOfficialSnapshot(
   previous: Prisma.JsonValue | null,
   update: {
@@ -323,6 +345,7 @@ function buildUpdatedOfficialSnapshot(
     nonHomegrownOptIn: boolean;
     playingDisposition: PlayingDisposition;
     planEvent: Record<string, string | null>;
+    revalidatedBasis?: RevalidatedSnapshotBasis;
   },
 ): Prisma.InputJsonObject {
   const base = asSnapshotRecord(previous);
@@ -341,6 +364,25 @@ function buildUpdatedOfficialSnapshot(
       nonHomegrownOptIn: update.nonHomegrownOptIn,
       playingDisposition: update.playingDisposition,
     },
+    ...(update.revalidatedBasis
+      ? {
+          basis: {
+            receiptRegulationVersionId: update.revalidatedBasis.receiptRegulationVersionId,
+            receiptTimingStatus: update.revalidatedBasis.receiptTimingStatus,
+            receiptWindowId: update.revalidatedBasis.receiptWindowId,
+            receiptExceptionVersionId: update.revalidatedBasis.receiptExceptionVersionId,
+            decisionRegulationVersionId: update.revalidatedBasis.decisionRegulationVersionId,
+            squadLimit: update.revalidatedBasis.assessment.squadLimit,
+            nonHomegrownLimit: update.revalidatedBasis.assessment.nonHomegrownLimit,
+          },
+          criteria: update.revalidatedBasis.assessment.criteria.map((c) => ({
+            criterion: c.criterion,
+            status: c.status,
+            reason: c.reason,
+            regulationVersionId: c.regulationVersionId,
+          })),
+        }
+      : {}),
     planEvent: update.planEvent,
   } as Prisma.InputJsonObject;
 }
@@ -367,6 +409,7 @@ async function createSuccessorRegistrationVersion(
     decisionRegulationVersionId?: string | null;
     playingDisposition: PlayingDisposition;
     planEvent: Record<string, string | null>;
+    revalidatedBasis?: RevalidatedSnapshotBasis;
   },
 ): Promise<{ revision: bigint }> {
   const shirtNumber =
@@ -387,6 +430,7 @@ async function createSuccessorRegistrationVersion(
     nonHomegrownOptIn: baseVersion.nonHomegrownOptIn,
     playingDisposition: params.playingDisposition,
     planEvent: params.planEvent,
+    revalidatedBasis: params.revalidatedBasis,
   });
 
   return context.db.registrationVersion.create({
@@ -447,13 +491,16 @@ async function walkTransferRoot(
     newCaseId: string;
     oldBeforeVersionId: string;
     effectiveAt: Date;
+    operationKind: string;
     supersedesOperationId: string | null;
   },
-) {
+): Promise<TransferChainResolution['root'] | null> {
   let cursor = start;
-  let guard = 0;
-  while (cursor.supersedesOperationId && guard < 100) {
-    guard += 1;
+  const visited = new Set<string>([cursor.id]);
+  while (cursor.supersedesOperationId) {
+    if (visited.has(cursor.supersedesOperationId)) {
+      return null;
+    }
     const prev = await db.transferOperation.findUnique({
       where: { id: cursor.supersedesOperationId },
       select: {
@@ -462,11 +509,18 @@ async function walkTransferRoot(
         newCaseId: true,
         oldBeforeVersionId: true,
         effectiveAt: true,
+        operationKind: true,
         supersedesOperationId: true,
       },
     });
-    if (!prev) break;
+    if (!prev) {
+      return null;
+    }
+    visited.add(prev.id);
     cursor = prev;
+  }
+  if (cursor.operationKind !== 'TRANSFER') {
+    return null;
   }
   return {
     id: cursor.id,
@@ -504,6 +558,7 @@ async function findTransferOperationForLocking(
   if (candidate.oldCaseId !== caseId && candidate.newCaseId !== caseId) return null;
 
   const root = await walkTransferRoot(db, candidate);
+  if (!root) return null;
   return {
     latest: {
       id: candidate.id,
@@ -561,6 +616,13 @@ async function resolveActivePairedTransferStrict(
   }
 
   const root = await walkTransferRoot(db, latest);
+  if (!root) {
+    throw planConflict(
+      'TRANSFER_LINEAGE',
+      'UNRESOLVED_TRANSFER_ROOT',
+      'Không thể xác định thao tác chuyển nhượng gốc để đối chiếu khoảng hiệu lực ban đầu trước khi xử lý kế hoạch.',
+    );
+  }
   return {
     latest: {
       id: latest.id,
@@ -642,6 +704,10 @@ export class RegistrationPlansService {
     accountId: string,
     caseId: string,
     requestedOpId: string | null,
+    receiptLookup?: {
+      actionCode: 'PLAYER_REGISTRATION_PLAN_CHANGED' | 'PLAYER_REGISTRATION_PLAN_CANCELLED';
+      requestKey: string | null;
+    },
   ): Promise<void> {
     const reg = await context.db.playerRegistration.findUnique({
       where: { id: caseId },
@@ -649,17 +715,83 @@ export class RegistrationPlansService {
     });
     if (!reg) throw missing();
     await requireSeasonRegistrationOfficer(context, accountId, reg.seasonId);
-    const chain = await findTransferOperationForLocking(context.db, caseId, requestedOpId);
-    if (chain) {
-      const counterpartCaseId =
-        chain.latest.oldCaseId === caseId ? chain.latest.newCaseId : chain.latest.oldCaseId;
-      const counterpart = await context.db.playerRegistration.findUnique({
-        where: { id: counterpartCaseId },
+
+    const pairedCaseIds = new Set<string>();
+    const recordOpCases = (op: { oldCaseId: string; newCaseId: string } | null) => {
+      if (!op) return;
+      if (op.oldCaseId !== caseId && op.newCaseId !== caseId) return;
+      pairedCaseIds.add(op.oldCaseId);
+      pairedCaseIds.add(op.newCaseId);
+    };
+
+    // 1. Resolve any unexpired stored replay receipt so replaying an implicit or superseded
+    //    paired plan-change/plan-cancel re-verifies authority over BOTH seasons.
+    const normalizedKey = receiptLookup?.requestKey?.trim().toLowerCase() ?? '';
+    if (receiptLookup && normalizedKey) {
+      const receipt = await context.db.commandReceipt.findUnique({
+        where: {
+          accountId_actionCode_requestKey: {
+            accountId: accountId.toLowerCase(),
+            actionCode: receiptLookup.actionCode,
+            requestKey: normalizedKey,
+          },
+        },
+        select: { expiresAt: true, responseData: true },
+      });
+      const now = await context.now();
+      if (receipt && (!receipt.expiresAt || receipt.expiresAt > now)) {
+        const data =
+          receipt.responseData &&
+          typeof receipt.responseData === 'object' &&
+          !Array.isArray(receipt.responseData)
+            ? (receipt.responseData as Record<string, unknown>)
+            : null;
+        const relatedId = typeof data?.relatedId === 'string' ? data.relatedId : null;
+        if (relatedId) {
+          const replayOp = await context.db.transferOperation.findUnique({
+            where: { id: relatedId },
+            select: { oldCaseId: true, newCaseId: true },
+          });
+          if (replayOp) {
+            pairedCaseIds.add(replayOp.oldCaseId);
+            pairedCaseIds.add(replayOp.newCaseId);
+          }
+        }
+      }
+    }
+
+    // 2. Check explicit requestedOpId directly regardless of active/superseded status.
+    if (requestedOpId) {
+      const explicitOp = await context.db.transferOperation.findUnique({
+        where: { id: requestedOpId },
+        select: { oldCaseId: true, newCaseId: true },
+      });
+      recordOpCases(explicitOp);
+    } else {
+      // 3. Check active implicit paired transfer for fresh mutations without transferOperationId.
+      const activeOp = await context.db.transferOperation.findFirst({
+        where: {
+          OR: [{ oldCaseId: caseId }, { newCaseId: caseId }],
+          operationKind: { in: ['TRANSFER', 'PLAN_CHANGE'] },
+          supersededBy: { none: {} },
+        },
+        orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+        select: { oldCaseId: true, newCaseId: true },
+      });
+      recordOpCases(activeOp);
+    }
+
+    const authorizedSeasonIds = new Set<string>([reg.seasonId]);
+    for (const pairedCaseId of pairedCaseIds) {
+      if (pairedCaseId === caseId) continue;
+      const pairedCase = await context.db.playerRegistration.findUnique({
+        where: { id: pairedCaseId },
         select: { seasonId: true },
       });
-      if (!counterpart) throw missing();
-      if (counterpart.seasonId !== reg.seasonId) {
-        await requireSeasonRegistrationOfficer(context, accountId, counterpart.seasonId);
+      if (!pairedCase) throw missing();
+      if (!authorizedSeasonIds.has(pairedCase.seasonId)) {
+        await requireSeasonRegistrationOfficer(context, accountId, pairedCase.seasonId);
+        authorizedSeasonIds.add(pairedCase.seasonId);
       }
     }
   }
@@ -970,6 +1102,7 @@ export class RegistrationPlansService {
               counterpartAccessRestricted: !counterpartReadable,
               oldSide: oldReadable
                 ? {
+                    accessRestricted: false,
                     caseId: op.oldCaseId,
                     season: op.oldCase.season,
                     club: {
@@ -994,20 +1127,16 @@ export class RegistrationPlansService {
                     },
                   }
                 : {
+                    accessRestricted: true,
                     caseId: null,
-                    season: op.oldCase.season,
-                    club: {
-                      id: op.oldCase.club.id,
-                      code: op.oldCase.club.code,
-                      name: op.oldCase.club.name,
-                      abbreviation: op.oldCase.club.abbreviation,
-                      discontinuedAt: op.oldCase.club.discontinuedAt?.toISOString() ?? null,
-                    },
+                    season: null,
+                    club: null,
                     beforeVersion: null,
                     afterVersion: null,
                   },
               newSide: newReadable
                 ? {
+                    accessRestricted: false,
                     caseId: op.newCaseId,
                     season: op.newCase.season,
                     club: {
@@ -1024,15 +1153,10 @@ export class RegistrationPlansService {
                     },
                   }
                 : {
+                    accessRestricted: true,
                     caseId: null,
-                    season: op.newCase.season,
-                    club: {
-                      id: op.newCase.club.id,
-                      code: op.newCase.club.code,
-                      name: op.newCase.club.name,
-                      abbreviation: op.newCase.club.abbreviation,
-                      discontinuedAt: op.newCase.club.discontinuedAt?.toISOString() ?? null,
-                    },
+                    season: null,
+                    club: null,
                     version: null,
                   },
             };
@@ -1072,15 +1196,27 @@ export class RegistrationPlansService {
             .map((other) => {
               const readable = readableSeasonSet.has(other.seasonId);
               const v = other.currentValidatedVersion!;
+              if (!readable) {
+                return {
+                  caseId: null,
+                  season: null,
+                  club: null,
+                  shirtNumber: null,
+                  playingStart: null,
+                  playingEnd: null,
+                  playingEffectivityStatus: null,
+                  accessRestricted: true,
+                };
+              }
               return {
-                caseId: readable ? other.id : null,
+                caseId: other.id,
                 season: other.season,
                 club: other.club,
-                shirtNumber: readable ? v.shirtNumber : null,
+                shirtNumber: v.shirtNumber,
                 playingStart: v.playingStart!.toISOString(),
-                playingEnd: readable ? (v.playingEnd?.toISOString() ?? null) : null,
+                playingEnd: v.playingEnd?.toISOString() ?? null,
                 playingEffectivityStatus: computePlayingEffectivityStatus(v, now),
-                accessRestricted: !readable,
+                accessRestricted: false,
               };
             });
 
@@ -2368,7 +2504,10 @@ export class RegistrationPlansService {
           ],
           discover: (db) => this.discoverPairedPlanLocks(db, caseId, requestedOpId),
           authorize: (context, accountId) =>
-            this.authorizePairedPlanMutation(context, accountId, caseId, requestedOpId),
+            this.authorizePairedPlanMutation(context, accountId, caseId, requestedOpId, {
+              actionCode: 'PLAYER_REGISTRATION_PLAN_CHANGED',
+              requestKey: request.get('Idempotency-Key') ?? null,
+            }),
         },
         // Pure caller-input receipt intent so idempotent replay matches even after state advances
         {
@@ -2629,6 +2768,14 @@ export class RegistrationPlansService {
               receiptWindowId: timing.receiptWindowId,
               decisionRegulationVersionId: destReg.id,
               playingDisposition: 'ACTIVE',
+              revalidatedBasis: {
+                receiptRegulationVersionId: destReg.id,
+                receiptTimingStatus: 'ON_TIME',
+                receiptWindowId: timing.receiptWindowId,
+                receiptExceptionVersionId: null,
+                decisionRegulationVersionId: destReg.id,
+                assessment: destAssessment,
+              },
               planEvent: {
                 kind: 'TRANSFER_PLAN_CHANGE_DESTINATION',
                 transferOperationId: nextOpId,
@@ -2843,6 +2990,14 @@ export class RegistrationPlansService {
             receiptWindowId: timing.receiptWindowId,
             decisionRegulationVersionId: regulation.id,
             playingDisposition: 'ACTIVE',
+            revalidatedBasis: {
+              receiptRegulationVersionId: regulation.id,
+              receiptTimingStatus: 'ON_TIME',
+              receiptWindowId: timing.receiptWindowId,
+              receiptExceptionVersionId: null,
+              decisionRegulationVersionId: regulation.id,
+              assessment,
+            },
             planEvent: {
               kind: 'STANDALONE_PLAN_CHANGE',
               predecessorVersionId: targetVersion.id,
@@ -2983,7 +3138,10 @@ export class RegistrationPlansService {
           ],
           discover: (db) => this.discoverPairedPlanLocks(db, caseId, requestedOpId),
           authorize: (context, accountId) =>
-            this.authorizePairedPlanMutation(context, accountId, caseId, requestedOpId),
+            this.authorizePairedPlanMutation(context, accountId, caseId, requestedOpId, {
+              actionCode: 'PLAYER_REGISTRATION_PLAN_CANCELLED',
+              requestKey: request.get('Idempotency-Key') ?? null,
+            }),
         },
         // Pure caller-input receipt intent so idempotent replay matches even after state advances
         {

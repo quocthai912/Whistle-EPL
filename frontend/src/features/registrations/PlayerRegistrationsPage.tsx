@@ -2104,7 +2104,7 @@ function formatRegistrationHistoryChange(
     code === 'CANCELLED_BEFORE_EFFECTIVITY'
       ? 'Hủy trước hiệu lực'
       : code === 'ACTIVE'
-        ? 'Đang hiệu lực'
+        ? 'Chưa bị hủy trước hiệu lực'
         : code;
   if (beforeDisp && afterDisp && beforeDisp !== afterDisp) {
     parts.push(`Trạng thái kế hoạch: ${formatDisp(beforeDisp)} → ${formatDisp(afterDisp)}`);
