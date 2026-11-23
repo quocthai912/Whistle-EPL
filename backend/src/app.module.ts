@@ -57,6 +57,8 @@ import { PlayerPortraitsController } from './registry-registration/player-portra
 import { PlayerPortraitsService } from './registry-registration/player-portraits.service';
 import { PlayerRegistrationsController } from './registry-registration/player-registrations.controller';
 import { PlayerRegistrationsService } from './registry-registration/player-registrations.service';
+import { RegistrationCorrectionsController } from './registry-registration/registration-corrections.controller';
+import { RegistrationCorrectionsService } from './registry-registration/registration-corrections.service';
 import { RegistrationPlansController } from './registry-registration/registration-plans.controller';
 import { RegistrationPlansService } from './registry-registration/registration-plans.service';
 
@@ -129,6 +131,7 @@ class ReadinessController {
     ClubApplicationsController,
     PlayersController,
     PlayerPortraitsController,
+    RegistrationCorrectionsController,
     RegistrationPlansController,
     PlayerRegistrationsController,
   ],
@@ -217,6 +220,21 @@ class ReadinessController {
         intake: RegistrationIntakeService,
         audit: AuditWriterService,
       ) => new RegistrationPlansService(execution, activation, intake, audit),
+    },
+    {
+      provide: RegistrationCorrectionsService,
+      inject: [
+        HttpBusinessExecutionAdapter,
+        RegulationActivationService,
+        RegistrationIntakeService,
+        AuditWriterService,
+      ],
+      useFactory: (
+        execution: HttpBusinessExecutionAdapter,
+        activation: RegulationActivationService,
+        intake: RegistrationIntakeService,
+        audit: AuditWriterService,
+      ) => new RegistrationCorrectionsService(execution, activation, intake, audit),
     },
     {
       provide: MasterCorrectionImpactService,

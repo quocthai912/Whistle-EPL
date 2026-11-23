@@ -27,6 +27,7 @@ import {
   type InitialDraftValues,
 } from './ClubApplicationForm';
 import pageCss from './ClubApplicationsPage.module.css';
+import { OfficialCorrectionsPanel } from './OfficialCorrectionsPanel';
 
 type ApplicationState =
   | 'DRAFT'
@@ -833,8 +834,11 @@ function ClubApplicationDrawer({
   const activeVersion =
     detail?.versions.find((v) => v.id === selectedVersionId) ?? detail?.versions[0];
   const latestVersion = detail?.versions[0];
+  const acceptedVersion =
+    detail?.versions.find((v) => v.id === detail.currentAcceptedVersionId) ?? null;
   const currentAccountId = session?.account.id;
   const seasonOpen = detail?.season.state === 'OPEN';
+  const isInitialVersion = activeVersion?.versionKind !== 'CORRECTION';
   const canTargetException =
     seasonOpen &&
     !!activeVersion?.receivedAt &&
@@ -1210,56 +1214,92 @@ function ClubApplicationDrawer({
               </section>
             )}
 
+            {/* Official Descriptive Corrections Panel */}
+            {(detail.currentAcceptedVersionId ||
+              detail.versions.some((v) => v.versionKind === 'CORRECTION')) && (
+              <OfficialCorrectionsPanel
+                mode="club-application"
+                caseId={detail.id}
+                clubName={detail.club.name}
+                seasonName={detail.season.name}
+                baseline={
+                  acceptedVersion
+                    ? {
+                        versionId: acceptedVersion.id,
+                        versionNumber: acceptedVersion.versionNumber,
+                        receivedAt: acceptedVersion.receivedAt,
+                        coachName: acceptedVersion.coachName,
+                        homeStadiumId: acceptedVersion.homeStadiumId,
+                        homeStadiumName: acceptedVersion.homeStadium?.name ?? null,
+                        representativeName: acceptedVersion.representativeName,
+                        representativePhone: acceptedVersion.representativePhone,
+                        contactAddress: acceptedVersion.contactAddress,
+                        notes: acceptedVersion.notes,
+                      }
+                    : null
+                }
+                stadiums={references?.stadiums ?? []}
+                onChanged={() => {
+                  setSelectedVersionId(undefined);
+                  resource.reload();
+                  onChange();
+                }}
+              />
+            )}
+
             {/* Action Toolbar */}
             <div className={`${css.actions} ${css.profileActions} ${pageCss.drawerActionsRow}`}>
-              {seasonOpen && detail.capabilities.canPrepare && activeVersion.state === 'DRAFT' && (
-                <>
-                  <button
-                    type="button"
-                    disabled={!references}
-                    onClick={() =>
-                      setEditDraftState({
-                        mode: 'edit',
-                        initial: buildInitialDraftValues(detail, activeVersion),
-                      })
-                    }
-                  >
-                    Chỉnh sửa
-                  </button>
-                  <button
-                    type="button"
-                    className={css.primary}
-                    onClick={() =>
-                      setModalAction({
-                        kind: 'application',
-                        action: 'receive',
-                        version: activeVersion,
-                        requireReason: false,
-                        title: 'Ghi nhận tiếp nhận hồ sơ',
-                        submitLabel: 'Xác nhận tiếp nhận',
-                      })
-                    }
-                  >
-                    Ghi nhận tiếp nhận
-                  </button>
-                  <button
-                    type="button"
-                    className={css.danger}
-                    onClick={() =>
-                      setModalAction({
-                        kind: 'application',
-                        action: 'cancel',
-                        version: activeVersion,
-                        requireReason: true,
-                        title: 'Hủy vòng hồ sơ tham dự',
-                        submitLabel: 'Xác nhận hủy',
-                      })
-                    }
-                  >
-                    Hủy vòng
-                  </button>
-                </>
-              )}
+              {seasonOpen &&
+                isInitialVersion &&
+                detail.capabilities.canPrepare &&
+                activeVersion.state === 'DRAFT' && (
+                  <>
+                    <button
+                      type="button"
+                      disabled={!references}
+                      onClick={() =>
+                        setEditDraftState({
+                          mode: 'edit',
+                          initial: buildInitialDraftValues(detail, activeVersion),
+                        })
+                      }
+                    >
+                      Chỉnh sửa
+                    </button>
+                    <button
+                      type="button"
+                      className={css.primary}
+                      onClick={() =>
+                        setModalAction({
+                          kind: 'application',
+                          action: 'receive',
+                          version: activeVersion,
+                          requireReason: false,
+                          title: 'Ghi nhận tiếp nhận hồ sơ',
+                          submitLabel: 'Xác nhận tiếp nhận',
+                        })
+                      }
+                    >
+                      Ghi nhận tiếp nhận
+                    </button>
+                    <button
+                      type="button"
+                      className={css.danger}
+                      onClick={() =>
+                        setModalAction({
+                          kind: 'application',
+                          action: 'cancel',
+                          version: activeVersion,
+                          requireReason: true,
+                          title: 'Hủy vòng hồ sơ tham dự',
+                          submitLabel: 'Xác nhận hủy',
+                        })
+                      }
+                    >
+                      Hủy vòng
+                    </button>
+                  </>
+                )}
 
               {seasonOpen &&
                 detail.capabilities.canPrepare &&
@@ -1315,7 +1355,7 @@ function ClubApplicationDrawer({
                   </>
                 )}
 
-              {seasonOpen && activeVersion.state === 'PENDING_APPROVAL' && (
+              {seasonOpen && isInitialVersion && activeVersion.state === 'PENDING_APPROVAL' && (
                 <>
                   {detail.capabilities.canApprove && !isFormerEditor && (
                     <>
