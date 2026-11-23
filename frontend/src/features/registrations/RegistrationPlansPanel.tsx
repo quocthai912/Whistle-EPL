@@ -259,8 +259,8 @@ export function RegistrationPlansPanel({
     setOpenModal({ kind, plans, current });
   }
 
-  function handleMutationDone(message: string) {
-    setOpenModal(null);
+  function handleMutationDone(modal: NonNullable<OpenModalState>, message: string) {
+    setOpenModal((currentModal) => (currentModal === modal ? null : currentModal));
     setSuccessNotice(message);
     resource.reload();
     onChanged();
@@ -652,7 +652,9 @@ export function RegistrationPlansPanel({
           basisChanged={modalBasisChanged}
           onClose={() => setOpenModal(null)}
           onReload={handleModalReload}
-          onDone={() => handleMutationDone('Đã ghi nhận chuyển câu lạc bộ ghép cặp thành công.')}
+          onDone={() =>
+            handleMutationDone(openModal, 'Đã ghi nhận chuyển câu lạc bộ ghép cặp thành công.')
+          }
         />
       )}
 
@@ -663,7 +665,9 @@ export function RegistrationPlansPanel({
           basisChanged={modalBasisChanged}
           onClose={() => setOpenModal(null)}
           onReload={handleModalReload}
-          onDone={() => handleMutationDone('Đã ghi nhận chấm dứt hiệu lực thi đấu thành công.')}
+          onDone={() =>
+            handleMutationDone(openModal, 'Đã ghi nhận chấm dứt hiệu lực thi đấu thành công.')
+          }
         />
       )}
 
@@ -681,6 +685,7 @@ export function RegistrationPlansPanel({
           onReload={handleModalReload}
           onDone={() =>
             handleMutationDone(
+              openModal,
               openModal.plans.activeTransferPlan
                 ? 'Đã cập nhật đồng bộ cả hai phía của kế hoạch chuyển câu lạc bộ.'
                 : 'Đã cập nhật kế hoạch đăng ký tương lai thành công.',
@@ -698,6 +703,7 @@ export function RegistrationPlansPanel({
           onReload={handleModalReload}
           onDone={() =>
             handleMutationDone(
+              openModal,
               openModal.plans.activeTransferPlan
                 ? 'Đã hủy kế hoạch chuyển câu lạc bộ trước hiệu lực và khôi phục hồ sơ nguồn.'
                 : 'Đã chuyển kế hoạch đăng ký tương lai sang trạng thái Hủy trước hiệu lực.',
@@ -713,11 +719,13 @@ function ModalErrorBanner({
   error,
   details,
   reloadSuggested,
+  busy,
   onReload,
 }: {
   error: string;
   details: readonly FieldErrorDetail[];
   reloadSuggested: boolean;
+  busy: boolean;
   onReload: () => void;
 }) {
   if (!error) return null;
@@ -749,7 +757,7 @@ function ModalErrorBanner({
       )}
       {reloadSuggested && (
         <div className={planCss.errorActions}>
-          <button type="button" onClick={onReload}>
+          <button type="button" onClick={onReload} disabled={busy}>
             Tải lại dữ liệu mới nhất
           </button>
         </div>
@@ -1050,6 +1058,7 @@ function TransferModal({
           error={error}
           details={errorDetails}
           reloadSuggested={reloadSuggested}
+          busy={busy}
           onReload={onReload}
         />
 
@@ -1059,7 +1068,7 @@ function TransferModal({
               <strong>Dữ liệu đã thay đổi:</strong> Hồ sơ đăng ký vừa được cập nhật sang phiên bản
               mới hơn. Vui lòng tải lại dữ liệu trước khi tiếp tục thao tác.
             </span>
-            <button type="button" onClick={onReload}>
+            <button type="button" onClick={onReload} disabled={busy}>
               Tải lại dữ liệu mới nhất
             </button>
           </div>
@@ -1547,6 +1556,7 @@ function TerminateModal({
           error={error}
           details={errorDetails}
           reloadSuggested={reloadSuggested}
+          busy={busy}
           onReload={onReload}
         />
 
@@ -1556,7 +1566,7 @@ function TerminateModal({
               <strong>Dữ liệu đã thay đổi:</strong> Hồ sơ đăng ký vừa được cập nhật sang phiên bản
               mới hơn. Vui lòng tải lại dữ liệu trước khi tiếp tục thao tác.
             </span>
-            <button type="button" onClick={onReload}>
+            <button type="button" onClick={onReload} disabled={busy}>
               Tải lại dữ liệu mới nhất
             </button>
           </div>
@@ -1841,6 +1851,7 @@ export function PlanChangeModal({
           error={error}
           details={errorDetails}
           reloadSuggested={reloadSuggested}
+          busy={busy}
           onReload={onReload}
         />
 
@@ -1850,7 +1861,7 @@ export function PlanChangeModal({
               <strong>Dữ liệu đã thay đổi:</strong> Kế hoạch vừa được cập nhật sang phiên bản mới
               hơn. Vui lòng tải lại dữ liệu trước khi tiếp tục thao tác.
             </span>
-            <button type="button" onClick={onReload}>
+            <button type="button" onClick={onReload} disabled={busy}>
               Tải lại dữ liệu mới nhất
             </button>
           </div>
@@ -2174,6 +2185,7 @@ function PlanCancelModal({
           error={error}
           details={errorDetails}
           reloadSuggested={reloadSuggested}
+          busy={busy}
           onReload={onReload}
         />
 
@@ -2183,7 +2195,7 @@ function PlanCancelModal({
               <strong>Dữ liệu đã thay đổi:</strong> Kế hoạch vừa được cập nhật sang phiên bản mới
               hơn. Vui lòng tải lại dữ liệu trước khi tiếp tục thao tác.
             </span>
-            <button type="button" onClick={onReload}>
+            <button type="button" onClick={onReload} disabled={busy}>
               Tải lại dữ liệu mới nhất
             </button>
           </div>

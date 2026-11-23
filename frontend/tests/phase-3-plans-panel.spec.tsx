@@ -136,12 +136,46 @@ describe('RegistrationPlansPanel refresh gating', () => {
 
     // The successful mutation starts a refresh while previous plans remain on screen.
     await screen.findByText('Đã cập nhật kế hoạch đăng ký tương lai thành công.');
+    await waitFor(() => expect(dialog).not.toBeInTheDocument());
     expect(screen.getByRole('button', { name: 'Điều chỉnh kế hoạch' })).toBeDisabled();
 
     refresh.resolve({ data: plansV2 });
     await waitFor(() =>
       expect(screen.getByRole('button', { name: 'Điều chỉnh kế hoạch' })).toBeEnabled(),
     );
+  });
+
+  it('keeps replacement dialog inputs when an earlier submission succeeds', async () => {
+    const submission = deferred<{ data: { id: string } }>();
+    const plans = {
+      ...plansV1,
+      capabilities: { ...plansV1.capabilities, canPlanCancel: true },
+    };
+    const onChanged = vi.fn();
+    request.mockImplementation((_path: string, options?: { method?: string }) =>
+      options?.method === 'POST' ? submission.promise : Promise.resolve({ data: plans }),
+    );
+    render(<RegistrationPlansPanel caseId="case-1" onChanged={onChanged} />);
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Điều chỉnh kế hoạch' }));
+    const dialog = await screen.findByRole('dialog');
+    fireEvent.change(within(dialog).getByPlaceholderText(reasonPlaceholder), {
+      target: { value: 'Điều chỉnh kế hoạch hiện tại.' },
+    });
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Lưu điều chỉnh kế hoạch' }));
+
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Hủy kế hoạch trước hiệu lực', hidden: true }),
+    );
+    const replacement = await screen.findByPlaceholderText(
+      'Nhập lý do hủy kế hoạch trước ngày hiệu lực…',
+    );
+    fireEvent.change(replacement, { target: { value: 'Lý do của hộp thoại mới.' } });
+
+    submission.resolve({ data: { id: 'case-1' } });
+    await waitFor(() => expect(onChanged).toHaveBeenCalledTimes(1));
+    expect(replacement).toBeInTheDocument();
+    expect(replacement).toHaveValue('Lý do của hộp thoại mới.');
   });
 
   it('renders restricted counterpart sides and dependencies without leaking their details', async () => {
@@ -292,6 +326,42 @@ describe('PlanChangeModal idempotent retry', () => {
     expect(screen.getByRole('button', { name: 'Lưu điều chỉnh kế hoạch' })).toBeDisabled();
     expect(screen.getByText(/Kế hoạch vừa được cập nhật sang phiên bản mới/)).toBeInTheDocument();
     expect(postCalls()).toHaveLength(0);
+  });
+
+  it('disables reload while an uncertain submission is retried', async () => {
+    const retry = deferred<{ data: { id: string } }>();
+    const onReload = vi.fn();
+    const onDone = vi.fn();
+    request
+      .mockRejectedValueOnce(new HttpFailure(503, 'TRANSACTION_UNAVAILABLE', 'r1', true))
+      .mockReturnValueOnce(retry.promise);
+    render(
+      <PlanChangeModal
+        plans={plansV1}
+        current={plansV1.currentValidatedVersion as Current}
+        isStandalone
+        onClose={() => undefined}
+        onReload={onReload}
+        onDone={onDone}
+      />,
+    );
+    fireEvent.change(screen.getByPlaceholderText(reasonPlaceholder), {
+      target: { value: 'Điều chỉnh để kiểm tra yêu cầu gửi lại.' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Lưu điều chỉnh kế hoạch' }));
+    const retryButton = await screen.findByRole('button', {
+      name: 'Kiểm tra / gửi lại cùng yêu cầu',
+    });
+    const reload = screen.getByRole('button', { name: 'Tải lại dữ liệu mới nhất' });
+    expect(reload).toBeEnabled();
+
+    fireEvent.click(retryButton);
+    expect(reload).toBeDisabled();
+    fireEvent.click(reload);
+    expect(onReload).not.toHaveBeenCalled();
+
+    retry.resolve({ data: { id: 'case-1' } });
+    await waitFor(() => expect(onDone).toHaveBeenCalledTimes(1));
   });
 
   it('clears definitive conflict details on field edit and replaces stale details with validation error while preserving unknown-outcome notice', async () => {

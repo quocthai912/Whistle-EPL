@@ -223,8 +223,10 @@ export class TransactionContext {
   now(): Promise<Date> {
     return this.clock.now(this.db);
   }
-  async recheckAuthority(): Promise<void> {
-    await this.authority(this, await this.now());
+  async recheckAuthority(): Promise<Date> {
+    const now = await this.now();
+    await this.authority(this, now);
+    return now;
   }
 
   /** Acquires the full lock set once, then restarts acquisition if concurrent changes introduced an uncovered resource. */

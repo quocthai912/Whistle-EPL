@@ -2038,15 +2038,27 @@ describe('PHASE 3 US4 — Playing intervals, paired transfers, prospective plans
       playerId: playerClean.id,
       regulationVersionId: regV1,
       shirtNumber: 45,
-      playingStart: new Date('2026-08-05T00:00:00.000Z'),
+      playingStart: new Date('2026-08-12T00:00:00.000Z'),
       playingEnd: null,
     });
+    const changePath = `/player-registrations/${regClean.caseId}/plan-change`;
+    const standaloneKey = randomUUID();
+    const standaloneBody = {
+      versionId: regClean.versionId,
+      expectedRevision: regClean.revision,
+      shirtNumber: 46,
+      reason: 'Điều chỉnh số áo trước khi tạo kế hoạch chuyển câu lạc bộ.',
+    };
+    const standalone = await postMutate(changePath, officerS1Only, standaloneBody, standaloneKey);
+    expect(standalone.status).toBe(200);
+    expect(standalone.body.data.paired).toBe(false);
+
     const trClean = await postMutate(
       `/player-registrations/${regClean.caseId}/transfer`,
       officerBoth,
       {
-        oldVersionId: regClean.versionId,
-        expectedRevision: regClean.revision,
+        oldVersionId: standalone.body.data.versionId,
+        expectedRevision: standalone.body.data.revision,
         effectiveMode: 'SCHEDULED',
         effectiveAt: '2026-08-24T00:00:00.000Z',
         destinationSeasonId: season2Id,
@@ -2057,6 +2069,26 @@ describe('PHASE 3 US4 — Playing intervals, paired transfers, prospective plans
       },
     );
     expect(trClean.status).toBe(200);
+
+    // The original officer may replay the standalone change, but cannot act on the new pair.
+    const standaloneReplay = await postMutate(
+      changePath,
+      officerS1Only,
+      standaloneBody,
+      standaloneKey,
+    );
+    expect(standaloneReplay.status).toBe(200);
+    expect(standaloneReplay.body.data).toEqual(standalone.body.data);
+    const liveChangeBody = {
+      versionId: trClean.body.data.oldAfterVersionId,
+      expectedRevision: '1',
+      playingStart: '2026-08-25T00:00:00.000Z',
+      reason: 'Điều chỉnh kế hoạch chuyển câu lạc bộ mới.',
+    };
+    expect(
+      (await postMutate(changePath, officerS1Only, liveChangeBody, standaloneKey)).status,
+    ).toBe(403);
+    expect((await postMutate(changePath, officerS1Only, liveChangeBody)).status).toBe(403);
 
     // Implicit paired planChange (omits transferOperationId, called on source case regClean.caseId)
     const implicitPcKey = randomUUID();
@@ -2132,5 +2164,14 @@ describe('PHASE 3 US4 — Playing intervals, paired transfers, prospective plans
     ]);
     expect(revokedPcReplay.status).toBe(403);
     expect(revokedCancelReplay.status).toBe(403);
+
+    const reused = await postMutate(
+      changePath,
+      officerBoth,
+      { ...implicitPcBody, reason: 'Nội dung lệnh khác dùng cùng khóa.' },
+      implicitPcKey,
+    );
+    expect(reused.status).toBe(409);
+    expect(reused.body.error.code).toBe('IDEMPOTENCY_KEY_REUSED');
   });
 });

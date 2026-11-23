@@ -6,7 +6,11 @@ import type { Prisma } from '../generated/prisma/client';
 import { assertRevision, conflict, invalid, missing } from '../identity-access/accounts.dto';
 import { hasSeasonRole } from '../identity-access/authority.policy';
 import { ApplicationError, type ApplicationErrorDetail } from '../platform/application-error';
-import type { HttpBusinessExecutionAdapter } from '../platform/http-business-execution';
+import { CommandReceiptService, type ReceiptCommand } from '../platform/command-receipt.service';
+import type {
+  HttpBusinessExecutionAdapter,
+  HttpBusinessReceiptIntent,
+} from '../platform/http-business-execution';
 import {
   MissingLockResource,
   type LockResource,
@@ -642,6 +646,8 @@ async function resolveActivePairedTransferStrict(
 }
 
 export class RegistrationPlansService {
+  private readonly receipts = new CommandReceiptService();
+
   constructor(
     private readonly execution: HttpBusinessExecutionAdapter,
     private readonly activation: RegulationActivationService,
@@ -704,10 +710,8 @@ export class RegistrationPlansService {
     accountId: string,
     caseId: string,
     requestedOpId: string | null,
-    receiptLookup?: {
-      actionCode: 'PLAYER_REGISTRATION_PLAN_CHANGED' | 'PLAYER_REGISTRATION_PLAN_CANCELLED';
-      requestKey: string | null;
-    },
+    receiptCommand: Omit<ReceiptCommand, 'accountId'>,
+    now: Date,
   ): Promise<void> {
     const reg = await context.db.playerRegistration.findUnique({
       where: { id: caseId },
@@ -724,51 +728,29 @@ export class RegistrationPlansService {
       pairedCaseIds.add(op.newCaseId);
     };
 
-    // 1. Resolve any unexpired stored replay receipt so replaying an implicit or superseded
-    //    paired plan-change/plan-cancel re-verifies authority over BOTH seasons.
-    const normalizedKey = receiptLookup?.requestKey?.trim().toLowerCase() ?? '';
-    if (receiptLookup && normalizedKey) {
-      const receipt = await context.db.commandReceipt.findUnique({
-        where: {
-          accountId_actionCode_requestKey: {
-            accountId: accountId.toLowerCase(),
-            actionCode: receiptLookup.actionCode,
-            requestKey: normalizedKey,
-          },
-        },
-        select: { expiresAt: true, responseData: true },
-      });
-      const now = await context.now();
-      if (receipt && (!receipt.expiresAt || receipt.expiresAt > now)) {
-        const data =
-          receipt.responseData &&
-          typeof receipt.responseData === 'object' &&
-          !Array.isArray(receipt.responseData)
-            ? (receipt.responseData as Record<string, unknown>)
-            : null;
-        const relatedId = typeof data?.relatedId === 'string' ? data.relatedId : null;
-        if (relatedId) {
-          const replayOp = await context.db.transferOperation.findUnique({
-            where: { id: relatedId },
-            select: { oldCaseId: true, newCaseId: true },
-          });
-          if (replayOp) {
-            pairedCaseIds.add(replayOp.oldCaseId);
-            pairedCaseIds.add(replayOp.newCaseId);
-          }
-        }
+    // A replay is scoped to its original outcome, even when a different plan is now active.
+    const replay = await this.receipts.findMatchingOutcome(
+      context,
+      { ...receiptCommand, accountId },
+      now,
+    );
+    if (replay) {
+      const relatedId = replay.data.relatedId;
+      if (relatedId) {
+        const replayOp = await context.db.transferOperation.findUnique({
+          where: { id: relatedId },
+          select: { oldCaseId: true, newCaseId: true },
+        });
+        recordOpCases(replayOp);
       }
-    }
-
-    // 2. Check explicit requestedOpId directly regardless of active/superseded status.
-    if (requestedOpId) {
+    } else if (requestedOpId) {
       const explicitOp = await context.db.transferOperation.findUnique({
         where: { id: requestedOpId },
         select: { oldCaseId: true, newCaseId: true },
       });
       recordOpCases(explicitOp);
     } else {
-      // 3. Check active implicit paired transfer for fresh mutations without transferOperationId.
+      // Fresh mutations without transferOperationId use the live plan.
       const activeOp = await context.db.transferOperation.findFirst({
         where: {
           OR: [{ oldCaseId: caseId }, { newCaseId: caseId }],
@@ -2492,6 +2474,24 @@ export class RegistrationPlansService {
     const playingEndMode =
       requestedEnd === undefined ? 'KEEP' : requestedEnd === null ? 'CLEAR' : 'SET';
 
+    // Bind receipt intent to caller input so a replay can match after the plan advances.
+    const intent: HttpBusinessReceiptIntent = {
+      action: 'PLAYER_REGISTRATION_PLAN_CHANGED',
+      targetId: caseId,
+      payload: {
+        expectedRevision,
+        versionId,
+        playingEndMode,
+        reason,
+        ...(requestedOpId ? { transferOperationId: requestedOpId } : {}),
+        ...(requestedStart ? { playingStart: requestedStart.toISOString() } : {}),
+        ...(requestedEnd ? { playingEnd: requestedEnd.toISOString() } : {}),
+        ...(input.shirtNumber !== undefined && input.shirtNumber !== null
+          ? { shirtNumber: String(input.shirtNumber) }
+          : {}),
+      },
+    };
+
     let changeSummary: PlanChangeSummary | undefined;
 
     try {
@@ -2503,29 +2503,17 @@ export class RegistrationPlansService {
             { kind: 'registrationVersion', key: versionId, mode: 'exclusive' },
           ],
           discover: (db) => this.discoverPairedPlanLocks(db, caseId, requestedOpId),
-          authorize: (context, accountId) =>
-            this.authorizePairedPlanMutation(context, accountId, caseId, requestedOpId, {
-              actionCode: 'PLAYER_REGISTRATION_PLAN_CHANGED',
-              requestKey: request.get('Idempotency-Key') ?? null,
-            }),
+          authorize: (context, accountId, now) =>
+            this.authorizePairedPlanMutation(
+              context,
+              accountId,
+              caseId,
+              requestedOpId,
+              { ...intent, key: request.get('Idempotency-Key') ?? '' },
+              now,
+            ),
         },
-        // Pure caller-input receipt intent so idempotent replay matches even after state advances
-        {
-          action: 'PLAYER_REGISTRATION_PLAN_CHANGED',
-          targetId: caseId,
-          payload: {
-            expectedRevision,
-            versionId,
-            playingEndMode,
-            reason,
-            ...(requestedOpId ? { transferOperationId: requestedOpId } : {}),
-            ...(requestedStart ? { playingStart: requestedStart.toISOString() } : {}),
-            ...(requestedEnd ? { playingEnd: requestedEnd.toISOString() } : {}),
-            ...(input.shirtNumber !== undefined && input.shirtNumber !== null
-              ? { shirtNumber: String(input.shirtNumber) }
-              : {}),
-          },
-        },
+        intent,
         async (context, command) => {
           const targetReg = await context.db.playerRegistration.findUnique({
             where: { id: caseId },
@@ -3126,6 +3114,18 @@ export class RegistrationPlansService {
       'Vui lòng nhập lý do hủy kế hoạch trước hiệu lực thi đấu.',
     );
 
+    // Bind receipt intent to caller input so a replay can match after the plan advances.
+    const intent: HttpBusinessReceiptIntent = {
+      action: 'PLAYER_REGISTRATION_PLAN_CANCELLED',
+      targetId: caseId,
+      payload: {
+        expectedRevision,
+        versionId,
+        reason,
+        ...(requestedOpId ? { transferOperationId: requestedOpId } : {}),
+      },
+    };
+
     let cancelSummary: PlanCancelSummary | undefined;
 
     try {
@@ -3137,23 +3137,17 @@ export class RegistrationPlansService {
             { kind: 'registrationVersion', key: versionId, mode: 'exclusive' },
           ],
           discover: (db) => this.discoverPairedPlanLocks(db, caseId, requestedOpId),
-          authorize: (context, accountId) =>
-            this.authorizePairedPlanMutation(context, accountId, caseId, requestedOpId, {
-              actionCode: 'PLAYER_REGISTRATION_PLAN_CANCELLED',
-              requestKey: request.get('Idempotency-Key') ?? null,
-            }),
+          authorize: (context, accountId, now) =>
+            this.authorizePairedPlanMutation(
+              context,
+              accountId,
+              caseId,
+              requestedOpId,
+              { ...intent, key: request.get('Idempotency-Key') ?? '' },
+              now,
+            ),
         },
-        // Pure caller-input receipt intent so idempotent replay matches even after state advances
-        {
-          action: 'PLAYER_REGISTRATION_PLAN_CANCELLED',
-          targetId: caseId,
-          payload: {
-            expectedRevision,
-            versionId,
-            reason,
-            ...(requestedOpId ? { transferOperationId: requestedOpId } : {}),
-          },
-        },
+        intent,
         async (context, command) => {
           const targetReg = await context.db.playerRegistration.findUnique({
             where: { id: caseId },
