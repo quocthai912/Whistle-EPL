@@ -85,6 +85,12 @@ export const actions: Record<string, string> = {
   RECEIPT_EXCEPTION_WITHDRAWN: 'Rút đề xuất ngoại lệ tiếp nhận',
   RECEIPT_EXCEPTION_REJECTED: 'Từ chối ngoại lệ tiếp nhận',
   RECEIPT_EXCEPTION_APPROVED: 'Phê duyệt ngoại lệ tiếp nhận',
+  PLAYER_REGISTRATION_DRAFT_CREATED: 'Tạo bản nháp đăng ký cầu thủ',
+  PLAYER_REGISTRATION_DRAFT_UPDATED: 'Cập nhật bản nháp đăng ký cầu thủ',
+  PLAYER_REGISTRATION_RECEIVED: 'Tiếp nhận đăng ký cầu thủ',
+  PLAYER_REGISTRATION_RETURNED: 'Yêu cầu bổ sung đăng ký cầu thủ',
+  PLAYER_REGISTRATION_CANCELLED: 'Hủy đăng ký cầu thủ',
+  PLAYER_REGISTRATION_CONFIRMED: 'Xác nhận hợp lệ đăng ký cầu thủ',
 };
 
 export const filterableObjectKinds = {
@@ -105,6 +111,7 @@ export const objectKinds: Record<string, string> = {
   Player: 'Cầu thủ',
   ClubApplication: 'Hồ sơ tham dự câu lạc bộ',
   ReceiptExceptionCase: 'Ngoại lệ tiếp nhận',
+  PlayerRegistration: 'Đăng ký cầu thủ theo mùa',
 };
 
 export const initialFilters = {

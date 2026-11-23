@@ -655,8 +655,8 @@ describe('deployed PostgreSQL foundation schema', () => {
       const dirs = readdirSync(resolve('prisma/migrations'))
         .filter((n) => /^\d/.test(n))
         .sort();
-      const phase2Dirs = dirs.filter((d) => !d.startsWith('20261120'));
-      const phase3Dirs = dirs.filter((d) => d.startsWith('20261120'));
+      const phase2Dirs = dirs.filter((d) => d < '20261120');
+      const phase3Dirs = dirs.filter((d) => d >= '20261120');
       for (const dir of phase2Dirs) {
         await db.query(readFileSync(resolve('prisma/migrations', dir, 'migration.sql'), 'utf8'));
       }

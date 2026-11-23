@@ -13,6 +13,7 @@ import { ClubsPage } from '../clubs/ClubsPage';
 import { StadiumsPage } from '../stadiums/StadiumsPage';
 import { PlayersPage } from '../players/PlayersPage';
 import { ClubApplicationsPage } from '../registrations/ClubApplicationsPage';
+import { PlayerRegistrationsPage } from '../registrations/PlayerRegistrationsPage';
 
 /** Shows the selected administration page only to sessions with the corresponding role. */
 export default function AdministrationLayout({
@@ -28,7 +29,8 @@ export default function AdministrationLayout({
     | 'clubs'
     | 'stadiums'
     | 'players'
-    | 'club-applications';
+    | 'club-applications'
+    | 'player-registrations';
 }) {
   const { session } = useSession();
   const { seasonId } = useParams();
@@ -38,7 +40,7 @@ export default function AdministrationLayout({
   const canReadStadiums =
     session?.sharedMasterKinds?.includes('STADIUM_MASTER') ||
     session?.seasonRoles?.some(({ roleCode }) => roleCode === 'SCHEDULING_OFFICER');
-  const clubApplicationSeasonIds = new Set<string>([
+  const registrationSeasonIds = new Set<string>([
     ...(session?.seasonManagerIds ?? []),
     ...(session?.seasonRoles
       ?.filter(
@@ -47,7 +49,7 @@ export default function AdministrationLayout({
       .map((entry) => entry.seasonId) ?? []),
   ]);
   const canReadPlayers =
-    session?.sharedMasterKinds?.includes('PLAYER_MASTER') || clubApplicationSeasonIds.size > 0;
+    session?.sharedMasterKinds?.includes('PLAYER_MASTER') || registrationSeasonIds.size > 0;
   const hasSeasonRole = !!session?.seasonRoles?.length || manager;
   const canCreateSeason = !!session?.canCreateSeason;
   const regulationSeasonIds = regulationSeasonScope(session);
@@ -58,7 +60,7 @@ export default function AdministrationLayout({
     canReadClubs ||
     canReadStadiums ||
     canReadPlayers ||
-    clubApplicationSeasonIds.size ||
+    registrationSeasonIds.size ||
     regulationSeasonIds.size
   );
   const permitted =
@@ -70,10 +72,10 @@ export default function AdministrationLayout({
           ? canReadClubs
           : page === 'players'
             ? canReadPlayers
-            : page === 'club-applications'
+            : page === 'club-applications' || page === 'player-registrations'
               ? seasonId
-                ? clubApplicationSeasonIds.has(seasonId)
-                : clubApplicationSeasonIds.size > 0
+                ? registrationSeasonIds.has(seasonId)
+                : registrationSeasonIds.size > 0
               : page === 'regulations'
                 ? seasonId
                   ? regulationSeasonIds.has(seasonId)
@@ -130,14 +132,23 @@ export default function AdministrationLayout({
           Quản lý sân vận động
         </NavLink>
       )}
-      {clubApplicationSeasonIds.size > 0 && (
-        <Link
-          to="/workspace/seasons/club-applications"
-          aria-current={page === 'club-applications' ? 'page' : undefined}
-        >
-          <AdminIcon name="application" />
-          Hồ sơ tham dự câu lạc bộ
-        </Link>
+      {registrationSeasonIds.size > 0 && (
+        <>
+          <Link
+            to="/workspace/seasons/club-applications"
+            aria-current={page === 'club-applications' ? 'page' : undefined}
+          >
+            <AdminIcon name="application" />
+            Hồ sơ tham dự câu lạc bộ
+          </Link>
+          <Link
+            to="/workspace/seasons/player-registrations"
+            aria-current={page === 'player-registrations' ? 'page' : undefined}
+          >
+            <AdminIcon name="shield" />
+            Đăng ký cầu thủ theo mùa
+          </Link>
+        </>
       )}
       {canReadPlayers && (
         <NavLink to="/workspace/players">
@@ -219,6 +230,8 @@ export default function AdministrationLayout({
             <PlayersPage />
           ) : page === 'club-applications' ? (
             <ClubApplicationsPage />
+          ) : page === 'player-registrations' ? (
+            <PlayerRegistrationsPage />
           ) : (
             <SeasonsPage />
           )

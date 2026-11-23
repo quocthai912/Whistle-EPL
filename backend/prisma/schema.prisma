@@ -750,6 +750,7 @@ model RegistrationVersion {
   qualifyingValue             Int?                            @map("qualifying_value")
   evidenceSummary             String?                         @map("evidence_summary")
   evidenceReference           String?                         @map("evidence_reference")
+  affiliatedAssociationBasis  Boolean?                        @map("affiliated_association_basis")
   verifiedBy                  String?                         @map("verified_by") @db.Uuid
   verifier                    Account?                        @relation("registrationVerifier", fields: [verifiedBy], references: [id], onDelete: Restrict, onUpdate: NoAction)
   verifiedAt                  DateTime?                       @map("verified_at") @db.Timestamptz(6)

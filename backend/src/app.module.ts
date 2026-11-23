@@ -55,6 +55,8 @@ import { PlayersController } from './registry-registration/players.controller';
 import { PlayersService } from './registry-registration/players.service';
 import { PlayerPortraitsController } from './registry-registration/player-portraits.controller';
 import { PlayerPortraitsService } from './registry-registration/player-portraits.service';
+import { PlayerRegistrationsController } from './registry-registration/player-registrations.controller';
+import { PlayerRegistrationsService } from './registry-registration/player-registrations.service';
 
 // Register live PHASE 3 dependency facts before exposing owning writers; later phases remain absent.
 const installedDependencyModules: readonly DependencyModuleRegistration[] = [
@@ -125,6 +127,7 @@ class ReadinessController {
     ClubApplicationsController,
     PlayersController,
     PlayerPortraitsController,
+    PlayerRegistrationsController,
   ],
   providers: [
     {
@@ -179,6 +182,23 @@ class ReadinessController {
         audit: AuditWriterService,
         history: BusinessHistoryService,
       ) => new ClubApplicationsService(execution, activation, intake, audit, history),
+    },
+    {
+      provide: PlayerRegistrationsService,
+      inject: [
+        HttpBusinessExecutionAdapter,
+        RegulationActivationService,
+        RegistrationIntakeService,
+        AuditWriterService,
+        BusinessHistoryService,
+      ],
+      useFactory: (
+        execution: HttpBusinessExecutionAdapter,
+        activation: RegulationActivationService,
+        intake: RegistrationIntakeService,
+        audit: AuditWriterService,
+        history: BusinessHistoryService,
+      ) => new PlayerRegistrationsService(execution, activation, intake, audit, history),
     },
     {
       provide: MasterCorrectionImpactService,

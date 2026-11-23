@@ -48,6 +48,14 @@ export function FoundationRouter() {
         path="/workspace/seasons/:seasonId/club-applications"
         element={<AuthRoute page="club-applications" />}
       />
+      <Route
+        path="/workspace/seasons/player-registrations"
+        element={<AuthRoute page="player-registrations" />}
+      />
+      <Route
+        path="/workspace/seasons/:seasonId/player-registrations"
+        element={<AuthRoute page="player-registrations" />}
+      />
       <Route path="/workspace/seasons/regulations" element={<AuthRoute page="regulations" />} />
       <Route
         path="/workspace/seasons/:seasonId/regulations"
