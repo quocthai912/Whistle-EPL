@@ -137,6 +137,62 @@ test('INVALID_INPUT failures retain validated field-error details', async () => 
   });
 });
 
+test('STATE_CONFLICT, BASIS_CHANGED, and MASTER_DISCONTINUED retain validated details while hiding raw server messages', async () => {
+  for (const [code, expectedNotice] of [
+    ['STATE_CONFLICT', 'Trạng thái đã thay đổi. Vui lòng tải lại.'],
+    ['BASIS_CHANGED', 'Cơ sở xử lý đã thay đổi. Vui lòng tải lại.'],
+    [
+      'MASTER_DISCONTINUED',
+      'Câu lạc bộ hoặc đối tượng liên quan đã ngừng hoạt động và không thể sử dụng mới.',
+    ],
+  ] as const) {
+    const store = new SessionStore();
+    store.acceptCsrf('e'.repeat(43), store.getSnapshot().epoch);
+    const fetcher = vi.fn<typeof fetch>().mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          error: {
+            code,
+            message: 'Internal conflict diagnostic stays hidden.',
+            details: [
+              {
+                field: 'SHIRT_NUMBER',
+                code: 'CONFLICT_DEPENDENCY',
+                message: 'Trùng số áo 7 với cầu thủ khác kể từ 2026-11-24T09:00:00.000Z.',
+              },
+              { field: 'unsafe field', code: 'bad', message: '<script>alert(1)</script>' },
+            ],
+          },
+          requestId: 'trace',
+        }),
+        { status: 409 },
+      ),
+    );
+
+    let caught: HttpFailure | undefined;
+    try {
+      await new HttpClient(store, fetcher).request('/player-registrations/case-1/plan-cancel', {
+        method: 'POST',
+      });
+    } catch (error) {
+      caught = error as HttpFailure;
+    }
+
+    expect(caught).toBeInstanceOf(HttpFailure);
+    expect(caught?.status).toBe(409);
+    expect(caught?.code).toBe(code);
+    expect(caught?.message).toBe(expectedNotice);
+    expect(caught?.message).not.toContain('Internal conflict diagnostic');
+    expect(caught?.details).toEqual([
+      {
+        field: 'SHIRT_NUMBER',
+        code: 'CONFLICT_DEPENDENCY',
+        message: 'Trùng số áo 7 với cầu thủ khác kể từ 2026-11-24T09:00:00.000Z.',
+      },
+    ]);
+  }
+});
+
 test('circular and non-serializable JSON bodies retain typed HTTP failure handling', async () => {
   const circular: Record<string, unknown> = {};
   circular.self = circular;

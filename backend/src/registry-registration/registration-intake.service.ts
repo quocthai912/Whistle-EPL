@@ -10,6 +10,7 @@ import {
   missing,
   uuid,
 } from '../identity-access/accounts.dto';
+import { ApplicationError } from '../platform/application-error';
 import type { HttpBusinessExecutionAdapter } from '../platform/http-business-execution';
 import { withPaginationMeta } from '../platform/response-envelope.interceptor';
 import {
@@ -126,10 +127,11 @@ export class RegistrationIntakeService {
     }
     const approved = await this.findApprovedException(context, targetKind, seasonId, version.id);
     if (!approved) {
-      throw conflict(
-        'STATE_CONFLICT',
-        'Hồ sơ tiếp nhận ngoài khung thời gian quy định và chưa có ngoại lệ tiếp nhận được phê duyệt cho đúng phiên bản này.',
-      );
+      const msg =
+        'Hồ sơ tiếp nhận ngoài khung thời gian quy định và chưa có ngoại lệ tiếp nhận được phê duyệt cho đúng phiên bản này.';
+      throw new ApplicationError(409, 'STATE_CONFLICT', msg, [
+        { field: 'RECEIPT_WINDOW', code: 'EXCEPTION_REQUIRED', message: msg },
+      ]);
     }
     return { receiptExceptionVersionId: approved.id };
   }

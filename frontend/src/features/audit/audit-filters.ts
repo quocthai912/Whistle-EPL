@@ -91,6 +91,10 @@ export const actions: Record<string, string> = {
   PLAYER_REGISTRATION_RETURNED: 'Yêu cầu bổ sung đăng ký cầu thủ',
   PLAYER_REGISTRATION_CANCELLED: 'Hủy đăng ký cầu thủ',
   PLAYER_REGISTRATION_CONFIRMED: 'Xác nhận hợp lệ đăng ký cầu thủ',
+  PLAYER_REGISTRATION_TERMINATED: 'Chấm dứt hiệu lực đăng ký cầu thủ',
+  PLAYER_TRANSFER_EXECUTED: 'Chuyển câu lạc bộ cho cầu thủ',
+  PLAYER_REGISTRATION_PLAN_CHANGED: 'Điều chỉnh kế hoạch đăng ký tương lai',
+  PLAYER_REGISTRATION_PLAN_CANCELLED: 'Hủy kế hoạch đăng ký trước hiệu lực',
 };
 
 export const filterableObjectKinds = {

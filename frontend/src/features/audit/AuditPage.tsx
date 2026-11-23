@@ -116,6 +116,13 @@ const changeLabels: Record<string, string> = {
   shirtNumber: 'Số áo đăng ký',
   playingStart: 'Bắt đầu hiệu lực thi đấu',
   playingEnd: 'Kết thúc hiệu lực thi đấu',
+  playingDisposition: 'Trạng thái kế hoạch hiệu lực',
+  role: 'Vai trò trong chuyển câu lạc bộ',
+  predecessorVersionId: 'Mã phiên bản trước đó',
+  transferOperationId: 'Mã giao dịch chuyển câu lạc bộ',
+  counterpartCaseId: 'Mã hồ sơ đối ứng',
+  counterpartClubId: 'Mã câu lạc bộ đối ứng',
+  counterpartSeasonId: 'Mã mùa giải đối ứng',
   u21Finding: 'Đạt diện cầu thủ trẻ U21',
   homegrownFinding: 'Đạt tiêu chí đào tạo nội địa',
   nonHomegrownOptIn: 'Chọn diện ngoài đào tạo nội địa',
@@ -159,6 +166,7 @@ function changeValue(name: string, value: Change[string], actionCode: string, af
         : actionCode.startsWith('REGULATION_')
           ? { ...stateNames, ...regulationStateLabels, APPROVED: 'Đã phê duyệt' }
           : actionCode.startsWith('PLAYER_REGISTRATION_') ||
+              actionCode.startsWith('PLAYER_TRANSFER_') ||
               actionCode.startsWith('CLUB_APPLICATION_')
             ? {
                 ...stateNames,
@@ -172,6 +180,11 @@ function changeValue(name: string, value: Change[string], actionCode: string, af
                 CANCELLED: 'Đã hủy',
               }
             : stateNames,
+    role: { SOURCE: 'Câu lạc bộ nguồn', DESTINATION: 'Câu lạc bộ đích' },
+    playingDisposition: {
+      ACTIVE: 'Chưa bị hủy trước hiệu lực',
+      CANCELLED_BEFORE_EFFECTIVITY: 'Hủy trước hiệu lực',
+    },
     receiptTimingStatus: { ON_TIME: 'Đúng hạn', LATE: 'Ngoài hạn' },
     startMode: { IMMEDIATE: 'Ngay khi cấp quyền', SCHEDULED: 'Theo thời gian chỉ định' },
     effectiveMode: { IMMEDIATE: 'Hiệu lực ngay', SCHEDULED: 'Hiệu lực theo lịch' },
