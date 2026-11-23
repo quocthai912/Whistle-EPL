@@ -17,6 +17,8 @@
 
 **T014–T015 completion verified, 2026-11-22 (Asia/Bangkok):** Published at [be66582](https://github.com/quocthai912/Whistle-EPL/commit/be6658231ffd2507d890f1458cd49346a0e47637) on `feat/phase-3-player-registration-confirmation`. GitHub read-back confirmed Issues [#116](https://github.com/quocthai912/Whistle-EPL/issues/116) (T014) and [#118](https://github.com/quocthai912/Whistle-EPL/issues/118) (T015) are Closed with reason Completed, checked Acceptance Criteria, label `completed`, `ready-for-agent` removed and completion evidence comments posted. T016–T018 and T021–T028 remain open.
 
+**T016–T018 completion verified, 2026-11-23 (Asia/Bangkok):** Published at [0c9f609](https://github.com/quocthai912/Whistle-EPL/commit/0c9f6093ed61281d349999f772439f36c5168179) on `feat/phase-3-player-registration-transfers` (base PR #141 merge `57aed6b`). GitHub read-back confirmed Issues [#119](https://github.com/quocthai912/Whistle-EPL/issues/119) (T016), [#121](https://github.com/quocthai912/Whistle-EPL/issues/121) (T017), and [#122](https://github.com/quocthai912/Whistle-EPL/issues/122) (T018) are Closed with reason Completed, checked Acceptance Criteria, label `completed`, `ready-for-agent` removed and completion evidence comments posted. T021–T028 remain open.
+
 **Inputs**: [approved Specification](spec.md), [approved Plan](plan.md), [research](research.md), [data model](data-model.md), [contracts](contracts/rest.md), [verification](verification.md) and [validation guide](quickstart.md).
 
 Task IDs are local to this file. One GitHub Issue per approved canonical Task, with exact acceptance criteria and native blocking edges where available. Planned paths are implementation targets. All Tasks remain unchecked until the required execution evidence exists.
