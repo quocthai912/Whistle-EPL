@@ -2,7 +2,7 @@
 
 **Current version:** v2 | **Status:** APPROVED | **Whole-package approval:** Q98, Team Leader, 2026-10-26 (Asia/Bangkok)
 
-**PHASE 3 execution progress (2026-11-23)** PHASE 3 is `IN_PROGRESS`. T001–T020 are implemented and verified with Issues `#103–#122` closed as completed (including [T016–T018 transfers and prospective plans verification](../docs/verification/phase-3/t016-t018-transfers.md) published at [`0c9f609`](https://github.com/quocthai912/Whistle-EPL/commit/0c9f6093ed61281d349999f772439f36c5168179)); T021–T028 and whole-PHASE 3 acceptance remain open. See the [PHASE 3 ledger](progress-checker.md#phase-3---profiles-and-player-registration).
+**PHASE 3 execution progress (2026-11-24)** PHASE 3 is `IN_PROGRESS`. T001–T023 are implemented and verified with Issues `#103–#125` closed as completed (including [T021–T023 official record corrections verification](../docs/verification/phase-3/t021-t023-corrections.md) published at [`7fafd06`](https://github.com/quocthai912/Whistle-EPL/commit/7fafd06a0cf00f5d948a2bf991d36c01cf4d87cf)); T024–T028 and whole-PHASE 3 acceptance remain open. See the [PHASE 3 ledger](progress-checker.md#phase-3---profiles-and-player-registration).
 
 **Latest completed-Phase publication (2026-11-18)** PHASE 2 T001–T030 are published. T025–T030 are included in [d3023cc](https://github.com/quocthai912/Whistle-EPL/commit/d3023cccfba28cd7c0b2e6946ab9f1b051ee6c59), verified against the live remote branch and all nine tested source checksums. PHASE 2 is `COMPLETED` for the separately accepted scope, with all 30 tasks published. See the [Phase ledger](progress-checker.md#phase-2---seasons-catalogs-and-regulations) for verification, tracker completion and retained operational/later-Phase scope.
 
