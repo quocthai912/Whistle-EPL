@@ -25,6 +25,8 @@ const notices: Record<string, string> = {
   MEDIA_UNAVAILABLE: 'Tạm thời không thể truy cập nội dung logo.',
   LIFECYCLE_READINESS_UNAVAILABLE: 'Chưa thể xác minh điều kiện đóng mùa giải.',
   REGULATION_BASIS_UNRESOLVED: 'Đang chờ xác định quy định có hiệu lực. Vui lòng thử lại sau.',
+  MASTER_DISCONTINUED:
+    'Câu lạc bộ hoặc đối tượng liên quan đã ngừng hoạt động và không thể sử dụng mới.',
 };
 export type FieldErrorDetail = Readonly<{ field: string; code: string; message?: string }>;
 export type MasterNameCandidate = Readonly<{ id: string; code: string; name: string }>;
@@ -265,7 +267,11 @@ export class HttpClient {
         requestId,
         writing && response.status >= 500,
         record(body.error) &&
-          (body.error.code === 'VALIDATION_FAILED' || body.error.code === 'INVALID_INPUT')
+          (body.error.code === 'VALIDATION_FAILED' ||
+            body.error.code === 'INVALID_INPUT' ||
+            body.error.code === 'STATE_CONFLICT' ||
+            body.error.code === 'BASIS_CHANGED' ||
+            body.error.code === 'MASTER_DISCONTINUED')
           ? fieldErrorDetails(body.error.details)
           : undefined,
         code === 'BASIS_CHANGED' && record(body.error)

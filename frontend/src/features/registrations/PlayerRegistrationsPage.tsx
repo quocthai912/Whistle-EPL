@@ -36,6 +36,7 @@ import {
   type RegistrationInitialDraftValues,
 } from './PlayerRegistrationForm';
 import regPageCss from './PlayerRegistrationsPage.module.css';
+import { RegistrationPlansPanel } from './RegistrationPlansPanel';
 
 type RegistrationState = 'DRAFT' | 'RECEIVED' | 'NEEDS_SUPPLEMENTATION' | 'VALID' | 'CANCELLED';
 
@@ -894,6 +895,7 @@ function PlayerRegistrationDrawer({
   const [editingDraft, setEditingDraft] = useState<RegistrationInitialDraftValues>();
   const [modalAction, setModalAction] = useState<PendingModalAction>();
   const [historyOpen, setHistoryOpen] = useState(false);
+  const [plansRefreshToken, setPlansRefreshToken] = useState(0);
 
   const precheckSeqRef = useRef(0);
   const [precheckBusy, setPrecheckBusy] = useState(false);
@@ -1538,6 +1540,20 @@ function PlayerRegistrationDrawer({
               </section>
             )}
 
+            {/* Playing Intervals, Transfers & Prospective Plans (when validated) */}
+            {detail.currentValidatedVersionId && (
+              <RegistrationPlansPanel
+                key={`${caseId}-${plansRefreshToken}`}
+                caseId={caseId}
+                onChanged={() => {
+                  clearPrecheck();
+                  setSelectedVersionId(undefined);
+                  resource.reload();
+                  onChange();
+                }}
+              />
+            )}
+
             {/* Bottom Action Toolbar — positioned below facts and findings per approved drawer pattern */}
             <div className={regPageCss.drawerFooterActions}>
               {seasonOpen && detail.capabilities.canManage && activeVersion.state === 'DRAFT' && (
@@ -1726,6 +1742,7 @@ function PlayerRegistrationDrawer({
           onReload={() => {
             setModalAction(undefined);
             clearPrecheck();
+            setPlansRefreshToken((prev) => prev + 1);
             resource.reload();
             onChange();
           }}
@@ -1733,6 +1750,7 @@ function PlayerRegistrationDrawer({
             setModalAction(undefined);
             clearPrecheck();
             if (nextVersionId) setSelectedVersionId(nextVersionId);
+            setPlansRefreshToken((prev) => prev + 1);
             resource.reload();
             onChange();
           }}
@@ -2061,6 +2079,37 @@ function formatRegistrationHistoryChange(
   }
   if (typeof after?.homegrownFinding === 'boolean') {
     parts.push(`Đào tạo trong nước: ${after.homegrownFinding ? 'Đạt' : 'Không đạt'}`);
+  }
+  if (after?.role === 'SOURCE') {
+    parts.push('Vai trò: Câu lạc bộ nguồn');
+  } else if (after?.role === 'DESTINATION') {
+    parts.push('Vai trò: Câu lạc bộ đích');
+  }
+  if (typeof after?.effectiveAt === 'string') {
+    parts.push(`Mốc hiệu lực: ${formatSeasonInstant(after.effectiveAt)}`);
+  }
+  const beforeStart = typeof before?.playingStart === 'string' ? before.playingStart : null;
+  const afterStart = typeof after?.playingStart === 'string' ? after.playingStart : null;
+  const beforeEnd = typeof before?.playingEnd === 'string' ? before.playingEnd : null;
+  const afterEnd = typeof after?.playingEnd === 'string' ? after.playingEnd : null;
+  if (beforeStart !== afterStart || beforeEnd !== afterEnd) {
+    if (afterStart) {
+      parts.push(`Hiệu lực: ${formatIntervalLabel(afterStart, afterEnd)}`);
+    }
+  }
+  const beforeDisp =
+    typeof before?.playingDisposition === 'string' ? before.playingDisposition : null;
+  const afterDisp = typeof after?.playingDisposition === 'string' ? after.playingDisposition : null;
+  const formatDisp = (code: string) =>
+    code === 'CANCELLED_BEFORE_EFFECTIVITY'
+      ? 'Hủy trước hiệu lực'
+      : code === 'ACTIVE'
+        ? 'Đang hiệu lực'
+        : code;
+  if (beforeDisp && afterDisp && beforeDisp !== afterDisp) {
+    parts.push(`Trạng thái kế hoạch: ${formatDisp(beforeDisp)} → ${formatDisp(afterDisp)}`);
+  } else if (afterDisp && afterDisp === 'CANCELLED_BEFORE_EFFECTIVITY') {
+    parts.push(`Trạng thái kế hoạch: ${formatDisp(afterDisp)}`);
   }
   return parts.length > 0 ? parts.join(' · ') : '—';
 }

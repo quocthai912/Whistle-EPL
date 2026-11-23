@@ -342,6 +342,71 @@ const businessPolicies = {
     'homegrownFinding',
     'nonHomegrownOptIn',
   ],
+  PLAYER_REGISTRATION_TERMINATED: [
+    'caseId',
+    'clubId',
+    'playerId',
+    'versionId',
+    'versionNumber',
+    'predecessorVersionId',
+    'playingStart',
+    'playingEnd',
+    'effectiveAt',
+    'decidedAt',
+    'playingDisposition',
+  ],
+  PLAYER_TRANSFER_EXECUTED: [
+    'caseId',
+    'clubId',
+    'playerId',
+    'versionId',
+    'versionNumber',
+    'predecessorVersionId',
+    'counterpartCaseId',
+    'counterpartClubId',
+    'counterpartSeasonId',
+    'transferOperationId',
+    'role',
+    'shirtNumber',
+    'playingStart',
+    'playingEnd',
+    'effectiveAt',
+    'decidedAt',
+    'decisionRegulationVersionId',
+    'playingDisposition',
+  ],
+  PLAYER_REGISTRATION_PLAN_CHANGED: [
+    'caseId',
+    'clubId',
+    'playerId',
+    'versionId',
+    'versionNumber',
+    'predecessorVersionId',
+    'counterpartCaseId',
+    'transferOperationId',
+    'shirtNumber',
+    'playingStart',
+    'playingEnd',
+    'effectiveAt',
+    'decidedAt',
+    'decisionRegulationVersionId',
+    'playingDisposition',
+  ],
+  PLAYER_REGISTRATION_PLAN_CANCELLED: [
+    'caseId',
+    'clubId',
+    'playerId',
+    'versionId',
+    'versionNumber',
+    'predecessorVersionId',
+    'counterpartCaseId',
+    'transferOperationId',
+    'playingStart',
+    'playingEnd',
+    'effectiveAt',
+    'decidedAt',
+    'playingDisposition',
+  ],
 } as const;
 const policies = { ...existingPolicies, ...businessPolicies } as const;
 export type AuditAction = keyof typeof policies;
@@ -432,6 +497,10 @@ const objectKindByAction: Partial<Record<AuditAction, BusinessHistoryKind>> = {
   PLAYER_REGISTRATION_RETURNED: 'PlayerRegistration',
   PLAYER_REGISTRATION_CANCELLED: 'PlayerRegistration',
   PLAYER_REGISTRATION_CONFIRMED: 'PlayerRegistration',
+  PLAYER_REGISTRATION_TERMINATED: 'PlayerRegistration',
+  PLAYER_TRANSFER_EXECUTED: 'PlayerRegistration',
+  PLAYER_REGISTRATION_PLAN_CHANGED: 'PlayerRegistration',
+  PLAYER_REGISTRATION_PLAN_CANCELLED: 'PlayerRegistration',
 };
 
 const requiredAfterFields: Partial<Record<AuditAction, readonly string[]>> = {
@@ -590,6 +659,52 @@ const requiredAfterFields: Partial<Record<AuditAction, readonly string[]>> = {
     'shirtNumber',
     'playingStart',
   ],
+  PLAYER_REGISTRATION_TERMINATED: [
+    'caseId',
+    'clubId',
+    'playerId',
+    'versionId',
+    'versionNumber',
+    'predecessorVersionId',
+    'playingStart',
+    'playingEnd',
+    'effectiveAt',
+    'decidedAt',
+  ],
+  PLAYER_TRANSFER_EXECUTED: [
+    'caseId',
+    'clubId',
+    'playerId',
+    'versionId',
+    'versionNumber',
+    'counterpartCaseId',
+    'transferOperationId',
+    'role',
+    'playingStart',
+    'effectiveAt',
+    'decidedAt',
+  ],
+  PLAYER_REGISTRATION_PLAN_CHANGED: [
+    'caseId',
+    'clubId',
+    'playerId',
+    'versionId',
+    'versionNumber',
+    'predecessorVersionId',
+    'playingStart',
+    'decidedAt',
+  ],
+  PLAYER_REGISTRATION_PLAN_CANCELLED: [
+    'caseId',
+    'clubId',
+    'playerId',
+    'versionId',
+    'versionNumber',
+    'predecessorVersionId',
+    'playingStart',
+    'decidedAt',
+    'playingDisposition',
+  ],
 };
 
 const reasonRequired = new Set<AuditAction>([
@@ -627,6 +742,10 @@ const reasonRequired = new Set<AuditAction>([
   'RECEIPT_EXCEPTION_APPROVED',
   'PLAYER_REGISTRATION_RETURNED',
   'PLAYER_REGISTRATION_CANCELLED',
+  'PLAYER_REGISTRATION_TERMINATED',
+  'PLAYER_TRANSFER_EXECUTED',
+  'PLAYER_REGISTRATION_PLAN_CHANGED',
+  'PLAYER_REGISTRATION_PLAN_CANCELLED',
 ]);
 const beforeRequired = new Set<AuditAction>([
   'SEASON_UPDATED',
@@ -662,6 +781,10 @@ const beforeRequired = new Set<AuditAction>([
   'CLUB_APPLICATION_CORRECTION_APPROVED',
   'RECEIPT_EXCEPTION_APPROVED',
   'PLAYER_REGISTRATION_CONFIRMED',
+  'PLAYER_REGISTRATION_TERMINATED',
+  'PLAYER_TRANSFER_EXECUTED',
+  'PLAYER_REGISTRATION_PLAN_CHANGED',
+  'PLAYER_REGISTRATION_PLAN_CANCELLED',
 ]);
 
 const allowedActorKinds: Partial<
@@ -1161,6 +1284,83 @@ export function validateAuditEvent(event: {
       )
         throw new Error(
           'Player registration confirmation audit events require exact version, decision basis and transition.',
+        );
+      break;
+    case 'PLAYER_REGISTRATION_TERMINATED':
+      if (
+        !exactObjectReference('caseId') ||
+        !exactUuid('clubId') ||
+        !exactUuid('playerId') ||
+        !exactUuid('versionId') ||
+        !exactUuid('predecessorVersionId') ||
+        !Number.isSafeInteger(after.versionNumber) ||
+        Number(after.versionNumber) < 2 ||
+        !exactInstant('playingStart') ||
+        !exactInstant('playingEnd') ||
+        !exactInstant('effectiveAt') ||
+        !exactInstant('decidedAt') ||
+        !isRecord(event.before) ||
+        event.before.versionId !== after.predecessorVersionId
+      )
+        throw new Error(
+          'Player registration termination audit events require exact version lineage and interval.',
+        );
+      break;
+    case 'PLAYER_TRANSFER_EXECUTED':
+      if (
+        !exactObjectReference('caseId') ||
+        !exactUuid('clubId') ||
+        !exactUuid('playerId') ||
+        !exactUuid('versionId') ||
+        !exactUuid('counterpartCaseId') ||
+        !exactUuid('transferOperationId') ||
+        !['SOURCE', 'DESTINATION'].includes(String(after.role)) ||
+        !Number.isSafeInteger(after.versionNumber) ||
+        Number(after.versionNumber) < 1 ||
+        !exactInstant('playingStart') ||
+        !exactInstant('effectiveAt') ||
+        !exactInstant('decidedAt') ||
+        !isRecord(event.before)
+      )
+        throw new Error(
+          'Player transfer audit events require exact paired versions, role and common effective instant.',
+        );
+      break;
+    case 'PLAYER_REGISTRATION_PLAN_CHANGED':
+      if (
+        !exactObjectReference('caseId') ||
+        !exactUuid('clubId') ||
+        !exactUuid('playerId') ||
+        !exactUuid('versionId') ||
+        !exactUuid('predecessorVersionId') ||
+        !Number.isSafeInteger(after.versionNumber) ||
+        Number(after.versionNumber) < 2 ||
+        !exactInstant('playingStart') ||
+        !exactInstant('decidedAt') ||
+        !isRecord(event.before) ||
+        event.before.versionId !== after.predecessorVersionId
+      )
+        throw new Error(
+          'Prospective registration plan change audit events require exact successor lineage.',
+        );
+      break;
+    case 'PLAYER_REGISTRATION_PLAN_CANCELLED':
+      if (
+        !exactObjectReference('caseId') ||
+        !exactUuid('clubId') ||
+        !exactUuid('playerId') ||
+        !exactUuid('versionId') ||
+        !exactUuid('predecessorVersionId') ||
+        !Number.isSafeInteger(after.versionNumber) ||
+        Number(after.versionNumber) < 2 ||
+        !exactInstant('playingStart') ||
+        !exactInstant('decidedAt') ||
+        !['ACTIVE', 'CANCELLED_BEFORE_EFFECTIVITY'].includes(String(after.playingDisposition)) ||
+        !isRecord(event.before) ||
+        event.before.versionId !== after.predecessorVersionId
+      )
+        throw new Error(
+          'Prospective registration plan cancellation audit events require exact disposition and lineage.',
         );
       break;
   }

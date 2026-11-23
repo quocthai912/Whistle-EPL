@@ -55,9 +55,41 @@ const rules = {
     required: ['expectedRevision', 'submittedVersionId', 'playingStart'],
     optional: ['playingEnd', 'receiptExceptionVersionId', 'reason'],
   },
+  PLAYER_REGISTRATION_TERMINATED: {
+    target: 'uuid',
+    required: ['expectedRevision', 'versionId', 'effectiveMode', 'reason'],
+    optional: ['effectiveAt'],
+  },
   PLAYER_TRANSFER_EXECUTED: {
     target: 'uuid',
-    required: ['expectedRevision', 'oldVersionId', 'newVersionId', 'effectiveAt', 'reason'],
+    required: [
+      'expectedRevision',
+      'oldVersionId',
+      'destinationSeasonId',
+      'destinationClubId',
+      'effectiveMode',
+      'reason',
+    ],
+    optional: [
+      'destinationCaseId',
+      'destinationVersionId',
+      'destinationExpectedRevision',
+      'effectiveAt',
+      'playingEnd',
+      'shirtNumber',
+      'receiptExceptionVersionId',
+      'contentBasisDigest',
+    ],
+  },
+  PLAYER_REGISTRATION_PLAN_CHANGED: {
+    target: 'uuid',
+    required: ['expectedRevision', 'versionId', 'playingEndMode', 'reason'],
+    optional: ['transferOperationId', 'playingStart', 'playingEnd', 'shirtNumber'],
+  },
+  PLAYER_REGISTRATION_PLAN_CANCELLED: {
+    target: 'uuid',
+    required: ['expectedRevision', 'versionId', 'reason'],
+    optional: ['transferOperationId'],
   },
   REGISTRATION_CORRECTION_APPROVED: {
     target: 'uuid',
@@ -178,8 +210,11 @@ export class CommandReceiptService {
     const payload: Record<string, string> = {};
     for (const [key, value] of Object.entries(command.payload)) {
       if (typeof value !== 'string' || [...value].length > 2000) return invalidIntent();
-      if (key === 'expectedRevision') {
+      if (key === 'expectedRevision' || key === 'destinationExpectedRevision') {
         if (!/^[1-9][0-9]*$/.test(value)) return invalidIntent();
+        payload[key] = value;
+      } else if (key === 'shirtNumber') {
+        if (!/^[1-9][0-9]?$/.test(value)) return invalidIntent();
         payload[key] = value;
       } else if (key === 'code') {
         const code = value.trim().toUpperCase();
@@ -202,6 +237,7 @@ export class CommandReceiptService {
         payload[key] = normalizeMultilineText(value);
       } else if (
         key === 'effectiveMode' ||
+        key === 'playingEndMode' ||
         key === 'action' ||
         key === 'roleCode' ||
         key === 'kind' ||
@@ -210,6 +246,9 @@ export class CommandReceiptService {
         payload[key] = value.trim().toUpperCase();
       } else if (key === 'readinessBasisReference') {
         if (!UUID4.test(value) && !/^[0-9a-f]{64}$/i.test(value)) return invalidIntent();
+        payload[key] = value.toLowerCase();
+      } else if (key === 'contentBasisDigest') {
+        if (!/^[0-9a-f]{64}$/i.test(value)) return invalidIntent();
         payload[key] = value.toLowerCase();
       } else if (key.endsWith('Id')) {
         if (!UUID4.test(value)) return invalidIntent();
@@ -241,6 +280,21 @@ export class CommandReceiptService {
       if (!['CLOSE', 'REOPEN'].includes(payload.action) || !payload.reason) return invalidIntent();
       if (payload.action === 'CLOSE' && !payload.readinessBasisReference) return invalidIntent();
       if (payload.action === 'REOPEN' && payload.readinessBasisReference) return invalidIntent();
+    }
+    if (
+      command.action === 'PLAYER_REGISTRATION_TERMINATED' ||
+      command.action === 'PLAYER_TRANSFER_EXECUTED'
+    ) {
+      if (!['IMMEDIATE', 'SCHEDULED'].includes(payload.effectiveMode) || !payload.reason)
+        return invalidIntent();
+      if (payload.effectiveMode === 'SCHEDULED' && !payload.effectiveAt) return invalidIntent();
+      if (payload.effectiveMode === 'IMMEDIATE' && payload.effectiveAt) return invalidIntent();
+    }
+    if (command.action === 'PLAYER_REGISTRATION_PLAN_CHANGED') {
+      if (!['KEEP', 'CLEAR', 'SET'].includes(payload.playingEndMode) || !payload.reason)
+        return invalidIntent();
+      if (payload.playingEndMode === 'SET' && !payload.playingEnd) return invalidIntent();
+      if (payload.playingEndMode !== 'SET' && payload.playingEnd) return invalidIntent();
     }
     return {
       ...command,
