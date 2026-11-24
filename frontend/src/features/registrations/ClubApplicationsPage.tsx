@@ -1238,6 +1238,18 @@ function ClubApplicationDrawer({
                       }
                     : null
                 }
+                versions={detail.versions.map((v) => ({
+                  versionId: v.id,
+                  versionNumber: v.versionNumber,
+                  receivedAt: v.receivedAt,
+                  coachName: v.coachName,
+                  homeStadiumId: v.homeStadiumId,
+                  homeStadiumName: v.homeStadium?.name ?? null,
+                  representativeName: v.representativeName,
+                  representativePhone: v.representativePhone,
+                  contactAddress: v.contactAddress,
+                  notes: v.notes,
+                }))}
                 stadiums={references?.stadiums ?? []}
                 onChanged={() => {
                   setSelectedVersionId(undefined);

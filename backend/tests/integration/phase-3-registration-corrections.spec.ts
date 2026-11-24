@@ -241,11 +241,13 @@ describe('PHASE 3 US5 — D057 & FR-020 historical correction rule segments and 
     u21Finding: boolean;
     homegrownFinding: boolean | null;
     nonHomegrownOptIn: boolean;
+    receiptTimingStatus?: 'ON_TIME' | 'LATE';
     receivedAt?: Date;
     decidedAt?: Date;
   }) {
     const receivedAt = params.receivedAt ?? new Date('2026-08-06T09:00:00.000Z');
     const decidedAt = params.decidedAt ?? new Date('2026-08-07T10:00:00.000Z');
+    const receiptTimingStatus = params.receiptTimingStatus ?? 'ON_TIME';
     const caseId = randomUUID();
     const versionId = randomUUID();
 
@@ -278,7 +280,7 @@ describe('PHASE 3 US5 — D057 & FR-020 historical correction rule segments and 
         homegrownFinding: params.homegrownFinding,
         nonHomegrownOptIn: params.nonHomegrownOptIn,
         receiptRegulationVersionId: params.receiptRegulationVersionId,
-        receiptTimingStatus: 'ON_TIME',
+        receiptTimingStatus,
         decisionRegulationVersionId: params.decisionRegulationVersionId,
         playingDisposition: 'ACTIVE',
         officialSnapshot: {
@@ -302,7 +304,7 @@ describe('PHASE 3 US5 — D057 & FR-020 historical correction rule segments and 
           basis: {
             receiptRegulationVersionId: params.receiptRegulationVersionId,
             decisionRegulationVersionId: params.decisionRegulationVersionId,
-            receiptTimingStatus: 'ON_TIME',
+            receiptTimingStatus,
           },
         },
         createdAt: receivedAt,
@@ -668,31 +670,60 @@ describe('PHASE 3 US5 — D057 & FR-020 historical correction rule segments and 
       disposition: 'RETAIN_VALID',
       reason: 'Đính chính mốc bắt đầu hiệu lực về ngày 05/08/2026.',
       basis: 'Biên bản rà soát ngày hiệu lực gốc.',
+    }).expect(201);
+
+    const corrVId = proposed.body.data.correctionVersionId as string;
+    const gapSegments = proposed.body.data.segments as Array<{
+      segmentOrder: number;
+      segmentStart: string;
+      segmentEnd: string | null;
+      regulationVersionId: string | null;
+      regulationVersionNumber: number | null;
+      outcome: string;
+    }>;
+    expect(gapSegments).toHaveLength(2);
+    expect(gapSegments[0]).toMatchObject({
+      segmentOrder: 1,
+      segmentStart: '2026-08-05T00:00:00.000Z',
+      segmentEnd: '2026-08-15T00:00:00.000Z',
+      regulationVersionId: null,
+      regulationVersionNumber: null,
+      outcome: 'INSUFFICIENT_BASIS',
+    });
+    expect(gapSegments[1]).toMatchObject({
+      segmentOrder: 2,
+      segmentStart: '2026-08-15T00:00:00.000Z',
+      segmentEnd: null,
+      regulationVersionId: r1Id,
+      outcome: 'MET',
     });
 
-    // Either proposal or approval must block because historical regulation basis for [2026-08-05, 2026-08-15) is missing
-    if (proposed.status === 201) {
-      const corrVId = proposed.body.data.correctionVersionId as string;
-      const submitted = await postMutate(
-        `/player-registrations/${reg.caseId}/corrections/${corrVId}/submit`,
-        officer,
-        { expectedRevision: proposed.body.data.revision },
-      ).expect(200);
+    const storedSegments = await readerDb.client.registrationCorrectionSegment.findMany({
+      where: { correctionVersionId: corrVId },
+      orderBy: { segmentOrder: 'asc' },
+    });
+    expect(storedSegments[0].regulationVersionId).toBeNull();
+    expect(storedSegments[0].outcome).toBe('INSUFFICIENT_BASIS');
+    expect(storedSegments[1].regulationVersionId).toBe(r1Id);
 
-      const approval = await postMutate(
-        `/player-registrations/${reg.caseId}/corrections/${corrVId}/approve`,
-        manager,
-        {
-          expectedRevision: submitted.body.data.revision,
-          targetVersionId: reg.versionId,
-          reason: 'Thử phê duyệt khi thiếu căn cứ quy định lịch sử.',
-        },
-        randomUUID(),
-      );
-      expect(approval.status).toBe(409);
-    } else {
-      expect(proposed.status).toBe(409);
-    }
+    const submitted = await postMutate(
+      `/player-registrations/${reg.caseId}/corrections/${corrVId}/submit`,
+      officer,
+      { expectedRevision: proposed.body.data.revision },
+    ).expect(200);
+
+    const approval = await postMutate(
+      `/player-registrations/${reg.caseId}/corrections/${corrVId}/approve`,
+      manager,
+      {
+        expectedRevision: submitted.body.data.revision,
+        targetVersionId: reg.versionId,
+        reason: 'Thử phê duyệt khi thiếu căn cứ quy định lịch sử.',
+      },
+      randomUUID(),
+    ).expect(409);
+    expect(approval.body.error.code).toBe('STATE_CONFLICT');
+    expect(approval.body.error.message).toMatch(/Thiếu phiên bản quy định lịch sử/i);
 
     const committed = await readerDb.client.playerRegistration.findUniqueOrThrow({
       where: { id: reg.caseId },
@@ -1052,5 +1083,272 @@ describe('PHASE 3 US5 — D057 & FR-020 historical correction rule segments and 
       where: { id: reg.caseId },
     });
     expect(regFinal.currentValidatedVersionId).toBe(propRegV3Id);
+  });
+
+  it('sets END_EFFECTIVITY cutoff playingEnd, isolates correction drafts from ordinary writes, refreshes on submit, guards post-submit birthDate drift, preserves homegrown regulation binding, and carries LATE receipt exception across chained corrections', async () => {
+    const seasonId = fixture.seasons[0].id;
+    const { r1Id, r2Id } = await seedRegulationHistoryR1AndR2(seasonId, {
+      r1ActiveFrom: '2026-08-01T00:00:00.000Z',
+      r2ActiveFrom: '2026-09-01T00:00:00.000Z',
+      r2ActivationProcessedAt: '2026-09-05T14:30:00.000Z',
+      r1SquadLimit: 2,
+      r1NonHomegrownLimit: 2,
+      r2SquadLimit: 1,
+      r2NonHomegrownLimit: 1,
+    });
+
+    const { club, stadium } = await fixture.seedClubAndStadium('D057_PR');
+    await seedApprovedClubApplication(seasonId, club.id, stadium.id, r1Id);
+
+    const teammate = await fixture.seedPlayer(
+      'PL_D057_PR_TM',
+      'Đồng Đội Kiểm Chứng Cutoff',
+      '1998-03-15',
+      'ENG',
+    );
+    await seedValidatedRegistration({
+      seasonId,
+      clubId: club.id,
+      playerId: teammate.id,
+      playerBirthDateSnapshot: '1998-03-15',
+      receiptRegulationVersionId: r1Id,
+      decisionRegulationVersionId: r1Id,
+      shirtNumber: 8,
+      playingStart: new Date('2026-08-05T00:00:00.000Z'),
+      playingEnd: null,
+      u21Finding: false,
+      homegrownFinding: false,
+      nonHomegrownOptIn: true,
+    });
+
+    const player = await fixture.seedPlayer(
+      'PL_D057_PR_01',
+      'Cầu Thủ Đính Chính Toàn Diện',
+      '2006-01-10',
+      'ENG',
+    );
+    const targetReg = await seedValidatedRegistration({
+      seasonId,
+      clubId: club.id,
+      playerId: player.id,
+      playerBirthDateSnapshot: '2006-01-10',
+      receiptRegulationVersionId: r1Id,
+      decisionRegulationVersionId: r1Id,
+      receiptTimingStatus: 'LATE',
+      shirtNumber: 21,
+      playingStart: new Date('2026-08-10T00:00:00.000Z'),
+      playingEnd: null,
+      u21Finding: true,
+      homegrownFinding: null,
+      nonHomegrownOptIn: false,
+    });
+
+    // Attach an approved ReceiptExceptionVersion bound to targetReg v1
+    const exCaseId = randomUUID();
+    const exVerId = randomUUID();
+    const lateAt = new Date('2026-08-06T09:00:00.000Z');
+    await fixture.database.client.receiptExceptionCase.create({
+      data: { id: exCaseId, seasonId, createdAt: lateAt, updatedAt: lateAt },
+    });
+    await fixture.database.client.receiptExceptionVersion.create({
+      data: {
+        id: exVerId,
+        seasonId,
+        caseId: exCaseId,
+        versionNumber: 1,
+        preparedBy: fixture.staff.registrationOfficerA,
+        state: 'APPROVED',
+        submittedAt: lateAt,
+        decidedAt: lateAt,
+        decidedBy: fixture.staff.seasonManagerA,
+        decisionReason: 'Chấp thuận ngoại lệ tiếp nhận trễ.',
+        registrationVersionId: targetReg.versionId,
+        reason: 'Sự cố hệ thống truyền hồ sơ.',
+        basis: 'Biên bản xác nhận.',
+        createdAt: lateAt,
+      },
+    });
+    await fixture.database.client.receiptExceptionCase.update({
+      where: { id: exCaseId },
+      data: { currentVersionId: exVerId, approvedVersionId: exVerId },
+    });
+
+    fixture.clock.set(new Date('2026-09-10T10:00:00.000Z'));
+    const officer = await fixture.authenticate(fixture.staff.registrationOfficerA);
+    const manager = await fixture.authenticate(fixture.staff.seasonManagerA);
+    const masterGrantee = await fixture.authenticate(fixture.staff.playerMasterGrantee);
+
+    // 1. Propose draft BEFORE birthDate changes; also verify ordinary write paths reject the correction's proposedVersionId
+    const draft = await postMutate(
+      `/player-registrations/${targetReg.caseId}/corrections`,
+      officer,
+      {
+        targetVersionId: targetReg.versionId,
+        nonHomegrownOptIn: true,
+        disposition: 'END_EFFECTIVITY',
+        reason: 'Kiểm tra đồng bộ khi trình duyệt và chấm dứt hiệu lực.',
+        basis: 'Hồ sơ rà soát ban đầu.',
+      },
+    ).expect(201);
+    const corr1Id = draft.body.data.correctionVersionId as string;
+    const proposedV1Id = draft.body.data.proposedVersionId as string;
+
+    // Ordinary write paths MUST reject correction-proposed DRAFT version (404)
+    await fixture
+      .apiRequest(
+        officer,
+        'patch',
+        `/player-registrations/${targetReg.caseId}/versions/${proposedV1Id}`,
+        {
+          expectedRevision: '1',
+          shirtNumber: 99,
+        },
+      )
+      .expect(404);
+    await postMutate(
+      `/player-registrations/${targetReg.caseId}/versions/${proposedV1Id}/receive`,
+      officer,
+      { expectedRevision: '1' },
+    ).expect(404);
+
+    // 2. Now update player birthDate to 2004-01-10 AFTER draft creation, BEFORE submit
+    await fixture
+      .apiRequest(masterGrantee, 'patch', `/players/${player.id}`, {
+        expectedRevision: '1',
+        birthDate: '2004-01-10',
+        correctionReason: 'Cập nhật năm sinh trước khi trình duyệt.',
+        correctionBasis: 'Giấy khai sinh bản chính.',
+      })
+      .expect(200);
+
+    // Submit MUST refresh proposedVersion fields & afterSummary & segments
+    const sub1 = await postMutate(
+      `/player-registrations/${targetReg.caseId}/corrections/${corr1Id}/submit`,
+      officer,
+      { expectedRevision: draft.body.data.revision },
+    ).expect(200);
+
+    const refreshedDraft = await readerDb.client.registrationCorrectionVersion.findUniqueOrThrow({
+      where: { id: corr1Id },
+      include: { proposedVersion: true, segments: { orderBy: { segmentOrder: 'asc' } } },
+    });
+    expect(refreshedDraft.proposedVersion.u21Finding).toBe(false);
+    expect((refreshedDraft.afterSummary as { playerBirthDate?: string }).playerBirthDate).toBe(
+      '2004-01-10',
+    );
+    expect(refreshedDraft.segments).toHaveLength(2);
+    expect(refreshedDraft.segments[0].outcome).toBe('MET');
+    expect(refreshedDraft.segments[1].outcome).toBe('UNMET');
+
+    // 3. Change birthDate slightly AFTER submit (still non-U21: 2004-02-15) -> approve MUST reject BASIS_CHANGED
+    await fixture
+      .apiRequest(masterGrantee, 'patch', `/players/${player.id}`, {
+        expectedRevision: '2',
+        birthDate: '2004-02-15',
+        correctionReason: 'Chỉnh ngày sinh sau khi trình duyệt.',
+        correctionBasis: 'Bổ sung bản sao.',
+      })
+      .expect(200);
+
+    const driftApprove = await postMutate(
+      `/player-registrations/${targetReg.caseId}/corrections/${corr1Id}/approve`,
+      manager,
+      {
+        expectedRevision: sub1.body.data.revision,
+        targetVersionId: targetReg.versionId,
+        disposition: 'END_EFFECTIVITY',
+        reason: 'Thử phê duyệt khi ngày sinh đã lệch sau trình duyệt.',
+      },
+      randomUUID(),
+    ).expect(409);
+    expect(driftApprove.body.error.code).toBe('BASIS_CHANGED');
+
+    // Restore birthDate back to 2004-01-10 and approve END_EFFECTIVITY
+    await fixture
+      .apiRequest(masterGrantee, 'patch', `/players/${player.id}`, {
+        expectedRevision: '3',
+        birthDate: '2004-01-10',
+        correctionReason: 'Khôi phục đúng ngày sinh đã trình duyệt.',
+        correctionBasis: 'Đối chiếu bản chính.',
+      })
+      .expect(200);
+
+    await postMutate(
+      `/player-registrations/${targetReg.caseId}/corrections/${corr1Id}/approve`,
+      manager,
+      {
+        expectedRevision: sub1.body.data.revision,
+        targetVersionId: targetReg.versionId,
+        disposition: 'END_EFFECTIVITY',
+        reason: 'Chấp thuận chấm dứt hiệu lực từ mốc quy định R2.',
+      },
+      randomUUID(),
+    ).expect(200);
+
+    // Approved version MUST have playingEnd set to R2 cutoff (2026-09-01T00:00:00.000Z), preserving valid prefix
+    const endedVersion = await readerDb.client.registrationVersion.findUniqueOrThrow({
+      where: { id: proposedV1Id },
+    });
+    expect(endedVersion.playingDisposition).toBe('ENDED_BY_CORRECTION');
+    expect(endedVersion.playingEnd?.toISOString()).toBe('2026-09-01T00:00:00.000Z');
+    expect(
+      (endedVersion.officialSnapshot as { registration?: { playingEnd?: string | null } })
+        ?.registration?.playingEnd,
+    ).toBe('2026-09-01T00:00:00.000Z');
+    expect(
+      (endedVersion.officialSnapshot as { basis?: { receiptExceptionVersionId?: string | null } })
+        ?.basis?.receiptExceptionVersionId,
+    ).toBe(exVerId);
+
+    // 4. Subsequent correction targeting the LATE successor (proposedV1Id) MUST retain original approved receipt exception
+    //    AND homegrown evidence verified under R1 MUST produce INSUFFICIENT_BASIS on R2 segment
+    const chained = await postMutate(
+      `/player-registrations/${targetReg.caseId}/corrections`,
+      officer,
+      {
+        targetVersionId: proposedV1Id,
+        shirtNumber: 22,
+        playingStart: '2026-08-10T00:00:00.000Z',
+        playingEnd: '2026-09-10T00:00:00.000Z',
+        nonHomegrownOptIn: false,
+        evidenceBranch: 'SEASONS',
+        qualifyingValue: 3,
+        evidenceSummary: 'Đào tạo đủ 3 mùa tại học viện.',
+        evidenceReference: 'HG-REF-01',
+        affiliatedAssociationBasis: true,
+        verifiedRegulationVersionId: r1Id,
+        disposition: 'RETAIN_VALID',
+        reason:
+          'Kiểm chứng ngoại lệ tiếp nhận trễ kế thừa và ràng buộc phiên bản xác minh nội địa.',
+        basis: 'Hồ sơ học viện.',
+      },
+    ).expect(201);
+
+    const chainedSegments = chained.body.data.segments as Array<{
+      segmentOrder: number;
+      regulationVersionId: string | null;
+      outcome: string;
+      findings: { criteria: Array<{ criterion: string; status: string }> };
+    }>;
+    expect(chainedSegments).toHaveLength(2);
+    // Receipt timing criterion passes on BOTH segments because original LATE exception is inherited!
+    expect(
+      chainedSegments[0].findings.criteria.find((c) => c.criterion === 'RECEIPT_TIMING')?.status,
+    ).toBe('MET');
+    expect(
+      chainedSegments[1].findings.criteria.find((c) => c.criterion === 'RECEIPT_TIMING')?.status,
+    ).toBe('MET');
+    // Segment 1 (R1) matches verifiedRegulationVersionId (r1Id) -> homegrown MET
+    expect(
+      chainedSegments[0].findings.criteria.find((c) => c.criterion === 'HOMEGROWN_VERIFICATION')
+        ?.status,
+    ).toBe('MET');
+    // Segment 2 (R2) mismatches verifiedRegulationVersionId (r1Id !== r2Id) -> INSUFFICIENT_BASIS!
+    expect(chainedSegments[1].regulationVersionId).toBe(r2Id);
+    expect(
+      chainedSegments[1].findings.criteria.find((c) => c.criterion === 'HOMEGROWN_VERIFICATION')
+        ?.status,
+    ).toBe('INSUFFICIENT_BASIS');
+    expect(chainedSegments[1].outcome).toBe('INSUFFICIENT_BASIS');
   });
 });

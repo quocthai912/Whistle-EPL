@@ -1147,7 +1147,11 @@ export class PlayerRegistrationsService {
           await requireOpenSeason(context, reg.seasonId);
 
           const version = await context.db.registrationVersion.findFirst({
-            where: { id: versionId, caseId },
+            where: {
+              id: versionId,
+              caseId,
+              correctionProposals: { none: {} },
+            },
           });
           if (!version) throw missing();
           assertRevision(version.revision, input.expectedRevision);
@@ -1355,7 +1359,11 @@ export class PlayerRegistrationsService {
         if (!reg) throw missing();
 
         const version = await context.db.registrationVersion.findFirst({
-          where: { id: versionId, caseId },
+          where: {
+            id: versionId,
+            caseId,
+            correctionProposals: { none: {} },
+          },
         });
         if (!version) throw missing();
         assertRevision(version.revision, expectedRevision);
@@ -1683,7 +1691,11 @@ export class PlayerRegistrationsService {
           });
           if (!reg) throw missing();
           const version = await context.db.registrationVersion.findFirst({
-            where: { id: versionId, caseId },
+            where: {
+              id: versionId,
+              caseId,
+              correctionProposals: { none: {} },
+            },
           });
           if (!version) throw missing();
 
@@ -1765,7 +1777,11 @@ export class PlayerRegistrationsService {
         operation,
         async (context) => {
           const version = await context.db.registrationVersion.findFirst({
-            where: { id: versionId, caseId },
+            where: {
+              id: versionId,
+              caseId,
+              correctionProposals: { none: {} },
+            },
             select: { id: true, seasonId: true, playingStart: true, playingEnd: true },
           });
           if (!version) throw missing();
@@ -1815,7 +1831,11 @@ export class PlayerRegistrationsService {
           if (!reg) throw missing();
 
           const version = await context.db.registrationVersion.findFirst({
-            where: { id: versionId, caseId },
+            where: {
+              id: versionId,
+              caseId,
+              correctionProposals: { none: {} },
+            },
           });
           if (!version) throw missing();
           assertRevision(version.revision, expectedRevision);

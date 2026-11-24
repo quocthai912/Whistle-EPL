@@ -815,7 +815,11 @@ export class RegistrationIntakeService {
     }
 
     const target = await context.db.registrationVersion.findFirst({
-      where: { id: targetVersionId, seasonId },
+      where: {
+        id: targetVersionId,
+        seasonId,
+        correctionProposals: { none: {} },
+      },
       select: { id: true, state: true, receivedAt: true, receiptTimingStatus: true },
     });
     if (!target) throw missing();

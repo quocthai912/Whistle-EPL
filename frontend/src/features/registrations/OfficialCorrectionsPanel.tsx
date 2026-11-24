@@ -102,8 +102,8 @@ type RegistrationCorrectionSegmentItem = {
   segmentOrder: number;
   segmentStart: string;
   segmentEnd: string | null;
-  regulationVersionId: string;
-  regulationVersionNumber: number;
+  regulationVersionId: string | null;
+  regulationVersionNumber: number | null;
   outcome: 'MET' | 'UNMET' | 'INSUFFICIENT_BASIS';
   requiredDisposition: CorrectionDisposition | null;
   findings: {
@@ -250,15 +250,108 @@ function formatDateVi(isoDate: string | null | undefined): string {
   return match ? `${match[3]}/${match[2]}/${match[1]}` : isoDate;
 }
 
-function formatIntervalSummary(
+function parseInstantMs(value: string | null | undefined): number | null {
+  if (!value) return null;
+  const parsed = Date.parse(value);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+function formatSeasonInstantWithSeconds(value: string | null | undefined): string {
+  if (!value || !Number.isFinite(Date.parse(value))) return '—';
+  return new Intl.DateTimeFormat('vi-VN', {
+    timeZone: 'Asia/Ho_Chi_Minh',
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false,
+  }).format(new Date(value));
+}
+
+function formatIntervalSummaryWithSeconds(
   start: string | null | undefined,
   end: string | null | undefined,
 ): string {
   if (!start) return 'Chưa ấn định';
   return end
-    ? `${formatSeasonInstant(start)} → ${formatSeasonInstant(end)}`
-    : `Từ ${formatSeasonInstant(start)} (Chưa ấn định kết thúc)`;
+    ? `${formatSeasonInstantWithSeconds(start)} → ${formatSeasonInstantWithSeconds(end)}`
+    : `Từ ${formatSeasonInstantWithSeconds(start)} (Chưa ấn định kết thúc)`;
 }
+
+function formatHomegrownEvidenceLabel(
+  summary: RegistrationCorrectionSummarySnapshot | null,
+): string {
+  if (!summary) return 'Không có';
+  const parts: string[] = [];
+  if (summary.evidenceBranch === 'SEASONS') {
+    parts.push(`Theo mùa giải (${summary.qualifyingValue ?? '—'} mùa)`);
+  } else if (summary.evidenceBranch === 'MONTHS') {
+    parts.push(`Theo tháng (${summary.qualifyingValue ?? '—'} tháng)`);
+  }
+  if (summary.affiliatedAssociationBasis === true) {
+    parts.push('Thuộc liên đoàn Anh / Xứ Wales');
+  } else if (summary.affiliatedAssociationBasis === false) {
+    parts.push('Không thuộc liên đoàn Anh / Xứ Wales');
+  }
+  if (summary.evidenceSummary) {
+    parts.push(summary.evidenceSummary);
+  }
+  if (summary.evidenceReference) {
+    parts.push(`Mã: ${summary.evidenceReference}`);
+  }
+  return parts.length > 0 ? parts.join(' · ') : 'Không có';
+}
+
+function buildUpdatedAffectedReferences(
+  initialDeclared: readonly DeclaredReferenceItem[],
+  initialNote: string,
+  currentNote: string,
+  defaultKind: DeclaredReferenceItem['kind'],
+): { changed: false } | { changed: true; items: DeclaredReferenceItem[] } {
+  const trimmedCurrent = currentNote.trim();
+  if (trimmedCurrent === initialNote.trim()) {
+    return { changed: false };
+  }
+  const rest = initialDeclared.slice(1).map((item) => ({
+    kind: item.kind,
+    referenceId: item.referenceId ?? null,
+    note: item.note,
+  }));
+  if (!trimmedCurrent) {
+    return { changed: true, items: rest };
+  }
+  const first = initialDeclared[0];
+  return {
+    changed: true,
+    items: [
+      {
+        kind: first ? first.kind : defaultKind,
+        referenceId: first ? (first.referenceId ?? null) : null,
+        note: trimmedCurrent,
+      },
+      ...rest,
+    ],
+  };
+}
+
+function isUnknownSubmitOutcome(caught: unknown): boolean {
+  if (!(caught instanceof HttpFailure)) return true;
+  return caught.status >= 500 || caught.status === 0;
+}
+
+const homegrownBranchOptions = [
+  { value: '', label: 'Chưa chọn nhánh xác minh' },
+  { value: 'SEASONS', label: 'Theo số mùa giải' },
+  { value: 'MONTHS', label: 'Theo số tháng' },
+];
+
+const affiliationOptions = [
+  { value: '', label: 'Chưa xác nhận' },
+  { value: 'true', label: 'Đáp ứng liên đoàn Anh / Xứ Wales' },
+  { value: 'false', label: 'Không đáp ứng liên đoàn Anh / Xứ Wales' },
+];
 
 function formatSegmentRange(start: string, end: string | null): string {
   return end
@@ -290,6 +383,7 @@ export type OfficialCorrectionsPanelProps =
       clubName: string;
       seasonName: string;
       baseline: ClubApplicationBaselineFacts | null;
+      versions?: ClubApplicationBaselineFacts[];
       stadiums: { id: string; code: string; name: string; discontinuedAt: string | null }[];
       onChanged: () => void;
     }
@@ -329,6 +423,7 @@ function ClubApplicationCorrectionsSection({
   clubName,
   seasonName,
   baseline,
+  versions,
   stadiums,
   onChanged,
 }: Extract<OfficialCorrectionsPanelProps, { mode: 'club-application' }>) {
@@ -359,6 +454,31 @@ function ClubApplicationCorrectionsSection({
     return map;
   }, [stadiums]);
 
+  const versionsById = useMemo(() => {
+    const map = new Map<string, ClubApplicationBaselineFacts>();
+    for (const v of versions ?? []) {
+      map.set(v.versionId, v);
+    }
+    return map;
+  }, [versions]);
+
+  const isPendingProposal = !!(
+    activeItem &&
+    (activeItem.state === 'DRAFT' ||
+      activeItem.state === 'PENDING_APPROVAL' ||
+      activeItem.state === 'RECEIVED')
+  );
+
+  const comparisonBaseline = useMemo(() => {
+    if (!activeItem) return baseline;
+    if (isPendingProposal) return baseline;
+    if (activeItem.baseAcceptedVersionId) {
+      const matched = versionsById.get(activeItem.baseAcceptedVersionId);
+      if (matched) return matched;
+    }
+    return baseline;
+  }, [activeItem, baseline, isPendingProposal, versionsById]);
+
   const isFormerEditor = !!(
     activeItem &&
     currentAccountId &&
@@ -366,22 +486,22 @@ function ClubApplicationCorrectionsSection({
   );
 
   const diffRows = useMemo(() => {
-    if (!activeItem || !baseline) return [];
+    if (!activeItem || !comparisonBaseline) return [];
     const rows: { label: string; before: string; after: string }[] = [];
-    if ((baseline.coachName ?? '') !== (activeItem.coachName ?? '')) {
+    if ((comparisonBaseline.coachName ?? '') !== (activeItem.coachName ?? '')) {
       rows.push({
         label: 'Huấn luyện viên trưởng',
-        before: baseline.coachName ?? 'Chưa nhập',
+        before: comparisonBaseline.coachName ?? 'Chưa nhập',
         after: activeItem.coachName ?? 'Chưa nhập',
       });
     }
-    if ((baseline.homeStadiumId ?? '') !== (activeItem.homeStadiumId ?? '')) {
+    if ((comparisonBaseline.homeStadiumId ?? '') !== (activeItem.homeStadiumId ?? '')) {
       rows.push({
         label: 'Sân nhà đăng ký',
         before:
-          baseline.homeStadiumName ??
-          (baseline.homeStadiumId
-            ? (stadiumNameById.get(baseline.homeStadiumId) ?? 'Đã chọn')
+          comparisonBaseline.homeStadiumName ??
+          (comparisonBaseline.homeStadiumId
+            ? (stadiumNameById.get(comparisonBaseline.homeStadiumId) ?? 'Đã chọn')
             : 'Chưa chọn'),
         after:
           activeItem.homeStadium?.name ??
@@ -390,38 +510,46 @@ function ClubApplicationCorrectionsSection({
             : 'Chưa chọn'),
       });
     }
-    if ((baseline.representativeName ?? '') !== (activeItem.representativeName ?? '')) {
+    if ((comparisonBaseline.representativeName ?? '') !== (activeItem.representativeName ?? '')) {
       rows.push({
         label: 'Người đại diện',
-        before: baseline.representativeName ?? 'Chưa nhập',
+        before: comparisonBaseline.representativeName ?? 'Chưa nhập',
         after: activeItem.representativeName ?? 'Chưa nhập',
       });
     }
-    if ((baseline.representativePhone ?? '') !== (activeItem.representativePhone ?? '')) {
+    if ((comparisonBaseline.representativePhone ?? '') !== (activeItem.representativePhone ?? '')) {
       rows.push({
         label: 'Số điện thoại đại diện',
-        before: baseline.representativePhone ?? 'Chưa nhập',
+        before: comparisonBaseline.representativePhone ?? 'Chưa nhập',
         after: activeItem.representativePhone ?? 'Chưa nhập',
       });
     }
-    if ((baseline.contactAddress ?? '') !== (activeItem.contactAddress ?? '')) {
+    if ((comparisonBaseline.contactAddress ?? '') !== (activeItem.contactAddress ?? '')) {
       rows.push({
         label: 'Địa chỉ liên hệ',
-        before: baseline.contactAddress ?? 'Chưa nhập',
+        before: comparisonBaseline.contactAddress ?? 'Chưa nhập',
         after: activeItem.contactAddress ?? 'Chưa nhập',
       });
     }
-    if ((baseline.notes ?? '') !== (activeItem.notes ?? '')) {
+    if ((comparisonBaseline.notes ?? '') !== (activeItem.notes ?? '')) {
       rows.push({
         label: 'Ghi chú',
-        before: baseline.notes ?? 'Không có',
+        before: comparisonBaseline.notes ?? 'Không có',
         after: activeItem.notes ?? 'Không có',
       });
     }
     return rows;
-  }, [activeItem, baseline, stadiumNameById]);
+  }, [activeItem, comparisonBaseline, stadiumNameById]);
 
   const officialVersionNumber = baseline?.versionNumber ?? 1;
+  const beforeVersionNumber = comparisonBaseline?.versionNumber ?? officialVersionNumber;
+  const currentAcceptedVersionId = data?.currentAcceptedVersionId ?? baseline?.versionId ?? null;
+  const isCurrentOfficial = !!(
+    activeItem &&
+    activeItem.state === 'APPROVED' &&
+    currentAcceptedVersionId &&
+    activeItem.id === currentAcceptedVersionId
+  );
 
   return (
     <section
@@ -475,9 +603,19 @@ function ClubApplicationCorrectionsSection({
 
       {activeItem && activeItem.state === 'APPROVED' && (
         <div className={`${corrCss.banner} ${corrCss.bannerOk}`} role="status">
-          <strong>Đã phê duyệt đính chính:</strong> Hồ sơ chính thức đã chuyển sang{' '}
-          <strong>Phiên bản {activeItem.versionNumber}</strong>; lịch sử phiên bản trước vẫn được
-          lưu giữ.
+          {isCurrentOfficial ? (
+            <>
+              <strong>Đã phê duyệt đính chính:</strong> Hồ sơ chính thức đã chuyển sang{' '}
+              <strong>Phiên bản {activeItem.versionNumber}</strong>; lịch sử phiên bản trước vẫn
+              được lưu giữ.
+            </>
+          ) : (
+            <>
+              <strong>Lịch sử đã phê duyệt:</strong> Phiên bản{' '}
+              <strong>{activeItem.versionNumber}</strong> từng được phê duyệt và lưu giữ trong lịch
+              sử; hồ sơ chính thức hiện hành là <strong>Phiên bản {officialVersionNumber}</strong>.
+            </>
+          )}
         </div>
       )}
 
@@ -503,7 +641,7 @@ function ClubApplicationCorrectionsSection({
                   <tr>
                     <th className={corrCss.diffFieldCol}>Thông tin thay đổi</th>
                     <th className={corrCss.diffBeforeCol}>
-                      Trước đính chính (Phiên bản {officialVersionNumber})
+                      Trước đính chính (Phiên bản {beforeVersionNumber})
                     </th>
                     <th className={corrCss.diffAfterCol}>
                       Sau đính chính (Phiên bản {activeItem.versionNumber})
@@ -526,11 +664,11 @@ function ClubApplicationCorrectionsSection({
           <div className={corrCss.reasonGrid}>
             <div>
               <span className={corrCss.reasonLabel}>Lý do:</span>
-              <strong>{cleanUserFacingText(activeItem.correctionReason ?? '—')}</strong>
+              <strong>{activeItem.correctionReason || '—'}</strong>
             </div>
             <div>
               <span className={corrCss.reasonLabel}>Căn cứ:</span>
-              <strong>{cleanUserFacingText(activeItem.correctionEvidence ?? '—')}</strong>
+              <strong>{activeItem.correctionEvidence || '—'}</strong>
             </div>
           </div>
 
@@ -554,9 +692,11 @@ function ClubApplicationCorrectionsSection({
 
           <div className={corrCss.actionBar}>
             <span className={pageCss.metaNote}>
-              {activeItem.state === 'APPROVED'
+              {isCurrentOfficial
                 ? `Phiên bản ${activeItem.versionNumber} đang là hồ sơ chính thức hiện hành.`
-                : `Phiên bản ${officialVersionNumber} vẫn là hồ sơ chính thức hiện hành.`}
+                : activeItem.state === 'APPROVED'
+                  ? `Phiên bản ${activeItem.versionNumber} là bản đính chính đã phê duyệt trong lịch sử (hiện hành là Phiên bản ${officialVersionNumber}).`
+                  : `Phiên bản ${officialVersionNumber} vẫn là hồ sơ chính thức hiện hành.`}
             </span>
             <div className={corrCss.actionButtons}>
               {seasonOpen && data?.capabilities.canPrepare && activeItem.state === 'DRAFT' && (
@@ -799,6 +939,11 @@ function ClubCorrectionProposalModal({
 }) {
   const { client } = useSession();
   const formId = useId();
+  const initialDeclaredRefs = useMemo(
+    () => editItem?.affectedReferences?.declared ?? [],
+    [editItem],
+  );
+  const initialRelatedNote = initialDeclaredRefs[0]?.note ?? '';
   const [coachName, setCoachName] = useState(editItem?.coachName ?? baseline.coachName ?? '');
   const [homeStadiumId, setHomeStadiumId] = useState(
     editItem?.homeStadiumId ?? baseline.homeStadiumId ?? '',
@@ -815,13 +960,40 @@ function ClubCorrectionProposalModal({
   const notes = editItem?.notes ?? baseline.notes ?? '';
   const [correctionReason, setCorrectionReason] = useState(editItem?.correctionReason ?? '');
   const [correctionEvidence, setCorrectionEvidence] = useState(editItem?.correctionEvidence ?? '');
-  const [relatedNote, setRelatedNote] = useState(
-    editItem?.affectedReferences?.declared?.[0]?.note ?? '',
+  const [relatedNote, setRelatedNote] = useState(initialRelatedNote);
+  const [savedDraft, setSavedDraft] = useState<{
+    id: string;
+    revision: string;
+    versionNumber?: number;
+  } | null>(
+    editItem
+      ? { id: editItem.id, revision: editItem.revision, versionNumber: editItem.versionNumber }
+      : null,
   );
+  const [savedReferencesBaseline, setSavedReferencesBaseline] = useState<{
+    declared: DeclaredReferenceItem[];
+    note: string;
+  }>({ declared: initialDeclaredRefs, note: initialRelatedNote });
+  const [draftDirty, setDraftDirty] = useState(true);
+  const [createdInSession, setCreatedInSession] = useState(false);
+  const [unknownSubmitOutcome, setUnknownSubmitOutcome] = useState(false);
   const [submitImmediately, setSubmitImmediately] = useState(true);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const feedbackRef = useDialogFeedback(error);
+
+  function markDirty() {
+    setDraftDirty(true);
+  }
+
+  function handleDismiss() {
+    if (busy) return;
+    if (createdInSession && savedDraft) {
+      onSaved(savedDraft.id);
+      return;
+    }
+    onClose();
+  }
 
   async function handleSubmit(event: FormEvent) {
     event.preventDefault();
@@ -833,38 +1005,75 @@ function ClubCorrectionProposalModal({
 
     setBusy(true);
     setError('');
-    try {
-      const affectedReferences = relatedNote.trim()
-        ? [{ kind: 'SCHEDULED_MATCH' as const, note: relatedNote.trim() }]
-        : [];
-      let versionId = editItem?.id;
-      let revision = editItem?.revision ?? '1';
+    let currentDraft = savedDraft;
+    let currentRefsBaseline = savedReferencesBaseline;
+    let shouldSaveDraft = !currentDraft || draftDirty || !submitImmediately;
 
-      if (editItem) {
-        const updated = await client.request<{ versionId: string; revision: string }>(
-          `/club-applications/${caseId}/corrections/${editItem.id}`,
-          {
-            method: 'PATCH',
-            body: {
-              expectedRevision: editItem.revision,
-              coachName: coachName.trim(),
-              homeStadiumId,
-              representativeName: representativeName.trim(),
-              representativePhone: representativePhone.trim(),
-              contactAddress: contactAddress.trim(),
-              notes: notes.trim() || null,
-              correctionReason: correctionReason.trim(),
-              correctionEvidence: correctionEvidence.trim(),
-              affectedReferences,
-            },
-          },
-        );
-        versionId = updated.data.versionId;
-        revision = updated.data.revision;
-      } else {
-        const created = await client.request<{ versionId: string; revision: string }>(
+    try {
+      if (unknownSubmitOutcome && currentDraft) {
+        const refreshed = await client.request<ClubCorrectionsResponse>(
           `/club-applications/${caseId}/corrections`,
-          {
+        );
+        const latest = refreshed.data.items.find((item) => item.id === currentDraft?.id);
+        if (latest) {
+          currentDraft = {
+            id: latest.id,
+            revision: latest.revision,
+            versionNumber: latest.versionNumber,
+          };
+          setSavedDraft(currentDraft);
+          setUnknownSubmitOutcome(false);
+          if (latest.state !== 'DRAFT') {
+            onSaved(latest.id);
+            return;
+          }
+        }
+      }
+
+      if (shouldSaveDraft) {
+        if (currentDraft) {
+          const refUpdate = buildUpdatedAffectedReferences(
+            currentRefsBaseline.declared,
+            currentRefsBaseline.note,
+            relatedNote,
+            'SCHEDULED_MATCH',
+          );
+          const updated = await client.request<{ versionId: string; revision: string }>(
+            `/club-applications/${caseId}/corrections/${currentDraft.id}`,
+            {
+              method: 'PATCH',
+              body: {
+                expectedRevision: currentDraft.revision,
+                coachName: coachName.trim(),
+                homeStadiumId,
+                representativeName: representativeName.trim(),
+                representativePhone: representativePhone.trim(),
+                contactAddress: contactAddress.trim(),
+                notes: notes.trim() || null,
+                correctionReason: correctionReason.trim(),
+                correctionEvidence: correctionEvidence.trim(),
+                ...(refUpdate.changed ? { affectedReferences: refUpdate.items } : {}),
+              },
+            },
+          );
+          currentDraft = {
+            id: updated.data.versionId,
+            revision: updated.data.revision,
+            versionNumber: currentDraft.versionNumber,
+          };
+          if (refUpdate.changed) {
+            currentRefsBaseline = { declared: refUpdate.items, note: relatedNote.trim() };
+            setSavedReferencesBaseline(currentRefsBaseline);
+          }
+        } else {
+          const createdRefs: DeclaredReferenceItem[] = relatedNote.trim()
+            ? [{ kind: 'SCHEDULED_MATCH', referenceId: null, note: relatedNote.trim() }]
+            : [];
+          const created = await client.request<{
+            versionId: string;
+            revision: string;
+            versionNumber?: number;
+          }>(`/club-applications/${caseId}/corrections`, {
             method: 'POST',
             body: {
               baseAcceptedVersionId: baseline.versionId,
@@ -876,21 +1085,49 @@ function ClubCorrectionProposalModal({
               notes: notes.trim() || null,
               correctionReason: correctionReason.trim(),
               correctionEvidence: correctionEvidence.trim(),
-              affectedReferences,
+              affectedReferences: createdRefs,
             },
-          },
-        );
-        versionId = created.data.versionId;
-        revision = created.data.revision;
+          });
+          currentDraft = {
+            id: created.data.versionId,
+            revision: created.data.revision,
+            versionNumber: created.data.versionNumber,
+          };
+          currentRefsBaseline = { declared: createdRefs, note: relatedNote.trim() };
+          setSavedReferencesBaseline(currentRefsBaseline);
+          setCreatedInSession(true);
+        }
+        setSavedDraft(currentDraft);
+        setDraftDirty(false);
+        shouldSaveDraft = false;
       }
 
-      if (submitImmediately && versionId) {
-        await client.request(`/club-applications/${caseId}/corrections/${versionId}/submit`, {
-          method: 'POST',
-          body: { expectedRevision: revision },
-        });
+      if (submitImmediately && currentDraft) {
+        try {
+          await client.request(
+            `/club-applications/${caseId}/corrections/${currentDraft.id}/submit`,
+            {
+              method: 'POST',
+              body: { expectedRevision: currentDraft.revision },
+            },
+          );
+        } catch (submitCaught) {
+          if (isUnknownSubmitOutcome(submitCaught)) {
+            setUnknownSubmitOutcome(true);
+            setError(
+              'Bản nháp đã được lưu nhưng chưa xác định kết quả trình phê duyệt. Nhấn Trình phê duyệt để tải lại trạng thái bản nháp và thử lại.',
+            );
+          } else if (submitCaught instanceof HttpFailure) {
+            setError(
+              `Bản nháp đã được lưu nhưng chưa thể trình phê duyệt: ${cleanUserFacingText(submitCaught.message)}`,
+            );
+          } else {
+            setError('Bản nháp đã được lưu nhưng chưa thể trình phê duyệt. Vui lòng thử lại.');
+          }
+          return;
+        }
       }
-      onSaved(versionId);
+      onSaved(currentDraft?.id);
     } catch (caught) {
       if (caught instanceof HttpFailure) {
         setError(cleanUserFacingText(caught.message));
@@ -906,17 +1143,15 @@ function ClubCorrectionProposalModal({
     <Modal
       open
       title={
-        editItem
-          ? `Chỉnh sửa đề xuất đính chính (Phiên bản ${editItem.versionNumber})`
+        savedDraft?.versionNumber
+          ? `Chỉnh sửa đề xuất đính chính (Phiên bản ${savedDraft.versionNumber})`
           : 'Tạo đề xuất đính chính hồ sơ tham dự'
       }
       width={620}
       closable={!busy}
       maskClosable={!busy}
       keyboard={!busy}
-      onCancel={() => {
-        if (!busy) onClose();
-      }}
+      onCancel={handleDismiss}
       footer={null}
     >
       <form
@@ -944,7 +1179,10 @@ function ClubCorrectionProposalModal({
               value={coachName}
               disabled={busy}
               maxLength={200}
-              onChange={(e) => setCoachName(e.target.value)}
+              onChange={(e) => {
+                setCoachName(e.target.value);
+                markDirty();
+              }}
             />
           </label>
           <AdminSelect
@@ -956,7 +1194,10 @@ function ClubCorrectionProposalModal({
               value: s.id,
               label: `${s.name} (${s.code})${s.discontinuedAt ? ' · Đã ngừng sử dụng' : ''}`,
             }))}
-            onChange={setHomeStadiumId}
+            onChange={(val) => {
+              setHomeStadiumId(val);
+              markDirty();
+            }}
           />
         </div>
 
@@ -967,7 +1208,10 @@ function ClubCorrectionProposalModal({
               value={representativeName}
               disabled={busy}
               maxLength={200}
-              onChange={(e) => setRepresentativeName(e.target.value)}
+              onChange={(e) => {
+                setRepresentativeName(e.target.value);
+                markDirty();
+              }}
             />
           </label>
           <label>
@@ -976,7 +1220,10 @@ function ClubCorrectionProposalModal({
               value={representativePhone}
               disabled={busy}
               maxLength={32}
-              onChange={(e) => setRepresentativePhone(e.target.value)}
+              onChange={(e) => {
+                setRepresentativePhone(e.target.value);
+                markDirty();
+              }}
             />
           </label>
         </div>
@@ -987,7 +1234,10 @@ function ClubCorrectionProposalModal({
             value={contactAddress}
             disabled={busy}
             maxLength={500}
-            onChange={(e) => setContactAddress(e.target.value)}
+            onChange={(e) => {
+              setContactAddress(e.target.value);
+              markDirty();
+            }}
           />
         </label>
 
@@ -999,7 +1249,10 @@ function ClubCorrectionProposalModal({
             disabled={busy}
             maxLength={2000}
             placeholder="Mô tả rõ thông tin bị ghi sai so với hồ sơ gốc…"
-            onChange={(e) => setCorrectionReason(e.target.value)}
+            onChange={(e) => {
+              setCorrectionReason(e.target.value);
+              markDirty();
+            }}
           />
         </label>
 
@@ -1011,7 +1264,10 @@ function ClubCorrectionProposalModal({
             disabled={busy}
             maxLength={2000}
             placeholder="Số hiệu công văn, biên bản hoặc tài liệu gốc đính kèm…"
-            onChange={(e) => setCorrectionEvidence(e.target.value)}
+            onChange={(e) => {
+              setCorrectionEvidence(e.target.value);
+              markDirty();
+            }}
           />
         </label>
 
@@ -1022,12 +1278,15 @@ function ClubCorrectionProposalModal({
             disabled={busy}
             maxLength={500}
             placeholder="Ví dụ: Lịch thi đấu các trận sân nhà lượt đi…"
-            onChange={(e) => setRelatedNote(e.target.value)}
+            onChange={(e) => {
+              setRelatedNote(e.target.value);
+              markDirty();
+            }}
           />
         </label>
 
         <div className={css.actions}>
-          <button type="button" disabled={busy} onClick={onClose}>
+          <button type="button" disabled={busy} onClick={handleDismiss}>
             Hủy
           </button>
           <button type="submit" disabled={busy} onClick={() => setSubmitImmediately(false)}>
@@ -1214,6 +1473,13 @@ function PlayerRegistrationCorrectionsSection({
   const officialVersionNumber = baseline?.versionNumber ?? 1;
   const beforeVerNum = activeItem?.beforeSummary?.versionNumber ?? officialVersionNumber;
   const afterVerNum = activeItem?.afterSummary?.versionNumber ?? officialVersionNumber + 1;
+  const currentValidatedVersionId = data?.currentValidatedVersionId ?? baseline?.versionId ?? null;
+  const isCurrentOfficial = !!(
+    activeItem &&
+    activeItem.state === 'APPROVED' &&
+    currentValidatedVersionId &&
+    activeItem.proposedVersionId === currentValidatedVersionId
+  );
 
   const diffRows = useMemo(() => {
     if (!activeItem) return [];
@@ -1248,13 +1514,23 @@ function PlayerRegistrationCorrectionsSection({
         after: afterClass,
       });
     }
-    const beforeInterval = formatIntervalSummary(before?.playingStart, before?.playingEnd);
-    const afterInterval = formatIntervalSummary(after?.playingStart, after?.playingEnd);
-    if (beforeInterval !== afterInterval) {
+    const beforeEvidence = formatHomegrownEvidenceLabel(before);
+    const afterEvidence = formatHomegrownEvidenceLabel(after);
+    if (beforeEvidence !== afterEvidence) {
+      rows.push({
+        label: 'Minh chứng đào tạo nội địa',
+        before: beforeEvidence,
+        after: afterEvidence,
+      });
+    }
+    const startDiffers =
+      parseInstantMs(before?.playingStart) !== parseInstantMs(after?.playingStart);
+    const endDiffers = parseInstantMs(before?.playingEnd) !== parseInstantMs(after?.playingEnd);
+    if (startDiffers || endDiffers) {
       rows.push({
         label: 'Khoảng hiệu lực',
-        before: beforeInterval,
-        after: afterInterval,
+        before: formatIntervalSummaryWithSeconds(before?.playingStart, before?.playingEnd),
+        after: formatIntervalSummaryWithSeconds(after?.playingStart, after?.playingEnd),
       });
     }
     const beforeDisp = formatPlayingDispositionLabel(before?.playingDisposition);
@@ -1340,9 +1616,19 @@ function PlayerRegistrationCorrectionsSection({
 
       {activeItem && activeItem.state === 'APPROVED' && (
         <div className={`${corrCss.banner} ${corrCss.bannerOk}`} role="status">
-          <strong>Đã phê duyệt đính chính:</strong> Hồ sơ chính thức đã chuyển sang{' '}
-          <strong>Phiên bản {afterVerNum}</strong>; lịch sử Phiên bản {beforeVerNum} vẫn được lưu
-          giữ.
+          {isCurrentOfficial ? (
+            <>
+              <strong>Đã phê duyệt đính chính:</strong> Hồ sơ chính thức đã chuyển sang{' '}
+              <strong>Phiên bản {afterVerNum}</strong>; lịch sử Phiên bản {beforeVerNum} vẫn được
+              lưu giữ.
+            </>
+          ) : (
+            <>
+              <strong>Lịch sử đã phê duyệt:</strong> Phiên bản <strong>{afterVerNum}</strong> từng
+              được phê duyệt trong lịch sử; hồ sơ chính thức hiện hành là{' '}
+              <strong>Phiên bản {officialVersionNumber}</strong>.
+            </>
+          )}
         </div>
       )}
 
@@ -1395,11 +1681,11 @@ function PlayerRegistrationCorrectionsSection({
           <div className={corrCss.reasonGrid}>
             <div>
               <span className={corrCss.reasonLabel}>Lý do:</span>
-              <strong>{cleanUserFacingText(activeItem.reason ?? '—')}</strong>
+              <strong>{activeItem.reason || '—'}</strong>
             </div>
             <div>
               <span className={corrCss.reasonLabel}>Căn cứ:</span>
-              <strong>{cleanUserFacingText(activeItem.basis ?? '—')}</strong>
+              <strong>{activeItem.basis || '—'}</strong>
             </div>
           </div>
 
@@ -1411,6 +1697,10 @@ function PlayerRegistrationCorrectionsSection({
               <div className={corrCss.segmentBox}>
                 {activeItem.segments.map((seg) => {
                   const blocking = seg.findings?.blockingCriteria?.[0];
+                  const regLabel =
+                    seg.regulationVersionNumber !== null
+                      ? `Quy định phiên bản ${seg.regulationVersionNumber}`
+                      : 'Thiếu quy định lịch sử';
                   return (
                     <div
                       key={seg.segmentOrder}
@@ -1424,7 +1714,7 @@ function PlayerRegistrationCorrectionsSection({
                           {seg.outcome === 'MET' ? (
                             <span className={corrCss.segmentSub}>
                               {' '}
-                              · Quy định phiên bản {seg.regulationVersionNumber}
+                              · {regLabel}
                               {seg.findings?.squadLimit
                                 ? ` (Giới hạn đội hình ${seg.findings.squadLimit} · Ngoài nội địa ${seg.findings.nonHomegrownLimit ?? '—'})`
                                 : ''}
@@ -1432,7 +1722,7 @@ function PlayerRegistrationCorrectionsSection({
                           ) : (
                             <span className={corrCss.segmentFailText}>
                               {' '}
-                              · Quy định phiên bản {seg.regulationVersionNumber}:{' '}
+                              · {regLabel}:{' '}
                               {cleanUserFacingText(
                                 blocking?.reason ?? 'Chưa đáp ứng điều kiện hợp lệ',
                               )}
@@ -1484,9 +1774,11 @@ function PlayerRegistrationCorrectionsSection({
 
           <div className={corrCss.actionBar}>
             <span className={pageCss.metaNote}>
-              {activeItem.state === 'APPROVED'
+              {isCurrentOfficial
                 ? `Phiên bản ${afterVerNum} đang là hồ sơ chính thức hiện hành.`
-                : `Phiên bản ${officialVersionNumber} vẫn là hồ sơ chính thức hiện hành.`}
+                : activeItem.state === 'APPROVED'
+                  ? `Phiên bản ${afterVerNum} là bản đính chính đã phê duyệt trong lịch sử (hiện hành là Phiên bản ${officialVersionNumber}).`
+                  : `Phiên bản ${officialVersionNumber} vẫn là hồ sơ chính thức hiện hành.`}
             </span>
             <div className={corrCss.actionButtons}>
               {seasonOpen && data?.capabilities.canPrepare && activeItem.state === 'DRAFT' && (
@@ -1731,6 +2023,36 @@ function RegistrationCorrectionProposalModal({
   const { client } = useSession();
   const formId = useId();
   const initialSummary = editItem?.afterSummary ?? baseline;
+  const initialDeclaredRefs = useMemo(
+    () => editItem?.affectedReferences?.declared ?? [],
+    [editItem],
+  );
+  const initialRelatedNote = initialDeclaredRefs[0]?.note ?? '';
+  const initialPlayingEnd =
+    editItem?.afterSummary && 'playingEnd' in editItem.afterSummary
+      ? editItem.afterSummary.playingEnd
+      : baseline.playingEnd;
+  const initialEvidenceBranch =
+    editItem?.afterSummary && 'evidenceBranch' in editItem.afterSummary
+      ? editItem.afterSummary.evidenceBranch
+      : baseline.evidenceBranch;
+  const initialQualifyingValue =
+    editItem?.afterSummary && 'qualifyingValue' in editItem.afterSummary
+      ? editItem.afterSummary.qualifyingValue
+      : baseline.qualifyingValue;
+  const initialAffiliatedBasis =
+    editItem?.afterSummary && 'affiliatedAssociationBasis' in editItem.afterSummary
+      ? editItem.afterSummary.affiliatedAssociationBasis
+      : baseline.affiliatedAssociationBasis;
+  const initialEvidenceSummary =
+    editItem?.afterSummary && 'evidenceSummary' in editItem.afterSummary
+      ? editItem.afterSummary.evidenceSummary
+      : baseline.evidenceSummary;
+  const initialEvidenceReference =
+    editItem?.afterSummary && 'evidenceReference' in editItem.afterSummary
+      ? editItem.afterSummary.evidenceReference
+      : baseline.evidenceReference;
+
   const [shirtNumber, setShirtNumber] = useState(
     String(initialSummary.shirtNumber ?? baseline.shirtNumber ?? ''),
   );
@@ -1741,20 +2063,60 @@ function RegistrationCorrectionProposalModal({
     utcInstantToHcmInput(initialSummary.playingStart ?? baseline.playingStart ?? ''),
   );
   const [playingEndInput, setPlayingEndInput] = useState(
-    utcInstantToHcmInput(initialSummary.playingEnd ?? baseline.playingEnd ?? ''),
+    utcInstantToHcmInput(initialPlayingEnd ?? ''),
   );
   const [nonHomegrownOptIn, setNonHomegrownOptIn] = useState(
     initialSummary.nonHomegrownOptIn ?? baseline.nonHomegrownOptIn,
   );
+  const [evidenceBranch, setEvidenceBranch] = useState<'' | 'SEASONS' | 'MONTHS'>(
+    initialEvidenceBranch ?? '',
+  );
+  const [qualifyingValueInput, setQualifyingValueInput] = useState(
+    initialQualifyingValue !== null && initialQualifyingValue !== undefined
+      ? String(initialQualifyingValue)
+      : '',
+  );
+  const [affiliatedBasisInput, setAffiliatedBasisInput] = useState<'' | 'true' | 'false'>(
+    initialAffiliatedBasis === true ? 'true' : initialAffiliatedBasis === false ? 'false' : '',
+  );
+  const [evidenceSummary, setEvidenceSummary] = useState(initialEvidenceSummary ?? '');
+  const [evidenceReference, setEvidenceReference] = useState(initialEvidenceReference ?? '');
   const [reason, setReason] = useState(editItem?.reason ?? '');
   const [basis, setBasis] = useState(editItem?.basis ?? '');
-  const [relatedMatchNote, setRelatedMatchNote] = useState(
-    editItem?.affectedReferences?.declared?.[0]?.note ?? '',
+  const [relatedMatchNote, setRelatedMatchNote] = useState(initialRelatedNote);
+  const [savedDraft, setSavedDraft] = useState<{
+    id: string;
+    revision: string;
+    versionNumber?: number;
+  } | null>(
+    editItem
+      ? { id: editItem.id, revision: editItem.revision, versionNumber: editItem.versionNumber }
+      : null,
   );
+  const [savedReferencesBaseline, setSavedReferencesBaseline] = useState<{
+    declared: DeclaredReferenceItem[];
+    note: string;
+  }>({ declared: initialDeclaredRefs, note: initialRelatedNote });
+  const [draftDirty, setDraftDirty] = useState(true);
+  const [createdInSession, setCreatedInSession] = useState(false);
+  const [unknownSubmitOutcome, setUnknownSubmitOutcome] = useState(false);
   const [submitImmediately, setSubmitImmediately] = useState(true);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const feedbackRef = useDialogFeedback(error);
+
+  function markDirty() {
+    setDraftDirty(true);
+  }
+
+  function handleDismiss() {
+    if (busy) return;
+    if (createdInSession && savedDraft) {
+      onSaved(savedDraft.id);
+      return;
+    }
+    onClose();
+  }
 
   async function handleSubmit(event: FormEvent) {
     event.preventDefault();
@@ -1775,72 +2137,160 @@ function RegistrationCorrectionProposalModal({
       setError('Thời điểm kết thúc hiệu lực không đúng định dạng.');
       return;
     }
+    let parsedQualifyingValue: number | null = null;
+    if (!nonHomegrownOptIn && qualifyingValueInput.trim()) {
+      const val = Number(qualifyingValueInput.trim());
+      if (!Number.isInteger(val) || val < 0 || val > 1000) {
+        setError('Giá trị số mùa hoặc số tháng đào tạo phải là số nguyên từ 0 đến 1000.');
+        return;
+      }
+      parsedQualifyingValue = val;
+    }
     if (!reason.trim() || !basis.trim()) {
       setError('Vui lòng nhập đầy đủ lý do đính chính và căn cứ chứng minh.');
       return;
     }
 
+    const homegrownPayload = !nonHomegrownOptIn
+      ? {
+          evidenceBranch: evidenceBranch || null,
+          qualifyingValue: parsedQualifyingValue,
+          affiliatedAssociationBasis:
+            affiliatedBasisInput === 'true'
+              ? true
+              : affiliatedBasisInput === 'false'
+                ? false
+                : null,
+          evidenceSummary: evidenceSummary.trim() || null,
+          evidenceReference: evidenceReference.trim() || null,
+        }
+      : {};
+
     setBusy(true);
     setError('');
+    let currentDraft = savedDraft;
+    let currentRefsBaseline = savedReferencesBaseline;
+    let shouldSaveDraft = !currentDraft || draftDirty || !submitImmediately;
+
     try {
-      const affectedReferences = relatedMatchNote.trim()
-        ? [{ kind: 'OFFICIAL_RESULT' as const, note: relatedMatchNote.trim() }]
-        : [];
-      let corrVersionId = editItem?.id;
-      let revision = editItem?.revision ?? '1';
-
-      if (editItem) {
-        const updated = await client.request<{
-          correctionVersionId: string;
-          revision: string;
-        }>(`/player-registrations/${caseId}/corrections/${editItem.id}`, {
-          method: 'PATCH',
-          body: {
-            expectedRevision: editItem.revision,
-            shirtNumber: parsedShirt,
-            playingStart: startUtc,
-            playingEnd: endUtc,
-            nonHomegrownOptIn,
-            disposition,
-            reason: reason.trim(),
-            basis: basis.trim(),
-            affectedReferences,
-          },
-        });
-        corrVersionId = updated.data.correctionVersionId;
-        revision = updated.data.revision;
-      } else {
-        const created = await client.request<{
-          correctionVersionId: string;
-          revision: string;
-        }>(`/player-registrations/${caseId}/corrections`, {
-          method: 'POST',
-          body: {
-            targetVersionId: baseline.versionId,
-            shirtNumber: parsedShirt,
-            playingStart: startUtc,
-            playingEnd: endUtc,
-            nonHomegrownOptIn,
-            disposition,
-            reason: reason.trim(),
-            basis: basis.trim(),
-            affectedReferences,
-          },
-        });
-        corrVersionId = created.data.correctionVersionId;
-        revision = created.data.revision;
-      }
-
-      if (submitImmediately && corrVersionId) {
-        await client.request(
-          `/player-registrations/${caseId}/corrections/${corrVersionId}/submit`,
-          {
-            method: 'POST',
-            body: { expectedRevision: revision },
-          },
+      if (unknownSubmitOutcome && currentDraft) {
+        const refreshed = await client.request<RegistrationCorrectionsResponse>(
+          `/player-registrations/${caseId}/corrections`,
         );
+        const latest = refreshed.data.items.find((item) => item.id === currentDraft?.id);
+        if (latest) {
+          currentDraft = {
+            id: latest.id,
+            revision: latest.revision,
+            versionNumber: latest.versionNumber,
+          };
+          setSavedDraft(currentDraft);
+          setUnknownSubmitOutcome(false);
+          if (latest.state !== 'DRAFT') {
+            onSaved(latest.id);
+            return;
+          }
+        }
       }
-      onSaved(corrVersionId);
+
+      if (shouldSaveDraft) {
+        if (currentDraft) {
+          const refUpdate = buildUpdatedAffectedReferences(
+            currentRefsBaseline.declared,
+            currentRefsBaseline.note,
+            relatedMatchNote,
+            'OFFICIAL_RESULT',
+          );
+          const updated = await client.request<{
+            correctionVersionId: string;
+            revision: string;
+          }>(`/player-registrations/${caseId}/corrections/${currentDraft.id}`, {
+            method: 'PATCH',
+            body: {
+              expectedRevision: currentDraft.revision,
+              shirtNumber: parsedShirt,
+              playingStart: startUtc,
+              playingEnd: endUtc,
+              nonHomegrownOptIn,
+              ...homegrownPayload,
+              disposition,
+              reason: reason.trim(),
+              basis: basis.trim(),
+              ...(refUpdate.changed ? { affectedReferences: refUpdate.items } : {}),
+            },
+          });
+          currentDraft = {
+            id: updated.data.correctionVersionId,
+            revision: updated.data.revision,
+            versionNumber: currentDraft.versionNumber,
+          };
+          if (refUpdate.changed) {
+            currentRefsBaseline = { declared: refUpdate.items, note: relatedMatchNote.trim() };
+            setSavedReferencesBaseline(currentRefsBaseline);
+          }
+        } else {
+          const createdRefs: DeclaredReferenceItem[] = relatedMatchNote.trim()
+            ? [{ kind: 'OFFICIAL_RESULT', referenceId: null, note: relatedMatchNote.trim() }]
+            : [];
+          const created = await client.request<{
+            correctionVersionId: string;
+            revision: string;
+            versionNumber?: number;
+          }>(`/player-registrations/${caseId}/corrections`, {
+            method: 'POST',
+            body: {
+              targetVersionId: baseline.versionId,
+              shirtNumber: parsedShirt,
+              playingStart: startUtc,
+              playingEnd: endUtc,
+              nonHomegrownOptIn,
+              ...homegrownPayload,
+              disposition,
+              reason: reason.trim(),
+              basis: basis.trim(),
+              affectedReferences: createdRefs,
+            },
+          });
+          currentDraft = {
+            id: created.data.correctionVersionId,
+            revision: created.data.revision,
+            versionNumber: created.data.versionNumber,
+          };
+          currentRefsBaseline = { declared: createdRefs, note: relatedMatchNote.trim() };
+          setSavedReferencesBaseline(currentRefsBaseline);
+          setCreatedInSession(true);
+        }
+        setSavedDraft(currentDraft);
+        setDraftDirty(false);
+        shouldSaveDraft = false;
+      }
+
+      if (submitImmediately && currentDraft) {
+        try {
+          await client.request(
+            `/player-registrations/${caseId}/corrections/${currentDraft.id}/submit`,
+            {
+              method: 'POST',
+              body: { expectedRevision: currentDraft.revision },
+            },
+          );
+        } catch (submitCaught) {
+          if (isUnknownSubmitOutcome(submitCaught)) {
+            setUnknownSubmitOutcome(true);
+            setError(
+              'Bản nháp đã được lưu nhưng chưa xác định kết quả trình phê duyệt. Nhấn Trình phê duyệt để tải lại trạng thái bản nháp và thử lại.',
+            );
+          } else if (submitCaught instanceof HttpFailure) {
+            setError(
+              `Bản nháp đã được lưu nhưng chưa thể trình phê duyệt: ${cleanUserFacingText(submitCaught.message)}`,
+            );
+          } else {
+            setError('Bản nháp đã được lưu nhưng chưa thể trình phê duyệt. Vui lòng thử lại.');
+          }
+          return;
+        }
+      }
+      onSaved(currentDraft?.id);
     } catch (caught) {
       if (caught instanceof HttpFailure) {
         setError(cleanUserFacingText(caught.message));
@@ -1856,17 +2306,15 @@ function RegistrationCorrectionProposalModal({
     <Modal
       open
       title={
-        editItem
-          ? `Chỉnh sửa đề xuất đính chính (Đề xuất lần ${editItem.versionNumber})`
+        savedDraft?.versionNumber
+          ? `Chỉnh sửa đề xuất đính chính (Đề xuất lần ${savedDraft.versionNumber})`
           : 'Tạo đề xuất đính chính đăng ký cầu thủ'
       }
       width={620}
       closable={!busy}
       maskClosable={!busy}
       keyboard={!busy}
-      onCancel={() => {
-        if (!busy) onClose();
-      }}
+      onCancel={handleDismiss}
       footer={null}
     >
       <form
@@ -1896,7 +2344,10 @@ function RegistrationCorrectionProposalModal({
               max={99}
               value={shirtNumber}
               disabled={busy}
-              onChange={(e) => setShirtNumber(e.target.value)}
+              onChange={(e) => {
+                setShirtNumber(e.target.value);
+                markDirty();
+              }}
             />
           </label>
           <AdminSelect
@@ -1904,7 +2355,10 @@ function RegistrationCorrectionProposalModal({
             hideLabel={false}
             value={disposition}
             options={dispositionOptions}
-            onChange={(val) => setDisposition(val as CorrectionDisposition)}
+            onChange={(val) => {
+              setDisposition(val as CorrectionDisposition);
+              markDirty();
+            }}
           />
         </div>
 
@@ -1916,7 +2370,10 @@ function RegistrationCorrectionProposalModal({
               value={playingStartInput}
               disabled={busy}
               required
-              onChange={setPlayingStartInput}
+              onChange={(val) => {
+                setPlayingStartInput(val);
+                markDirty();
+              }}
             />
           </div>
           <div>
@@ -1925,7 +2382,10 @@ function RegistrationCorrectionProposalModal({
               label="Kết thúc hiệu lực"
               value={playingEndInput}
               disabled={busy}
-              onChange={setPlayingEndInput}
+              onChange={(val) => {
+                setPlayingEndInput(val);
+                markDirty();
+              }}
             />
           </div>
         </div>
@@ -1935,10 +2395,83 @@ function RegistrationCorrectionProposalModal({
             type="checkbox"
             checked={nonHomegrownOptIn}
             disabled={busy}
-            onChange={(e) => setNonHomegrownOptIn(e.target.checked)}
+            onChange={(e) => {
+              setNonHomegrownOptIn(e.target.checked);
+              markDirty();
+            }}
           />
           <span>Xử lý theo diện ngoài đào tạo nội địa (nếu không thuộc diện U21)</span>
         </label>
+
+        {!nonHomegrownOptIn && (
+          <>
+            <div className={corrCss.formGrid2}>
+              <AdminSelect
+                label="Nhánh đào tạo nội địa"
+                hideLabel={false}
+                value={evidenceBranch}
+                options={homegrownBranchOptions}
+                onChange={(val) => {
+                  setEvidenceBranch(val as '' | 'SEASONS' | 'MONTHS');
+                  markDirty();
+                }}
+              />
+              <label>
+                Số mùa / tháng đạt chuẩn
+                <input
+                  type="number"
+                  min={0}
+                  max={1000}
+                  value={qualifyingValueInput}
+                  disabled={busy}
+                  placeholder="Ví dụ: 3 hoặc 36"
+                  onChange={(e) => {
+                    setQualifyingValueInput(e.target.value);
+                    markDirty();
+                  }}
+                />
+              </label>
+            </div>
+            <div className={corrCss.formGrid2}>
+              <AdminSelect
+                label="Điều kiện liên đoàn đào tạo"
+                hideLabel={false}
+                value={affiliatedBasisInput}
+                options={affiliationOptions}
+                onChange={(val) => {
+                  setAffiliatedBasisInput(val as '' | 'true' | 'false');
+                  markDirty();
+                }}
+              />
+              <label>
+                Mã tài liệu tham chiếu đào tạo
+                <input
+                  value={evidenceReference}
+                  disabled={busy}
+                  maxLength={500}
+                  placeholder="Ví dụ: HS-DT-2026"
+                  onChange={(e) => {
+                    setEvidenceReference(e.target.value);
+                    markDirty();
+                  }}
+                />
+              </label>
+            </div>
+            <label>
+              Tóm tắt minh chứng đào tạo nội địa
+              <input
+                value={evidenceSummary}
+                disabled={busy}
+                maxLength={2000}
+                placeholder="Ghi nhận ngắn gọn thời gian và cơ sở đào tạo…"
+                onChange={(e) => {
+                  setEvidenceSummary(e.target.value);
+                  markDirty();
+                }}
+              />
+            </label>
+          </>
+        )}
 
         <label>
           Lý do đính chính *
@@ -1948,7 +2481,10 @@ function RegistrationCorrectionProposalModal({
             disabled={busy}
             maxLength={2000}
             placeholder="Trình bày nội dung sai sót cần đính chính…"
-            onChange={(e) => setReason(e.target.value)}
+            onChange={(e) => {
+              setReason(e.target.value);
+              markDirty();
+            }}
           />
         </label>
 
@@ -1960,7 +2496,10 @@ function RegistrationCorrectionProposalModal({
             disabled={busy}
             maxLength={2000}
             placeholder="Quyết định, biên bản hoặc tài liệu gốc chứng minh…"
-            onChange={(e) => setBasis(e.target.value)}
+            onChange={(e) => {
+              setBasis(e.target.value);
+              markDirty();
+            }}
           />
         </label>
 
@@ -1971,12 +2510,15 @@ function RegistrationCorrectionProposalModal({
             disabled={busy}
             maxLength={500}
             placeholder="Ví dụ: Vòng 4 (05/09/2026)…"
-            onChange={(e) => setRelatedMatchNote(e.target.value)}
+            onChange={(e) => {
+              setRelatedMatchNote(e.target.value);
+              markDirty();
+            }}
           />
         </label>
 
         <div className={css.actions}>
-          <button type="button" disabled={busy} onClick={onClose}>
+          <button type="button" disabled={busy} onClick={handleDismiss}>
             Hủy
           </button>
           <button type="submit" disabled={busy} onClick={() => setSubmitImmediately(false)}>

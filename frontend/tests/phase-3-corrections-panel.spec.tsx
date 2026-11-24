@@ -44,8 +44,8 @@ describe('OfficialCorrectionsPanel', () => {
             decisionReason: null,
             targetVersionId: 'ver-1',
             proposedVersionId: 'ver-2',
-            reason: 'Đánh giá lại theo D057 và FR-020 cho BM1.',
-            basis: 'Giấy khai sinh gốc.',
+            reason: 'Công văn số R12/2026 về đính chính năm sinh.',
+            basis: 'Giấy khai sinh bản chính số D105.',
             disposition: 'RECORD_ERRONEOUS',
             beforeSummary: {
               versionId: 'ver-1',
@@ -63,7 +63,7 @@ describe('OfficialCorrectionsPanel', () => {
               versionId: 'ver-2',
               versionNumber: 2,
               shirtNumber: 21,
-              playingStart: '2026-08-10T00:00:00.000Z',
+              playingStart: '2026-08-10T00:00:30.000Z',
               playingEnd: null,
               playerBirthDate: '2004-01-10',
               u21Finding: false,
@@ -111,7 +111,7 @@ describe('OfficialCorrectionsPanel', () => {
                     {
                       criterion: 'SQUAD_LIMIT',
                       status: 'UNMET',
-                      reason: 'Vượt giới hạn tổng số cầu thủ tính hạn mức (24).',
+                      reason: 'Vượt giới hạn tổng số cầu thủ tính hạn mức theo D057 (24).',
                     },
                   ],
                 },
@@ -162,6 +162,14 @@ describe('OfficialCorrectionsPanel', () => {
     expect(within(table).getByText('10/01/2004')).toBeInTheDocument();
     expect(within(table).getByText('Cầu thủ trẻ U21')).toBeInTheDocument();
     expect(within(table).getByText('Ngoài đào tạo nội địa')).toBeInTheDocument();
+    // Sub-minute playing-interval difference (00:00:00 vs 00:00:30) is shown with second precision
+    expect(within(table).getByText('Khoảng hiệu lực')).toBeInTheDocument();
+    expect(within(table).getByText(/07:00:00/)).toBeInTheDocument();
+    expect(within(table).getByText(/07:00:30/)).toBeInTheDocument();
+
+    // User-recorded reason and basis render verbatim without stripping document codes
+    expect(screen.getByText('Công văn số R12/2026 về đính chính năm sinh.')).toBeInTheDocument();
+    expect(screen.getByText('Giấy khai sinh bản chính số D105.')).toBeInTheDocument();
 
     expect(
       screen.getByText('Kết quả kiểm tra theo giai đoạn quy định (2 giai đoạn)'),
@@ -172,6 +180,7 @@ describe('OfficialCorrectionsPanel', () => {
     expect(screen.getByRole('button', { name: 'Trả lại bổ sung' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Từ chối' })).toBeInTheDocument();
 
+    // System-generated segment message and UI labels still strip internal spec codes
     const text = container.textContent ?? '';
     expect(text).not.toMatch(/\b(D057|D100|FR-020|BM1|UC14|UC19)\b/);
   });
@@ -273,5 +282,267 @@ describe('OfficialCorrectionsPanel', () => {
       },
     });
     expect(typeof postCall?.[1]?.requestKey).toBe('string');
+  });
+
+  it('uses baseAcceptedVersionId for approved club corrections and labels superseded approved entries as history', async () => {
+    request.mockResolvedValue({
+      data: {
+        caseId: 'club-case-1',
+        seasonId: 'season-1',
+        seasonState: 'OPEN',
+        currentAcceptedVersionId: 'app-ver-3',
+        items: [
+          {
+            id: 'app-ver-2',
+            versionNumber: 2,
+            versionKind: 'CORRECTION',
+            predecessorVersionId: 'app-ver-1',
+            baseAcceptedVersionId: 'app-ver-1',
+            revision: '2',
+            state: 'APPROVED',
+            preparedBy: 'officer-1',
+            preparer: { id: 'officer-1', fullName: 'Trần Cán Bộ', personnelCode: 'RO01' },
+            editorIds: ['officer-1'],
+            receivedAt: '2026-08-05T00:00:00.000Z',
+            submittedAt: '2026-09-10T00:00:00.000Z',
+            decidedAt: '2026-09-11T00:00:00.000Z',
+            decidedBy: 'manager-1',
+            decider: { id: 'manager-1', fullName: 'Nguyễn Quản Lý', personnelCode: 'SM01' },
+            decisionReason: 'Đã duyệt lần 1.',
+            coachName: 'HLV Sau Đính Chính 1',
+            homeStadiumId: 'std-1',
+            homeStadium: { id: 'std-1', code: 'STD1', name: 'Sân Cũ', location: 'Manchester' },
+            representativeName: 'Đại diện CLB',
+            representativePhone: '0901234567',
+            contactAddress: '100 Stadium Way',
+            notes: null,
+            correctionReason: 'Đính chính HLV theo CV-01.',
+            correctionEvidence: 'Biên bản R1/2026.',
+            affectedReferences: { venueReviewRequired: false, declared: [] },
+          },
+        ],
+        capabilities: { canPrepare: false, canApprove: true },
+      },
+    });
+
+    render(
+      <OfficialCorrectionsPanel
+        mode="club-application"
+        caseId="club-case-1"
+        clubName="Manchester United"
+        seasonName="2026–2027"
+        baseline={{
+          versionId: 'app-ver-3',
+          versionNumber: 3,
+          receivedAt: '2026-08-05T00:00:00.000Z',
+          coachName: 'HLV Sau Đính Chính 2',
+          homeStadiumId: 'std-1',
+          homeStadiumName: 'Sân Cũ',
+          representativeName: 'Đại diện CLB',
+          representativePhone: '0901234567',
+          contactAddress: '100 Stadium Way',
+          notes: null,
+        }}
+        versions={[
+          {
+            versionId: 'app-ver-1',
+            versionNumber: 1,
+            receivedAt: '2026-08-05T00:00:00.000Z',
+            coachName: 'HLV Ban Đầu',
+            homeStadiumId: 'std-1',
+            homeStadiumName: 'Sân Cũ',
+            representativeName: 'Đại diện CLB',
+            representativePhone: '0901234567',
+            contactAddress: '100 Stadium Way',
+            notes: null,
+          },
+          {
+            versionId: 'app-ver-3',
+            versionNumber: 3,
+            receivedAt: '2026-08-05T00:00:00.000Z',
+            coachName: 'HLV Sau Đính Chính 2',
+            homeStadiumId: 'std-1',
+            homeStadiumName: 'Sân Cũ',
+            representativeName: 'Đại diện CLB',
+            representativePhone: '0901234567',
+            contactAddress: '100 Stadium Way',
+            notes: null,
+          },
+        ]}
+        stadiums={[{ id: 'std-1', code: 'STD1', name: 'Sân Cũ', discontinuedAt: null }]}
+        onChanged={() => undefined}
+      />,
+    );
+
+    const table = await screen.findByRole('table', { name: 'Đối chiếu thông tin hồ sơ tham dự' });
+    expect(within(table).getByText('Trước đính chính (Phiên bản 1)')).toBeInTheDocument();
+    expect(within(table).getByText('HLV Ban Đầu')).toBeInTheDocument();
+    expect(within(table).getByText('HLV Sau Đính Chính 1')).toBeInTheDocument();
+    expect(
+      screen.getByText(/Phiên bản 2 là bản đính chính đã phê duyệt trong lịch sử/),
+    ).toBeInTheDocument();
+  });
+
+  it('preserves explicit null playingEnd, omits unchanged affectedReferences on PATCH, and retains draft ID/revision when submit fails', async () => {
+    const onChanged = vi.fn();
+    let submitAttempts = 0;
+    request.mockImplementation((path: string, options?: { method?: string }) => {
+      if (path.endsWith('/corrections') && !options?.method) {
+        return Promise.resolve({
+          data: {
+            caseId: 'reg-case-1',
+            seasonId: 'season-1',
+            seasonState: 'OPEN',
+            currentValidatedVersionId: 'ver-1',
+            pendingSourceCorrection: {
+              required: false,
+              snapshotBirthDate: '2001-01-10',
+              currentPlayerBirthDate: '2001-01-10',
+            },
+            items: [
+              {
+                id: 'corr-draft-1',
+                correctionCaseId: 'corr-case-1',
+                versionNumber: 1,
+                predecessorVersionId: null,
+                revision: '1',
+                state: 'DRAFT',
+                preparedBy: 'officer-1',
+                preparer: { id: 'officer-1', fullName: 'Trần Cán Bộ', personnelCode: 'RO01' },
+                editorIds: ['officer-1'],
+                submittedAt: null,
+                decidedAt: null,
+                decidedBy: null,
+                decider: null,
+                decisionReason: null,
+                targetVersionId: 'ver-1',
+                proposedVersionId: 'ver-2',
+                reason: 'Đính chính bản nháp.',
+                basis: 'Biên bản gốc.',
+                disposition: 'RETAIN_VALID',
+                beforeSummary: {
+                  versionId: 'ver-1',
+                  versionNumber: 1,
+                  shirtNumber: 10,
+                  playingStart: '2026-08-10T00:00:00.000Z',
+                  playingEnd: '2026-10-01T00:00:00.000Z',
+                  nonHomegrownOptIn: true,
+                },
+                afterSummary: {
+                  versionId: 'ver-2',
+                  versionNumber: 2,
+                  shirtNumber: 10,
+                  playingStart: '2026-08-10T00:00:00.000Z',
+                  playingEnd: null,
+                  nonHomegrownOptIn: false,
+                  evidenceBranch: 'SEASONS',
+                  qualifyingValue: 3,
+                  affiliatedAssociationBasis: true,
+                  evidenceSummary: 'Đào tạo đủ 3 mùa.',
+                  evidenceReference: 'HG-01',
+                },
+                affectedReferences: {
+                  declared: [
+                    { kind: 'SCHEDULED_MATCH', referenceId: 'ref-uuid-1', note: 'Trận 1' },
+                    { kind: 'OFFICIAL_RESULT', referenceId: 'ref-uuid-2', note: 'Trận 2' },
+                  ],
+                },
+                segments: [],
+              },
+            ],
+            capabilities: { canPrepare: true, canApprove: false },
+          },
+        });
+      }
+      if (options?.method === 'PATCH') {
+        return Promise.resolve({
+          data: { correctionVersionId: 'corr-draft-1', revision: '2' },
+        });
+      }
+      if (path.endsWith('/submit') && options?.method === 'POST') {
+        submitAttempts += 1;
+        if (submitAttempts === 1) {
+          return Promise.reject(new Error('Network timeout'));
+        }
+        return Promise.resolve({ data: { state: 'SUBMITTED', revision: '3' } });
+      }
+      return Promise.resolve({ data: {} });
+    });
+
+    render(
+      <OfficialCorrectionsPanel
+        mode="player-registration"
+        caseId="reg-case-1"
+        playerName="Nguyễn Văn A"
+        clubName="Arsenal"
+        seasonName="2026–2027"
+        baseline={{
+          versionId: 'ver-1',
+          versionNumber: 1,
+          receivedAt: '2026-08-06T00:00:00.000Z',
+          shirtNumber: 10,
+          playingStart: '2026-08-10T00:00:00.000Z',
+          playingEnd: '2026-10-01T00:00:00.000Z',
+          u21Finding: false,
+          homegrownFinding: false,
+          nonHomegrownOptIn: true,
+          evidenceBranch: null,
+          qualifyingValue: null,
+          evidenceSummary: null,
+          evidenceReference: null,
+          affiliatedAssociationBasis: null,
+          playingDisposition: 'ACTIVE',
+          notes: null,
+        }}
+        onChanged={onChanged}
+      />,
+    );
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Chỉnh sửa nháp' }));
+    const dialog = await screen.findByRole('dialog');
+
+    // Structured homegrown evidence inputs are visible and populated because nonHomegrownOptIn is false
+    expect(within(dialog).getByLabelText('Số mùa / tháng đạt chuẩn')).toHaveValue(3);
+    expect(within(dialog).getByLabelText('Tóm tắt minh chứng đào tạo nội địa')).toHaveValue(
+      'Đào tạo đủ 3 mùa.',
+    );
+
+    // Edit shirt number only (do NOT touch related match note) and click Trình phê duyệt
+    fireEvent.change(within(dialog).getByLabelText('Số áo đăng ký *'), { target: { value: '11' } });
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Trình phê duyệt' }));
+
+    // First submit fails with unknown outcome -> alert shown, modal remains open with saved draft revision
+    expect(await within(dialog).findByRole('alert')).toHaveTextContent(
+      /chưa xác định kết quả trình phê duyệt/,
+    );
+
+    const patchCall = request.mock.calls.find(
+      ([, opts]) => (opts as { method?: string } | undefined)?.method === 'PATCH',
+    );
+    expect(patchCall).toBeDefined();
+    const patchBody = (patchCall?.[1] as { body: Record<string, unknown> }).body;
+    // Explicit null playingEnd preserved (NOT overwritten by baseline's 2026-10-01)
+    expect(patchBody.playingEnd).toBeNull();
+    // Unchanged affectedReferences omitted from PATCH
+    expect('affectedReferences' in patchBody).toBe(false);
+    // Structured homegrown evidence passed to backend evaluator
+    expect(patchBody).toMatchObject({
+      evidenceBranch: 'SEASONS',
+      qualifyingValue: 3,
+      affiliatedAssociationBasis: true,
+      evidenceSummary: 'Đào tạo đủ 3 mùa.',
+      evidenceReference: 'HG-01',
+    });
+
+    // Retry submit -> reloads draft state and retries submit WITHOUT calling PATCH or POST /corrections again!
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Trình phê duyệt' }));
+    await waitFor(() => expect(onChanged).toHaveBeenCalledTimes(1));
+
+    const patchCount = request.mock.calls.filter(
+      ([, opts]) => (opts as { method?: string } | undefined)?.method === 'PATCH',
+    ).length;
+    expect(patchCount).toBe(1);
+    const submitCalls = request.mock.calls.filter(([p]) => String(p).endsWith('/submit'));
+    expect(submitCalls).toHaveLength(2);
   });
 });

@@ -80,8 +80,8 @@ export type EvaluatedHistoricalSegment = {
   segmentOrder: number;
   segmentStart: Date;
   segmentEnd: Date | null;
-  regulationVersionId: string;
-  regulationVersionNumber: number;
+  regulationVersionId: string | null;
+  regulationVersionNumber: number | null;
   outcome: 'MET' | 'UNMET' | 'INSUFFICIENT_BASIS';
   requiredDisposition: RegistrationCorrectionDisposition | null;
   findings: {
@@ -458,8 +458,7 @@ export function evaluateHistoricalCorrectionSegments(params: {
     });
 
     if (!coveringReg) {
-      // Missing historical regulation basis for this affected sub-interval!
-      const fallbackReg = activeRegulations[0];
+      // Missing historical regulation basis for this affected sub-interval: store explicit null basis
       const missingFinding: EligibilityCriterionFinding = {
         criterion: 'EFFECTIVE_REGULATION',
         status: 'INSUFFICIENT_BASIS',
@@ -470,8 +469,8 @@ export function evaluateHistoricalCorrectionSegments(params: {
         segmentOrder: i + 1,
         segmentStart: segStart,
         segmentEnd: segEnd,
-        regulationVersionId: fallbackReg.id,
-        regulationVersionNumber: fallbackReg.versionNumber,
+        regulationVersionId: null,
+        regulationVersionNumber: null,
         outcome: 'INSUFFICIENT_BASIS',
         requiredDisposition:
           params.disposition !== 'RETAIN_VALID' ? params.disposition : 'END_EFFECTIVITY',
@@ -502,10 +501,8 @@ export function evaluateHistoricalCorrectionSegments(params: {
             affiliatedAssociationBasis: candidate.affiliatedAssociationBasis,
             verifiedBy: candidate.verifiedBy,
             verifiedAt: candidate.verifiedAt,
-            // Bind to the segment's regulation version when verified within this season
-            verifiedRegulationVersionId: candidate.verifiedRegulationVersionId
-              ? coveringReg.id
-              : null,
+            // Preserve the exact regulation version the evidence was verified under so mismatched segments require re-verification
+            verifiedRegulationVersionId: candidate.verifiedRegulationVersionId,
           }
         : null;
 
@@ -623,6 +620,58 @@ function deriveProposedPlayingDisposition(
   return targetDisposition ?? 'ACTIVE';
 }
 
+function resolveEffectivePlayingEndForApproval(
+  candidate: MergedRegistrationCorrectionCandidate,
+  disposition: RegistrationCorrectionDisposition,
+  segments: readonly EvaluatedHistoricalSegment[],
+): { ok: true; playingEnd: Date | null } | { ok: false; reason: string } {
+  if (disposition !== 'END_EFFECTIVITY') {
+    return { ok: true, playingEnd: candidate.playingEnd };
+  }
+  const firstUnmet = segments.find((seg) => seg.outcome === 'UNMET');
+  if (!firstUnmet) {
+    return { ok: true, playingEnd: candidate.playingEnd };
+  }
+  const cutoffMs = firstUnmet.segmentStart.getTime();
+  if (cutoffMs <= candidate.playingStart.getTime()) {
+    return {
+      ok: false,
+      reason:
+        'Không có khoảng hiệu lực hợp lệ trước phân đoạn vi phạm để chấm dứt hiệu lực; vui lòng chọn phương án Ghi nhận quyết định trước có sai sót.',
+    };
+  }
+  if (candidate.playingEnd === null || candidate.playingEnd.getTime() > cutoffMs) {
+    return { ok: true, playingEnd: firstUnmet.segmentStart };
+  }
+  return { ok: true, playingEnd: candidate.playingEnd };
+}
+
+function extractSnapshotReceiptExceptionId(
+  officialSnapshot: Prisma.JsonValue | null,
+): string | null {
+  if (
+    !officialSnapshot ||
+    typeof officialSnapshot !== 'object' ||
+    Array.isArray(officialSnapshot)
+  ) {
+    return null;
+  }
+  const basis = (officialSnapshot as { basis?: unknown }).basis;
+  if (!basis || typeof basis !== 'object' || Array.isArray(basis)) {
+    return null;
+  }
+  const exId = (basis as { receiptExceptionVersionId?: unknown }).receiptExceptionVersionId;
+  return typeof exId === 'string' && exId.trim().length > 0 ? exId.trim().toLowerCase() : null;
+}
+
+function extractSummaryPlayerBirthDate(summary: Prisma.JsonValue | null): string | null {
+  if (!summary || typeof summary !== 'object' || Array.isArray(summary)) {
+    return null;
+  }
+  const birthDate = (summary as { playerBirthDate?: unknown }).playerBirthDate;
+  return typeof birthDate === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(birthDate) ? birthDate : null;
+}
+
 function readStoredDeclaredReferences(raw: Prisma.JsonValue | null): NormalizedDeclaredReference[] {
   if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return [];
   const declared = (raw as { declared?: unknown }).declared;
@@ -643,6 +692,84 @@ export class RegistrationCorrectionsService {
     private readonly intake: RegistrationIntakeService,
     private readonly audit: AuditWriterService,
   ) {}
+
+  private async resolveApprovedLateReceiptException(
+    context: TransactionContext,
+    registrationId: string,
+    seasonId: string,
+    targetVersion: Prisma.RegistrationVersionGetPayload<object>,
+  ): Promise<{ id: string } | null> {
+    if (targetVersion.receiptTimingStatus !== 'LATE') {
+      return null;
+    }
+
+    const direct = await this.intake.findApprovedException(
+      context,
+      'PLAYER_REGISTRATION',
+      seasonId,
+      targetVersion.id,
+    );
+    if (direct) {
+      return direct;
+    }
+
+    const snapshotExId = extractSnapshotReceiptExceptionId(targetVersion.officialSnapshot);
+    if (snapshotExId) {
+      const fromSnapshot = await context.db.receiptExceptionVersion.findFirst({
+        where: {
+          id: snapshotExId,
+          seasonId,
+          state: 'APPROVED',
+          registrationVersion: { caseId: registrationId },
+        },
+        select: { id: true },
+      });
+      if (fromSnapshot) {
+        return fromSnapshot;
+      }
+    }
+
+    const visited = new Set<string>([targetVersion.id]);
+    let cursorId = targetVersion.predecessorVersionId;
+    while (cursorId && !visited.has(cursorId) && visited.size < 64) {
+      visited.add(cursorId);
+      const ancestor = await context.db.registrationVersion.findFirst({
+        where: { id: cursorId, caseId: registrationId },
+        select: { id: true, predecessorVersionId: true, officialSnapshot: true },
+      });
+      if (!ancestor) break;
+
+      const ancestorDirect = await this.intake.findApprovedException(
+        context,
+        'PLAYER_REGISTRATION',
+        seasonId,
+        ancestor.id,
+      );
+      if (ancestorDirect) {
+        return ancestorDirect;
+      }
+
+      const ancestorSnapExId = extractSnapshotReceiptExceptionId(ancestor.officialSnapshot);
+      if (ancestorSnapExId) {
+        const fromAncestorSnap = await context.db.receiptExceptionVersion.findFirst({
+          where: {
+            id: ancestorSnapExId,
+            seasonId,
+            state: 'APPROVED',
+            registrationVersion: { caseId: registrationId },
+          },
+          select: { id: true },
+        });
+        if (fromAncestorSnap) {
+          return fromAncestorSnap;
+        }
+      }
+
+      cursorId = ancestor.predecessorVersionId;
+    }
+
+    return null;
+  }
 
   private async evaluateForRegistration(
     context: TransactionContext,
@@ -697,14 +824,7 @@ export class RegistrationCorrectionsService {
         playerId: reg.playerId,
         excludeRegistrationIds: [reg.id],
       }),
-      targetVersion.receiptTimingStatus === 'LATE'
-        ? this.intake.findApprovedException(
-            context,
-            'PLAYER_REGISTRATION',
-            reg.seasonId,
-            targetVersion.id,
-          )
-        : Promise.resolve(null),
+      this.resolveApprovedLateReceiptException(context, reg.id, reg.seasonId, targetVersion),
     ]);
 
     const playerBirthDateIso = formatDateOnly(reg.player.birthDate);
@@ -872,7 +992,7 @@ export class RegistrationCorrectionsService {
                 segmentStart: s.segmentStart.toISOString(),
                 segmentEnd: s.segmentEnd?.toISOString() ?? null,
                 regulationVersionId: s.regulationVersionId,
-                regulationVersionNumber: s.regulationVersion.versionNumber,
+                regulationVersionNumber: s.regulationVersion?.versionNumber ?? null,
                 outcome: s.outcome,
                 requiredDisposition: s.requiredDisposition,
                 findings: s.findings,
@@ -1769,6 +1889,20 @@ export class RegistrationCorrectionsService {
               disposition,
             );
 
+            const livePlayerBirthDate = formatDateOnly(reg.player.birthDate);
+            const submittedPlayerBirthDate = extractSummaryPlayerBirthDate(
+              corrVersion.afterSummary,
+            );
+            if (
+              submittedPlayerBirthDate !== null &&
+              submittedPlayerBirthDate !== livePlayerBirthDate
+            ) {
+              throw conflict(
+                'BASIS_CHANGED',
+                'Ngày sinh của cầu thủ đã thay đổi sau khi trình duyệt; vui lòng trả lại để lập và trình lại đề xuất đính chính.',
+              );
+            }
+
             // Re-verify that historical segments match what was submitted
             if (
               evaluation.segments.length !== corrVersion.segments.length ||
@@ -1810,6 +1944,16 @@ export class RegistrationCorrectionsService {
               );
             }
 
+            const effectiveEndResult = resolveEffectivePlayingEndForApproval(
+              candidate,
+              disposition,
+              evaluation.segments,
+            );
+            if (!effectiveEndResult.ok) {
+              throw conflict('STATE_CONFLICT', effectiveEndResult.reason);
+            }
+            const effectivePlayingEnd = effectiveEndResult.playingEnd;
+
             await context.recheckAuthority();
 
             const finalPlayingDisposition = deriveProposedPlayingDisposition(
@@ -1822,6 +1966,12 @@ export class RegistrationCorrectionsService {
               typeof corrVersion.targetVersion.officialSnapshot === 'object' &&
               !Array.isArray(corrVersion.targetVersion.officialSnapshot)
                 ? (corrVersion.targetVersion.officialSnapshot as Record<string, unknown>)
+                : {};
+            const targetBasis =
+              targetSnapshot.basis &&
+              typeof targetSnapshot.basis === 'object' &&
+              !Array.isArray(targetSnapshot.basis)
+                ? (targetSnapshot.basis as Record<string, unknown>)
                 : {};
 
             const officialSnapshot = {
@@ -1838,7 +1988,7 @@ export class RegistrationCorrectionsService {
                 id: reg.player.id,
                 code: reg.player.code,
                 fullName: reg.player.fullName,
-                birthDate: formatDateOnly(reg.player.birthDate),
+                birthDate: livePlayerBirthDate,
                 nationalityCode: reg.player.nationalityCode,
                 positionCode: reg.player.positionCode,
               },
@@ -1848,11 +1998,22 @@ export class RegistrationCorrectionsService {
                 versionNumber: corrVersion.proposedVersion.versionNumber,
                 shirtNumber: candidate.shirtNumber,
                 playingStart: candidate.playingStart.toISOString(),
-                playingEnd: candidate.playingEnd?.toISOString() ?? null,
+                playingEnd: effectivePlayingEnd?.toISOString() ?? null,
                 u21Finding: evaluation.u21Finding,
                 homegrownFinding: evaluation.homegrownFinding,
                 nonHomegrownOptIn: candidate.nonHomegrownOptIn,
                 playingDisposition: finalPlayingDisposition,
+              },
+              basis: {
+                ...targetBasis,
+                receiptRegulationVersionId: corrVersion.targetVersion.receiptRegulationVersionId,
+                receiptTimingStatus: corrVersion.targetVersion.receiptTimingStatus,
+                receiptWindowId: corrVersion.targetVersion.receiptWindowId,
+                receiptExceptionVersionId:
+                  evaluation.approvedExceptionVersionId ??
+                  (typeof targetBasis.receiptExceptionVersionId === 'string'
+                    ? targetBasis.receiptExceptionVersionId
+                    : null),
               },
               correction: {
                 correctionCaseId: corrVersion.caseId,
@@ -1884,6 +2045,9 @@ export class RegistrationCorrectionsService {
                 decidedAt: now,
                 decidedBy: command.accountId,
                 decisionReason: reason,
+                playingEnd: effectivePlayingEnd,
+                u21Finding: evaluation.u21Finding,
+                homegrownFinding: evaluation.homegrownFinding,
                 decisionRegulationVersionId: effectiveRegulation.id,
                 playingDisposition: finalPlayingDisposition,
                 officialSnapshot: officialSnapshot as unknown as Prisma.InputJsonObject,
@@ -2006,6 +2170,7 @@ export class RegistrationCorrectionsService {
             editors: { select: { accountId: true } },
             targetVersion: true,
             proposedVersion: true,
+            segments: { orderBy: { segmentOrder: 'asc' } },
           },
         });
         if (!corrVersion) throw missing();
@@ -2058,25 +2223,108 @@ export class RegistrationCorrectionsService {
           await context.recheckAuthority();
           const now = await context.now();
 
-          // Refresh segments one final time while corrVersion.state is still DRAFT
-          await context.db.registrationCorrectionSegment.deleteMany({
-            where: { correctionVersionId: corrVersion.id },
+          const currentPlayerBirthDate = formatDateOnly(reg.player.birthDate);
+          const snapshotBirthDate = extractSnapshotPlayerBirthDate(
+            corrVersion.targetVersion.officialSnapshot,
+          );
+          const pendingSourceCorrection = {
+            required: snapshotBirthDate !== null && snapshotBirthDate !== currentPlayerBirthDate,
+            snapshotBirthDate,
+            currentPlayerBirthDate,
+          };
+          const proposedDisposition = deriveProposedPlayingDisposition(
+            disposition,
+            corrVersion.targetVersion.playingDisposition,
+          );
+
+          const refreshedAfterSummary = buildCorrectionSummary({
+            versionId: corrVersion.proposedVersionId,
+            versionNumber: corrVersion.proposedVersion.versionNumber,
+            shirtNumber: candidate.shirtNumber,
+            playingStart: candidate.playingStart,
+            playingEnd: candidate.playingEnd,
+            playerBirthDateIso: currentPlayerBirthDate,
+            u21Finding: evaluation.u21Finding,
+            homegrownFinding: evaluation.homegrownFinding,
+            nonHomegrownOptIn: candidate.nonHomegrownOptIn,
+            evidenceBranch: candidate.evidenceBranch,
+            qualifyingValue: candidate.qualifyingValue,
+            evidenceSummary: candidate.evidenceSummary,
+            evidenceReference: candidate.evidenceReference,
+            affiliatedAssociationBasis: candidate.affiliatedAssociationBasis,
+            playingDisposition: proposedDisposition,
+            notes: candidate.notes,
           });
-          for (const seg of evaluation.segments) {
-            await context.db.registrationCorrectionSegment.create({
-              data: {
-                id: randomUUID(),
-                seasonId: reg.seasonId,
-                correctionVersionId: corrVersion.id,
-                segmentOrder: seg.segmentOrder,
-                segmentStart: seg.segmentStart,
-                segmentEnd: seg.segmentEnd,
-                regulationVersionId: seg.regulationVersionId,
-                outcome: seg.outcome,
-                requiredDisposition: seg.requiredDisposition,
-                findings: seg.findings as unknown as Prisma.InputJsonObject,
-              },
+
+          const existingDeclared = readStoredDeclaredReferences(corrVersion.affectedReferences);
+          const refreshedAffectedReferences: StoredRegistrationAffectedReferences = {
+            declared: existingDeclared,
+            uc19MatchReviewRequired: existingDeclared.some(
+              (r) => r.kind === 'OFFICIAL_RESULT' || r.kind === 'SCHEDULED_MATCH',
+            ),
+            pendingSourceCorrection,
+          };
+
+          const segmentsChanged =
+            evaluation.segments.length !== corrVersion.segments.length ||
+            evaluation.segments.some((seg, idx) => {
+              const prev = corrVersion.segments[idx];
+              return (
+                !prev ||
+                prev.segmentOrder !== seg.segmentOrder ||
+                prev.segmentStart.getTime() !== seg.segmentStart.getTime() ||
+                (prev.segmentEnd?.getTime() ?? null) !== (seg.segmentEnd?.getTime() ?? null) ||
+                prev.regulationVersionId !== seg.regulationVersionId ||
+                prev.outcome !== seg.outcome ||
+                prev.requiredDisposition !== seg.requiredDisposition ||
+                JSON.stringify(prev.findings) !== JSON.stringify(seg.findings)
+              );
             });
+          const proposedFieldsChanged =
+            corrVersion.proposedVersion.u21Finding !== evaluation.u21Finding ||
+            corrVersion.proposedVersion.homegrownFinding !== evaluation.homegrownFinding ||
+            corrVersion.proposedVersion.playingDisposition !== proposedDisposition;
+          const summaryChanged =
+            JSON.stringify(corrVersion.afterSummary) !== JSON.stringify(refreshedAfterSummary) ||
+            JSON.stringify(corrVersion.affectedReferences) !==
+              JSON.stringify(refreshedAffectedReferences);
+
+          const evaluationChanged = segmentsChanged || proposedFieldsChanged || summaryChanged;
+
+          if (evaluationChanged) {
+            if (proposedFieldsChanged) {
+              await context.db.registrationVersion.update({
+                where: { id: corrVersion.proposedVersionId },
+                data: {
+                  u21Finding: evaluation.u21Finding,
+                  homegrownFinding: evaluation.homegrownFinding,
+                  playingDisposition: proposedDisposition,
+                  revision: { increment: 1 },
+                },
+              });
+            }
+
+            if (segmentsChanged) {
+              await context.db.registrationCorrectionSegment.deleteMany({
+                where: { correctionVersionId: corrVersion.id },
+              });
+              for (const seg of evaluation.segments) {
+                await context.db.registrationCorrectionSegment.create({
+                  data: {
+                    id: randomUUID(),
+                    seasonId: reg.seasonId,
+                    correctionVersionId: corrVersion.id,
+                    segmentOrder: seg.segmentOrder,
+                    segmentStart: seg.segmentStart,
+                    segmentEnd: seg.segmentEnd,
+                    regulationVersionId: seg.regulationVersionId,
+                    outcome: seg.outcome,
+                    requiredDisposition: seg.requiredDisposition,
+                    findings: seg.findings as unknown as Prisma.InputJsonObject,
+                  },
+                });
+              }
+            }
           }
 
           const updated = await context.db.registrationCorrectionVersion.update({
@@ -2084,6 +2332,13 @@ export class RegistrationCorrectionsService {
             data: {
               state: 'SUBMITTED',
               submittedAt: now,
+              ...(evaluationChanged && summaryChanged
+                ? {
+                    afterSummary: refreshedAfterSummary as Prisma.InputJsonObject,
+                    affectedReferences:
+                      refreshedAffectedReferences as unknown as Prisma.InputJsonObject,
+                  }
+                : {}),
               revision: { increment: 1 },
             },
             select: { revision: true },
