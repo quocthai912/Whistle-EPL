@@ -407,6 +407,89 @@ const businessPolicies = {
     'decidedAt',
     'playingDisposition',
   ],
+  REGISTRATION_CORRECTION_DRAFT_CREATED: [
+    'caseId',
+    'correctionCaseId',
+    'correctionVersionId',
+    'versionNumber',
+    'targetVersionId',
+    'proposedVersionId',
+    'disposition',
+    'state',
+  ],
+  REGISTRATION_CORRECTION_DRAFT_UPDATED: [
+    'caseId',
+    'correctionCaseId',
+    'correctionVersionId',
+    'versionNumber',
+    'targetVersionId',
+    'proposedVersionId',
+    'disposition',
+    'state',
+    'revision',
+  ],
+  REGISTRATION_CORRECTION_SUBMITTED: [
+    'caseId',
+    'correctionCaseId',
+    'correctionVersionId',
+    'versionNumber',
+    'targetVersionId',
+    'proposedVersionId',
+    'disposition',
+    'state',
+    'submittedAt',
+  ],
+  REGISTRATION_CORRECTION_RETURNED: [
+    'caseId',
+    'correctionCaseId',
+    'correctionVersionId',
+    'versionNumber',
+    'targetVersionId',
+    'proposedVersionId',
+    'state',
+    'decidedAt',
+  ],
+  REGISTRATION_CORRECTION_WITHDRAWN: [
+    'caseId',
+    'correctionCaseId',
+    'correctionVersionId',
+    'versionNumber',
+    'targetVersionId',
+    'proposedVersionId',
+    'state',
+    'decidedAt',
+  ],
+  REGISTRATION_CORRECTION_REJECTED: [
+    'caseId',
+    'correctionCaseId',
+    'correctionVersionId',
+    'versionNumber',
+    'targetVersionId',
+    'proposedVersionId',
+    'state',
+    'decidedAt',
+  ],
+  REGISTRATION_CORRECTION_APPROVED: [
+    'caseId',
+    'correctionCaseId',
+    'correctionVersionId',
+    'versionNumber',
+    'targetVersionId',
+    'proposedVersionId',
+    'disposition',
+    'state',
+    'approvedAt',
+    'approvalRegulationVersionId',
+    'segmentCount',
+    'unmetSegmentCount',
+    'playingDisposition',
+    'shirtNumber',
+    'playingStart',
+    'playingEnd',
+    'u21Finding',
+    'homegrownFinding',
+    'nonHomegrownOptIn',
+  ],
 } as const;
 const policies = { ...existingPolicies, ...businessPolicies } as const;
 export type AuditAction = keyof typeof policies;
@@ -501,6 +584,13 @@ const objectKindByAction: Partial<Record<AuditAction, BusinessHistoryKind>> = {
   PLAYER_TRANSFER_EXECUTED: 'PlayerRegistration',
   PLAYER_REGISTRATION_PLAN_CHANGED: 'PlayerRegistration',
   PLAYER_REGISTRATION_PLAN_CANCELLED: 'PlayerRegistration',
+  REGISTRATION_CORRECTION_DRAFT_CREATED: 'PlayerRegistration',
+  REGISTRATION_CORRECTION_DRAFT_UPDATED: 'PlayerRegistration',
+  REGISTRATION_CORRECTION_SUBMITTED: 'PlayerRegistration',
+  REGISTRATION_CORRECTION_RETURNED: 'PlayerRegistration',
+  REGISTRATION_CORRECTION_WITHDRAWN: 'PlayerRegistration',
+  REGISTRATION_CORRECTION_REJECTED: 'PlayerRegistration',
+  REGISTRATION_CORRECTION_APPROVED: 'PlayerRegistration',
 };
 
 const requiredAfterFields: Partial<Record<AuditAction, readonly string[]>> = {
@@ -705,6 +795,27 @@ const requiredAfterFields: Partial<Record<AuditAction, readonly string[]>> = {
     'decidedAt',
     'playingDisposition',
   ],
+  REGISTRATION_CORRECTION_DRAFT_CREATED: [
+    'caseId',
+    'correctionCaseId',
+    'correctionVersionId',
+    'versionNumber',
+    'targetVersionId',
+    'proposedVersionId',
+    'state',
+  ],
+  REGISTRATION_CORRECTION_APPROVED: [
+    'caseId',
+    'correctionCaseId',
+    'correctionVersionId',
+    'versionNumber',
+    'targetVersionId',
+    'proposedVersionId',
+    'disposition',
+    'state',
+    'approvedAt',
+    'approvalRegulationVersionId',
+  ],
 };
 
 const reasonRequired = new Set<AuditAction>([
@@ -746,6 +857,10 @@ const reasonRequired = new Set<AuditAction>([
   'PLAYER_TRANSFER_EXECUTED',
   'PLAYER_REGISTRATION_PLAN_CHANGED',
   'PLAYER_REGISTRATION_PLAN_CANCELLED',
+  'REGISTRATION_CORRECTION_DRAFT_CREATED',
+  'REGISTRATION_CORRECTION_RETURNED',
+  'REGISTRATION_CORRECTION_REJECTED',
+  'REGISTRATION_CORRECTION_APPROVED',
 ]);
 const beforeRequired = new Set<AuditAction>([
   'SEASON_UPDATED',
@@ -785,6 +900,7 @@ const beforeRequired = new Set<AuditAction>([
   'PLAYER_TRANSFER_EXECUTED',
   'PLAYER_REGISTRATION_PLAN_CHANGED',
   'PLAYER_REGISTRATION_PLAN_CANCELLED',
+  'REGISTRATION_CORRECTION_APPROVED',
 ]);
 
 const allowedActorKinds: Partial<
@@ -948,6 +1064,7 @@ export function validateAuditEvent(event: {
       'SeasonLifecycleRequest',
       'ClubApplication',
       'ReceiptExceptionCase',
+      'PlayerRegistration',
     ].includes(event.objectKind) &&
     (!event.seasonId || !UUID4.test(event.seasonId))
   ) {
@@ -1361,6 +1478,32 @@ export function validateAuditEvent(event: {
       )
         throw new Error(
           'Prospective registration plan cancellation audit events require exact disposition and lineage.',
+        );
+      break;
+    case 'REGISTRATION_CORRECTION_APPROVED':
+      if (
+        !exactObjectReference('caseId') ||
+        !exactUuid('correctionCaseId') ||
+        !exactUuid('correctionVersionId') ||
+        !exactUuid('targetVersionId') ||
+        !exactUuid('proposedVersionId') ||
+        !Number.isSafeInteger(after.versionNumber) ||
+        Number(after.versionNumber) < 1 ||
+        after.state !== 'APPROVED' ||
+        !['RETAIN_VALID', 'END_EFFECTIVITY', 'RECORD_ERRONEOUS'].includes(
+          String(after.disposition),
+        ) ||
+        !exactInstant('approvedAt') ||
+        !exactUuid('approvalRegulationVersionId') ||
+        !isRecord(event.before) ||
+        event.before.caseId !== after.caseId ||
+        event.before.correctionVersionId !== after.correctionVersionId ||
+        event.before.targetVersionId !== after.targetVersionId ||
+        event.before.proposedVersionId !== after.proposedVersionId ||
+        event.before.state !== 'SUBMITTED'
+      )
+        throw new Error(
+          'Registration correction approval audit events require exact correction version, target/proposed versions, disposition and transition.',
         );
       break;
   }

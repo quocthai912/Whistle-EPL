@@ -30,6 +30,7 @@ import {
   type SeasonList,
 } from '../seasons/season-model';
 import pageCss from './ClubApplicationsPage.module.css';
+import { OfficialCorrectionsPanel } from './OfficialCorrectionsPanel';
 import {
   PlayerRegistrationForm,
   type PlayerRegistrationReferences,
@@ -914,6 +915,8 @@ function PlayerRegistrationDrawer({
 
   const activeVersion =
     detail?.versions.find((v) => v.id === selectedVersionId) ?? detail?.versions[0];
+  const validatedVersion =
+    detail?.versions.find((v) => v.id === detail.currentValidatedVersionId) ?? null;
   const currentAccountId = session?.account.id;
   const seasonOpen = detail?.season.state === 'OPEN';
   const hasOpenSibling = detail?.versions.some(
@@ -1540,6 +1543,47 @@ function PlayerRegistrationDrawer({
               </section>
             )}
 
+            {/* Official Corrections Panel (when validated) */}
+            {detail.currentValidatedVersionId && (
+              <OfficialCorrectionsPanel
+                key={`corrections-${caseId}-${plansRefreshToken}`}
+                mode="player-registration"
+                caseId={caseId}
+                playerName={detail.player.fullName}
+                clubName={detail.club.name}
+                seasonName={detail.season.name}
+                baseline={
+                  validatedVersion
+                    ? {
+                        versionId: validatedVersion.id,
+                        versionNumber: validatedVersion.versionNumber,
+                        receivedAt: validatedVersion.receivedAt,
+                        shirtNumber: validatedVersion.shirtNumber,
+                        playingStart: validatedVersion.playingStart,
+                        playingEnd: validatedVersion.playingEnd,
+                        u21Finding: validatedVersion.u21Finding,
+                        homegrownFinding: validatedVersion.homegrownFinding,
+                        nonHomegrownOptIn: validatedVersion.nonHomegrownOptIn,
+                        evidenceBranch: validatedVersion.evidenceBranch,
+                        qualifyingValue: validatedVersion.qualifyingValue,
+                        evidenceSummary: validatedVersion.evidenceSummary,
+                        evidenceReference: validatedVersion.evidenceReference,
+                        affiliatedAssociationBasis: validatedVersion.affiliatedAssociationBasis,
+                        playingDisposition: validatedVersion.playingDisposition,
+                        notes: validatedVersion.notes,
+                      }
+                    : null
+                }
+                onChanged={() => {
+                  clearPrecheck();
+                  setSelectedVersionId(undefined);
+                  setPlansRefreshToken((prev) => prev + 1);
+                  resource.reload();
+                  onChange();
+                }}
+              />
+            )}
+
             {/* Playing Intervals, Transfers & Prospective Plans (when validated) */}
             {detail.currentValidatedVersionId && (
               <RegistrationPlansPanel
@@ -2103,9 +2147,13 @@ function formatRegistrationHistoryChange(
   const formatDisp = (code: string) =>
     code === 'CANCELLED_BEFORE_EFFECTIVITY'
       ? 'Hủy trước hiệu lực'
-      : code === 'ACTIVE'
-        ? 'Chưa bị hủy trước hiệu lực'
-        : code;
+      : code === 'ENDED_BY_CORRECTION'
+        ? 'Chấm dứt hiệu lực theo đính chính'
+        : code === 'RECORDED_ERRONEOUS'
+          ? 'Thu hồi hiệu lực do quyết định sai sót'
+          : code === 'ACTIVE'
+            ? 'Chưa bị hủy trước hiệu lực'
+            : code;
   if (beforeDisp && afterDisp && beforeDisp !== afterDisp) {
     parts.push(`Trạng thái kế hoạch: ${formatDisp(beforeDisp)} → ${formatDisp(afterDisp)}`);
   } else if (afterDisp && afterDisp === 'CANCELLED_BEFORE_EFFECTIVITY') {

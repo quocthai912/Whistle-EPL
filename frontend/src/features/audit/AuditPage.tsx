@@ -126,6 +126,25 @@ const changeLabels: Record<string, string> = {
   u21Finding: 'Đạt diện cầu thủ trẻ U21',
   homegrownFinding: 'Đạt tiêu chí đào tạo nội địa',
   nonHomegrownOptIn: 'Chọn diện ngoài đào tạo nội địa',
+  baseAcceptedVersionId: 'Phiên bản chính thức gốc',
+  approvalRegulationVersionId: 'Quy định tại thời điểm phê duyệt',
+  changedFields: 'Các trường thông tin đính chính',
+  correctionEvidence: 'Căn cứ đính chính',
+  affectedReferenceCount: 'Số hồ sơ liên quan cần rà soát',
+  venueReviewRequired: 'Cần rà soát lịch sân nhà',
+  coachName: 'Huấn luyện viên trưởng',
+  homeStadiumId: 'Mã sân nhà đăng ký',
+  representativeName: 'Người đại diện',
+  representativePhone: 'Số điện thoại đại diện',
+  contactAddress: 'Địa chỉ liên hệ',
+  notes: 'Ghi chú',
+  correctionCaseId: 'Mã hồ sơ đính chính',
+  correctionVersionId: 'Mã phiên bản đính chính',
+  targetVersionId: 'Phiên bản chính thức gốc',
+  proposedVersionId: 'Phiên bản đăng ký đề xuất',
+  disposition: 'Phương án xử lý hiệu lực',
+  segmentCount: 'Số giai đoạn quy định kiểm tra',
+  unmetSegmentCount: 'Số giai đoạn chưa đạt điều kiện',
 };
 /** Uses an own-property display label, preserving unknown historical codes as text. */
 const label = (names: Record<string, string>, key: string) =>
@@ -167,12 +186,16 @@ function changeValue(name: string, value: Change[string], actionCode: string, af
           ? { ...stateNames, ...regulationStateLabels, APPROVED: 'Đã phê duyệt' }
           : actionCode.startsWith('PLAYER_REGISTRATION_') ||
               actionCode.startsWith('PLAYER_TRANSFER_') ||
-              actionCode.startsWith('CLUB_APPLICATION_')
+              actionCode.startsWith('CLUB_APPLICATION_') ||
+              actionCode.startsWith('REGISTRATION_CORRECTION_') ||
+              actionCode.startsWith('RECEIPT_EXCEPTION_')
             ? {
                 ...stateNames,
                 RECEIVED: 'Đã tiếp nhận',
                 PENDING_APPROVAL: 'Chờ phê duyệt',
                 NEEDS_SUPPLEMENTATION: 'Cần bổ sung',
+                SUBMITTED: 'Chờ phê duyệt',
+                RETURNED: 'Cần bổ sung',
                 VALID: 'Hợp lệ',
                 APPROVED: 'Đã phê duyệt',
                 REJECTED: 'Bị từ chối',
@@ -181,9 +204,16 @@ function changeValue(name: string, value: Change[string], actionCode: string, af
               }
             : stateNames,
     role: { SOURCE: 'Câu lạc bộ nguồn', DESTINATION: 'Câu lạc bộ đích' },
+    disposition: {
+      RETAIN_VALID: 'Giữ hiệu lực hợp lệ',
+      END_EFFECTIVITY: 'Chấm dứt hiệu lực theo đính chính',
+      RECORD_ERRONEOUS: 'Thu hồi hiệu lực do quyết định sai sót',
+    },
     playingDisposition: {
-      ACTIVE: 'Chưa bị hủy trước hiệu lực',
+      ACTIVE: 'Đang giữ hiệu lực hợp lệ',
       CANCELLED_BEFORE_EFFECTIVITY: 'Hủy trước hiệu lực',
+      ENDED_BY_CORRECTION: 'Chấm dứt hiệu lực theo đính chính',
+      RECORDED_ERRONEOUS: 'Thu hồi hiệu lực do quyết định sai sót',
     },
     receiptTimingStatus: { ON_TIME: 'Đúng hạn', LATE: 'Ngoài hạn' },
     startMode: { IMMEDIATE: 'Ngay khi cấp quyền', SCHEDULED: 'Theo thời gian chỉ định' },

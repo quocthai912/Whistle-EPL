@@ -1,0 +1,34 @@
+# PHASE 3 T021–T023 Verification — Official Record Corrections (D057 & Unified Review UI)
+
+**Implementation publication verified, 2026-11-24 (Asia/Bangkok):** Published at [`7fafd06a0cf00f5d948a2bf991d36c01cf4d87cf`](https://github.com/quocthai912/Whistle-EPL/commit/7fafd06a0cf00f5d948a2bf991d36c01cf4d87cf) on feature branch `feat/phase-3-official-record-corrections`. Both local `HEAD` and live remote `refs/heads/feat/phase-3-official-record-corrections` resolved to `7fafd06a0cf00f5d948a2bf991d36c01cf4d87cf` with all 15 changed/new source, test, and task files matching the verified implementation. GitHub Issues [#123](https://github.com/quocthai912/Whistle-EPL/issues/123) (T021), [#124](https://github.com/quocthai912/Whistle-EPL/issues/124) (T022), and [#125](https://github.com/quocthai912/Whistle-EPL/issues/125) (T023) record task completion.
+
+## 1. Delivered Scope
+
+| Task | Issue | Target Artifacts | Verified Scope |
+|---|---|---|---|
+| **T021** | [#123](https://github.com/quocthai912/Whistle-EPL/issues/123) | `backend/tests/integration/phase-3-registration-corrections.spec.ts` | Test-first PostgreSQL 17.11 integration suite (4 scenarios) covering D057 segmented rule boundaries (`R1` before exact effectivity, `R2` from exact effectivity even with delayed activation processing), failed-segment disposition, scoped related match references for UC19 review without altering match results/statistics, independent return for supplementation and rejection as distinct outcomes retaining submitted history and official validated pointer, missing historic regulation basis (`INSUFFICIENT_BASIS`), pending source-data correction (`STATE_CONFLICT`), future-effective error outside D075 scope (`OUT_OF_D057_SCOPE`), stale baseline rejection, former-editor self-approval denial, Closed-season guard, and transactional rollback integrity. |
+| **T022** | [#124](https://github.com/quocthai912/Whistle-EPL/issues/124) | `backend/src/registry-registration/registration-corrections.dto.ts`, `registration-corrections.service.ts`, `registration-corrections.controller.ts`, `backend/src/audit/audit-payload.policy.ts`, `backend/src/app.module.ts` | Allowlisted D057 historical registration correction endpoints (list, create/submit, supplement, independent review with `APPROVE` / `RETURN_FOR_SUPPLEMENTATION` / `REJECT`) executed inside `TransactionContext` with D096 lock ordering, exact accepted baseline enforcement, and former-editor denial. Evaluates impacted segments at exact rule effectivity instants (independent of activation-processing delay) and squad composition boundaries, persists typed `RegistrationCorrectionSegment` evidence, per-segment findings/disposition, original bases, and scoped related matches for UC19 review without automatic result/statistics changes. Return and rejection preserve submitted history and keep the official validated pointer unchanged; only independent approval updates the pointer atomically with audit records. Passes T021. |
+| **T023** | [#125](https://github.com/quocthai912/Whistle-EPL/issues/125) | `frontend/src/features/registrations/OfficialCorrectionsPanel.tsx`, `OfficialCorrectionsPanel.module.css`, `ClubApplicationsPage.tsx`, `PlayerRegistrationsPage.tsx`, `frontend/src/features/audit/audit-filters.ts`, `AuditPage.tsx`, `frontend/tests/phase-3-corrections-panel.spec.tsx`, `tests/e2e/phase-3-corrections.spec.ts` | Team Leader-approved Vietnamese UI for official record corrections with zero leaked technical/enum identifiers. Provides distinct entry points for BM1 descriptive corrections (D100) in `ClubApplicationsPage` and historical player registration corrections (D057) in `PlayerRegistrationsPage`, independent approval, return for supplementation and rejection preserving the official version after either alternate outcome, precise before/after diffs and per-segment findings, Closed-season and stale-basis feedback, safely scoped past/current history views, and localized audit labels. Verified in Vitest unit tests and real Chrome & Edge HTTPS E2E journeys. |
+
+## 2. Verification Results
+
+- **Environment:** Windows x64, Node.js `24.14.0`, pnpm `10.33.2`, PostgreSQL `17.11-bookworm` (separate `whistle_test_integration` and `whistle_test_browser` databases), local Caddy HTTPS proxy (`https://localhost:8449`), real Chrome & Edge.
+- **Formatting, Lint, Typecheck & Build (after final edits):**
+  - `pnpm format:check` — PASS
+  - `pnpm lint` (backend, frontend, root, E2E) — PASS
+  - `pnpm typecheck` (`prisma generate` + backend + frontend + E2E) — PASS
+  - `pnpm build` (backend + frontend Vite bundle + `pnpm verify:client`) — PASS
+- **Backend Unit & Integration Tests:**
+  - `pnpm --filter @whistle-epl/backend run test:unit` — **10/10 suites, 80/80 tests PASS**
+  - `jest --config jest.integration.config.cjs --runInBand tests/integration/phase-3-registration-corrections.spec.ts tests/integration/phase-3-bm1-corrections.spec.ts` (`whistle_test_integration`) — **2/2 suites, 11/11 tests PASS** (`phase-3-registration-corrections.spec.ts` 4/4 + `phase-3-bm1-corrections.spec.ts` 7/7)
+- **Frontend Unit Tests:**
+  - `pnpm --filter @whistle-epl/frontend run test:unit` — **19/19 files, 107/107 tests PASS** (including `tests/phase-3-corrections-panel.spec.tsx`; two unrelated legacy files that timed out under parallel CPU contention during build passed 27/27 on clean rerun).
+- **Browser E2E & Visual Inspection (`build-ui-ux`):**
+  - `pnpm exec playwright test tests/e2e/phase-3-corrections.spec.ts` against real HTTPS Caddy + PostgreSQL 17.11 `whistle_test_browser` — **2/2 PASS** (Chrome & Edge: distinct BM1 D100 and registration D057 correction entry points, independent approval, return for supplementation and rejection preserving official version, before/after comparison, per-segment findings, Closed-season/stale-basis feedback, and scoped history views).
+  - Visual screenshot inspection (`1366×768` and `1600×1000` in `.verification/t023/`): verified approved concise layout, Vietnamese wording, and zero leaked technical/enum codes.
+- **Two-Axis Code Review:** Independent **Standards** and **Spec** review subagents reported **0 P0/P1/P2 defects**; 2 minor P3 items were cleaned up and re-verified before commit `7fafd06`.
+
+## 3. Scope Boundaries
+
+- Published on feature branch `feat/phase-3-official-record-corrections` (`7fafd06a0cf00f5d948a2bf991d36c01cf4d87cf`). PR merge, hosted CI, T024–T028 (`phase-2-contracts`, `available-phase-3` portrait recovery, cross-workflow security/races/regression, D090/HQ-01/TD-01 scale & usability trials, and final PHASE 3 acceptance assembly), and whole-PHASE 3 human acceptance remain separate gates.
+- Non-target backend integration files outside `phase-3-{registration,bm1}-corrections.spec.ts` and unrelated E2E specs outside `phase-3-corrections.spec.ts` were not re-executed in this milestone run.

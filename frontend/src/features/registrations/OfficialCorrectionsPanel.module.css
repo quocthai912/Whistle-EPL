@@ -1,0 +1,281 @@
+.panelHighlight {
+  border: 1.5px solid #d9cdf6;
+  box-shadow: 0 2px 10px rgba(85, 44, 182, 0.06);
+}
+
+.panelSub {
+  margin: -4px 0 0;
+  font-size: 12.5px;
+  color: #65718a;
+  line-height: 1.5;
+}
+
+.banner {
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid #d9cdf6;
+  background: #f6f3fc;
+  color: #3c1f86;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.bannerWarn {
+  border-color: #f4d299;
+  background: #fff8eb;
+  color: #7a4b00;
+}
+
+.bannerErr {
+  border-color: #f6c4c0;
+  background: #fdeeee;
+  color: #b42318;
+}
+
+.bannerOk {
+  border-color: #b9e6ce;
+  background: #e8f7ef;
+  color: #137347;
+}
+
+.proposalCard {
+  display: grid;
+  gap: 14px;
+  padding: 16px;
+  border-radius: 12px;
+  border: 1px solid #d9cdf6;
+  background: #faf8ff;
+}
+
+.proposalHeader {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 12.5px;
+  color: #526078;
+}
+
+.diffTableWrap {
+  overflow-x: auto;
+  border-radius: 10px;
+  border: 1px solid #e3e7f2;
+  background: #ffffff;
+}
+
+.diffTable {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 13px;
+}
+
+.diffTable th {
+  background: #f8f9fc;
+  color: #65718a;
+  font-weight: 600;
+  font-size: 12px;
+  text-align: left;
+  padding: 9px 14px;
+  border-bottom: 1px solid #e3e7f2;
+}
+
+.diffTable td {
+  padding: 10px 14px;
+  border-bottom: 1px solid #eef1f7;
+  vertical-align: middle;
+  color: #17213b;
+}
+
+.diffTable tr:last-child td {
+  border-bottom: 0;
+}
+
+.diffFieldCol {
+  width: 28%;
+  font-weight: 600;
+  color: #526078;
+}
+
+.diffBeforeCol {
+  width: 36%;
+}
+
+.diffAfterCol {
+  width: 36%;
+  font-weight: 600;
+  color: #552cb6;
+}
+
+.reasonGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid #e3e7f2;
+  background: #ffffff;
+  font-size: 12.5px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.reasonLabel {
+  color: #65718a;
+  margin-right: 4px;
+}
+
+.segmentSection {
+  display: grid;
+  gap: 8px;
+}
+
+.segmentHeading {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #17213b;
+}
+
+.segmentBox {
+  border: 1px solid #e3e7f2;
+  border-radius: 10px;
+  background: #ffffff;
+  overflow: hidden;
+}
+
+.segmentRow {
+  padding: 11px 14px;
+  border-top: 1px solid #eef1f7;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  font-size: 12.5px;
+}
+
+.segmentRow:first-child {
+  border-top: 0;
+}
+
+.segmentRowFail {
+  background: #fffcfa;
+}
+
+.segmentMain {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+
+.segmentSub {
+  color: #65718a;
+}
+
+.segmentFailText {
+  color: #b42318;
+  font-weight: 500;
+}
+
+.segmentDispositionNote {
+  color: #7a4b00;
+  font-size: 12px;
+}
+
+.referenceBar {
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1px solid #e3e7f2;
+  background: #ffffff;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 12.5px;
+}
+
+.actionBar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding-top: 10px;
+  border-top: 1px solid #d9cdf6;
+}
+
+.actionButtons {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.actionButtons button {
+  min-height: 38px;
+  padding: 7px 14px;
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.emptyState {
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px dashed #d8deea;
+  background: #fafbfe;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 12.5px;
+  color: #526078;
+}
+
+.historyDetails {
+  border: 1px solid #e3e7f2;
+  border-radius: 10px;
+  padding: 10px 14px;
+  background: #fafbfe;
+  font-size: 12.5px;
+}
+
+.historyDetails summary {
+  cursor: pointer;
+  font-weight: 600;
+  color: #3c1f86;
+}
+
+.historyList {
+  list-style: none;
+  margin: 10px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.historyItem {
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid #e3e7f2;
+  background: #ffffff;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.formGrid2 {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+@media (max-width: 720px) {
+  .reasonGrid,
+  .formGrid2 {
+    grid-template-columns: 1fr;
+  }
+}

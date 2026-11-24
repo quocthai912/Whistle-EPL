@@ -970,8 +970,8 @@ model RegistrationCorrectionSegment {
   segmentOrder        Int                           @map("segment_order")
   segmentStart        DateTime                      @map("segment_start") @db.Timestamptz(6)
   segmentEnd          DateTime?                     @map("segment_end") @db.Timestamptz(6)
-  regulationVersionId String                        @map("regulation_version_id") @db.Uuid
-  regulationVersion   RegulationVersion             @relation("correctionSegmentRegulation", fields: [seasonId, regulationVersionId], references: [seasonId, id], onDelete: Restrict, onUpdate: NoAction)
+  regulationVersionId String?                       @map("regulation_version_id") @db.Uuid
+  regulationVersion   RegulationVersion?            @relation("correctionSegmentRegulation", fields: [seasonId, regulationVersionId], references: [seasonId, id], onDelete: Restrict, onUpdate: NoAction)
   outcome             String
   findings            Json                          @db.JsonB
   requiredDisposition String?                       @map("required_disposition")

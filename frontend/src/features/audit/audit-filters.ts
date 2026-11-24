@@ -79,6 +79,14 @@ export const actions: Record<string, string> = {
   CLUB_APPLICATION_CANCELLED: 'Hủy hồ sơ tham dự',
   CLUB_APPLICATION_REJECTED: 'Từ chối hồ sơ tham dự',
   CLUB_APPLICATION_APPROVED: 'Phê duyệt hồ sơ tham dự',
+  CLUB_APPLICATION_CORRECTION_DRAFT_CREATED: 'Tạo đề xuất đính chính hồ sơ tham dự',
+  CLUB_APPLICATION_CORRECTION_DRAFT_UPDATED: 'Cập nhật nháp đính chính hồ sơ tham dự',
+  CLUB_APPLICATION_CORRECTION_SUBMITTED: 'Trình phê duyệt đính chính hồ sơ tham dự',
+  CLUB_APPLICATION_CORRECTION_RETURNED: 'Trả lại đề xuất đính chính hồ sơ tham dự',
+  CLUB_APPLICATION_CORRECTION_WITHDRAWN: 'Rút đề xuất đính chính hồ sơ tham dự',
+  CLUB_APPLICATION_CORRECTION_CANCELLED: 'Hủy đề xuất đính chính hồ sơ tham dự',
+  CLUB_APPLICATION_CORRECTION_REJECTED: 'Từ chối đính chính hồ sơ tham dự',
+  CLUB_APPLICATION_CORRECTION_APPROVED: 'Phê duyệt đính chính hồ sơ tham dự',
   RECEIPT_EXCEPTION_DRAFT_CREATED: 'Tạo đề xuất ngoại lệ tiếp nhận',
   RECEIPT_EXCEPTION_SUBMITTED: 'Gửi duyệt ngoại lệ tiếp nhận',
   RECEIPT_EXCEPTION_RETURNED: 'Trả lại đề xuất ngoại lệ tiếp nhận',
@@ -95,6 +103,13 @@ export const actions: Record<string, string> = {
   PLAYER_TRANSFER_EXECUTED: 'Chuyển câu lạc bộ cho cầu thủ',
   PLAYER_REGISTRATION_PLAN_CHANGED: 'Điều chỉnh kế hoạch đăng ký tương lai',
   PLAYER_REGISTRATION_PLAN_CANCELLED: 'Hủy kế hoạch đăng ký trước hiệu lực',
+  REGISTRATION_CORRECTION_DRAFT_CREATED: 'Tạo đề xuất đính chính đăng ký cầu thủ',
+  REGISTRATION_CORRECTION_DRAFT_UPDATED: 'Cập nhật nháp đính chính đăng ký cầu thủ',
+  REGISTRATION_CORRECTION_SUBMITTED: 'Trình phê duyệt đính chính đăng ký cầu thủ',
+  REGISTRATION_CORRECTION_RETURNED: 'Trả lại đề xuất đính chính đăng ký cầu thủ',
+  REGISTRATION_CORRECTION_WITHDRAWN: 'Rút đề xuất đính chính đăng ký cầu thủ',
+  REGISTRATION_CORRECTION_REJECTED: 'Từ chối đính chính đăng ký cầu thủ',
+  REGISTRATION_CORRECTION_APPROVED: 'Phê duyệt đính chính đăng ký cầu thủ',
 };
 
 export const filterableObjectKinds = {
