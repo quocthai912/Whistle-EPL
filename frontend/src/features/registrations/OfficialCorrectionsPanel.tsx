@@ -256,7 +256,10 @@ function parseInstantMs(value: string | null | undefined): number | null {
   return Number.isFinite(parsed) ? parsed : null;
 }
 
-function formatSeasonInstantWithSeconds(value: string | null | undefined): string {
+function formatComparisonInstant(
+  value: string | null | undefined,
+  showMilliseconds: boolean,
+): string {
   if (!value || !Number.isFinite(Date.parse(value))) return '—';
   return new Intl.DateTimeFormat('vi-VN', {
     timeZone: 'Asia/Ho_Chi_Minh',
@@ -266,18 +269,21 @@ function formatSeasonInstantWithSeconds(value: string | null | undefined): strin
     hour: '2-digit',
     minute: '2-digit',
     second: '2-digit',
+    ...(showMilliseconds ? { fractionalSecondDigits: 3 } : {}),
     hour12: false,
   }).format(new Date(value));
 }
 
-function formatIntervalSummaryWithSeconds(
+function formatComparisonInterval(
   start: string | null | undefined,
   end: string | null | undefined,
+  showMilliseconds: boolean,
 ): string {
   if (!start) return 'Chưa ấn định';
+  const startLabel = formatComparisonInstant(start, showMilliseconds);
   return end
-    ? `${formatSeasonInstantWithSeconds(start)} → ${formatSeasonInstantWithSeconds(end)}`
-    : `Từ ${formatSeasonInstantWithSeconds(start)} (Chưa ấn định kết thúc)`;
+    ? `${startLabel} → ${formatComparisonInstant(end, showMilliseconds)}`
+    : `Từ ${startLabel} (Chưa ấn định kết thúc)`;
 }
 
 function formatHomegrownEvidenceLabel(
@@ -304,36 +310,25 @@ function formatHomegrownEvidenceLabel(
   return parts.length > 0 ? parts.join(' · ') : 'Không có';
 }
 
-function buildUpdatedAffectedReferences(
-  initialDeclared: readonly DeclaredReferenceItem[],
-  initialNote: string,
-  currentNote: string,
+type ReferenceBaseline = {
+  editable: DeclaredReferenceItem | null;
+  preserved: DeclaredReferenceItem[];
+};
+
+function updateEditableReference(
+  editable: DeclaredReferenceItem | null,
+  note: string,
   defaultKind: DeclaredReferenceItem['kind'],
-): { changed: false } | { changed: true; items: DeclaredReferenceItem[] } {
-  const trimmedCurrent = currentNote.trim();
-  if (trimmedCurrent === initialNote.trim()) {
-    return { changed: false };
-  }
-  const rest = initialDeclared.slice(1).map((item) => ({
-    kind: item.kind,
-    referenceId: item.referenceId ?? null,
-    note: item.note,
-  }));
-  if (!trimmedCurrent) {
-    return { changed: true, items: rest };
-  }
-  const first = initialDeclared[0];
-  return {
-    changed: true,
-    items: [
-      {
-        kind: first ? first.kind : defaultKind,
-        referenceId: first ? (first.referenceId ?? null) : null,
-        note: trimmedCurrent,
-      },
-      ...rest,
-    ],
-  };
+): DeclaredReferenceItem | null {
+  const trimmed = note.trim();
+  if (trimmed === (editable?.note.trim() ?? '')) return editable;
+  return trimmed
+    ? {
+        kind: editable?.kind ?? defaultKind,
+        referenceId: editable?.referenceId ?? null,
+        note: trimmed,
+      }
+    : null;
 }
 
 function isUnknownSubmitOutcome(caught: unknown): boolean {
@@ -970,12 +965,12 @@ function ClubCorrectionProposalModal({
       ? { id: editItem.id, revision: editItem.revision, versionNumber: editItem.versionNumber }
       : null,
   );
-  const [savedReferencesBaseline, setSavedReferencesBaseline] = useState<{
-    declared: DeclaredReferenceItem[];
-    note: string;
-  }>({ declared: initialDeclaredRefs, note: initialRelatedNote });
+  const [savedReferencesBaseline, setSavedReferencesBaseline] = useState<ReferenceBaseline>(() => ({
+    editable: initialDeclaredRefs[0] ?? null,
+    preserved: initialDeclaredRefs.slice(1),
+  }));
   const [draftDirty, setDraftDirty] = useState(true);
-  const [createdInSession, setCreatedInSession] = useState(false);
+  const [savedInSession, setSavedInSession] = useState(false);
   const [unknownSubmitOutcome, setUnknownSubmitOutcome] = useState(false);
   const [submitImmediately, setSubmitImmediately] = useState(true);
   const [busy, setBusy] = useState(false);
@@ -988,7 +983,7 @@ function ClubCorrectionProposalModal({
 
   function handleDismiss() {
     if (busy) return;
-    if (createdInSession && savedDraft) {
+    if (savedInSession && savedDraft) {
       onSaved(savedDraft.id);
       return;
     }
@@ -1006,8 +1001,7 @@ function ClubCorrectionProposalModal({
     setBusy(true);
     setError('');
     let currentDraft = savedDraft;
-    let currentRefsBaseline = savedReferencesBaseline;
-    let shouldSaveDraft = !currentDraft || draftDirty || !submitImmediately;
+    const shouldSaveDraft = !currentDraft || draftDirty || !submitImmediately;
 
     try {
       if (unknownSubmitOutcome && currentDraft) {
@@ -1015,29 +1009,24 @@ function ClubCorrectionProposalModal({
           `/club-applications/${caseId}/corrections`,
         );
         const latest = refreshed.data.items.find((item) => item.id === currentDraft?.id);
-        if (latest) {
-          currentDraft = {
-            id: latest.id,
-            revision: latest.revision,
-            versionNumber: latest.versionNumber,
-          };
-          setSavedDraft(currentDraft);
-          setUnknownSubmitOutcome(false);
-          if (latest.state !== 'DRAFT') {
-            onSaved(latest.id);
-            return;
-          }
+        if (latest && latest.state !== 'DRAFT') {
+          onSaved(latest.id);
+          return;
         }
+        // Use only the revision already acknowledged for this form's saved values.
+        if (!latest || latest.revision !== currentDraft.revision) {
+          setError(
+            'Bản nháp đã thay đổi hoặc không còn khả dụng. Vui lòng đóng biểu mẫu, tải lại và kiểm tra trước khi trình phê duyệt.',
+          );
+          return;
+        }
+        setUnknownSubmitOutcome(false);
       }
 
       if (shouldSaveDraft) {
         if (currentDraft) {
-          const refUpdate = buildUpdatedAffectedReferences(
-            currentRefsBaseline.declared,
-            currentRefsBaseline.note,
-            relatedNote,
-            'SCHEDULED_MATCH',
-          );
+          const { editable, preserved } = savedReferencesBaseline;
+          const nextEditable = updateEditableReference(editable, relatedNote, 'SCHEDULED_MATCH');
           const updated = await client.request<{ versionId: string; revision: string }>(
             `/club-applications/${caseId}/corrections/${currentDraft.id}`,
             {
@@ -1052,7 +1041,9 @@ function ClubCorrectionProposalModal({
                 notes: notes.trim() || null,
                 correctionReason: correctionReason.trim(),
                 correctionEvidence: correctionEvidence.trim(),
-                ...(refUpdate.changed ? { affectedReferences: refUpdate.items } : {}),
+                ...(nextEditable !== editable
+                  ? { affectedReferences: nextEditable ? [nextEditable, ...preserved] : preserved }
+                  : {}),
               },
             },
           );
@@ -1061,10 +1052,7 @@ function ClubCorrectionProposalModal({
             revision: updated.data.revision,
             versionNumber: currentDraft.versionNumber,
           };
-          if (refUpdate.changed) {
-            currentRefsBaseline = { declared: refUpdate.items, note: relatedNote.trim() };
-            setSavedReferencesBaseline(currentRefsBaseline);
-          }
+          setSavedReferencesBaseline({ editable: nextEditable, preserved });
         } else {
           const createdRefs: DeclaredReferenceItem[] = relatedNote.trim()
             ? [{ kind: 'SCHEDULED_MATCH', referenceId: null, note: relatedNote.trim() }]
@@ -1093,13 +1081,11 @@ function ClubCorrectionProposalModal({
             revision: created.data.revision,
             versionNumber: created.data.versionNumber,
           };
-          currentRefsBaseline = { declared: createdRefs, note: relatedNote.trim() };
-          setSavedReferencesBaseline(currentRefsBaseline);
-          setCreatedInSession(true);
+          setSavedReferencesBaseline({ editable: createdRefs[0] ?? null, preserved: [] });
         }
         setSavedDraft(currentDraft);
         setDraftDirty(false);
-        shouldSaveDraft = false;
+        setSavedInSession(true);
       }
 
       if (submitImmediately && currentDraft) {
@@ -1190,6 +1176,7 @@ function ClubCorrectionProposalModal({
             hideLabel={false}
             searchable
             value={homeStadiumId}
+            disabled={busy}
             options={stadiums.map((s) => ({
               value: s.id,
               label: `${s.name} (${s.code})${s.discontinuedAt ? ' · Đã ngừng sử dụng' : ''}`,
@@ -1527,10 +1514,20 @@ function PlayerRegistrationCorrectionsSection({
       parseInstantMs(before?.playingStart) !== parseInstantMs(after?.playingStart);
     const endDiffers = parseInstantMs(before?.playingEnd) !== parseInstantMs(after?.playingEnd);
     if (startDiffers || endDiffers) {
+      const showMilliseconds = [
+        before?.playingStart,
+        before?.playingEnd,
+        after?.playingStart,
+        after?.playingEnd,
+      ].some((bound) => (parseInstantMs(bound) ?? 0) % 1000 !== 0);
       rows.push({
         label: 'Khoảng hiệu lực',
-        before: formatIntervalSummaryWithSeconds(before?.playingStart, before?.playingEnd),
-        after: formatIntervalSummaryWithSeconds(after?.playingStart, after?.playingEnd),
+        before: formatComparisonInterval(
+          before?.playingStart,
+          before?.playingEnd,
+          showMilliseconds,
+        ),
+        after: formatComparisonInterval(after?.playingStart, after?.playingEnd, showMilliseconds),
       });
     }
     const beforeDisp = formatPlayingDispositionLabel(before?.playingDisposition);
@@ -2093,12 +2090,12 @@ function RegistrationCorrectionProposalModal({
       ? { id: editItem.id, revision: editItem.revision, versionNumber: editItem.versionNumber }
       : null,
   );
-  const [savedReferencesBaseline, setSavedReferencesBaseline] = useState<{
-    declared: DeclaredReferenceItem[];
-    note: string;
-  }>({ declared: initialDeclaredRefs, note: initialRelatedNote });
+  const [savedReferencesBaseline, setSavedReferencesBaseline] = useState<ReferenceBaseline>(() => ({
+    editable: initialDeclaredRefs[0] ?? null,
+    preserved: initialDeclaredRefs.slice(1),
+  }));
   const [draftDirty, setDraftDirty] = useState(true);
-  const [createdInSession, setCreatedInSession] = useState(false);
+  const [savedInSession, setSavedInSession] = useState(false);
   const [unknownSubmitOutcome, setUnknownSubmitOutcome] = useState(false);
   const [submitImmediately, setSubmitImmediately] = useState(true);
   const [busy, setBusy] = useState(false);
@@ -2111,7 +2108,7 @@ function RegistrationCorrectionProposalModal({
 
   function handleDismiss() {
     if (busy) return;
-    if (createdInSession && savedDraft) {
+    if (savedInSession && savedDraft) {
       onSaved(savedDraft.id);
       return;
     }
@@ -2169,8 +2166,7 @@ function RegistrationCorrectionProposalModal({
     setBusy(true);
     setError('');
     let currentDraft = savedDraft;
-    let currentRefsBaseline = savedReferencesBaseline;
-    let shouldSaveDraft = !currentDraft || draftDirty || !submitImmediately;
+    const shouldSaveDraft = !currentDraft || draftDirty || !submitImmediately;
 
     try {
       if (unknownSubmitOutcome && currentDraft) {
@@ -2178,26 +2174,25 @@ function RegistrationCorrectionProposalModal({
           `/player-registrations/${caseId}/corrections`,
         );
         const latest = refreshed.data.items.find((item) => item.id === currentDraft?.id);
-        if (latest) {
-          currentDraft = {
-            id: latest.id,
-            revision: latest.revision,
-            versionNumber: latest.versionNumber,
-          };
-          setSavedDraft(currentDraft);
-          setUnknownSubmitOutcome(false);
-          if (latest.state !== 'DRAFT') {
-            onSaved(latest.id);
-            return;
-          }
+        if (latest && latest.state !== 'DRAFT') {
+          onSaved(latest.id);
+          return;
         }
+        // Use only the revision already acknowledged for this form's saved values.
+        if (!latest || latest.revision !== currentDraft.revision) {
+          setError(
+            'Bản nháp đã thay đổi hoặc không còn khả dụng. Vui lòng đóng biểu mẫu, tải lại và kiểm tra trước khi trình phê duyệt.',
+          );
+          return;
+        }
+        setUnknownSubmitOutcome(false);
       }
 
       if (shouldSaveDraft) {
         if (currentDraft) {
-          const refUpdate = buildUpdatedAffectedReferences(
-            currentRefsBaseline.declared,
-            currentRefsBaseline.note,
+          const { editable, preserved } = savedReferencesBaseline;
+          const nextEditable = updateEditableReference(
+            editable,
             relatedMatchNote,
             'OFFICIAL_RESULT',
           );
@@ -2216,7 +2211,9 @@ function RegistrationCorrectionProposalModal({
               disposition,
               reason: reason.trim(),
               basis: basis.trim(),
-              ...(refUpdate.changed ? { affectedReferences: refUpdate.items } : {}),
+              ...(nextEditable !== editable
+                ? { affectedReferences: nextEditable ? [nextEditable, ...preserved] : preserved }
+                : {}),
             },
           });
           currentDraft = {
@@ -2224,10 +2221,7 @@ function RegistrationCorrectionProposalModal({
             revision: updated.data.revision,
             versionNumber: currentDraft.versionNumber,
           };
-          if (refUpdate.changed) {
-            currentRefsBaseline = { declared: refUpdate.items, note: relatedMatchNote.trim() };
-            setSavedReferencesBaseline(currentRefsBaseline);
-          }
+          setSavedReferencesBaseline({ editable: nextEditable, preserved });
         } else {
           const createdRefs: DeclaredReferenceItem[] = relatedMatchNote.trim()
             ? [{ kind: 'OFFICIAL_RESULT', referenceId: null, note: relatedMatchNote.trim() }]
@@ -2256,13 +2250,11 @@ function RegistrationCorrectionProposalModal({
             revision: created.data.revision,
             versionNumber: created.data.versionNumber,
           };
-          currentRefsBaseline = { declared: createdRefs, note: relatedMatchNote.trim() };
-          setSavedReferencesBaseline(currentRefsBaseline);
-          setCreatedInSession(true);
+          setSavedReferencesBaseline({ editable: createdRefs[0] ?? null, preserved: [] });
         }
         setSavedDraft(currentDraft);
         setDraftDirty(false);
-        shouldSaveDraft = false;
+        setSavedInSession(true);
       }
 
       if (submitImmediately && currentDraft) {
@@ -2354,6 +2346,7 @@ function RegistrationCorrectionProposalModal({
             label="Phương án xử lý hiệu lực *"
             hideLabel={false}
             value={disposition}
+            disabled={busy}
             options={dispositionOptions}
             onChange={(val) => {
               setDisposition(val as CorrectionDisposition);
@@ -2410,6 +2403,7 @@ function RegistrationCorrectionProposalModal({
                 label="Nhánh đào tạo nội địa"
                 hideLabel={false}
                 value={evidenceBranch}
+                disabled={busy}
                 options={homegrownBranchOptions}
                 onChange={(val) => {
                   setEvidenceBranch(val as '' | 'SEASONS' | 'MONTHS');
@@ -2437,6 +2431,7 @@ function RegistrationCorrectionProposalModal({
                 label="Điều kiện liên đoàn đào tạo"
                 hideLabel={false}
                 value={affiliatedBasisInput}
+                disabled={busy}
                 options={affiliationOptions}
                 onChange={(val) => {
                   setAffiliatedBasisInput(val as '' | 'true' | 'false');

@@ -325,6 +325,10 @@ function resolveDisplayedVersionFacts(
     clubName,
     clubCode,
     homeStadiumLabel,
+    homeStadiumName:
+      typeof snapStadium?.name === 'string'
+        ? snapStadium.name
+        : (version.homeStadium?.name ?? null),
     coachName,
     representativeName,
     representativePhone,
@@ -1230,7 +1234,8 @@ function ClubApplicationDrawer({
                         receivedAt: acceptedVersion.receivedAt,
                         coachName: acceptedVersion.coachName,
                         homeStadiumId: acceptedVersion.homeStadiumId,
-                        homeStadiumName: acceptedVersion.homeStadium?.name ?? null,
+                        homeStadiumName: resolveDisplayedVersionFacts(detail, acceptedVersion)
+                          .homeStadiumName,
                         representativeName: acceptedVersion.representativeName,
                         representativePhone: acceptedVersion.representativePhone,
                         contactAddress: acceptedVersion.contactAddress,
@@ -1244,7 +1249,7 @@ function ClubApplicationDrawer({
                   receivedAt: v.receivedAt,
                   coachName: v.coachName,
                   homeStadiumId: v.homeStadiumId,
-                  homeStadiumName: v.homeStadium?.name ?? null,
+                  homeStadiumName: resolveDisplayedVersionFacts(detail, v).homeStadiumName,
                   representativeName: v.representativeName,
                   representativePhone: v.representativePhone,
                   contactAddress: v.contactAddress,

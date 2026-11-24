@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto';
+import { isDeepStrictEqual } from 'node:util';
 import { isISO8601 } from 'class-validator';
 import type { Request } from 'express';
 import type { AuditWriterService } from '../audit/audit-writer.service';
@@ -272,6 +273,20 @@ function toRegulationBasis(row: HistoricalRegulationRow): EligibilityRegulationB
   };
 }
 
+function readEvidenceRegulationVersionId(base: {
+  officialSnapshot?: Prisma.JsonValue | null;
+  decisionRegulationVersionId: string | null;
+}): string | null {
+  const snapshot = base.officialSnapshot;
+  const basis =
+    snapshot && typeof snapshot === 'object' && !Array.isArray(snapshot) ? snapshot.basis : null;
+  if (basis && typeof basis === 'object' && !Array.isArray(basis)) {
+    const binding = basis.verifiedRegulationVersionId;
+    if (typeof binding === 'string' || binding === null) return binding;
+  }
+  return base.decisionRegulationVersionId;
+}
+
 function mergeCandidateFields(
   base: {
     shirtNumber: number | null;
@@ -286,6 +301,7 @@ function mergeCandidateFields(
     verifiedBy: string | null;
     verifiedAt: Date | null;
     decisionRegulationVersionId: string | null;
+    officialSnapshot?: Prisma.JsonValue | null;
     notes: string | null;
   },
   updates: NormalizedRegistrationCorrectionFields,
@@ -353,7 +369,7 @@ function mergeCandidateFields(
     : null;
   const verifiedRegulationVersionId = hasVerificationEvidence
     ? (updates.verifiedRegulationVersionId ??
-      base.decisionRegulationVersionId ??
+      readEvidenceRegulationVersionId(base) ??
       fallbackRegulationId)
     : null;
 
@@ -2006,6 +2022,7 @@ export class RegistrationCorrectionsService {
               },
               basis: {
                 ...targetBasis,
+                verifiedRegulationVersionId: candidate.verifiedRegulationVersionId,
                 receiptRegulationVersionId: corrVersion.targetVersion.receiptRegulationVersionId,
                 receiptTimingStatus: corrVersion.targetVersion.receiptTimingStatus,
                 receiptWindowId: corrVersion.targetVersion.receiptWindowId,
@@ -2277,7 +2294,7 @@ export class RegistrationCorrectionsService {
                 prev.regulationVersionId !== seg.regulationVersionId ||
                 prev.outcome !== seg.outcome ||
                 prev.requiredDisposition !== seg.requiredDisposition ||
-                JSON.stringify(prev.findings) !== JSON.stringify(seg.findings)
+                !isDeepStrictEqual(prev.findings, seg.findings)
               );
             });
           const proposedFieldsChanged =
@@ -2285,9 +2302,8 @@ export class RegistrationCorrectionsService {
             corrVersion.proposedVersion.homegrownFinding !== evaluation.homegrownFinding ||
             corrVersion.proposedVersion.playingDisposition !== proposedDisposition;
           const summaryChanged =
-            JSON.stringify(corrVersion.afterSummary) !== JSON.stringify(refreshedAfterSummary) ||
-            JSON.stringify(corrVersion.affectedReferences) !==
-              JSON.stringify(refreshedAffectedReferences);
+            !isDeepStrictEqual(corrVersion.afterSummary, refreshedAfterSummary) ||
+            !isDeepStrictEqual(corrVersion.affectedReferences, refreshedAffectedReferences);
 
           const evaluationChanged = segmentsChanged || proposedFieldsChanged || summaryChanged;
 

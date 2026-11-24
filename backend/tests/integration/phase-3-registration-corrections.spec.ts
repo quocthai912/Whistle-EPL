@@ -530,11 +530,22 @@ describe('PHASE 3 US5 — D057 & FR-020 historical correction rule segments and 
     const corrV2Id = proposedResolved.body.data.correctionVersionId as string;
     const proposedRegVId = proposedResolved.body.data.proposedVersionId as string;
 
+    const draftSegments = await readerDb.client.registrationCorrectionSegment.findMany({
+      where: { correctionVersionId: corrV2Id },
+      orderBy: { segmentOrder: 'asc' },
+    });
     const subResolved = await postMutate(
       `/player-registrations/${targetReg.caseId}/corrections/${corrV2Id}/submit`,
       officer,
       { expectedRevision: proposedResolved.body.data.revision },
     ).expect(200);
+
+    const submittedSegments = await readerDb.client.registrationCorrectionSegment.findMany({
+      where: { correctionVersionId: corrV2Id },
+      orderBy: { segmentOrder: 'asc' },
+    });
+    expect(draftSegments).toHaveLength(2);
+    expect(submittedSegments.map(({ id }) => id)).toEqual(draftSegments.map(({ id }) => id));
 
     // 5. Independent manager approves corrV2 with critical command receipt
     const approveKey = randomUUID();
@@ -1185,6 +1196,12 @@ describe('PHASE 3 US5 — D057 & FR-020 historical correction rule segments and 
       {
         targetVersionId: targetReg.versionId,
         nonHomegrownOptIn: true,
+        evidenceBranch: 'SEASONS',
+        qualifyingValue: 3,
+        evidenceSummary: 'Đào tạo đủ 3 mùa tại học viện.',
+        evidenceReference: 'HG-REF-01',
+        affiliatedAssociationBasis: true,
+        verifiedRegulationVersionId: r1Id,
         disposition: 'END_EFFECTIVITY',
         reason: 'Kiểm tra đồng bộ khi trình duyệt và chấm dứt hiệu lực.',
         basis: 'Hồ sơ rà soát ban đầu.',
@@ -1289,6 +1306,11 @@ describe('PHASE 3 US5 — D057 & FR-020 historical correction rule segments and 
     const endedVersion = await readerDb.client.registrationVersion.findUniqueOrThrow({
       where: { id: proposedV1Id },
     });
+    expect(endedVersion.decisionRegulationVersionId).toBe(r2Id);
+    expect(endedVersion.officialSnapshot).toMatchObject({
+      basis: { verifiedRegulationVersionId: r1Id },
+      correction: { approvalRegulationVersionId: r2Id },
+    });
     expect(endedVersion.playingDisposition).toBe('ENDED_BY_CORRECTION');
     expect(endedVersion.playingEnd?.toISOString()).toBe('2026-09-01T00:00:00.000Z');
     expect(
@@ -1311,12 +1333,6 @@ describe('PHASE 3 US5 — D057 & FR-020 historical correction rule segments and 
         playingStart: '2026-08-10T00:00:00.000Z',
         playingEnd: '2026-09-10T00:00:00.000Z',
         nonHomegrownOptIn: false,
-        evidenceBranch: 'SEASONS',
-        qualifyingValue: 3,
-        evidenceSummary: 'Đào tạo đủ 3 mùa tại học viện.',
-        evidenceReference: 'HG-REF-01',
-        affiliatedAssociationBasis: true,
-        verifiedRegulationVersionId: r1Id,
         disposition: 'RETAIN_VALID',
         reason:
           'Kiểm chứng ngoại lệ tiếp nhận trễ kế thừa và ràng buộc phiên bản xác minh nội địa.',

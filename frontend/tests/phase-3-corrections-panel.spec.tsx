@@ -63,7 +63,7 @@ describe('OfficialCorrectionsPanel', () => {
               versionId: 'ver-2',
               versionNumber: 2,
               shirtNumber: 21,
-              playingStart: '2026-08-10T00:00:30.000Z',
+              playingStart: '2026-08-10T00:00:00.125Z',
               playingEnd: null,
               playerBirthDate: '2004-01-10',
               u21Finding: false,
@@ -162,10 +162,10 @@ describe('OfficialCorrectionsPanel', () => {
     expect(within(table).getByText('10/01/2004')).toBeInTheDocument();
     expect(within(table).getByText('Cầu thủ trẻ U21')).toBeInTheDocument();
     expect(within(table).getByText('Ngoài đào tạo nội địa')).toBeInTheDocument();
-    // Sub-minute playing-interval difference (00:00:00 vs 00:00:30) is shown with second precision
+    // A fractional difference is visible on both sides of the comparison.
     expect(within(table).getByText('Khoảng hiệu lực')).toBeInTheDocument();
-    expect(within(table).getByText(/07:00:00/)).toBeInTheDocument();
-    expect(within(table).getByText(/07:00:30/)).toBeInTheDocument();
+    expect(within(table).getByText(/07:00:00,000/)).toBeInTheDocument();
+    expect(within(table).getByText(/07:00:00,125/)).toBeInTheDocument();
 
     // User-recorded reason and basis render verbatim without stripping document codes
     expect(screen.getByText('Công văn số R12/2026 về đính chính năm sinh.')).toBeInTheDocument();
@@ -383,166 +383,216 @@ describe('OfficialCorrectionsPanel', () => {
     ).toBeInTheDocument();
   });
 
-  it('preserves explicit null playingEnd, omits unchanged affectedReferences on PATCH, and retains draft ID/revision when submit fails', async () => {
-    const onChanged = vi.fn();
-    let submitAttempts = 0;
-    request.mockImplementation((path: string, options?: { method?: string }) => {
-      if (path.endsWith('/corrections') && !options?.method) {
-        return Promise.resolve({
-          data: {
-            caseId: 'reg-case-1',
-            seasonId: 'season-1',
-            seasonState: 'OPEN',
-            currentValidatedVersionId: 'ver-1',
-            pendingSourceCorrection: {
-              required: false,
-              snapshotBirthDate: '2001-01-10',
-              currentPlayerBirthDate: '2001-01-10',
-            },
-            items: [
-              {
-                id: 'corr-draft-1',
-                correctionCaseId: 'corr-case-1',
-                versionNumber: 1,
-                predecessorVersionId: null,
-                revision: '1',
-                state: 'DRAFT',
-                preparedBy: 'officer-1',
-                preparer: { id: 'officer-1', fullName: 'Trần Cán Bộ', personnelCode: 'RO01' },
-                editorIds: ['officer-1'],
-                submittedAt: null,
-                decidedAt: null,
-                decidedBy: null,
-                decider: null,
-                decisionReason: null,
-                targetVersionId: 'ver-1',
-                proposedVersionId: 'ver-2',
-                reason: 'Đính chính bản nháp.',
-                basis: 'Biên bản gốc.',
-                disposition: 'RETAIN_VALID',
-                beforeSummary: {
-                  versionId: 'ver-1',
-                  versionNumber: 1,
-                  shirtNumber: 10,
-                  playingStart: '2026-08-10T00:00:00.000Z',
-                  playingEnd: '2026-10-01T00:00:00.000Z',
-                  nonHomegrownOptIn: true,
-                },
-                afterSummary: {
-                  versionId: 'ver-2',
-                  versionNumber: 2,
-                  shirtNumber: 10,
-                  playingStart: '2026-08-10T00:00:00.000Z',
-                  playingEnd: null,
-                  nonHomegrownOptIn: false,
-                  evidenceBranch: 'SEASONS',
-                  qualifyingValue: 3,
-                  affiliatedAssociationBasis: true,
-                  evidenceSummary: 'Đào tạo đủ 3 mùa.',
-                  evidenceReference: 'HG-01',
-                },
-                affectedReferences: {
-                  declared: [
-                    { kind: 'SCHEDULED_MATCH', referenceId: 'ref-uuid-1', note: 'Trận 1' },
-                    { kind: 'OFFICIAL_RESULT', referenceId: 'ref-uuid-2', note: 'Trận 2' },
-                  ],
-                },
-                segments: [],
+  it.each(['matching', 'changed', 'cleared reference'] as const)(
+    'recovers a saved registration draft after failed submission (%s)',
+    async (scenario) => {
+      const onChanged = vi.fn();
+      let submitAttempts = 0;
+      let revision = '1';
+      const preservedReference = {
+        kind: 'OFFICIAL_RESULT',
+        referenceId: 'ref-uuid-2',
+        note: 'Trận 2',
+      };
+      request.mockImplementation((path: string, options?: { method?: string }) => {
+        if (path.endsWith('/corrections') && !options?.method) {
+          return Promise.resolve({
+            data: {
+              caseId: 'reg-case-1',
+              seasonId: 'season-1',
+              seasonState: 'OPEN',
+              currentValidatedVersionId: 'ver-1',
+              pendingSourceCorrection: {
+                required: false,
+                snapshotBirthDate: '2001-01-10',
+                currentPlayerBirthDate: '2001-01-10',
               },
+              items: [
+                {
+                  id: 'corr-draft-1',
+                  correctionCaseId: 'corr-case-1',
+                  versionNumber: 1,
+                  predecessorVersionId: null,
+                  revision,
+                  state: 'DRAFT',
+                  preparedBy: 'officer-1',
+                  preparer: { id: 'officer-1', fullName: 'Trần Cán Bộ', personnelCode: 'RO01' },
+                  editorIds: ['officer-1'],
+                  submittedAt: null,
+                  decidedAt: null,
+                  decidedBy: null,
+                  decider: null,
+                  decisionReason: null,
+                  targetVersionId: 'ver-1',
+                  proposedVersionId: 'ver-2',
+                  reason: 'Đính chính bản nháp.',
+                  basis: 'Biên bản gốc.',
+                  disposition: 'RETAIN_VALID',
+                  beforeSummary: {
+                    versionId: 'ver-1',
+                    versionNumber: 1,
+                    shirtNumber: 10,
+                    playingStart: '2026-08-10T00:00:00.000Z',
+                    playingEnd: '2026-10-01T00:00:00.000Z',
+                    nonHomegrownOptIn: true,
+                  },
+                  afterSummary: {
+                    versionId: 'ver-2',
+                    versionNumber: 2,
+                    shirtNumber: revision === '1' ? 10 : revision === '2' ? 11 : 12,
+                    playingStart: '2026-08-10T00:00:00.000Z',
+                    playingEnd: null,
+                    nonHomegrownOptIn: false,
+                    evidenceBranch: 'SEASONS',
+                    qualifyingValue: 3,
+                    affiliatedAssociationBasis: true,
+                    evidenceSummary: 'Đào tạo đủ 3 mùa.',
+                    evidenceReference: 'HG-01',
+                  },
+                  affectedReferences: {
+                    declared: [
+                      ...(scenario === 'cleared reference' && revision !== '1'
+                        ? []
+                        : [{ kind: 'SCHEDULED_MATCH', referenceId: 'ref-uuid-1', note: 'Trận 1' }]),
+                      preservedReference,
+                    ],
+                  },
+                  segments: [],
+                },
+              ],
+              capabilities: { canPrepare: true, canApprove: false },
+            },
+          });
+        }
+        if (options?.method === 'PATCH') {
+          revision = revision === '1' ? '2' : '3';
+          return Promise.resolve({
+            data: { correctionVersionId: 'corr-draft-1', revision },
+          });
+        }
+        if (path.endsWith('/submit') && options?.method === 'POST') {
+          submitAttempts += 1;
+          if (submitAttempts === 1) {
+            return Promise.reject(new Error('Network timeout'));
+          }
+          return Promise.resolve({ data: { state: 'SUBMITTED', revision: '3' } });
+        }
+        return Promise.resolve({ data: {} });
+      });
+
+      render(
+        <OfficialCorrectionsPanel
+          mode="player-registration"
+          caseId="reg-case-1"
+          playerName="Nguyễn Văn A"
+          clubName="Arsenal"
+          seasonName="2026–2027"
+          baseline={{
+            versionId: 'ver-1',
+            versionNumber: 1,
+            receivedAt: '2026-08-06T00:00:00.000Z',
+            shirtNumber: 10,
+            playingStart: '2026-08-10T00:00:00.000Z',
+            playingEnd: '2026-10-01T00:00:00.000Z',
+            u21Finding: false,
+            homegrownFinding: false,
+            nonHomegrownOptIn: true,
+            evidenceBranch: null,
+            qualifyingValue: null,
+            evidenceSummary: null,
+            evidenceReference: null,
+            affiliatedAssociationBasis: null,
+            playingDisposition: 'ACTIVE',
+            notes: null,
+          }}
+          onChanged={onChanged}
+        />,
+      );
+
+      fireEvent.click(await screen.findByRole('button', { name: 'Chỉnh sửa nháp' }));
+      const dialog = await screen.findByRole('dialog');
+
+      // Structured homegrown evidence inputs are visible and populated because nonHomegrownOptIn is false
+      expect(within(dialog).getByLabelText('Số mùa / tháng đạt chuẩn')).toHaveValue(3);
+      expect(within(dialog).getByLabelText('Tóm tắt minh chứng đào tạo nội địa')).toHaveValue(
+        'Đào tạo đủ 3 mùa.',
+      );
+
+      // Edit shirt number only (do NOT touch related match note) and click Trình phê duyệt
+      fireEvent.change(within(dialog).getByLabelText('Số áo đăng ký *'), {
+        target: { value: '11' },
+      });
+      const note = within(dialog).getByLabelText('Trận đấu liên quan cần rà soát riêng (tùy chọn)');
+      if (scenario === 'cleared reference') fireEvent.change(note, { target: { value: '' } });
+      fireEvent.click(within(dialog).getByRole('button', { name: 'Trình phê duyệt' }));
+
+      // First submit fails with unknown outcome -> alert shown, modal remains open with saved draft revision
+      expect(await within(dialog).findByRole('alert')).toHaveTextContent(
+        /chưa xác định kết quả trình phê duyệt/,
+      );
+
+      const patchCall = request.mock.calls.find(
+        ([, opts]) => (opts as { method?: string } | undefined)?.method === 'PATCH',
+      );
+      expect(patchCall).toBeDefined();
+      const patchBody = (patchCall?.[1] as { body: Record<string, unknown> }).body;
+      // Explicit null playingEnd preserved (NOT overwritten by baseline's 2026-10-01)
+      expect(patchBody.playingEnd).toBeNull();
+      // Unchanged affectedReferences omitted from PATCH
+      if (scenario === 'cleared reference') {
+        expect(patchBody.affectedReferences).toEqual([preservedReference]);
+      } else {
+        expect('affectedReferences' in patchBody).toBe(false);
+      }
+      // Structured homegrown evidence passed to backend evaluator
+      expect(patchBody).toMatchObject({
+        evidenceBranch: 'SEASONS',
+        qualifyingValue: 3,
+        affiliatedAssociationBasis: true,
+        evidenceSummary: 'Đào tạo đủ 3 mùa.',
+        evidenceReference: 'HG-01',
+      });
+
+      if (scenario === 'changed') revision = '3';
+      if (scenario === 'cleared reference') {
+        fireEvent.change(note, { target: { value: 'Trận mới' } });
+      }
+      fireEvent.click(within(dialog).getByRole('button', { name: 'Trình phê duyệt' }));
+
+      const patches = () =>
+        request.mock.calls.filter(
+          ([, opts]) => (opts as { method?: string } | undefined)?.method === 'PATCH',
+        );
+      const submits = () => request.mock.calls.filter(([path]) => String(path).endsWith('/submit'));
+      if (scenario === 'changed') {
+        await waitFor(() =>
+          expect(within(dialog).getByRole('alert')).toHaveTextContent(/đã thay đổi/),
+        );
+        expect(patches()).toHaveLength(1);
+        expect(submits()).toHaveLength(1);
+        expect(onChanged).not.toHaveBeenCalled();
+        fireEvent.click(within(dialog).getByRole('button', { name: 'Hủy' }));
+        await waitFor(() => expect(onChanged).toHaveBeenCalledTimes(1));
+        return;
+      }
+
+      await waitFor(() => expect(onChanged).toHaveBeenCalledTimes(1));
+      expect(submits()).toHaveLength(2);
+      if (scenario === 'cleared reference') {
+        expect(patches()).toHaveLength(2);
+        expect(patches()[1]?.[1]).toMatchObject({
+          body: {
+            expectedRevision: '2',
+            affectedReferences: [
+              { kind: 'OFFICIAL_RESULT', referenceId: null, note: 'Trận mới' },
+              preservedReference,
             ],
-            capabilities: { canPrepare: true, canApprove: false },
           },
         });
+      } else {
+        expect(patches()).toHaveLength(1);
+        expect(submits()[1]?.[1]).toMatchObject({ body: { expectedRevision: '2' } });
       }
-      if (options?.method === 'PATCH') {
-        return Promise.resolve({
-          data: { correctionVersionId: 'corr-draft-1', revision: '2' },
-        });
-      }
-      if (path.endsWith('/submit') && options?.method === 'POST') {
-        submitAttempts += 1;
-        if (submitAttempts === 1) {
-          return Promise.reject(new Error('Network timeout'));
-        }
-        return Promise.resolve({ data: { state: 'SUBMITTED', revision: '3' } });
-      }
-      return Promise.resolve({ data: {} });
-    });
-
-    render(
-      <OfficialCorrectionsPanel
-        mode="player-registration"
-        caseId="reg-case-1"
-        playerName="Nguyễn Văn A"
-        clubName="Arsenal"
-        seasonName="2026–2027"
-        baseline={{
-          versionId: 'ver-1',
-          versionNumber: 1,
-          receivedAt: '2026-08-06T00:00:00.000Z',
-          shirtNumber: 10,
-          playingStart: '2026-08-10T00:00:00.000Z',
-          playingEnd: '2026-10-01T00:00:00.000Z',
-          u21Finding: false,
-          homegrownFinding: false,
-          nonHomegrownOptIn: true,
-          evidenceBranch: null,
-          qualifyingValue: null,
-          evidenceSummary: null,
-          evidenceReference: null,
-          affiliatedAssociationBasis: null,
-          playingDisposition: 'ACTIVE',
-          notes: null,
-        }}
-        onChanged={onChanged}
-      />,
-    );
-
-    fireEvent.click(await screen.findByRole('button', { name: 'Chỉnh sửa nháp' }));
-    const dialog = await screen.findByRole('dialog');
-
-    // Structured homegrown evidence inputs are visible and populated because nonHomegrownOptIn is false
-    expect(within(dialog).getByLabelText('Số mùa / tháng đạt chuẩn')).toHaveValue(3);
-    expect(within(dialog).getByLabelText('Tóm tắt minh chứng đào tạo nội địa')).toHaveValue(
-      'Đào tạo đủ 3 mùa.',
-    );
-
-    // Edit shirt number only (do NOT touch related match note) and click Trình phê duyệt
-    fireEvent.change(within(dialog).getByLabelText('Số áo đăng ký *'), { target: { value: '11' } });
-    fireEvent.click(within(dialog).getByRole('button', { name: 'Trình phê duyệt' }));
-
-    // First submit fails with unknown outcome -> alert shown, modal remains open with saved draft revision
-    expect(await within(dialog).findByRole('alert')).toHaveTextContent(
-      /chưa xác định kết quả trình phê duyệt/,
-    );
-
-    const patchCall = request.mock.calls.find(
-      ([, opts]) => (opts as { method?: string } | undefined)?.method === 'PATCH',
-    );
-    expect(patchCall).toBeDefined();
-    const patchBody = (patchCall?.[1] as { body: Record<string, unknown> }).body;
-    // Explicit null playingEnd preserved (NOT overwritten by baseline's 2026-10-01)
-    expect(patchBody.playingEnd).toBeNull();
-    // Unchanged affectedReferences omitted from PATCH
-    expect('affectedReferences' in patchBody).toBe(false);
-    // Structured homegrown evidence passed to backend evaluator
-    expect(patchBody).toMatchObject({
-      evidenceBranch: 'SEASONS',
-      qualifyingValue: 3,
-      affiliatedAssociationBasis: true,
-      evidenceSummary: 'Đào tạo đủ 3 mùa.',
-      evidenceReference: 'HG-01',
-    });
-
-    // Retry submit -> reloads draft state and retries submit WITHOUT calling PATCH or POST /corrections again!
-    fireEvent.click(within(dialog).getByRole('button', { name: 'Trình phê duyệt' }));
-    await waitFor(() => expect(onChanged).toHaveBeenCalledTimes(1));
-
-    const patchCount = request.mock.calls.filter(
-      ([, opts]) => (opts as { method?: string } | undefined)?.method === 'PATCH',
-    ).length;
-    expect(patchCount).toBe(1);
-    const submitCalls = request.mock.calls.filter(([p]) => String(p).endsWith('/submit'));
-    expect(submitCalls).toHaveLength(2);
-  });
+    },
+  );
 });
