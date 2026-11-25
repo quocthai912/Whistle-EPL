@@ -408,7 +408,7 @@ test('T008: BM1 draft, supplementation round, independent approval, safe direct 
   await approveDialog.getByLabel(/Lý do/).fill('Hồ sơ đạt yêu cầu tham dự giải đấu.');
   await approveDialog.getByRole('button', { name: 'Phê duyệt hồ sơ' }).click();
 
-  await expect(managerDrawer.getByText('Nội dung chính thức')).toBeVisible();
+  await expect(managerDrawer.getByText('Nội dung chính thức', { exact: true })).toBeVisible();
   if (process.env.E2E_CAPTURE_SCREENSHOTS === '1') {
     await page.screenshot({
       path: '.verification/t008-club-application-approved-1366.png',
@@ -463,10 +463,23 @@ test('T008: Late-received BM1 requires independent timing exception approval bef
   // Attempt submission BEFORE exception approval -> rejected and remains RECEIVED
   await drawer.getByRole('button', { name: 'Trình phê duyệt' }).click();
   const blockedSubmitDialog = page.getByRole('dialog', { name: 'Trình phê duyệt hồ sơ tham dự' });
+  const blockedSubmission = page.waitForResponse(
+    (response) =>
+      response.request().method() === 'POST' &&
+      /\/club-applications\/[^/]+\/submit$/.test(new URL(response.url()).pathname),
+  );
   await blockedSubmitDialog.getByRole('button', { name: 'Trình phê duyệt' }).click();
-  await expect(
-    blockedSubmitDialog.getByText(/chưa có ngoại lệ tiếp nhận được phê duyệt/),
-  ).toBeVisible();
+  const blockedResponse = await blockedSubmission;
+  expect(blockedResponse.status()).toBe(409);
+  expect((await blockedResponse.json()).error.details).toEqual(
+    expect.arrayContaining([
+      expect.objectContaining({ field: 'RECEIPT_WINDOW', code: 'EXCEPTION_REQUIRED' }),
+    ]),
+  );
+  await expect(blockedSubmitDialog.getByRole('alert')).toContainText('Trạng thái đã thay đổi');
+  await expect(drawer.getByRole('region', { name: 'Ngoại lệ tiếp nhận ngoài hạn' })).toContainText(
+    'đúng phiên bản này',
+  );
   await blockedSubmitDialog.getByRole('button', { name: 'Hủy' }).click();
   await expect(drawer.getByText('Phiên bản 1 · Đã tiếp nhận')).toBeVisible();
 

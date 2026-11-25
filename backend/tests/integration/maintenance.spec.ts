@@ -5,6 +5,7 @@ import { DatabaseService } from '../../src/platform/database.service';
 import { AdmissionService } from '../../src/platform/admission.service';
 import { ClockService } from '../../src/platform/clock.service';
 import { MaintenanceService } from '../../src/operations/maintenance.service';
+import { createPhase1Fixtures, resetPhase1Fixtures } from '../fixtures/phase-1-fixtures';
 
 describe('durable host maintenance outside restored database', () => {
   it('fails closed across restart and old-snapshot state, and requires matching verification to release', async () => {
@@ -17,6 +18,9 @@ describe('durable host maintenance outside restored database', () => {
     );
     const maintenance = new MaintenanceService(database, marker);
     try {
+      // This foundation test owns its state; other suites may leave real media references behind.
+      await resetPhase1Fixtures(process.env.TEST_DATABASE_URL!, 'RESET_ISOLATED_TEST_DATABASE');
+      await createPhase1Fixtures(process.env.TEST_DATABASE_URL!);
       await expect(maintenance.close('restore', 'missing selected set')).rejects.toThrow();
       await maintenance.close('manual', 'isolated recovery drill');
       const state = JSON.parse(await readFile(marker, 'utf8')) as { operationId: string };

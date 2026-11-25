@@ -1,4 +1,4 @@
-"""Strict v1 foundation and v2 available-phase-2 backup sets."""
+"""Strict matched foundation, PHASE 2 and PHASE 3 database/media backup sets."""
 import hashlib
 import json
 import os
@@ -29,7 +29,12 @@ PHASE2_MIGRATIONS = LEGACY_MIGRATIONS + (
 )
 LIFECYCLE_MIGRATION = '202611170002_lifecycle_readiness_basis'
 PHASE3_MIGRATION = '202611200001_phase3_registry_registration'
-PHASE3_MIGRATIONS = PHASE2_MIGRATIONS + (LIFECYCLE_MIGRATION, PHASE3_MIGRATION)
+PHASE3_BASE_MIGRATIONS = PHASE2_MIGRATIONS + (LIFECYCLE_MIGRATION, PHASE3_MIGRATION)
+PHASE3_MIGRATIONS = PHASE3_BASE_MIGRATIONS + (
+    '202611220001_phase3_registration_decision_findings',
+    '202611220002_phase3_registration_affiliation_basis',
+    '202611240001_phase3_correction_segment_nullable_regulation',
+)
 MEDIA_SCOPES = {'available-phase-2', 'available-phase-3'}
 
 FOUNDATION_TABLES = {
@@ -53,7 +58,7 @@ PHASE3_TABLES = PHASE2_TABLES | {
     'position', 'nationality', 'player', 'club_application',
     'club_application_version', 'club_application_version_editor',
     'proposed_player_item', 'player_registration', 'registration_version',
-    'registration_version_editor', 'transfer_operation',
+    'transfer_operation',
     'receipt_exception_case', 'receipt_exception_version',
     'receipt_exception_version_editor', 'registration_correction_case',
     'registration_correction_version', 'registration_correction_version_editor',
@@ -281,7 +286,7 @@ def schema_profile(app):
         return 'available-foundation'
     if names in (set(PHASE2_MIGRATIONS), set(PHASE2_MIGRATIONS) | {LIFECYCLE_MIGRATION}):
         return 'available-phase-2'
-    if names == set(PHASE3_MIGRATIONS):
+    if names in (set(PHASE3_BASE_MIGRATIONS), set(PHASE3_MIGRATIONS)):
         return 'available-phase-3'
     raise ValueError('Unsupported application/schema migration profile.')
 

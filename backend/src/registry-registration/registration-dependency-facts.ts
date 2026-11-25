@@ -163,6 +163,8 @@ export const registrationCompatibilityProvider: DependencyProvider<'registration
       }),
     ]);
 
+    if (!candidate) throw new Error('The same-season candidate regulation basis is unavailable.');
+
     const candidateU21CutoffIso = candidate?.u21Cutoff
       ? candidate.u21Cutoff.toISOString().slice(0, 10)
       : null;

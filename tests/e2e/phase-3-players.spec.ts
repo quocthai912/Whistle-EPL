@@ -33,7 +33,9 @@ async function pickOption(
     const popup = page.locator('.ant-select-dropdown:not(.ant-select-dropdown-hidden)');
     const option = popup.locator('.ant-select-item-option', { hasText: optionLabel }).first();
     await expect(option).toBeVisible();
-    await option.click();
+    await option.hover();
+    await expect(option).toHaveClass(/ant-select-item-option-active/);
+    await control.press('Enter');
   }
   await expect(control).toHaveAttribute('aria-expanded', 'false');
 }

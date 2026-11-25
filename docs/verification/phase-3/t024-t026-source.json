@@ -1,0 +1,154 @@
+{
+  "date": "2026-11-25",
+  "timezone": "Asia/Bangkok",
+  "base": "ff25957ecad03fbbd064f30ea5edee0585569fa2",
+  "head": "ff25957ecad03fbbd064f30ea5edee0585569fa2",
+  "publication": "LOCAL_WORKING_DIFF_NOT_COMMITTED",
+  "tasks": [
+    "T024",
+    "T025",
+    "T026"
+  ],
+  "files": [
+    {
+      "path": ".npmrc",
+      "sha256": "15710541251db726de1491304fa7ca666f8eefc2af25e0ebf9a7efa4e1c5980f",
+      "lfSha256": "cde76ca04e048c3eba070a2c0dfcf5b723cf6014eab177157096b924f24ec4ca"
+    },
+    {
+      "path": "backend/jest.config.cjs",
+      "sha256": "027211688f9e278e82edc4b3b2a907262d4b3d64f05249ccc56b2e6e939e0f19",
+      "lfSha256": "027211688f9e278e82edc4b3b2a907262d4b3d64f05249ccc56b2e6e939e0f19"
+    },
+    {
+      "path": "backend/jest.integration.config.cjs",
+      "sha256": "1a6c7126430186351edf0870613bc370b04c8bce4782c43c8d9491597fafa74d",
+      "lfSha256": "1a6c7126430186351edf0870613bc370b04c8bce4782c43c8d9491597fafa74d"
+    },
+    {
+      "path": "backend/package.json",
+      "sha256": "014873416637bd4b017e4486b3f86f10936fa16b15b98250f0842eafad609565",
+      "lfSha256": "014873416637bd4b017e4486b3f86f10936fa16b15b98250f0842eafad609565"
+    },
+    {
+      "path": "backend/prisma/schema.prisma",
+      "sha256": "e2586cae3a27faaa4cc60e415f12b2c451a78def8b5863e24fb9e58bc0c7d9f2",
+      "lfSha256": "e2586cae3a27faaa4cc60e415f12b2c451a78def8b5863e24fb9e58bc0c7d9f2"
+    },
+    {
+      "path": "backend/src/registry-registration/registration-dependency-facts.ts",
+      "sha256": "bf1da08082a4c8f60161973fb051e203b75d2ecbbcdd1a958d13d7c2b861ed8b",
+      "lfSha256": "bf1da08082a4c8f60161973fb051e203b75d2ecbbcdd1a958d13d7c2b861ed8b"
+    },
+    {
+      "path": "backend/tests/fixtures/committed-race.ts",
+      "sha256": "3f252d28117511e6d4383223a95a1100ac4cbf0640f438e5bfb6a0c593573270",
+      "lfSha256": "3f252d28117511e6d4383223a95a1100ac4cbf0640f438e5bfb6a0c593573270"
+    },
+    {
+      "path": "backend/tests/fixtures/phase-3-workflows.ts",
+      "sha256": "a8ccbd0ab6c71208b894c5776eda19004f608346869c94bef3608e41125ab18d",
+      "lfSha256": "a8ccbd0ab6c71208b894c5776eda19004f608346869c94bef3608e41125ab18d"
+    },
+    {
+      "path": "backend/tests/integration/maintenance.spec.ts",
+      "sha256": "f14737e92a61b5b21163c9c952c58dcc51d78830f982ba5015d7df856856c448",
+      "lfSha256": "f14737e92a61b5b21163c9c952c58dcc51d78830f982ba5015d7df856856c448"
+    },
+    {
+      "path": "backend/tests/integration/phase-3-cross-workflow.spec.ts",
+      "sha256": "d63b52b6e7200086bb75ba87e7e5154d14e663af3f6fd077601780c29d6db02a",
+      "lfSha256": "d63b52b6e7200086bb75ba87e7e5154d14e663af3f6fd077601780c29d6db02a"
+    },
+    {
+      "path": "backend/tests/integration/phase-3-phase-2-contracts.spec.ts",
+      "sha256": "7a910e282daa03d368335bf5b849d929d36738a28fcb843b125882a16cf9d23b",
+      "lfSha256": "7a910e282daa03d368335bf5b849d929d36738a28fcb843b125882a16cf9d23b"
+    },
+    {
+      "path": "backend/tests/integration/phase-3-portrait-races.spec.ts",
+      "sha256": "a1c1f1dc244a1ff733be4b63dae88ce609eb0ffb0e86119f40bd656725965e8e",
+      "lfSha256": "a1c1f1dc244a1ff733be4b63dae88ce609eb0ffb0e86119f40bd656725965e8e"
+    },
+    {
+      "path": "backend/tests/integration/phase-3-portrait-recovery.spec.ts",
+      "sha256": "e1a628be2610bcf9b34442f8ed70c067c4df6f125c0a1afcb4beba40795d737c",
+      "lfSha256": "e1a628be2610bcf9b34442f8ed70c067c4df6f125c0a1afcb4beba40795d737c"
+    },
+    {
+      "path": "eslint.config.mjs",
+      "sha256": "e2eaa1a1b572ea8e4327b68532ed5dc2bc35f5af7a8e783c23d9e17458824525",
+      "lfSha256": "e2eaa1a1b572ea8e4327b68532ed5dc2bc35f5af7a8e783c23d9e17458824525"
+    },
+    {
+      "path": "frontend/package.json",
+      "sha256": "ddea8183497c1d46c1852677e4495e07b3d1c64c0e7eb7561f1a4d58a4f66536",
+      "lfSha256": "ddea8183497c1d46c1852677e4495e07b3d1c64c0e7eb7561f1a4d58a4f66536"
+    },
+    {
+      "path": "ops/backup/set-format.py",
+      "sha256": "1d76e6debcbb3ff972ebc61c8194c22190e5f8e40541b772fe0058e15e033ab8",
+      "lfSha256": "1d76e6debcbb3ff972ebc61c8194c22190e5f8e40541b772fe0058e15e033ab8"
+    },
+    {
+      "path": "ops/backup/tests/phase-3-recovery.cjs",
+      "sha256": "b9d3f5667384d3917bd140761880fecf6c0eafecaa98fa9d9c07622020f7b95a",
+      "lfSha256": "b9d3f5667384d3917bd140761880fecf6c0eafecaa98fa9d9c07622020f7b95a"
+    },
+    {
+      "path": "ops/backup/tests/phase-3-recovery.sh",
+      "sha256": "70c69c8ef9df6b6730519731d0759d802a02ed18d729ba603aff9f174fcb0bc4",
+      "lfSha256": "70c69c8ef9df6b6730519731d0759d802a02ed18d729ba603aff9f174fcb0bc4"
+    },
+    {
+      "path": "ops/backup/tests/test_phase_3_portraits.py",
+      "sha256": "6db7659b55b40cb28a90761feb84eb6930ef9f3afa1a07cc092ebcb20a9236e5",
+      "lfSha256": "6db7659b55b40cb28a90761feb84eb6930ef9f3afa1a07cc092ebcb20a9236e5"
+    },
+    {
+      "path": "package.json",
+      "sha256": "8626c148a9cf3be79d35c911ceb75314cb7885a17f60086c40837fce1bee3d20",
+      "lfSha256": "8626c148a9cf3be79d35c911ceb75314cb7885a17f60086c40837fce1bee3d20"
+    },
+    {
+      "path": "playwright.config.ts",
+      "sha256": "5077eac543cc2645a60cf6059189d3a38da5b605079f98feb05f5aa28880207b",
+      "lfSha256": "5077eac543cc2645a60cf6059189d3a38da5b605079f98feb05f5aa28880207b"
+    },
+    {
+      "path": "pnpm-lock.yaml",
+      "sha256": "91bcea47dca2dd170074d0cebae012ab55aba62243ad7f266d2bb18f7be7e33c",
+      "lfSha256": "91bcea47dca2dd170074d0cebae012ab55aba62243ad7f266d2bb18f7be7e33c"
+    },
+    {
+      "path": "pnpm-workspace.yaml",
+      "sha256": "35b59db34821d3655148a848824c96f7244b5a943e6efb82873f2fa211b8b756",
+      "lfSha256": "35b59db34821d3655148a848824c96f7244b5a943e6efb82873f2fa211b8b756"
+    },
+    {
+      "path": "specs/003-phase-3-player-registration/tasks.md",
+      "sha256": "c2b6a41068a325bea6ac296b6c0d4fa452d87e2b8b73510c358052d94cbb8600",
+      "lfSha256": "c2b6a41068a325bea6ac296b6c0d4fa452d87e2b8b73510c358052d94cbb8600"
+    },
+    {
+      "path": "tests/e2e/phase-3-club-applications.spec.ts",
+      "sha256": "53801e64756fde52302ec1952689d5ed72f210af0754d193f41be7885d4e592d",
+      "lfSha256": "53801e64756fde52302ec1952689d5ed72f210af0754d193f41be7885d4e592d"
+    },
+    {
+      "path": "tests/e2e/phase-3-corrections.spec.ts",
+      "sha256": "6707a522a65255f54da8594465fd2c343dbefc17051a0cca4681c569d6afa6f1",
+      "lfSha256": "6707a522a65255f54da8594465fd2c343dbefc17051a0cca4681c569d6afa6f1"
+    },
+    {
+      "path": "tests/e2e/phase-3-players.spec.ts",
+      "sha256": "7486d96bd68f318914aa6492a8567bd120c744c211c2e8f2d6a4618a024ed841",
+      "lfSha256": "7486d96bd68f318914aa6492a8567bd120c744c211c2e8f2d6a4618a024ed841"
+    },
+    {
+      "path": "tests/e2e/phase-3-registration.spec.ts",
+      "sha256": "fee4e500287ced072b263fdecee4bb0b62ece92b5f6db1e3506e67be539d5093",
+      "lfSha256": "fee4e500287ced072b263fdecee4bb0b62ece92b5f6db1e3506e67be539d5093"
+    }
+  ]
+}
