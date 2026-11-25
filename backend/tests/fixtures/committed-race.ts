@@ -26,6 +26,38 @@ export async function holdCommittedRow(reader: DatabaseService, lock: LockResour
   };
 }
 
+/** Track at start, release the barrier, and drain all requests before propagating any failure. */
+export async function runCommittedRace<T>(
+  release: () => Promise<void>,
+  arrange: (start: (request: PromiseLike<T>) => void) => Promise<void>,
+): Promise<T[]> {
+  const attempts: Array<Promise<PromiseSettledResult<T>>> = [];
+  let failure: { error: unknown } | undefined;
+  try {
+    await arrange((request) => {
+      attempts.push(
+        Promise.resolve(request).then(
+          (value) => ({ status: 'fulfilled' as const, value }),
+          (reason: unknown) => ({ status: 'rejected' as const, reason }),
+        ),
+      );
+    });
+  } catch (error) {
+    failure = { error };
+  }
+  try {
+    await release();
+  } catch (error) {
+    failure ??= { error };
+  }
+  const settled = await Promise.all(attempts);
+  if (failure) throw failure.error;
+  return settled.map((result) => {
+    if (result.status === 'rejected') throw result.reason;
+    return result.value;
+  });
+}
+
 export async function waitForLockWaiters(
   reader: DatabaseService,
   queryFragment: string,

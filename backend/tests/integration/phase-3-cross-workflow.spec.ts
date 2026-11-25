@@ -3,7 +3,7 @@ import request from 'supertest';
 import { SESSION_COOKIE } from '../../src/identity-access/csrf.service';
 import { DatabaseService } from '../../src/platform/database.service';
 import { phase3Workflows } from '../fixtures/phase-3-workflows';
-import { holdCommittedRow, waitForLockWaiters } from '../fixtures/committed-race';
+import { holdCommittedRow, runCommittedRace, waitForLockWaiters } from '../fixtures/committed-race';
 import { setupPhase3HttpFixture } from './phase-3-fixtures';
 
 describe('PHASE 3 T026 — cross-workflow authority, races and regression', () => {
@@ -295,17 +295,16 @@ describe('PHASE 3 T026 — cross-workflow authority, races and regression', () =
       key: bm1.clubId,
       mode: 'exclusive',
     });
-    let attempts!: Array<Promise<request.Response>>;
-    try {
-      attempts = [confirm(0).then((res) => res)];
+    const outcomes = await runCommittedRace<request.Response>(release, async (start) => {
+      start(confirm(0));
       await waitForLockWaiters(reader, 'club');
-      attempts.push(confirm(1).then((res) => res));
+      start(confirm(1));
       await waitForLockWaiters(reader, 'season');
-    } finally {
-      await release();
-    }
-    const outcomes = await Promise.all(attempts);
+    });
     expect(outcomes.map((r) => r.status).sort()).toEqual([200, 409]);
+    expect(outcomes.find((r) => r.status === 409)!.body.error.details).toEqual(
+      expect.arrayContaining([expect.objectContaining({ field: 'SQUAD_LIMIT', code: 'UNMET' })]),
+    );
     const winner = outcomes.findIndex((r) => r.status === 200);
     expect(
       await reader.client.playerRegistration.count({
@@ -370,34 +369,33 @@ describe('PHASE 3 T026 — cross-workflow authority, races and regression', () =
       key: officer.accountId,
       mode: 'exclusive',
     });
-    let revoked!: Promise<request.Response>;
-    let confirmed!: Promise<request.Response>;
-    try {
-      revoked = fixture
-        .apiRequest(
-          admin,
-          'post',
-          `/accounts/${officer.accountId}/role-assignments/${assignment.id}/revoke`,
-          { expectedRevision: '1' },
-          randomUUID(),
-        )
-        .then((res) => res);
-      await waitForLockWaiters(reader, 'account');
-      confirmed = fixture
-        .apiRequest(
-          officer,
-          'post',
-          `/player-registrations/${pending.caseId}/confirm-valid`,
-          { versionId: pending.versionId, expectedRevision: pending.revision },
-          randomUUID(),
-        )
-        .then((res) => res);
-      await waitForLockWaiters(reader, 'account', 2);
-    } finally {
-      await release();
-    }
-    expect((await revoked).status).toBe(200);
-    expect((await confirmed).status).toBe(401);
+    const [revoked, confirmed] = await runCommittedRace<request.Response>(
+      release,
+      async (start) => {
+        start(
+          fixture.apiRequest(
+            admin,
+            'post',
+            `/accounts/${officer.accountId}/role-assignments/${assignment.id}/revoke`,
+            { expectedRevision: '1' },
+            randomUUID(),
+          ),
+        );
+        await waitForLockWaiters(reader, 'account');
+        start(
+          fixture.apiRequest(
+            officer,
+            'post',
+            `/player-registrations/${pending.caseId}/confirm-valid`,
+            { versionId: pending.versionId, expectedRevision: pending.revision },
+            randomUUID(),
+          ),
+        );
+        await waitForLockWaiters(reader, 'account', 2);
+      },
+    );
+    expect(revoked.status).toBe(200);
+    expect(confirmed.status).toBe(401);
     expect(
       (await reader.client.playerRegistration.findUniqueOrThrow({ where: { id: pending.caseId } }))
         .currentValidatedVersionId,
@@ -441,24 +439,21 @@ describe('PHASE 3 T026 — cross-workflow authority, races and regression', () =
       key: seasonId,
       mode: 'exclusive',
     });
-    let attempts!: Array<Promise<request.Response>>;
-    try {
-      attempts = [first, second].map((target, index) =>
-        fixture
-          .apiRequest(
+    const outcomes = await runCommittedRace<request.Response>(release, async (start) => {
+      for (const [index, target] of [first, second].entries()) {
+        start(
+          fixture.apiRequest(
             officers[index],
             'post',
             `/player-registrations/${target.caseId}/confirm-valid`,
             { versionId: target.versionId, expectedRevision: target.revision },
             randomUUID(),
-          )
-          .then((res) => res),
-      );
+          ),
+        );
+      }
       await waitForLockWaiters(reader, 'season', 2);
-    } finally {
-      await release();
-    }
-    expect((await Promise.all(attempts)).map((r) => r.status)).toEqual([200, 200]);
+    });
+    expect(outcomes.map((r) => r.status)).toEqual([200, 200]);
     expect(
       await reader.client.regulationVersion.findUniqueOrThrow({ where: { id: waiting.versionId } }),
     ).toMatchObject({ state: 'EFFECTIVE', activeFrom: new Date('2026-08-10T11:00:00.000Z') });

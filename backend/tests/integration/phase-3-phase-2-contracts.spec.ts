@@ -10,7 +10,7 @@ import {
 } from '../../src/registry-registration/registration-dependency-facts';
 import { SeasonDependenciesService } from '../../src/season-regulations/season-dependencies.service';
 import { phase3Workflows } from '../fixtures/phase-3-workflows';
-import { holdCommittedRow, waitForLockWaiters } from '../fixtures/committed-race';
+import { holdCommittedRow, runCommittedRace, waitForLockWaiters } from '../fixtures/committed-race';
 import { setupPhase3HttpFixture } from './phase-3-fixtures';
 
 describe('PHASE 3 T024 — live PHASE 2 dependency contracts', () => {
@@ -39,10 +39,11 @@ describe('PHASE 3 T024 — live PHASE 2 dependency contracts', () => {
   it('fails closed when the candidate rule is absent or belongs to another season', async () => {
     const seasonId = fixture.seasons[0].id;
     const other = await fixture.seedEffectiveRegulation(fixture.seasons[1].id);
+    const sameSeason = await fixture.seedEffectiveRegulation(seasonId);
     const dependencies = fixture.app.get(SeasonDependenciesService);
-    for (const candidateVersionId of [randomUUID(), other.versionId]) {
+    const readCandidate = (candidateVersionId: string) => {
       const request = { seasonId, candidateVersionId };
-      const result = await fixture.database.write(
+      return fixture.database.write(
         [],
         async () => {},
         (context) => dependencies.read('registrationCompatibility', context, request),
@@ -50,8 +51,15 @@ describe('PHASE 3 T024 — live PHASE 2 dependency contracts', () => {
           ...(await dependencies.discover('registrationCompatibility', db, request)).locks,
         ],
       );
-      expect(result.status).toBe('UNAVAILABLE');
+    };
+    for (const candidateVersionId of [randomUUID(), other.versionId]) {
+      expect(await readCandidate(candidateVersionId)).toMatchObject({
+        status: 'UNAVAILABLE',
+        facts: null,
+        basis: { cause: 'PROVIDER_FAILURE' },
+      });
     }
+    expect((await readCandidate(sameSeason.versionId)).status).toBe('KNOWN');
   });
 
   it('reads official BM1, Player and registration facts in the caller transaction and fails closed for later composite owners', async () => {
@@ -258,6 +266,9 @@ describe('PHASE 3 T024 — live PHASE 2 dependency contracts', () => {
     expect(
       await reader.client.regulationVersion.findUniqueOrThrow({ where: { id: waiting.versionId } }),
     ).toMatchObject({ state: 'EFFECTIVE', activeFrom: new Date('2026-08-10T11:00:00.000Z') });
+    expect(await reader.client.season.findUniqueOrThrow({ where: { id: seasonId } })).toMatchObject(
+      { currentRegulationVersionId: waiting.versionId },
+    );
   });
 
   it.each([false, true])(
@@ -282,6 +293,25 @@ describe('PHASE 3 T024 — live PHASE 2 dependency contracts', () => {
         original.versionId,
       );
       expect(incompatible.approved.status).toBe(409);
+      expect(incompatible.approved.body.error.code).toBe('BASIS_CHANGED');
+      // Approval exposes a generic basis conflict; verify quota through the owning facts port.
+      const dependencies = fixture.app.get(SeasonDependenciesService);
+      const request = { seasonId, candidateVersionId: incompatible.versionId };
+      const compatibility = await facts(
+        async (db) => (await dependencies.discover('registrationCompatibility', db, request)).locks,
+        (context) => dependencies.read('registrationCompatibility', context, request),
+      );
+      expect(compatibility.status).toBe('KNOWN');
+      if (compatibility.status !== 'KNOWN') throw new Error('Compatibility facts unavailable');
+      expect(
+        compatibility.facts.intervalCompositions.map(
+          (interval) =>
+            interval.registrations.filter(
+              (entry) =>
+                entry.clubId === bm1.clubId && entry.u21 === false && entry.homegrown === false,
+            ).length,
+        ),
+      ).toContain(2);
       expect(
         await reader.client.season.findUniqueOrThrow({ where: { id: seasonId } }),
       ).toMatchObject({ currentRegulationVersionId: original.versionId });
@@ -375,6 +405,11 @@ describe('PHASE 3 T024 — live PHASE 2 dependency contracts', () => {
     const corrected = await reader.client.playerRegistration.findUniqueOrThrow({
       where: { id: reg.caseId },
       include: { currentValidatedVersion: true },
+    });
+    expect(corrected.currentValidatedVersionId).not.toBe(reg.versionId);
+    expect(corrected.currentValidatedVersion).toMatchObject({
+      id: corrected.currentValidatedVersionId,
+      shirtNumber: 12,
     });
     const destination = await workflows.participation(seasonId, player.id, 'DEST');
     const transferred = await fixture
@@ -482,35 +517,34 @@ describe('PHASE 3 T024 — live PHASE 2 dependency contracts', () => {
       key: bm1.clubId,
       mode: 'exclusive',
     });
-    let discontinue!: Promise<request.Response>;
-    let confirm!: typeof discontinue;
-    try {
-      discontinue = fixture
-        .apiRequest(manager, 'post', `/clubs/${bm1.clubId}/discontinue`, {
-          expectedRevision: '1',
-          reason: 'Ngừng tiếp nhận nghiệp vụ mới.',
-        })
-        .then((res) => res);
-      await waitForLockWaiters(reader, 'club');
-      confirm = fixture
-        .apiRequest(
-          officer,
-          'post',
-          `/player-registrations/${pending.caseId}/confirm-valid`,
-          {
-            versionId: pending.versionId,
-            expectedRevision: pending.revision,
-            reason: 'Xác nhận đang tranh chấp.',
-          },
-          randomUUID(),
-        )
-        .then((res) => res);
-      await waitForLockWaiters(reader, 'club', 2);
-    } finally {
-      await release();
-    }
-    expect((await discontinue).status).toBe(200);
-    expect((await confirm).status).toBe(409);
+    const [discontinue, confirm] = await runCommittedRace<request.Response>(
+      release,
+      async (start) => {
+        start(
+          fixture.apiRequest(manager, 'post', `/clubs/${bm1.clubId}/discontinue`, {
+            expectedRevision: '1',
+            reason: 'Ngừng tiếp nhận nghiệp vụ mới.',
+          }),
+        );
+        await waitForLockWaiters(reader, 'club');
+        start(
+          fixture.apiRequest(
+            officer,
+            'post',
+            `/player-registrations/${pending.caseId}/confirm-valid`,
+            {
+              versionId: pending.versionId,
+              expectedRevision: pending.revision,
+              reason: 'Xác nhận đang tranh chấp.',
+            },
+            randomUUID(),
+          ),
+        );
+        await waitForLockWaiters(reader, 'club', 2);
+      },
+    );
+    expect(discontinue.status).toBe(200);
+    expect(confirm.status).toBe(409);
     expect(
       await reader.client.playerRegistration.findUniqueOrThrow({ where: { id: existing.caseId } }),
     ).toMatchObject({ currentValidatedVersionId: existing.versionId });
