@@ -21,7 +21,10 @@ async function pickOption(
   await expect(control).toHaveAttribute('aria-expanded', 'true');
   if (search) await control.fill(search);
   const popup = page.locator('.ant-select-dropdown:not(.ant-select-dropdown-hidden)');
-  await popup.getByText(optionLabel, { exact: false }).first().click();
+  const option = popup.locator('.ant-select-item-option').filter({ hasText: optionLabel }).first();
+  await option.hover();
+  await expect(option).toHaveClass(/ant-select-item-option-active/);
+  await control.press('Enter');
   await expect(control).toHaveAttribute('aria-expanded', 'false');
 }
 

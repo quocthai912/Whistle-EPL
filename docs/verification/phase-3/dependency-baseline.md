@@ -1,5 +1,7 @@
 # PHASE 3 Dependency Baseline Reconciliation — T001
 
+**Follow-up verified, 2026-11-25 (Asia/Bangkok):** T024 has verified the live providers against real PHASE 3 story records, and T025 has completed the Player portrait recovery adaptation/drill. Both are published at `c340398c581e2df29c9cd729a8da619facfca438`; see [publication and per-Issue evidence](t024-t026-publication.md). The original T001 inspection, accepted PHASE 2 baseline and gate sign-off below remain historical evidence, not a new acceptance claim.
+
 **Reconciliation Date:** 2026-11-20 (Asia/Bangkok)  
 **Working Branch / Baseline Commit:** `feat/phase-3-foundation-club-intake-and-player-profiles` @ `811eff7af848a8d046207c3f46c060bd8199f852`  
 **Accepted PHASE 2 Revision:** `d3023cccfba28cd7c0b2e6946ab9f1b051ee6c59` (`2026-11-18 14:24:49 +0700`, T025–T030; T001–T015 at `2406dc8`/`b99d8cc`, T016–T024 at `d3bb0d9`)  

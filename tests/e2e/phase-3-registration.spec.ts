@@ -491,7 +491,7 @@ test('T015: Precheck insufficient basis, changed rules (R1 -> R2), confirmation 
   // Verified VALID + UPCOMING playing effectivity + Official Snapshot!
   await expect(changedRuleDrawer.getByText('Hồ sơ: Hợp lệ')).toBeVisible();
   await expect(changedRuleDrawer.getByText('Hiệu lực thi đấu: Chờ hiệu lực')).toBeVisible();
-  await expect(changedRuleDrawer.getByText('Hồ sơ chính thức')).toBeVisible();
+  await expect(changedRuleDrawer.getByText('Hồ sơ chính thức', { exact: true })).toBeVisible();
   await page.setViewportSize({ width: 1600, height: 1000 });
   await page.screenshot({ path: '.verification/t015/03-validated-drawer-1600.png' });
 

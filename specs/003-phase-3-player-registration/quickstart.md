@@ -2,6 +2,10 @@
 
 Use this guide only after the [execution gate](plan.md#dependency-and-delivery-strategy) is satisfied and the relevant approved Tasks have been implemented. See [verification](verification.md) for scenarios and evidence.
 
+## Published T024–T026 verification
+
+Published at [`c340398c581e2df29c9cd729a8da619facfca438`](https://github.com/quocthai912/Whistle-EPL/commit/c340398c581e2df29c9cd729a8da619facfca438) on `refs/heads/test/phase-3-integration-recovery-and-security`, verified from the live remote on 2026-11-25 (Asia/Bangkok); all 28 tested source/configuration/task identities match that resolved remote tree. Publication establishes feature-branch availability, not merge, deployment, hosted CI or human PHASE 3 acceptance. See [per-Task evidence](../../docs/verification/phase-3/t024-t026-publication.md), [integration](../../docs/verification/phase-3/phase-2-integration.md), [portrait recovery](../../docs/verification/phase-3/portrait-recovery.md), and [security/regression](../../docs/verification/phase-3/security-and-regression.md). Reuse these executed results where the tested source is preserved; T027 measurement and T028 acceptance are still outstanding.
+
 ## Prepare isolated targets
 
 1. Record the accepted PHASE 2 revision and evidence for season lifecycle, effective rules and due activation, Club/Stadium D099 and the dependency contracts. Compare those interfaces and schema with the Plan. Stop implementation on an unresolved dependency gap.
