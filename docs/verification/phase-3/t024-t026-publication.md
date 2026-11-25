@@ -2,7 +2,7 @@
 
 Verified 2026-11-25 (Asia/Bangkok). Repository: `quocthai912/Whistle-EPL`. Implementation commit and live `refs/heads/test/phase-3-integration-recovery-and-security`: [`c340398c581e2df29c9cd729a8da619facfca438`](https://github.com/quocthai912/Whistle-EPL/commit/c340398c581e2df29c9cd729a8da619facfca438). Original review base and test snapshot HEAD: `ff25957ecad03fbbd064f30ea5edee0585569fa2`.
 
-Live publication was resolved using `git ls-remote`; each of the [original manifest's](t024-t026-source.json) 28 file identities was independently compared with the Git blob in that resolved remote tree using SHA-256 after LF normalization. **28/28 matched.** Original tested hashes remain unchanged, including the historical tasks.md snapshot. The new synchronization edits to documentation are local and do not replace that tested application revision. A feature-branch push does not establish merge, deployment, hosted required CI or Phase acceptance.
+Live publication was resolved using `git ls-remote`; each of the [original manifest's](t024-t026-source.json) 28 file identities was independently compared with the Git blob in that resolved remote tree using SHA-256 after LF normalization. **28/28 matched.** Original tested hashes remain unchanged, including the historical tasks.md snapshot. Documentation synchronization preserves the tested application revision and its original provenance. A feature-branch push does not establish merge, deployment, hosted required CI or Phase acceptance.
 
 ## Verified Acceptance Criteria mapping
 
@@ -32,4 +32,4 @@ T027/T028 and whole-PHASE 3 acceptance remain outstanding. No human acceptance i
 
 ## Documentation handoff
 
-Context navigation/Phase ledger, tasks.md, quickstart, all three owning verification reports and source-manifest publication metadata are synchronized with the observed outcome. Historical approvals, original review/test provenance and file hashes are preserved. These documentation-only synchronization changes remain **local, uncommitted and unpushed**; implementation publication at `c340398…` is independently verified. No application code or operational configuration was changed, and no application regression was rerun.
+Context navigation/Phase ledger, tasks.md, quickstart, all three owning verification reports and source-manifest publication metadata are synchronized with the observed outcome. Historical approvals, original review/test provenance and file hashes are preserved. Documentation synchronization is complete; implementation publication at `c340398…` is independently verified. No application code or operational configuration was changed, and no application regression was rerun.

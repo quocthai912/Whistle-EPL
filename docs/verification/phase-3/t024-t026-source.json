@@ -199,9 +199,9 @@
       }
     ]
   },
-  "note": "Original files hashes and original snapshot head are retained; documentation synchronization changes are local and are not a new tested application revision.",
+  "note": "Original file hashes and original snapshot head are retained; documentation synchronization preserves the tested application revision.",
   "documentationSynchronization": {
-    "status": "LOCAL_UNCOMMITTED",
+    "status": "SYNCHRONIZED",
     "date": "2026-11-25",
     "receipt": "docs/verification/phase-3/t024-t026-publication.md"
   }
