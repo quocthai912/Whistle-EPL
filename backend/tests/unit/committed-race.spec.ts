@@ -1,3 +1,4 @@
+import { setImmediate as nextTurn } from 'node:timers/promises';
 import { runCommittedRace } from '../fixtures/committed-race';
 
 function deferred<T>() {
@@ -42,7 +43,6 @@ describe('committed race cleanup', () => {
     const race = runCommittedRace<number>(
       async () => {
         first.reject(new Error('request failed'));
-        second.resolve(409);
         throw releaseFailure;
       },
       async (start) => {
@@ -55,6 +55,19 @@ describe('committed race cleanup', () => {
         );
       },
     );
+    let completed = false;
+    void race.then(
+      () => {
+        completed = true;
+      },
+      () => {
+        completed = true;
+      },
+    );
+    await nextTurn();
+    expect(completed).toBe(false);
+    expect(secondSettled).toBe(false);
+    second.resolve(409);
     await expect(race).rejects.toBe(releaseFailure);
     expect(secondSettled).toBe(true);
   });
@@ -84,7 +97,6 @@ describe('committed race cleanup', () => {
     const race = runCommittedRace<number>(
       async () => {
         first.reject(requestFailure);
-        second.resolve(200);
       },
       async (start) => {
         start(first.promise);
@@ -96,6 +108,19 @@ describe('committed race cleanup', () => {
         );
       },
     );
+    let completed = false;
+    void race.then(
+      () => {
+        completed = true;
+      },
+      () => {
+        completed = true;
+      },
+    );
+    await nextTurn();
+    expect(completed).toBe(false);
+    expect(drained).toBe(false);
+    second.resolve(200);
     await expect(race).rejects.toBe(requestFailure);
     expect(drained).toBe(true);
   });
