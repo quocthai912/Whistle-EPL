@@ -3,7 +3,7 @@
   "timezone": "Asia/Bangkok",
   "base": "ff25957ecad03fbbd064f30ea5edee0585569fa2",
   "head": "ff25957ecad03fbbd064f30ea5edee0585569fa2",
-  "publication": "LOCAL_WORKING_DIFF_NOT_COMMITTED",
+  "publication": "VERIFIED_REMOTE",
   "tasks": [
     "T024",
     "T025",
@@ -150,5 +150,59 @@
       "sha256": "fee4e500287ced072b263fdecee4bb0b62ece92b5f6db1e3506e67be539d5093",
       "lfSha256": "fee4e500287ced072b263fdecee4bb0b62ece92b5f6db1e3506e67be539d5093"
     }
-  ]
+  ],
+  "testedSnapshotHead": "ff25957ecad03fbbd064f30ea5edee0585569fa2",
+  "implementationCommit": "c340398c581e2df29c9cd729a8da619facfca438",
+  "liveRemoteVerification": {
+    "date": "2026-11-25",
+    "ref": "refs/heads/test/phase-3-integration-recovery-and-security",
+    "resolvedSha": "c340398c581e2df29c9cd729a8da619facfca438",
+    "verifiedFiles": 28,
+    "method": "SHA-256 of LF-normalized git blobs from the live remote resolved tree",
+    "trackerStatus": "VERIFIED_COMPLETE",
+    "issues": [
+      {
+        "issue": 126,
+        "task": "T024",
+        "state": "closed",
+        "reason": "completed",
+        "checked": 1,
+        "unchecked": 0,
+        "labels": [
+          "completed"
+        ],
+        "comment": "https://github.com/quocthai912/Whistle-EPL/issues/126#issuecomment-7161759454"
+      },
+      {
+        "issue": 127,
+        "task": "T025",
+        "state": "closed",
+        "reason": "completed",
+        "checked": 1,
+        "unchecked": 0,
+        "labels": [
+          "completed"
+        ],
+        "comment": "https://github.com/quocthai912/Whistle-EPL/issues/127#issuecomment-7161783953"
+      },
+      {
+        "issue": 128,
+        "task": "T026",
+        "state": "closed",
+        "reason": "completed",
+        "checked": 1,
+        "unchecked": 0,
+        "labels": [
+          "completed"
+        ],
+        "comment": "https://github.com/quocthai912/Whistle-EPL/issues/128#issuecomment-7161825529"
+      }
+    ]
+  },
+  "note": "Original files hashes and original snapshot head are retained; documentation synchronization changes are local and are not a new tested application revision.",
+  "documentationSynchronization": {
+    "status": "LOCAL_UNCOMMITTED",
+    "date": "2026-11-25",
+    "receipt": "docs/verification/phase-3/t024-t026-publication.md"
+  }
 }
