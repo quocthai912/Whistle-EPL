@@ -107,7 +107,7 @@ export async function resetPhase1Fixtures(
     log: [],
   });
   try {
-    await client.$executeRawUnsafe(`TRUNCATE TABLE public.account,public.season,public.club,public.stadium,public.media_asset,public.session,public.prelogin_csrf_context,
+    await client.$executeRawUnsafe(`TRUNCATE TABLE public.account,public.season,public.club,public.stadium,public.player,public.media_asset,public.session,public.prelogin_csrf_context,
       public.login_throttle_key,public.login_failure,public.system_role_assignment,public.season_role_assignment,
       public.shared_master_grant,public.create_season_grant,public.delegation_case,public.delegation_version,
       public.delegation_version_editor,public.delegation_grant,public.delegation_boundary,public.audit_record,public.command_receipt,
@@ -115,7 +115,12 @@ export async function resetPhase1Fixtures(
       public.season_summary_version_editor,public.registration_window,public.ranking_priority,public.goal_type,public.card_type,
       public.regulation_change_version,public.regulation_change_request,public.season_lifecycle_version,
       public.season_lifecycle_request,public.season_summary_version,public.season_summary_case,
-      public.regulation_version,public.regulation_case`);
+      public.regulation_version,public.regulation_case,
+      public.club_application,public.club_application_version,public.club_application_version_editor,public.proposed_player_item,
+      public.player_registration,public.registration_version,public.transfer_operation,
+      public.receipt_exception_case,public.receipt_exception_version,public.receipt_exception_version_editor,
+      public.registration_correction_case,public.registration_correction_version,public.registration_correction_version_editor,
+      public.registration_correction_segment`);
   } finally {
     await client.$disconnect();
   }

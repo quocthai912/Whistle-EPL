@@ -175,6 +175,321 @@ const businessPolicies = {
   MEDIA_ASSET_REPLACED: ['assetId', 'previousAssetId', 'currentAssetId', 'ownerKind', 'ownerId'],
   MEDIA_ASSET_DETACHED: ['assetId', 'currentAssetId', 'ownerKind', 'ownerId'],
   MEDIA_ASSET_CLEANED: ['assetId', 'contentDeletedAt'],
+  PLAYER_CREATED: ['code', 'fullName', 'birthDate', 'nationalityCode', 'positionCode'],
+  PLAYER_UPDATED: ['fullName', 'birthDate', 'nationalityCode', 'positionCode'],
+  PLAYER_CORRECTED: [
+    'fullName',
+    'birthDate',
+    'nationalityCode',
+    'positionCode',
+    'correctionBasis',
+    'duplicateReviewReason',
+  ],
+  CLUB_APPLICATION_DRAFT_CREATED: ['caseId', 'clubId', 'versionId', 'versionNumber', 'state'],
+  CLUB_APPLICATION_DRAFT_UPDATED: ['caseId', 'versionId', 'versionNumber', 'state', 'revision'],
+  CLUB_APPLICATION_RECEIVED: [
+    'caseId',
+    'versionId',
+    'versionNumber',
+    'state',
+    'receivedAt',
+    'receiptTimingStatus',
+    'receiptRegulationVersionId',
+  ],
+  CLUB_APPLICATION_SUBMITTED: ['caseId', 'versionId', 'versionNumber', 'state', 'submittedAt'],
+  CLUB_APPLICATION_RETURNED: ['caseId', 'versionId', 'versionNumber', 'state', 'decidedAt'],
+  CLUB_APPLICATION_WITHDRAWN: ['caseId', 'versionId', 'versionNumber', 'state', 'decidedAt'],
+  CLUB_APPLICATION_CANCELLED: ['caseId', 'versionId', 'versionNumber', 'state', 'decidedAt'],
+  CLUB_APPLICATION_REJECTED: ['caseId', 'versionId', 'versionNumber', 'state', 'decidedAt'],
+  CLUB_APPLICATION_APPROVED: [
+    'caseId',
+    'versionId',
+    'versionNumber',
+    'state',
+    'approvedAt',
+    'approvalRegulationVersionId',
+    'receiptExceptionVersionId',
+  ],
+  CLUB_APPLICATION_CORRECTION_DRAFT_CREATED: [
+    'caseId',
+    'versionId',
+    'versionNumber',
+    'baseAcceptedVersionId',
+    'state',
+  ],
+  CLUB_APPLICATION_CORRECTION_DRAFT_UPDATED: [
+    'caseId',
+    'versionId',
+    'versionNumber',
+    'baseAcceptedVersionId',
+    'state',
+    'revision',
+  ],
+  CLUB_APPLICATION_CORRECTION_SUBMITTED: [
+    'caseId',
+    'versionId',
+    'versionNumber',
+    'baseAcceptedVersionId',
+    'state',
+    'submittedAt',
+  ],
+  CLUB_APPLICATION_CORRECTION_RETURNED: [
+    'caseId',
+    'versionId',
+    'versionNumber',
+    'baseAcceptedVersionId',
+    'state',
+    'decidedAt',
+  ],
+  CLUB_APPLICATION_CORRECTION_WITHDRAWN: [
+    'caseId',
+    'versionId',
+    'versionNumber',
+    'baseAcceptedVersionId',
+    'state',
+    'decidedAt',
+  ],
+  CLUB_APPLICATION_CORRECTION_CANCELLED: [
+    'caseId',
+    'versionId',
+    'versionNumber',
+    'baseAcceptedVersionId',
+    'state',
+    'decidedAt',
+  ],
+  CLUB_APPLICATION_CORRECTION_REJECTED: [
+    'caseId',
+    'versionId',
+    'versionNumber',
+    'baseAcceptedVersionId',
+    'state',
+    'decidedAt',
+  ],
+  CLUB_APPLICATION_CORRECTION_APPROVED: [
+    'caseId',
+    'versionId',
+    'versionNumber',
+    'baseAcceptedVersionId',
+    'state',
+    'approvedAt',
+    'approvalRegulationVersionId',
+    'changedFields',
+    'correctionEvidence',
+    'affectedReferenceCount',
+    'venueReviewRequired',
+    'coachName',
+    'homeStadiumId',
+    'representativeName',
+    'representativePhone',
+    'contactAddress',
+    'notes',
+  ],
+  RECEIPT_EXCEPTION_DRAFT_CREATED: [
+    'caseId',
+    'versionId',
+    'versionNumber',
+    'state',
+    'targetKind',
+    'targetVersionId',
+  ],
+  RECEIPT_EXCEPTION_SUBMITTED: ['caseId', 'versionId', 'versionNumber', 'state', 'targetVersionId'],
+  RECEIPT_EXCEPTION_RETURNED: ['caseId', 'versionId', 'versionNumber', 'state', 'targetVersionId'],
+  RECEIPT_EXCEPTION_WITHDRAWN: ['caseId', 'versionId', 'versionNumber', 'state', 'targetVersionId'],
+  RECEIPT_EXCEPTION_REJECTED: ['caseId', 'versionId', 'versionNumber', 'state', 'targetVersionId'],
+  RECEIPT_EXCEPTION_APPROVED: [
+    'caseId',
+    'versionId',
+    'versionNumber',
+    'state',
+    'targetVersionId',
+    'approvedAt',
+  ],
+  PLAYER_REGISTRATION_DRAFT_CREATED: [
+    'caseId',
+    'clubId',
+    'playerId',
+    'versionId',
+    'versionNumber',
+    'state',
+  ],
+  PLAYER_REGISTRATION_DRAFT_UPDATED: ['caseId', 'versionId', 'versionNumber', 'state', 'revision'],
+  PLAYER_REGISTRATION_RECEIVED: [
+    'caseId',
+    'versionId',
+    'versionNumber',
+    'state',
+    'receivedAt',
+    'receiptTimingStatus',
+    'receiptRegulationVersionId',
+  ],
+  PLAYER_REGISTRATION_RETURNED: ['caseId', 'versionId', 'versionNumber', 'state', 'decidedAt'],
+  PLAYER_REGISTRATION_CANCELLED: ['caseId', 'versionId', 'versionNumber', 'state', 'decidedAt'],
+  PLAYER_REGISTRATION_CONFIRMED: [
+    'caseId',
+    'clubId',
+    'playerId',
+    'versionId',
+    'versionNumber',
+    'state',
+    'decidedAt',
+    'decisionRegulationVersionId',
+    'receiptRegulationVersionId',
+    'receiptExceptionVersionId',
+    'shirtNumber',
+    'playingStart',
+    'playingEnd',
+    'u21Finding',
+    'homegrownFinding',
+    'nonHomegrownOptIn',
+  ],
+  PLAYER_REGISTRATION_TERMINATED: [
+    'caseId',
+    'clubId',
+    'playerId',
+    'versionId',
+    'versionNumber',
+    'predecessorVersionId',
+    'playingStart',
+    'playingEnd',
+    'effectiveAt',
+    'decidedAt',
+    'playingDisposition',
+  ],
+  PLAYER_TRANSFER_EXECUTED: [
+    'caseId',
+    'clubId',
+    'playerId',
+    'versionId',
+    'versionNumber',
+    'predecessorVersionId',
+    'counterpartCaseId',
+    'counterpartClubId',
+    'counterpartSeasonId',
+    'transferOperationId',
+    'role',
+    'shirtNumber',
+    'playingStart',
+    'playingEnd',
+    'effectiveAt',
+    'decidedAt',
+    'decisionRegulationVersionId',
+    'playingDisposition',
+  ],
+  PLAYER_REGISTRATION_PLAN_CHANGED: [
+    'caseId',
+    'clubId',
+    'playerId',
+    'versionId',
+    'versionNumber',
+    'predecessorVersionId',
+    'counterpartCaseId',
+    'transferOperationId',
+    'shirtNumber',
+    'playingStart',
+    'playingEnd',
+    'effectiveAt',
+    'decidedAt',
+    'decisionRegulationVersionId',
+    'playingDisposition',
+  ],
+  PLAYER_REGISTRATION_PLAN_CANCELLED: [
+    'caseId',
+    'clubId',
+    'playerId',
+    'versionId',
+    'versionNumber',
+    'predecessorVersionId',
+    'counterpartCaseId',
+    'transferOperationId',
+    'playingStart',
+    'playingEnd',
+    'effectiveAt',
+    'decidedAt',
+    'playingDisposition',
+  ],
+  REGISTRATION_CORRECTION_DRAFT_CREATED: [
+    'caseId',
+    'correctionCaseId',
+    'correctionVersionId',
+    'versionNumber',
+    'targetVersionId',
+    'proposedVersionId',
+    'disposition',
+    'state',
+  ],
+  REGISTRATION_CORRECTION_DRAFT_UPDATED: [
+    'caseId',
+    'correctionCaseId',
+    'correctionVersionId',
+    'versionNumber',
+    'targetVersionId',
+    'proposedVersionId',
+    'disposition',
+    'state',
+    'revision',
+  ],
+  REGISTRATION_CORRECTION_SUBMITTED: [
+    'caseId',
+    'correctionCaseId',
+    'correctionVersionId',
+    'versionNumber',
+    'targetVersionId',
+    'proposedVersionId',
+    'disposition',
+    'state',
+    'submittedAt',
+  ],
+  REGISTRATION_CORRECTION_RETURNED: [
+    'caseId',
+    'correctionCaseId',
+    'correctionVersionId',
+    'versionNumber',
+    'targetVersionId',
+    'proposedVersionId',
+    'state',
+    'decidedAt',
+  ],
+  REGISTRATION_CORRECTION_WITHDRAWN: [
+    'caseId',
+    'correctionCaseId',
+    'correctionVersionId',
+    'versionNumber',
+    'targetVersionId',
+    'proposedVersionId',
+    'state',
+    'decidedAt',
+  ],
+  REGISTRATION_CORRECTION_REJECTED: [
+    'caseId',
+    'correctionCaseId',
+    'correctionVersionId',
+    'versionNumber',
+    'targetVersionId',
+    'proposedVersionId',
+    'state',
+    'decidedAt',
+  ],
+  REGISTRATION_CORRECTION_APPROVED: [
+    'caseId',
+    'correctionCaseId',
+    'correctionVersionId',
+    'versionNumber',
+    'targetVersionId',
+    'proposedVersionId',
+    'disposition',
+    'state',
+    'approvedAt',
+    'approvalRegulationVersionId',
+    'segmentCount',
+    'unmetSegmentCount',
+    'playingDisposition',
+    'shirtNumber',
+    'playingStart',
+    'playingEnd',
+    'u21Finding',
+    'homegrownFinding',
+    'nonHomegrownOptIn',
+  ],
 } as const;
 const policies = { ...existingPolicies, ...businessPolicies } as const;
 export type AuditAction = keyof typeof policies;
@@ -187,6 +502,10 @@ export const businessHistoryKinds = [
   'Club',
   'Stadium',
   'MediaAsset',
+  'Player',
+  'ClubApplication',
+  'ReceiptExceptionCase',
+  'PlayerRegistration',
 ] as const;
 export type BusinessHistoryKind = (typeof businessHistoryKinds)[number];
 
@@ -229,6 +548,49 @@ const objectKindByAction: Partial<Record<AuditAction, BusinessHistoryKind>> = {
   MEDIA_ASSET_REPLACED: 'MediaAsset',
   MEDIA_ASSET_DETACHED: 'MediaAsset',
   MEDIA_ASSET_CLEANED: 'MediaAsset',
+  PLAYER_CREATED: 'Player',
+  PLAYER_UPDATED: 'Player',
+  PLAYER_CORRECTED: 'Player',
+  CLUB_APPLICATION_DRAFT_CREATED: 'ClubApplication',
+  CLUB_APPLICATION_DRAFT_UPDATED: 'ClubApplication',
+  CLUB_APPLICATION_RECEIVED: 'ClubApplication',
+  CLUB_APPLICATION_SUBMITTED: 'ClubApplication',
+  CLUB_APPLICATION_RETURNED: 'ClubApplication',
+  CLUB_APPLICATION_WITHDRAWN: 'ClubApplication',
+  CLUB_APPLICATION_CANCELLED: 'ClubApplication',
+  CLUB_APPLICATION_REJECTED: 'ClubApplication',
+  CLUB_APPLICATION_APPROVED: 'ClubApplication',
+  CLUB_APPLICATION_CORRECTION_DRAFT_CREATED: 'ClubApplication',
+  CLUB_APPLICATION_CORRECTION_DRAFT_UPDATED: 'ClubApplication',
+  CLUB_APPLICATION_CORRECTION_SUBMITTED: 'ClubApplication',
+  CLUB_APPLICATION_CORRECTION_RETURNED: 'ClubApplication',
+  CLUB_APPLICATION_CORRECTION_WITHDRAWN: 'ClubApplication',
+  CLUB_APPLICATION_CORRECTION_CANCELLED: 'ClubApplication',
+  CLUB_APPLICATION_CORRECTION_REJECTED: 'ClubApplication',
+  CLUB_APPLICATION_CORRECTION_APPROVED: 'ClubApplication',
+  RECEIPT_EXCEPTION_DRAFT_CREATED: 'ReceiptExceptionCase',
+  RECEIPT_EXCEPTION_SUBMITTED: 'ReceiptExceptionCase',
+  RECEIPT_EXCEPTION_RETURNED: 'ReceiptExceptionCase',
+  RECEIPT_EXCEPTION_WITHDRAWN: 'ReceiptExceptionCase',
+  RECEIPT_EXCEPTION_REJECTED: 'ReceiptExceptionCase',
+  RECEIPT_EXCEPTION_APPROVED: 'ReceiptExceptionCase',
+  PLAYER_REGISTRATION_DRAFT_CREATED: 'PlayerRegistration',
+  PLAYER_REGISTRATION_DRAFT_UPDATED: 'PlayerRegistration',
+  PLAYER_REGISTRATION_RECEIVED: 'PlayerRegistration',
+  PLAYER_REGISTRATION_RETURNED: 'PlayerRegistration',
+  PLAYER_REGISTRATION_CANCELLED: 'PlayerRegistration',
+  PLAYER_REGISTRATION_CONFIRMED: 'PlayerRegistration',
+  PLAYER_REGISTRATION_TERMINATED: 'PlayerRegistration',
+  PLAYER_TRANSFER_EXECUTED: 'PlayerRegistration',
+  PLAYER_REGISTRATION_PLAN_CHANGED: 'PlayerRegistration',
+  PLAYER_REGISTRATION_PLAN_CANCELLED: 'PlayerRegistration',
+  REGISTRATION_CORRECTION_DRAFT_CREATED: 'PlayerRegistration',
+  REGISTRATION_CORRECTION_DRAFT_UPDATED: 'PlayerRegistration',
+  REGISTRATION_CORRECTION_SUBMITTED: 'PlayerRegistration',
+  REGISTRATION_CORRECTION_RETURNED: 'PlayerRegistration',
+  REGISTRATION_CORRECTION_WITHDRAWN: 'PlayerRegistration',
+  REGISTRATION_CORRECTION_REJECTED: 'PlayerRegistration',
+  REGISTRATION_CORRECTION_APPROVED: 'PlayerRegistration',
 };
 
 const requiredAfterFields: Partial<Record<AuditAction, readonly string[]>> = {
@@ -312,6 +674,148 @@ const requiredAfterFields: Partial<Record<AuditAction, readonly string[]>> = {
   MEDIA_ASSET_REPLACED: ['assetId', 'previousAssetId', 'currentAssetId', 'ownerKind', 'ownerId'],
   MEDIA_ASSET_DETACHED: ['assetId', 'currentAssetId', 'ownerKind', 'ownerId'],
   MEDIA_ASSET_CLEANED: ['assetId', 'contentDeletedAt'],
+  PLAYER_CREATED: ['code', 'fullName', 'birthDate', 'nationalityCode', 'positionCode'],
+  PLAYER_CORRECTED: ['correctionBasis'],
+  CLUB_APPLICATION_DRAFT_CREATED: ['caseId', 'clubId', 'versionId', 'versionNumber', 'state'],
+  CLUB_APPLICATION_RECEIVED: [
+    'caseId',
+    'versionId',
+    'versionNumber',
+    'state',
+    'receivedAt',
+    'receiptTimingStatus',
+    'receiptRegulationVersionId',
+  ],
+  CLUB_APPLICATION_APPROVED: [
+    'caseId',
+    'versionId',
+    'versionNumber',
+    'state',
+    'approvedAt',
+    'approvalRegulationVersionId',
+  ],
+  CLUB_APPLICATION_CORRECTION_DRAFT_CREATED: [
+    'caseId',
+    'versionId',
+    'versionNumber',
+    'baseAcceptedVersionId',
+    'state',
+  ],
+  CLUB_APPLICATION_CORRECTION_APPROVED: [
+    'caseId',
+    'versionId',
+    'versionNumber',
+    'baseAcceptedVersionId',
+    'state',
+    'approvedAt',
+    'approvalRegulationVersionId',
+    'changedFields',
+  ],
+  RECEIPT_EXCEPTION_APPROVED: [
+    'caseId',
+    'versionId',
+    'versionNumber',
+    'state',
+    'targetVersionId',
+    'approvedAt',
+  ],
+  PLAYER_REGISTRATION_DRAFT_CREATED: [
+    'caseId',
+    'clubId',
+    'playerId',
+    'versionId',
+    'versionNumber',
+    'state',
+  ],
+  PLAYER_REGISTRATION_RECEIVED: [
+    'caseId',
+    'versionId',
+    'versionNumber',
+    'state',
+    'receivedAt',
+    'receiptTimingStatus',
+    'receiptRegulationVersionId',
+  ],
+  PLAYER_REGISTRATION_CONFIRMED: [
+    'caseId',
+    'clubId',
+    'playerId',
+    'versionId',
+    'versionNumber',
+    'state',
+    'decidedAt',
+    'decisionRegulationVersionId',
+    'receiptRegulationVersionId',
+    'shirtNumber',
+    'playingStart',
+  ],
+  PLAYER_REGISTRATION_TERMINATED: [
+    'caseId',
+    'clubId',
+    'playerId',
+    'versionId',
+    'versionNumber',
+    'predecessorVersionId',
+    'playingStart',
+    'playingEnd',
+    'effectiveAt',
+    'decidedAt',
+  ],
+  PLAYER_TRANSFER_EXECUTED: [
+    'caseId',
+    'clubId',
+    'playerId',
+    'versionId',
+    'versionNumber',
+    'counterpartCaseId',
+    'transferOperationId',
+    'role',
+    'playingStart',
+    'effectiveAt',
+    'decidedAt',
+  ],
+  PLAYER_REGISTRATION_PLAN_CHANGED: [
+    'caseId',
+    'clubId',
+    'playerId',
+    'versionId',
+    'versionNumber',
+    'predecessorVersionId',
+    'playingStart',
+    'decidedAt',
+  ],
+  PLAYER_REGISTRATION_PLAN_CANCELLED: [
+    'caseId',
+    'clubId',
+    'playerId',
+    'versionId',
+    'versionNumber',
+    'predecessorVersionId',
+    'playingStart',
+    'decidedAt',
+    'playingDisposition',
+  ],
+  REGISTRATION_CORRECTION_DRAFT_CREATED: [
+    'caseId',
+    'correctionCaseId',
+    'correctionVersionId',
+    'versionNumber',
+    'targetVersionId',
+    'proposedVersionId',
+    'state',
+  ],
+  REGISTRATION_CORRECTION_APPROVED: [
+    'caseId',
+    'correctionCaseId',
+    'correctionVersionId',
+    'versionNumber',
+    'targetVersionId',
+    'proposedVersionId',
+    'disposition',
+    'state',
+    'approvedAt',
+    'approvalRegulationVersionId',
+  ],
 };
 
 const reasonRequired = new Set<AuditAction>([
@@ -333,6 +837,30 @@ const reasonRequired = new Set<AuditAction>([
   'STADIUM_RESUMED',
   'CLUB_CORRECTED',
   'STADIUM_CORRECTED',
+  'PLAYER_CORRECTED',
+  'CLUB_APPLICATION_RETURNED',
+  'CLUB_APPLICATION_CANCELLED',
+  'CLUB_APPLICATION_REJECTED',
+  'CLUB_APPLICATION_APPROVED',
+  'CLUB_APPLICATION_CORRECTION_DRAFT_CREATED',
+  'CLUB_APPLICATION_CORRECTION_RETURNED',
+  'CLUB_APPLICATION_CORRECTION_CANCELLED',
+  'CLUB_APPLICATION_CORRECTION_REJECTED',
+  'CLUB_APPLICATION_CORRECTION_APPROVED',
+  'RECEIPT_EXCEPTION_SUBMITTED',
+  'RECEIPT_EXCEPTION_RETURNED',
+  'RECEIPT_EXCEPTION_REJECTED',
+  'RECEIPT_EXCEPTION_APPROVED',
+  'PLAYER_REGISTRATION_RETURNED',
+  'PLAYER_REGISTRATION_CANCELLED',
+  'PLAYER_REGISTRATION_TERMINATED',
+  'PLAYER_TRANSFER_EXECUTED',
+  'PLAYER_REGISTRATION_PLAN_CHANGED',
+  'PLAYER_REGISTRATION_PLAN_CANCELLED',
+  'REGISTRATION_CORRECTION_DRAFT_CREATED',
+  'REGISTRATION_CORRECTION_RETURNED',
+  'REGISTRATION_CORRECTION_REJECTED',
+  'REGISTRATION_CORRECTION_APPROVED',
 ]);
 const beforeRequired = new Set<AuditAction>([
   'SEASON_UPDATED',
@@ -362,6 +890,17 @@ const beforeRequired = new Set<AuditAction>([
   'MEDIA_ASSET_REPLACED',
   'MEDIA_ASSET_DETACHED',
   'MEDIA_ASSET_CLEANED',
+  'PLAYER_UPDATED',
+  'PLAYER_CORRECTED',
+  'CLUB_APPLICATION_APPROVED',
+  'CLUB_APPLICATION_CORRECTION_APPROVED',
+  'RECEIPT_EXCEPTION_APPROVED',
+  'PLAYER_REGISTRATION_CONFIRMED',
+  'PLAYER_REGISTRATION_TERMINATED',
+  'PLAYER_TRANSFER_EXECUTED',
+  'PLAYER_REGISTRATION_PLAN_CHANGED',
+  'PLAYER_REGISTRATION_PLAN_CANCELLED',
+  'REGISTRATION_CORRECTION_APPROVED',
 ]);
 
 const allowedActorKinds: Partial<
@@ -421,7 +960,7 @@ function advancesVersionRevision(before: Record<string, unknown>, after: Record<
 }
 
 function validateMasterSummary(
-  kind: 'Season' | 'Club' | 'Stadium',
+  kind: 'Season' | 'Club' | 'Stadium' | 'Player',
   payload: Record<string, unknown>,
   action: AuditAction,
   after = true,
@@ -452,6 +991,25 @@ function validateMasterSummary(
       (!after && hasBasis)
     )
       throw new Error('Club correction summaries require a bounded basis.');
+    return;
+  }
+  if (kind === 'Player') {
+    if (
+      ('code' in payload && !boundedText(payload.code, 32)) ||
+      ('fullName' in payload && !boundedText(payload.fullName, 200)) ||
+      ('birthDate' in payload && !validDateOnly(payload.birthDate)) ||
+      ('nationalityCode' in payload && !boundedText(payload.nationalityCode, 32)) ||
+      ('positionCode' in payload && !boundedText(payload.positionCode, 16)) ||
+      ('correctionBasis' in payload && !boundedText(payload.correctionBasis, 2000))
+    )
+      throw new Error('Player audit summaries require bounded typed fields.');
+    const hasBasis = Object.hasOwn(payload, 'correctionBasis');
+    if (
+      (after && action === 'PLAYER_CORRECTED' && !hasBasis) ||
+      (after && action !== 'PLAYER_CORRECTED' && hasBasis) ||
+      (!after && hasBasis)
+    )
+      throw new Error('Player correction summaries require a bounded basis.');
     return;
   }
   if (
@@ -500,9 +1058,14 @@ export function validateAuditEvent(event: {
     if (event.seasonId !== event.objectId)
       throw new Error('Season audit events require their exact season reference.');
   } else if (
-    ['RegulationVersion', 'RegulationChangeRequest', 'SeasonLifecycleRequest'].includes(
-      event.objectKind,
-    ) &&
+    [
+      'RegulationVersion',
+      'RegulationChangeRequest',
+      'SeasonLifecycleRequest',
+      'ClubApplication',
+      'ReceiptExceptionCase',
+      'PlayerRegistration',
+    ].includes(event.objectKind) &&
     (!event.seasonId || !UUID4.test(event.seasonId))
   ) {
     throw new Error('Season-scoped business audit events require a season reference.');
@@ -713,6 +1276,16 @@ export function validateAuditEvent(event: {
         validateMasterSummary('Stadium', event.before, event.action, false);
       }
       break;
+    case 'PLAYER_CREATED':
+    case 'PLAYER_UPDATED':
+    case 'PLAYER_CORRECTED':
+      validateMasterSummary('Player', after, event.action);
+      if (event.action !== 'PLAYER_CREATED') {
+        if (!isRecord(event.before) || !sameChangedFieldKeys(event.before, after))
+          throw new Error('Player update summaries must describe matching changed fields.');
+        validateMasterSummary('Player', event.before, event.action, false);
+      }
+      break;
     case 'CLUB_RESUMED':
     case 'STADIUM_RESUMED':
       if (after.discontinuedAt !== null || !exactInstant('effectiveAt'))
@@ -756,6 +1329,182 @@ export function validateAuditEvent(event: {
         event.before.contentDeletedAt !== null
       )
         throw new Error('Media cleanup audit events require a verified deletion transition.');
+      break;
+    case 'CLUB_APPLICATION_APPROVED':
+      if (
+        !exactObjectReference('caseId') ||
+        !exactUuid('versionId') ||
+        !Number.isSafeInteger(after.versionNumber) ||
+        Number(after.versionNumber) < 1 ||
+        after.state !== 'APPROVED' ||
+        !exactInstant('approvedAt') ||
+        !exactUuid('approvalRegulationVersionId') ||
+        (after.receiptExceptionVersionId !== undefined &&
+          after.receiptExceptionVersionId !== null &&
+          !exactUuid('receiptExceptionVersionId')) ||
+        !isRecord(event.before) ||
+        event.before.caseId !== after.caseId ||
+        event.before.versionId !== after.versionId ||
+        event.before.versionNumber !== after.versionNumber ||
+        event.before.state !== 'PENDING_APPROVAL'
+      )
+        throw new Error(
+          'Club application approval audit events require exact version, approval basis and transition.',
+        );
+      break;
+    case 'CLUB_APPLICATION_CORRECTION_APPROVED':
+      if (
+        !exactObjectReference('caseId') ||
+        !exactUuid('versionId') ||
+        !exactUuid('baseAcceptedVersionId') ||
+        !Number.isSafeInteger(after.versionNumber) ||
+        Number(after.versionNumber) < 1 ||
+        after.state !== 'APPROVED' ||
+        !exactInstant('approvedAt') ||
+        !exactUuid('approvalRegulationVersionId') ||
+        !boundedText(after.changedFields, 500) ||
+        !isRecord(event.before) ||
+        event.before.caseId !== after.caseId ||
+        event.before.versionId !== after.versionId ||
+        event.before.versionNumber !== after.versionNumber ||
+        event.before.baseAcceptedVersionId !== after.baseAcceptedVersionId ||
+        event.before.state !== 'PENDING_APPROVAL'
+      )
+        throw new Error(
+          'Club application correction approval audit events require exact version, accepted baseline, approval basis and transition.',
+        );
+      break;
+    case 'PLAYER_REGISTRATION_CONFIRMED':
+      if (
+        !exactObjectReference('caseId') ||
+        !exactUuid('clubId') ||
+        !exactUuid('playerId') ||
+        !exactUuid('versionId') ||
+        !Number.isSafeInteger(after.versionNumber) ||
+        Number(after.versionNumber) < 1 ||
+        after.state !== 'VALID' ||
+        !exactInstant('decidedAt') ||
+        !exactUuid('decisionRegulationVersionId') ||
+        !exactUuid('receiptRegulationVersionId') ||
+        (after.receiptExceptionVersionId !== undefined &&
+          after.receiptExceptionVersionId !== null &&
+          !exactUuid('receiptExceptionVersionId')) ||
+        !Number.isSafeInteger(after.shirtNumber) ||
+        Number(after.shirtNumber) < 1 ||
+        Number(after.shirtNumber) > 99 ||
+        !exactInstant('playingStart') ||
+        !isRecord(event.before) ||
+        event.before.caseId !== after.caseId ||
+        event.before.versionId !== after.versionId ||
+        event.before.versionNumber !== after.versionNumber ||
+        event.before.state !== 'RECEIVED'
+      )
+        throw new Error(
+          'Player registration confirmation audit events require exact version, decision basis and transition.',
+        );
+      break;
+    case 'PLAYER_REGISTRATION_TERMINATED':
+      if (
+        !exactObjectReference('caseId') ||
+        !exactUuid('clubId') ||
+        !exactUuid('playerId') ||
+        !exactUuid('versionId') ||
+        !exactUuid('predecessorVersionId') ||
+        !Number.isSafeInteger(after.versionNumber) ||
+        Number(after.versionNumber) < 2 ||
+        !exactInstant('playingStart') ||
+        !exactInstant('playingEnd') ||
+        !exactInstant('effectiveAt') ||
+        !exactInstant('decidedAt') ||
+        !isRecord(event.before) ||
+        event.before.versionId !== after.predecessorVersionId
+      )
+        throw new Error(
+          'Player registration termination audit events require exact version lineage and interval.',
+        );
+      break;
+    case 'PLAYER_TRANSFER_EXECUTED':
+      if (
+        !exactObjectReference('caseId') ||
+        !exactUuid('clubId') ||
+        !exactUuid('playerId') ||
+        !exactUuid('versionId') ||
+        !exactUuid('counterpartCaseId') ||
+        !exactUuid('transferOperationId') ||
+        !['SOURCE', 'DESTINATION'].includes(String(after.role)) ||
+        !Number.isSafeInteger(after.versionNumber) ||
+        Number(after.versionNumber) < 1 ||
+        !exactInstant('playingStart') ||
+        !exactInstant('effectiveAt') ||
+        !exactInstant('decidedAt') ||
+        !isRecord(event.before)
+      )
+        throw new Error(
+          'Player transfer audit events require exact paired versions, role and common effective instant.',
+        );
+      break;
+    case 'PLAYER_REGISTRATION_PLAN_CHANGED':
+      if (
+        !exactObjectReference('caseId') ||
+        !exactUuid('clubId') ||
+        !exactUuid('playerId') ||
+        !exactUuid('versionId') ||
+        !exactUuid('predecessorVersionId') ||
+        !Number.isSafeInteger(after.versionNumber) ||
+        Number(after.versionNumber) < 2 ||
+        !exactInstant('playingStart') ||
+        !exactInstant('decidedAt') ||
+        !isRecord(event.before) ||
+        event.before.versionId !== after.predecessorVersionId
+      )
+        throw new Error(
+          'Prospective registration plan change audit events require exact successor lineage.',
+        );
+      break;
+    case 'PLAYER_REGISTRATION_PLAN_CANCELLED':
+      if (
+        !exactObjectReference('caseId') ||
+        !exactUuid('clubId') ||
+        !exactUuid('playerId') ||
+        !exactUuid('versionId') ||
+        !exactUuid('predecessorVersionId') ||
+        !Number.isSafeInteger(after.versionNumber) ||
+        Number(after.versionNumber) < 2 ||
+        !exactInstant('playingStart') ||
+        !exactInstant('decidedAt') ||
+        !['ACTIVE', 'CANCELLED_BEFORE_EFFECTIVITY'].includes(String(after.playingDisposition)) ||
+        !isRecord(event.before) ||
+        event.before.versionId !== after.predecessorVersionId
+      )
+        throw new Error(
+          'Prospective registration plan cancellation audit events require exact disposition and lineage.',
+        );
+      break;
+    case 'REGISTRATION_CORRECTION_APPROVED':
+      if (
+        !exactObjectReference('caseId') ||
+        !exactUuid('correctionCaseId') ||
+        !exactUuid('correctionVersionId') ||
+        !exactUuid('targetVersionId') ||
+        !exactUuid('proposedVersionId') ||
+        !Number.isSafeInteger(after.versionNumber) ||
+        Number(after.versionNumber) < 1 ||
+        after.state !== 'APPROVED' ||
+        !['RETAIN_VALID', 'END_EFFECTIVITY', 'RECORD_ERRONEOUS'].includes(
+          String(after.disposition),
+        ) ||
+        !exactInstant('approvedAt') ||
+        !exactUuid('approvalRegulationVersionId') ||
+        !isRecord(event.before) ||
+        event.before.caseId !== after.caseId ||
+        event.before.correctionVersionId !== after.correctionVersionId ||
+        event.before.targetVersionId !== after.targetVersionId ||
+        event.before.proposedVersionId !== after.proposedVersionId ||
+        event.before.state !== 'SUBMITTED'
+      )
+        throw new Error(
+          'Registration correction approval audit events require exact correction version, target/proposed versions, disposition and transition.',
+        );
       break;
   }
 }

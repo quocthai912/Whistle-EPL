@@ -11,6 +11,9 @@ import { regulationSeasonScope } from '../seasons/season-model';
 import { RegulationWorkspace } from '../regulations/RegulationWorkspace';
 import { ClubsPage } from '../clubs/ClubsPage';
 import { StadiumsPage } from '../stadiums/StadiumsPage';
+import { PlayersPage } from '../players/PlayersPage';
+import { ClubApplicationsPage } from '../registrations/ClubApplicationsPage';
+import { PlayerRegistrationsPage } from '../registrations/PlayerRegistrationsPage';
 
 /** Shows the selected administration page only to sessions with the corresponding role. */
 export default function AdministrationLayout({
@@ -24,7 +27,10 @@ export default function AdministrationLayout({
     | 'seasons'
     | 'regulations'
     | 'clubs'
-    | 'stadiums';
+    | 'stadiums'
+    | 'players'
+    | 'club-applications'
+    | 'player-registrations';
 }) {
   const { session } = useSession();
   const { seasonId } = useParams();
@@ -34,6 +40,16 @@ export default function AdministrationLayout({
   const canReadStadiums =
     session?.sharedMasterKinds?.includes('STADIUM_MASTER') ||
     session?.seasonRoles?.some(({ roleCode }) => roleCode === 'SCHEDULING_OFFICER');
+  const registrationSeasonIds = new Set<string>([
+    ...(session?.seasonManagerIds ?? []),
+    ...(session?.seasonRoles
+      ?.filter(
+        ({ roleCode }) => roleCode === 'REGISTRATION_OFFICER' || roleCode === 'SEASON_MANAGER',
+      )
+      .map((entry) => entry.seasonId) ?? []),
+  ]);
+  const canReadPlayers =
+    session?.sharedMasterKinds?.includes('PLAYER_MASTER') || registrationSeasonIds.size > 0;
   const hasSeasonRole = !!session?.seasonRoles?.length || manager;
   const canCreateSeason = !!session?.canCreateSeason;
   const regulationSeasonIds = regulationSeasonScope(session);
@@ -43,6 +59,8 @@ export default function AdministrationLayout({
     canCreateSeason ||
     canReadClubs ||
     canReadStadiums ||
+    canReadPlayers ||
+    registrationSeasonIds.size ||
     regulationSeasonIds.size
   );
   const permitted =
@@ -52,15 +70,21 @@ export default function AdministrationLayout({
         ? canReadStadiums
         : page === 'clubs'
           ? canReadClubs
-          : page === 'regulations'
-            ? seasonId
-              ? regulationSeasonIds.has(seasonId)
-              : regulationSeasonIds.size > 0
-            : page === 'seasons'
-              ? canCreateSeason || hasSeasonRole
-              : page === 'delegations'
-                ? admin || manager
-                : admin;
+          : page === 'players'
+            ? canReadPlayers
+            : page === 'club-applications' || page === 'player-registrations'
+              ? seasonId
+                ? registrationSeasonIds.has(seasonId)
+                : registrationSeasonIds.size > 0
+              : page === 'regulations'
+                ? seasonId
+                  ? regulationSeasonIds.has(seasonId)
+                  : regulationSeasonIds.size > 0
+                : page === 'seasons'
+                  ? canCreateSeason || hasSeasonRole
+                  : page === 'delegations'
+                    ? admin || manager
+                    : admin;
   const navigation = (
     <nav className={css.nav} aria-label="Quản trị">
       {admin && (
@@ -106,6 +130,30 @@ export default function AdministrationLayout({
         <NavLink to="/workspace/stadiums">
           <AdminIcon name="stadium" />
           Quản lý sân vận động
+        </NavLink>
+      )}
+      {registrationSeasonIds.size > 0 && (
+        <>
+          <Link
+            to="/workspace/seasons/club-applications"
+            aria-current={page === 'club-applications' ? 'page' : undefined}
+          >
+            <AdminIcon name="application" />
+            Hồ sơ tham dự câu lạc bộ
+          </Link>
+          <Link
+            to="/workspace/seasons/player-registrations"
+            aria-current={page === 'player-registrations' ? 'page' : undefined}
+          >
+            <AdminIcon name="shield" />
+            Đăng ký cầu thủ theo mùa
+          </Link>
+        </>
+      )}
+      {canReadPlayers && (
+        <NavLink to="/workspace/players">
+          <AdminIcon name="user" />
+          Quản lý hồ sơ cầu thủ
         </NavLink>
       )}
     </nav>
@@ -178,6 +226,12 @@ export default function AdministrationLayout({
             <ClubsPage />
           ) : page === 'stadiums' ? (
             <StadiumsPage />
+          ) : page === 'players' ? (
+            <PlayersPage />
+          ) : page === 'club-applications' ? (
+            <ClubApplicationsPage />
+          ) : page === 'player-registrations' ? (
+            <PlayerRegistrationsPage />
           ) : (
             <SeasonsPage />
           )

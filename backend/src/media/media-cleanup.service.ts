@@ -33,7 +33,7 @@ export class MediaCleanupService {
     for (const key of staged) {
       const candidate = await this.database.client.mediaAsset.findUnique({
         where: { provider_objectKey: { provider: 'LOCAL', objectKey: key } },
-        select: { id: true, clubId: true },
+        select: { id: true, clubId: true, playerId: true },
       });
       if (!candidate) throw new Error('A cleanup rollback file has no matching asset metadata.');
       await this.settleKnown({ ...candidate, objectKey: key });
@@ -53,7 +53,7 @@ export class MediaCleanupService {
           unreferencedAt: { lte: cutoff },
           ...(cursor ? { id: { gt: cursor } } : {}),
         },
-        select: { id: true, clubId: true, objectKey: true, checksum: true },
+        select: { id: true, clubId: true, playerId: true, objectKey: true, checksum: true },
         orderBy: { id: 'asc' },
         take: 100,
       });
@@ -102,29 +102,50 @@ export class MediaCleanupService {
     return failures;
   }
 
-  private scope(candidate: { id: string; clubId: string; objectKey: string }) {
+  private scope(candidate: {
+    id: string;
+    clubId: string | null;
+    playerId: string | null;
+    objectKey: string;
+  }) {
+    const ownerLock: LockResource = candidate.clubId
+      ? { kind: 'club', key: candidate.clubId, mode: 'exclusive' }
+      : candidate.playerId
+        ? { kind: 'player', key: candidate.playerId, mode: 'exclusive' }
+        : (() => {
+            throw new Error('MediaAsset must reference either a Club or a Player.');
+          })();
     return {
       ...technicalScope,
       locks: [
         assetLock(candidate.objectKey),
-        { kind: 'club', key: candidate.clubId, mode: 'exclusive' },
+        ownerLock,
         { kind: 'mediaAsset', key: candidate.id, mode: 'exclusive' },
       ] satisfies LockResource[],
     };
   }
 
-  private async cleanKnown(candidate: { id: string; clubId: string; objectKey: string }) {
+  private async cleanKnown(candidate: {
+    id: string;
+    clubId: string | null;
+    playerId: string | null;
+    objectKey: string;
+  }) {
     try {
       await this.execution.execute(this.scope(candidate), async (context) => {
         const asset = await context.db.mediaAsset.findUniqueOrThrow({
           where: { id: candidate.id },
-          include: { club: { select: { currentLogoId: true } } },
+          include: {
+            club: { select: { currentLogoId: true } },
+            player: { select: { currentPortraitId: true } },
+          },
         });
         const now = await context.now();
         if (
           !asset.unreferencedAt ||
           asset.contentDeletedAt ||
-          asset.club.currentLogoId === asset.id ||
+          asset.club?.currentLogoId === asset.id ||
+          asset.player?.currentPortraitId === asset.id ||
           now.getTime() - asset.unreferencedAt.getTime() < grace
         )
           return;
@@ -147,7 +168,12 @@ export class MediaCleanupService {
     }
   }
 
-  private async settleKnown(candidate: { id: string; clubId: string; objectKey: string }) {
+  private async settleKnown(candidate: {
+    id: string;
+    clubId: string | null;
+    playerId: string | null;
+    objectKey: string;
+  }) {
     await this.execution.execute(this.scope(candidate), async (context) => {
       const asset = await context.db.mediaAsset.findUniqueOrThrow({
         where: { id: candidate.id },

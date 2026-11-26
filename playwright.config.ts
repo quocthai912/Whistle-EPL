@@ -17,6 +17,7 @@ export default defineConfig({
     '**/administration.spec.ts',
     '**/audit.spec.ts',
     '**/phase-2-*.spec.ts',
+    '**/phase-3-*.spec.ts',
   ],
   globalSetup: './tests/e2e/global-setup.ts',
   fullyParallel: false,

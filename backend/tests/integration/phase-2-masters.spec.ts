@@ -101,7 +101,9 @@ describe('PHASE 2 Club and Stadium master HTTP contracts', () => {
       tokens,
       `/${id}/correction-impact?seasonId=${http.fixtures.seasons[0].id}`,
     ).expect(200);
-    expect(scopedImpact.body.data).toEqual({ status: 'VERIFIED_NOT_INTRODUCED', affected: null });
+    // PHASE 3 registration tables exist while PHASE 4/5 scheduling/results tables remain absent,
+    // so composite masterImpact fails closed as UNAVAILABLE per the accepted PHASE 2 port contract.
+    expect(scopedImpact.body.data).toEqual({ status: 'UNAVAILABLE', affected: null });
     await readClub(
       tokens,
       `/${id}/correction-impact?seasonId=${http.fixtures.seasons[1].id}`,

@@ -415,7 +415,286 @@ describe('deployed PostgreSQL foundation schema', () => {
       code: '23514',
     });
 
-    const player = await db.query("SELECT to_regclass('player') IS NULL AS absent");
-    expect(player.rows[0].absent).toBe(true);
+    const playerTable = await db.query("SELECT to_regclass('player') IS NOT NULL AS present");
+    expect(playerTable.rows[0].present).toBe(true);
+  });
+
+  it('enforces PHASE 3 catalogs, stable Player codes, Club/Player media XOR, BM1/D100 lineage, multi-interval registrations, received exceptions and D057 segments', async () => {
+    const posCount = await db.query('SELECT count(*)::int AS count FROM position');
+    const natCount = await db.query('SELECT count(*)::int AS count FROM nationality');
+    expect(posCount.rows[0].count).toBe(13);
+    expect(natCount.rows[0].count).toBe(253);
+
+    const accountId = randomUUID();
+    await db.query(
+      `INSERT INTO account(id,personnel_code,full_name,username,password_hash,must_change_password)
+       VALUES($1,'P3_SCHEMA_01','Nhân viên P3','p3.schema.user',
+       '$argon2id$v=19$m=19456,t=2,p=1$fixture$fixture',true)`,
+      [accountId],
+    );
+
+    const seasonA = randomUUID();
+    const seasonB = randomUUID();
+    await db.query(
+      `INSERT INTO season(id,code,name,competition_name,start_date,end_date) VALUES
+       ($1,'P3_S1','Mùa giải P3-1','Premier League Fixture','2026-08-01','2027-05-31'),
+       ($2,'P3_S2','Mùa giải P3-2','Premier League Fixture','2027-08-01','2028-05-31')`,
+      [seasonA, seasonB],
+    );
+    const clubId = randomUUID();
+    const stadiumId = randomUUID();
+    await db.query(
+      `INSERT INTO club(id,code,name,abbreviation) VALUES ($1,'P3_CLB','CLB P3','P3C')`,
+      [clubId],
+    );
+    await db.query(`INSERT INTO stadium(id,code,name) VALUES ($1,'P3_STD','Sân P3')`, [stadiumId]);
+
+    // Reject unapproved nationality/position keys
+    const playerId = randomUUID();
+    await expect(
+      db.query(
+        `INSERT INTO player(id,code,full_name,birth_date,nationality_code,position_code)
+         VALUES($1,'P3_PL_BAD','Cầu thủ lỗi','2002-01-01','INVALID_NAT','ST')`,
+        [playerId],
+      ),
+    ).rejects.toMatchObject({ code: '23503' });
+    await expect(
+      db.query(
+        `INSERT INTO player(id,code,full_name,birth_date,nationality_code,position_code)
+         VALUES($1,'P3_PL_BAD2','Cầu thủ lỗi','2002-01-01','ENG','FW')`,
+        [playerId],
+      ),
+    ).rejects.toMatchObject({ code: '23503' });
+
+    await db.query(
+      `INSERT INTO player(id,code,full_name,birth_date,nationality_code,position_code)
+       VALUES($1,'P3_PL_01','Nguyễn Văn A','2004-05-12','ENG','ST')`,
+      [playerId],
+    );
+    // Stable non-reusable Player code
+    await expect(
+      db.query(`UPDATE player SET code='P3_PL_NEW' WHERE id=$1`, [playerId]),
+    ).rejects.toMatchObject({ code: '23514' });
+    await expect(db.query(`DELETE FROM player WHERE id=$1`, [playerId])).rejects.toMatchObject({
+      code: '23514',
+    });
+
+    // MediaAsset Club XOR Player check & Player portrait lifecycle
+    const portraitId = randomUUID();
+    await expect(
+      db.query(
+        `INSERT INTO media_asset(id,club_id,player_id,object_key,mime_type,byte_size,width,height,checksum,stored_by)
+         VALUES($1,$2,$3,'both-owners.webp','image/webp',32,1,1,'chk',$4)`,
+        [randomUUID(), clubId, playerId, accountId],
+      ),
+    ).rejects.toMatchObject({ code: '23514' });
+    await db.query(
+      `INSERT INTO media_asset(id,player_id,object_key,mime_type,byte_size,width,height,checksum,stored_by)
+       VALUES($1,$2,'player-portrait.webp','image/webp',32,1,1,'chk-p',$3)`,
+      [portraitId, playerId, accountId],
+    );
+    await db.query(`UPDATE player SET current_portrait_id=$1 WHERE id=$2`, [portraitId, playerId]);
+    await expect(
+      db.query(`UPDATE media_asset SET unreferenced_at=now() WHERE id=$1`, [portraitId]),
+    ).rejects.toMatchObject({ code: '23514' });
+
+    // Unique season/club application case + same-case D100 baseline + immutable submitted content
+    const appCaseId = randomUUID();
+    await db.query(`INSERT INTO club_application(id,season_id,club_id) VALUES($1,$2,$3)`, [
+      appCaseId,
+      seasonA,
+      clubId,
+    ]);
+    await expect(
+      db.query(`INSERT INTO club_application(id,season_id,club_id) VALUES($1,$2,$3)`, [
+        randomUUID(),
+        seasonA,
+        clubId,
+      ]),
+    ).rejects.toMatchObject({ code: '23505' });
+
+    const appV1 = randomUUID();
+    await db.query(
+      `INSERT INTO club_application_version(id,season_id,case_id,version_number,prepared_by,state,received_at,coach_name,home_stadium_id)
+       VALUES($1,$2,$3,1,$4,'APPROVED',now(),'HLV A',$5)`,
+      [appV1, seasonA, appCaseId, accountId, stadiumId],
+    );
+    // Auto-seeded editor membership
+    expect(
+      (
+        await db.query(
+          `SELECT account_id FROM club_application_version_editor WHERE version_id=$1`,
+          [appV1],
+        )
+      ).rows,
+    ).toEqual([{ account_id: accountId }]);
+    await db.query(`UPDATE club_application SET current_accepted_version_id=$1 WHERE id=$2`, [
+      appV1,
+      appCaseId,
+    ]);
+    // D100 correction requires explicit base_accepted_version_id in same case referencing an APPROVED version
+    await expect(
+      db.query(
+        `INSERT INTO club_application_version(id,season_id,case_id,version_number,version_kind,prepared_by,state)
+         VALUES($1,$2,$3,2,'CORRECTION',$4,'DRAFT')`,
+        [randomUUID(), seasonA, appCaseId, accountId],
+      ),
+    ).rejects.toMatchObject({ code: '23514' });
+    const appV2 = randomUUID();
+    await db.query(
+      `INSERT INTO club_application_version(id,season_id,case_id,version_number,version_kind,prepared_by,predecessor_version_id,base_accepted_version_id,state)
+       VALUES($1,$2,$3,2,'CORRECTION',$4,$5,$5,'DRAFT')`,
+      [appV2, seasonA, appCaseId, accountId, appV1],
+    );
+    // Reject D100 correction pointing to a non-APPROVED baseline (appV2 is DRAFT)
+    await expect(
+      db.query(
+        `INSERT INTO club_application_version(id,season_id,case_id,version_number,version_kind,prepared_by,predecessor_version_id,base_accepted_version_id,state)
+         VALUES($1,$2,$3,3,'CORRECTION',$4,$5,$5,'DRAFT')`,
+        [randomUUID(), seasonA, appCaseId, accountId, appV2],
+      ),
+    ).rejects.toMatchObject({ code: '23514' });
+    // Freeze APPROVED official_snapshot and decision metadata
+    await expect(
+      db.query(
+        `UPDATE club_application_version SET official_snapshot='{"tampered":true}'::jsonb WHERE id=$1`,
+        [appV1],
+      ),
+    ).rejects.toMatchObject({ code: '23514' });
+
+    // ReceiptException requires already received same-season single target
+    const exCaseId = randomUUID();
+    await db.query(`INSERT INTO receipt_exception_case(id,season_id) VALUES($1,$2)`, [
+      exCaseId,
+      seasonA,
+    ]);
+    // Reject unreceived target (appV2 is DRAFT with received_at=NULL)
+    await expect(
+      db.query(
+        `INSERT INTO receipt_exception_version(id,season_id,case_id,version_number,prepared_by,club_application_version_id)
+         VALUES($1,$2,$3,1,$4,$5)`,
+        [randomUUID(), seasonA, exCaseId, accountId, appV2],
+      ),
+    ).rejects.toMatchObject({ code: '23514' });
+    // Reject wrong-season target
+    const exCaseB = randomUUID();
+    await db.query(`INSERT INTO receipt_exception_case(id,season_id) VALUES($1,$2)`, [
+      exCaseB,
+      seasonB,
+    ]);
+    await expect(
+      db.query(
+        `INSERT INTO receipt_exception_version(id,season_id,case_id,version_number,prepared_by,club_application_version_id)
+         VALUES($1,$2,$3,1,$4,$5)`,
+        [randomUUID(), seasonB, exCaseB, accountId, appV1],
+      ),
+    ).rejects.toMatchObject({ code: '23503' });
+    // Valid same-season received target
+    await db.query(
+      `INSERT INTO receipt_exception_version(id,season_id,case_id,version_number,prepared_by,club_application_version_id)
+       VALUES($1,$2,$3,1,$4,$5)`,
+      [randomUUID(), seasonA, exCaseId, accountId, appV1],
+    );
+
+    // Multiple player_registration cases for same (season, club, player) & D057 segment evidence
+    const regCase1 = randomUUID();
+    const regCase2 = randomUUID();
+    await db.query(
+      `INSERT INTO player_registration(id,season_id,club_id,player_id) VALUES ($1,$3,$4,$5),($2,$3,$4,$5)`,
+      [regCase1, regCase2, seasonA, clubId, playerId],
+    );
+    const regCaseRegCase = randomUUID();
+    const regRuleV1 = randomUUID();
+    await db.query(`INSERT INTO regulation_case(id,season_id) VALUES($1,$2)`, [
+      regCaseRegCase,
+      seasonA,
+    ]);
+    await db.query(
+      `INSERT INTO regulation_version(id,season_id,case_id,version_number,prepared_by) VALUES($1,$2,$3,1,$4)`,
+      [regRuleV1, seasonA, regCaseRegCase, accountId],
+    );
+    const regV1 = randomUUID();
+    const regV2 = randomUUID();
+    // VALID registration version requires non-null playing_start
+    await expect(
+      db.query(
+        `INSERT INTO registration_version(id,season_id,case_id,version_number,prepared_by,state,shirt_number)
+         VALUES ($1,$2,$3,1,$4,'VALID',9)`,
+        [randomUUID(), seasonA, regCase1, accountId],
+      ),
+    ).rejects.toMatchObject({ code: '23514' });
+    await db.query(
+      `INSERT INTO registration_version(id,season_id,case_id,version_number,prepared_by,state,shirt_number,playing_start,playing_end)
+       VALUES ($1,$2,$3,1,$4,'VALID',9,'2026-08-01T00:00:00Z','2026-12-01T00:00:00Z'),
+              ($5,$2,$3,2,$4,'DRAFT',9,'2026-08-01T00:00:00Z','2026-12-01T00:00:00Z')`,
+      [regV1, seasonA, regCase1, accountId, regV2],
+    );
+    const corrCaseId = randomUUID();
+    const corrV1 = randomUUID();
+    await db.query(
+      `INSERT INTO registration_correction_case(id,season_id,registration_id) VALUES($1,$2,$3)`,
+      [corrCaseId, seasonA, regCase1],
+    );
+    await db.query(
+      `INSERT INTO registration_correction_version(id,season_id,registration_id,case_id,version_number,prepared_by,target_version_id,proposed_version_id)
+       VALUES($1,$2,$3,$4,1,$5,$6,$7)`,
+      [corrV1, seasonA, regCase1, corrCaseId, accountId, regV1, regV2],
+    );
+    await db.query(
+      `INSERT INTO registration_correction_segment(id,season_id,correction_version_id,segment_order,segment_start,segment_end,regulation_version_id,outcome,findings)
+       VALUES($1,$2,$3,1,'2026-08-01T00:00:00Z','2026-12-01T00:00:00Z',$4,'MET','[]'::jsonb)`,
+      [randomUUID(), seasonA, corrV1, regRuleV1],
+    );
+  });
+
+  it('migrates a populated PHASE 2 database forward while preserving existing accounts, seasons, clubs and logos', async () => {
+    const popSchema = `pop_test_${randomUUID().replaceAll('-', '')}`;
+    await db.query(`CREATE SCHEMA "${popSchema}"`);
+    try {
+      await db.query(`SET search_path TO "${popSchema}", public`);
+      const dirs = readdirSync(resolve('prisma/migrations'))
+        .filter((n) => /^\d/.test(n))
+        .sort();
+      const phase2Dirs = dirs.filter((d) => d < '20261120');
+      const phase3Dirs = dirs.filter((d) => d >= '20261120');
+      for (const dir of phase2Dirs) {
+        await db.query(readFileSync(resolve('prisma/migrations', dir, 'migration.sql'), 'utf8'));
+      }
+      const accId = randomUUID();
+      const clubId = randomUUID();
+      const logoId = randomUUID();
+      await db.query(
+        `INSERT INTO account(id,personnel_code,full_name,username,password_hash,must_change_password)
+         VALUES($1,'POP_01','Nhân viên cũ','pop.user','$argon2id$v=19$m=19456,t=2,p=1$fixture$fixture',false)`,
+        [accId],
+      );
+      await db.query(
+        `INSERT INTO club(id,code,name,abbreviation) VALUES($1,'POP_CLB','Populated Club','PC')`,
+        [clubId],
+      );
+      await db.query(
+        `INSERT INTO media_asset(id,club_id,object_key,mime_type,byte_size,width,height,checksum,stored_by)
+         VALUES($1,$2,'pop-logo.webp','image/webp',32,1,1,'pop-chk',$3)`,
+        [logoId, clubId, accId],
+      );
+      await db.query(`UPDATE club SET current_logo_id=$1 WHERE id=$2`, [logoId, clubId]);
+      for (const dir of phase3Dirs) {
+        await db.query(readFileSync(resolve('prisma/migrations', dir, 'migration.sql'), 'utf8'));
+      }
+      const clubAfter = await db.query(`SELECT code, current_logo_id FROM club WHERE id=$1`, [
+        clubId,
+      ]);
+      expect(clubAfter.rows[0]).toEqual({ code: 'POP_CLB', current_logo_id: logoId });
+      const assetAfter = await db.query(`SELECT club_id, player_id FROM media_asset WHERE id=$1`, [
+        logoId,
+      ]);
+      expect(assetAfter.rows[0]).toEqual({ club_id: clubId, player_id: null });
+    } catch (error) {
+      await db.query('ROLLBACK').catch(() => undefined);
+      throw error;
+    } finally {
+      await db.query(`SET search_path TO "${schema}", public`);
+      await db.query(`DROP SCHEMA "${popSchema}" CASCADE`);
+    }
   });
 });

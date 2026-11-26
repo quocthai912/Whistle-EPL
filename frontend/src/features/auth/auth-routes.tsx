@@ -20,6 +20,9 @@ export function AuthRoute({
     | 'seasons'
     | 'clubs'
     | 'stadiums'
+    | 'players'
+    | 'club-applications'
+    | 'player-registrations'
     | 'regulations';
 }) {
   const { ready, session, bootstrapError, retry } = useSession();
@@ -42,6 +45,9 @@ export function AuthRoute({
     page === 'seasons' ||
     page === 'clubs' ||
     page === 'stadiums' ||
+    page === 'players' ||
+    page === 'club-applications' ||
+    page === 'player-registrations' ||
     page === 'regulations'
   )
     return (

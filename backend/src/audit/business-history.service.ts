@@ -43,11 +43,18 @@ const targetLocks: Record<BusinessHistoryKind, LockResource['kind']> = {
   Club: 'club',
   Stadium: 'stadium',
   MediaAsset: 'mediaAsset',
+  Player: 'player',
+  ClubApplication: 'clubApplication',
+  ReceiptExceptionCase: 'receiptExceptionCase',
+  PlayerRegistration: 'playerRegistration',
 };
 const seasonScoped = new Set<BusinessHistoryKind>([
   'RegulationVersion',
   'RegulationChangeRequest',
   'SeasonLifecycleRequest',
+  'ClubApplication',
+  'ReceiptExceptionCase',
+  'PlayerRegistration',
 ]);
 const UUID4 = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 

@@ -37,6 +37,71 @@ const rules = {
     required: ['expectedRevision', 'submittedVersionId', 'action', 'reason'],
     optional: ['readinessBasisReference'],
   },
+  CLUB_APPLICATION_APPROVED: {
+    target: 'uuid',
+    required: ['expectedRevision', 'submittedVersionId', 'reason'],
+    optional: ['receiptExceptionVersionId'],
+  },
+  CLUB_APPLICATION_CORRECTION_APPROVED: {
+    target: 'uuid',
+    required: ['expectedRevision', 'submittedVersionId', 'baseAcceptedVersionId', 'reason'],
+  },
+  RECEIPT_EXCEPTION_APPROVED: {
+    target: 'uuid',
+    required: ['expectedRevision', 'submittedVersionId', 'targetVersionId', 'reason'],
+  },
+  PLAYER_REGISTRATION_CONFIRMED: {
+    target: 'uuid',
+    required: ['expectedRevision', 'submittedVersionId', 'playingStart'],
+    optional: ['playingEnd', 'receiptExceptionVersionId', 'reason'],
+  },
+  PLAYER_REGISTRATION_TERMINATED: {
+    target: 'uuid',
+    required: ['expectedRevision', 'versionId', 'effectiveMode', 'reason'],
+    optional: ['effectiveAt'],
+  },
+  PLAYER_TRANSFER_EXECUTED: {
+    target: 'uuid',
+    required: [
+      'expectedRevision',
+      'oldVersionId',
+      'destinationSeasonId',
+      'destinationClubId',
+      'effectiveMode',
+      'reason',
+    ],
+    optional: [
+      'destinationCaseId',
+      'destinationVersionId',
+      'destinationExpectedRevision',
+      'effectiveAt',
+      'playingEnd',
+      'shirtNumber',
+      'receiptExceptionVersionId',
+      'contentBasisDigest',
+    ],
+  },
+  PLAYER_REGISTRATION_PLAN_CHANGED: {
+    target: 'uuid',
+    required: ['expectedRevision', 'versionId', 'playingEndMode', 'reason'],
+    optional: ['transferOperationId', 'playingStart', 'playingEnd', 'shirtNumber'],
+  },
+  PLAYER_REGISTRATION_PLAN_CANCELLED: {
+    target: 'uuid',
+    required: ['expectedRevision', 'versionId', 'reason'],
+    optional: ['transferOperationId'],
+  },
+  REGISTRATION_CORRECTION_APPROVED: {
+    target: 'uuid',
+    required: [
+      'expectedRevision',
+      'submittedVersionId',
+      'targetVersionId',
+      'proposedVersionId',
+      'reason',
+    ],
+    optional: ['disposition'],
+  },
 } as const;
 export type ReceiptAction = keyof typeof rules;
 export type ReceiptCommand = {
@@ -145,8 +210,11 @@ export class CommandReceiptService {
     const payload: Record<string, string> = {};
     for (const [key, value] of Object.entries(command.payload)) {
       if (typeof value !== 'string' || [...value].length > 2000) return invalidIntent();
-      if (key === 'expectedRevision') {
+      if (key === 'expectedRevision' || key === 'destinationExpectedRevision') {
         if (!/^[1-9][0-9]*$/.test(value)) return invalidIntent();
+        payload[key] = value;
+      } else if (key === 'shirtNumber') {
+        if (!/^[1-9][0-9]?$/.test(value)) return invalidIntent();
         payload[key] = value;
       } else if (key === 'code') {
         const code = value.trim().toUpperCase();
@@ -158,19 +226,29 @@ export class CommandReceiptService {
         payload[key] = normalizeSingleLine(value, 200);
       } else if (key === 'startDate' || key === 'endDate') {
         payload[key] = normalizeDate(value);
-      } else if (key === 'proposedEffectiveAt') {
+      } else if (
+        key === 'proposedEffectiveAt' ||
+        key === 'playingStart' ||
+        key === 'playingEnd' ||
+        key === 'effectiveAt'
+      ) {
         payload[key] = normalizeInstant(value);
       } else if (key === 'reason') {
         payload[key] = normalizeMultilineText(value);
       } else if (
         key === 'effectiveMode' ||
+        key === 'playingEndMode' ||
         key === 'action' ||
         key === 'roleCode' ||
-        key === 'kind'
+        key === 'kind' ||
+        key === 'disposition'
       ) {
         payload[key] = value.trim().toUpperCase();
       } else if (key === 'readinessBasisReference') {
         if (!UUID4.test(value) && !/^[0-9a-f]{64}$/i.test(value)) return invalidIntent();
+        payload[key] = value.toLowerCase();
+      } else if (key === 'contentBasisDigest') {
+        if (!/^[0-9a-f]{64}$/i.test(value)) return invalidIntent();
         payload[key] = value.toLowerCase();
       } else if (key.endsWith('Id')) {
         if (!UUID4.test(value)) return invalidIntent();
@@ -203,6 +281,21 @@ export class CommandReceiptService {
       if (payload.action === 'CLOSE' && !payload.readinessBasisReference) return invalidIntent();
       if (payload.action === 'REOPEN' && payload.readinessBasisReference) return invalidIntent();
     }
+    if (
+      command.action === 'PLAYER_REGISTRATION_TERMINATED' ||
+      command.action === 'PLAYER_TRANSFER_EXECUTED'
+    ) {
+      if (!['IMMEDIATE', 'SCHEDULED'].includes(payload.effectiveMode) || !payload.reason)
+        return invalidIntent();
+      if (payload.effectiveMode === 'SCHEDULED' && !payload.effectiveAt) return invalidIntent();
+      if (payload.effectiveMode === 'IMMEDIATE' && payload.effectiveAt) return invalidIntent();
+    }
+    if (command.action === 'PLAYER_REGISTRATION_PLAN_CHANGED') {
+      if (!['KEEP', 'CLEAR', 'SET'].includes(payload.playingEndMode) || !payload.reason)
+        return invalidIntent();
+      if (payload.playingEndMode === 'SET' && !payload.playingEnd) return invalidIntent();
+      if (payload.playingEndMode !== 'SET' && payload.playingEnd) return invalidIntent();
+    }
     return {
       ...command,
       accountId: command.accountId.toLowerCase(),
@@ -213,6 +306,41 @@ export class CommandReceiptService {
     };
   }
 
+  private digest(command: ReceiptCommand): string {
+    return createHash('sha256')
+      .update(
+        canonical({ action: command.action, targetId: command.targetId, payload: command.payload }),
+      )
+      .digest('hex');
+  }
+
+  /** Looks up a completed outcome for authority checks without changing receipt state. */
+  async findMatchingOutcome(
+    context: TransactionContext,
+    input: ReceiptCommand,
+    now: Date,
+  ): Promise<ReceiptOutcome | null> {
+    if (!UUID4.test(input.key)) return null;
+    const existing = await context.db.commandReceipt.findUnique({
+      where: {
+        accountId_actionCode_requestKey: {
+          accountId: input.accountId.toLowerCase(),
+          actionCode: input.action,
+          requestKey: input.key.toLowerCase(),
+        },
+      },
+    });
+    if (
+      !existing ||
+      existing.outcomeState !== 'COMPLETED' ||
+      (existing.expiresAt && existing.expiresAt <= now) ||
+      existing.contentDigest !== this.digest(this.normalize(input))
+    ) {
+      return null;
+    }
+    return safeOutcome({ status: existing.responseStatus, data: existing.responseData });
+  }
+
   async execute(
     context: TransactionContext,
     input: ReceiptCommand,
@@ -220,13 +348,10 @@ export class CommandReceiptService {
     project: (context: TransactionContext, outcome: ReceiptOutcome) => Promise<ReceiptOutcome>,
   ): Promise<ReceiptOutcome> {
     const command = this.normalize(input);
-    const contentDigest = createHash('sha256')
-      .update(
-        canonical({ action: command.action, targetId: command.targetId, payload: command.payload }),
-      )
-      .digest('hex');
+    const contentDigest = this.digest(command);
     await context.lockReceipt(`${command.accountId}:${command.action}:${command.key}`);
-    await context.recheckAuthority();
+    // Use the authority check instant for the expiry decision as well.
+    const now = await context.recheckAuthority();
     const where = {
       accountId_actionCode_requestKey: {
         accountId: command.accountId,
@@ -235,7 +360,6 @@ export class CommandReceiptService {
       },
     };
     let existing = await context.db.commandReceipt.findUnique({ where });
-    const now = await context.now();
     if (existing?.expiresAt && existing.expiresAt <= now) {
       await context.db.commandReceipt.delete({ where });
       existing = null;

@@ -383,6 +383,43 @@ class SetFormatTest(unittest.TestCase):
             self.assertEqual(len([p for p in sets.iterdir() if not p.name.startswith('.')]), 7)
             self.assertTrue((sets / '.incomplete-failed').exists())
 
+    def test_phase3_profile_supports_club_and_player_media_inventory(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            phase3_migrations = PHASE2_MIGRATIONS + [
+                module.LIFECYCLE_MIGRATION,
+                module.PHASE3_MIGRATION,
+            ]
+            app = make_app(root, phase3_migrations)
+            self.assertEqual(module.schema_profile(app), 'available-phase-3')
+
+            source = root / 'live-media'
+            source.mkdir()
+            content = b'normalized-portrait-fixture'
+            asset_id = '00000000-0000-4000-8000-000000000009'
+            asset = {
+                'id': asset_id, 'provider': 'LOCAL', 'objectKey': f'{asset_id}.webp',
+                'mimeType': 'image/webp', 'byteSize': len(content), 'width': 64, 'height': 64,
+                'checksum': hashlib.sha256(content).hexdigest(),
+            }
+            (source / asset['objectKey']).write_bytes(content)
+
+            inv = {name: inventory_table(0) for name in module.PHASE3_TABLES}
+            inv['account'] = inventory_table(2)
+            inv['club'] = {**inventory_table(2), 'currentLogoReferences': 0}
+            inv['player'] = {**inventory_table(1), 'currentPortraitReferences': 1}
+            inv['media_asset'] = {**inventory_table(1), 'storedContent': [asset]}
+            backup = make_backup(root, inv)
+
+            with patch.object(module, 'media_root', return_value=source):
+                module.create(
+                    app, backup, 'with-portrait', '00000000-0000-4000-8000-000000000002',
+                    'test-image', '2026-11-20T12:00:00Z',
+                )
+            manifest = module.verify(app, backup)
+            self.assertEqual(manifest['scope'], 'available-phase-3')
+            self.assertEqual(manifest['media'], [asset])
+
 
 if __name__ == '__main__':
     unittest.main()

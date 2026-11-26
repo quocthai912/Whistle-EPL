@@ -1,4 +1,4 @@
-"""Strict v1 foundation and v2 available-phase-2 backup sets."""
+"""Strict matched foundation, PHASE 2 and PHASE 3 database/media backup sets."""
 import hashlib
 import json
 import os
@@ -28,6 +28,14 @@ PHASE2_MIGRATIONS = LEGACY_MIGRATIONS + (
     '202611170001_regulation_ranking_and_logo_lifecycle',
 )
 LIFECYCLE_MIGRATION = '202611170002_lifecycle_readiness_basis'
+PHASE3_MIGRATION = '202611200001_phase3_registry_registration'
+PHASE3_BASE_MIGRATIONS = PHASE2_MIGRATIONS + (LIFECYCLE_MIGRATION, PHASE3_MIGRATION)
+PHASE3_MIGRATIONS = PHASE3_BASE_MIGRATIONS + (
+    '202611220001_phase3_registration_decision_findings',
+    '202611220002_phase3_registration_affiliation_basis',
+    '202611240001_phase3_correction_segment_nullable_regulation',
+)
+MEDIA_SCOPES = {'available-phase-2', 'available-phase-3'}
 
 FOUNDATION_TABLES = {
     '_prisma_migrations', 'account', 'session', 'prelogin_csrf_context',
@@ -46,6 +54,16 @@ PHASE2_TABLES = FOUNDATION_TABLES | {
     'season_summary_case', 'season_summary_version',
     'season_summary_version_editor', 'club', 'stadium', 'media_asset',
 }
+PHASE3_TABLES = PHASE2_TABLES | {
+    'position', 'nationality', 'player', 'club_application',
+    'club_application_version', 'club_application_version_editor',
+    'proposed_player_item', 'player_registration', 'registration_version',
+    'transfer_operation',
+    'receipt_exception_case', 'receipt_exception_version',
+    'receipt_exception_version_editor', 'registration_correction_case',
+    'registration_correction_version', 'registration_correction_version_editor',
+    'registration_correction_segment',
+}
 PHASE2_REQUIRED_COLUMNS = {
     'club': {
         'id', 'code', 'name', 'abbreviation', 'discontinued_at',
@@ -60,6 +78,15 @@ PHASE2_REQUIRED_COLUMNS = {
         'width', 'height', 'checksum', 'stored_by', 'unreferenced_at',
         'content_deleted_at', 'created_at',
     },
+}
+PHASE3_REQUIRED_COLUMNS = {
+    **PHASE2_REQUIRED_COLUMNS,
+    'player': {
+        'id', 'code', 'full_name', 'birth_date', 'nationality_code',
+        'position_code', 'current_portrait_id', 'revision', 'created_at',
+        'updated_at',
+    },
+    'media_asset': PHASE2_REQUIRED_COLUMNS['media_asset'] | {'player_id'},
 }
 PHASE2_REQUIRED_FOREIGN_KEYS = {
     'club_id_current_logo_id_fkey': {
@@ -168,6 +195,66 @@ PHASE2_REQUIRED_TRIGGERS = {
         'updateColumns': ['unreferenced_at'],
     },
 }
+PHASE3_REQUIRED_FOREIGN_KEYS = {
+    **PHASE2_REQUIRED_FOREIGN_KEYS,
+    'player_id_current_portrait_id_fkey': {
+        'name': 'player_id_current_portrait_id_fkey',
+        'sourceSchema': 'public',
+        'sourceTable': 'player',
+        'sourceColumns': ['id', 'current_portrait_id'],
+        'targetSchema': 'public',
+        'targetTable': 'media_asset',
+        'targetColumns': ['player_id', 'id'],
+        'onDelete': 'a',
+        'onUpdate': 'a',
+        'validated': True,
+    },
+    'media_asset_player_id_fkey': {
+        'name': 'media_asset_player_id_fkey',
+        'sourceSchema': 'public',
+        'sourceTable': 'media_asset',
+        'sourceColumns': ['player_id'],
+        'targetSchema': 'public',
+        'targetTable': 'player',
+        'targetColumns': ['id'],
+        'onDelete': 'r',
+        'onUpdate': 'a',
+        'validated': True,
+    },
+}
+PHASE3_REQUIRED_UNIQUE_INDEXES = {
+    **PHASE2_REQUIRED_UNIQUE_INDEXES,
+    'player_code_key': ('player', 'code'),
+    'player_id_current_portrait_id_key': ('player', 'id,current_portrait_id'),
+    'media_asset_player_id_id_key': ('media_asset', 'player_id,id'),
+}
+PHASE3_REQUIRED_TRIGGERS = {
+    **PHASE2_REQUIRED_TRIGGERS,
+    'player_identity': {
+        'name': 'player_identity',
+        'tableSchema': 'public',
+        'table': 'player',
+        'functionSchema': 'public',
+        'function': 'preserve_shared_master_identity',
+        'typeBits': 27,
+        'enabled': 'O',
+        'internal': False,
+        'hasCondition': False,
+        'updateColumns': [],
+    },
+    'player_current_portrait_lifecycle': {
+        'name': 'player_current_portrait_lifecycle',
+        'tableSchema': 'public',
+        'table': 'player',
+        'functionSchema': 'public',
+        'function': 'guard_current_player_portrait',
+        'typeBits': 23,
+        'enabled': 'O',
+        'internal': False,
+        'hasCondition': False,
+        'updateColumns': ['current_portrait_id'],
+    },
+}
 SHA256 = re.compile(r'^[0-9a-f]{64}$')
 UUID = re.compile(r'^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$')
 SET_NAME = re.compile(r'^\d{8}T\d{6}Z-[0-9a-f-]{36}$')
@@ -199,6 +286,8 @@ def schema_profile(app):
         return 'available-foundation'
     if names in (set(PHASE2_MIGRATIONS), set(PHASE2_MIGRATIONS) | {LIFECYCLE_MIGRATION}):
         return 'available-phase-2'
+    if names in (set(PHASE3_BASE_MIGRATIONS), set(PHASE3_MIGRATIONS)):
+        return 'available-phase-3'
     raise ValueError('Unsupported application/schema migration profile.')
 
 
@@ -268,6 +357,39 @@ def validate_phase2_inventory(inventory):
         len(stored), inventory['club']['rows'],
     ):
         raise ValueError('Invalid available-phase-2 media inventory counts.')
+
+
+def validate_phase3_inventory(inventory):
+    if set(inventory) != PHASE3_TABLES:
+        raise ValueError('Available-phase-3 table inventory differs from the schema.')
+    for name, value in inventory.items():
+        expected_keys = {'rows', 'contentSha256'}
+        if name == 'club':
+            expected_keys.add('currentLogoReferences')
+        if name == 'player':
+            expected_keys.add('currentPortraitReferences')
+        if name == 'media_asset' and isinstance(value, dict) and value.get('rows'):
+            expected_keys.add('storedContent')
+        if not isinstance(value, dict) or set(value) != expected_keys:
+            raise ValueError('Invalid available-phase-3 table inventory.')
+        if type(value.get('rows')) is not int or value['rows'] < 0:
+            raise ValueError('Invalid available-phase-3 row count.')
+        if not isinstance(value.get('contentSha256'), str) or not SHA256.fullmatch(value['contentSha256']):
+            raise ValueError('Invalid available-phase-3 content checksum.')
+    assets = inventory['media_asset']
+    stored = assets.get('storedContent', [])
+    validate_media_inventory(stored)
+    logo_refs = inventory['club']['currentLogoReferences']
+    portrait_refs = inventory['player']['currentPortraitReferences']
+    if (
+        len(stored) > assets['rows']
+        or type(logo_refs) is not int
+        or type(portrait_refs) is not int
+        or not 0 <= logo_refs <= min(len(stored), inventory['club']['rows'])
+        or not 0 <= portrait_refs <= min(len(stored), inventory['player']['rows'])
+        or logo_refs + portrait_refs > len(stored)
+    ):
+        raise ValueError('Invalid available-phase-3 media inventory counts.')
 
 
 def validate_media_inventory(media):
@@ -347,12 +469,12 @@ def verify_media(directory, media):
 def validate_set_layout(backup, scope):
     backup = Path(backup)
     expected = {'database.dump', 'inventory.json', 'manifest.json', 'manifest.sha256'}
-    if scope == 'available-phase-2':
+    if scope in MEDIA_SCOPES:
         expected.add('media')
     if backup.is_symlink() or {item.name for item in backup.iterdir()} != expected:
         raise ValueError('Incomplete set or unexpected content.')
     for item in backup.iterdir():
-        if item.name == 'media' and scope == 'available-phase-2':
+        if item.name == 'media' and scope in MEDIA_SCOPES:
             if item.is_symlink() or not item.is_dir():
                 raise ValueError('Available-phase-2 media directory must be a real directory.')
         elif item.is_symlink() or not item.is_file():
@@ -389,7 +511,10 @@ def create(app, backup, identifier, operation_id=None, application_revision=None
         if not isinstance(application_revision, str) or not APPLICATION_REVISION.fullmatch(application_revision):
             raise ValueError('Available-phase-2 application revision is required.')
         validate_snapshot_at(snapshot_at)
-        validate_phase2_inventory(inventory)
+        if scope == 'available-phase-3':
+            validate_phase3_inventory(inventory)
+        else:
+            validate_phase2_inventory(inventory)
         stored = inventory['media_asset'].get('storedContent', [])
         media_dir = backup / 'media'
         if media_dir.exists():
@@ -445,7 +570,7 @@ def verify(app, backup, identifier=None):
         raise ValueError('Unsupported backup scope/format.')
     if not isinstance(manifest.get('setId'), str) or not manifest['setId']:
         raise ValueError('Missing set identity.')
-    if scope == 'available-phase-2':
+    if scope in MEDIA_SCOPES:
         if not isinstance(manifest.get('operationId'), str) or not UUID.fullmatch(manifest['operationId']):
             raise ValueError('Missing operation identity.')
         if not isinstance(manifest.get('applicationRevision'), str) or not APPLICATION_REVISION.fullmatch(manifest['applicationRevision']):
@@ -469,7 +594,10 @@ def verify(app, backup, identifier=None):
     if scope == 'available-foundation':
         validate_foundation_inventory(inventory)
     else:
-        validate_phase2_inventory(inventory)
+        if scope == 'available-phase-3':
+            validate_phase3_inventory(inventory)
+        else:
+            validate_phase2_inventory(inventory)
         if manifest['media'] != inventory['media_asset'].get('storedContent', []):
             raise ValueError('Manifest and media inventory differ.')
         verify_media(backup / 'media', manifest['media'])
@@ -506,7 +634,7 @@ def restore_media(app, backup):
 
 
 def verify_live_media(app):
-    if schema_profile(app) != 'available-phase-2':
+    if schema_profile(app) not in MEDIA_SCOPES:
         return
     media = inventory(app)['media_asset'].get('storedContent', [])
     if media:
@@ -557,8 +685,34 @@ def verify_archive(app, backup):
     by_id = {asset['id']: asset for asset in assets}
     for asset_id, club_id in referenced.items():
         asset = by_id.get(asset_id)
-        if not asset or asset['club_id'] != club_id or asset['unreferenced_at'] != null or asset['content_deleted_at'] != null:
+        if (
+            not asset
+            or asset['club_id'] != club_id
+            or asset.get('player_id', null) != null
+            or asset['unreferenced_at'] != null
+            or asset['content_deleted_at'] != null
+        ):
             raise ValueError('Archive current logo reference is invalid.')
+    if manifest['scope'] == 'available-phase-3':
+        players = archive_rows(backup, 'player')
+        if len(players) != inventory['player']['rows']:
+            raise ValueError('Archive and player inventory row counts differ.')
+        portrait_refs = {
+            player['current_portrait_id']: player['id']
+            for player in players if player['current_portrait_id'] != null
+        }
+        if len(portrait_refs) != inventory['player']['currentPortraitReferences']:
+            raise ValueError('Archive current portrait inventory differs.')
+        for asset_id, player_id in portrait_refs.items():
+            asset = by_id.get(asset_id)
+            if (
+                not asset
+                or asset.get('player_id') != player_id
+                or asset['club_id'] != null
+                or asset['unreferenced_at'] != null
+                or asset['content_deleted_at'] != null
+            ):
+                raise ValueError('Archive current portrait reference is invalid.')
     stored = [{
         'id': asset['id'], 'provider': asset['provider'], 'objectKey': asset['object_key'],
         'mimeType': asset['mime_type'], 'byteSize': int(asset['byte_size']),
@@ -618,6 +772,8 @@ def expected_tables(scope):
         return FOUNDATION_TABLES
     if scope == 'available-phase-2':
         return PHASE2_TABLES
+    if scope == 'available-phase-3':
+        return PHASE3_TABLES
     raise ValueError('Unsupported schema profile.')
 
 
@@ -650,10 +806,13 @@ def inventory(app):
             'rows': row_count,
             'contentSha256': hashlib.sha256(content.encode()).hexdigest(),
         }
-        if scope == 'available-phase-2' and name == 'club':
+        if scope in MEDIA_SCOPES and name == 'club':
             logo_references = int(sql('SELECT count(*) FROM "club" WHERE "current_logo_id" IS NOT NULL'))
             result[name]['currentLogoReferences'] = logo_references
-        if scope == 'available-phase-2' and name == 'media_asset' and row_count:
+        if scope == 'available-phase-3' and name == 'player':
+            portrait_references = int(sql('SELECT count(*) FROM "player" WHERE "current_portrait_id" IS NOT NULL'))
+            result[name]['currentPortraitReferences'] = portrait_references
+        if scope in MEDIA_SCOPES and name == 'media_asset' and row_count:
             result[name]['storedContent'] = json.loads(sql("""
                 SELECT coalesce(jsonb_agg(jsonb_build_object(
                   'id', id, 'provider', provider, 'objectKey', object_key,
@@ -666,10 +825,21 @@ def inventory(app):
         raise ValueError('Missing foundation schema.')
     if scope == 'available-phase-2':
         validate_phase2_inventory(result)
+    elif scope == 'available-phase-3':
+        validate_phase3_inventory(result)
     return result
 
 
-def validate_phase2_catalog(foreign_keys, unique_indexes, triggers):
+def validate_phase2_catalog(foreign_keys, unique_indexes, triggers, scope='available-phase-2'):
+    expected_fks = (
+        PHASE3_REQUIRED_FOREIGN_KEYS if scope == 'available-phase-3' else PHASE2_REQUIRED_FOREIGN_KEYS
+    )
+    expected_uniques = (
+        PHASE3_REQUIRED_UNIQUE_INDEXES if scope == 'available-phase-3' else PHASE2_REQUIRED_UNIQUE_INDEXES
+    )
+    expected_triggers = (
+        PHASE3_REQUIRED_TRIGGERS if scope == 'available-phase-3' else PHASE2_REQUIRED_TRIGGERS
+    )
     foreign_key_map = {}
     for foreign_key in foreign_keys:
         if not isinstance(foreign_key, dict) or not isinstance(foreign_key.get('name'), str):
@@ -677,11 +847,11 @@ def validate_phase2_catalog(foreign_keys, unique_indexes, triggers):
         if foreign_key['name'] in foreign_key_map:
             raise ValueError('Club/Stadium/media foreign-key inventory is ambiguous.')
         foreign_key_map[foreign_key['name']] = foreign_key
-    if foreign_key_map != PHASE2_REQUIRED_FOREIGN_KEYS:
+    if foreign_key_map != expected_fks:
         raise ValueError('Club/Stadium/media foreign keys are incompatible.')
     if any(
         unique_indexes.get(name) != expected
-        for name, expected in PHASE2_REQUIRED_UNIQUE_INDEXES.items()
+        for name, expected in expected_uniques.items()
     ):
         raise ValueError('Club/Stadium/media unique indexes are incompatible.')
     trigger_map = {}
@@ -691,23 +861,32 @@ def validate_phase2_catalog(foreign_keys, unique_indexes, triggers):
         if trigger['name'] in trigger_map:
             raise ValueError('Club/Stadium/media trigger inventory is ambiguous.')
         trigger_map[trigger['name']] = trigger
-    if trigger_map != PHASE2_REQUIRED_TRIGGERS:
+    if trigger_map != expected_triggers:
         raise ValueError('Club/Stadium/media triggers are incompatible.')
 
 
 def verify_schema(app, scope):
     if read_table_names() != expected_tables(scope):
         raise ValueError('Database table inventory differs from the supported schema.')
-    if scope != 'available-phase-2':
+    if scope not in MEDIA_SCOPES:
         return
     columns = sql(
         "SELECT table_name || ':' || column_name FROM information_schema.columns "
         "WHERE table_schema='public' ORDER BY table_name,column_name"
     ).splitlines()
     actual_columns = set(columns)
-    for table, required in PHASE2_REQUIRED_COLUMNS.items():
+    required_columns = (
+        PHASE3_REQUIRED_COLUMNS if scope == 'available-phase-3' else PHASE2_REQUIRED_COLUMNS
+    )
+    for table, required in required_columns.items():
         if any(f'{table}:{column}' not in actual_columns for column in required):
             raise ValueError('Club/Stadium/media schema columns are incomplete.')
+    fk_names = (
+        tuple(PHASE3_REQUIRED_FOREIGN_KEYS)
+        if scope == 'available-phase-3'
+        else tuple(PHASE2_REQUIRED_FOREIGN_KEYS)
+    )
+    fk_list_sql = ', '.join(f"'{name}'" for name in fk_names)
     foreign_key_lines = sql(
         "SELECT jsonb_build_object("
         "'name', constraint_info.conname::text, "
@@ -732,8 +911,7 @@ def verify_schema(app, scope):
         "JOIN pg_class target_table ON target_table.oid=constraint_info.confrelid "
         "JOIN pg_namespace target_namespace ON target_namespace.oid=target_table.relnamespace "
         "WHERE constraint_info.contype='f' AND constraint_info.connamespace='public'::regnamespace "
-        "AND constraint_info.conname IN ('club_id_current_logo_id_fkey', "
-        "'media_asset_club_id_fkey', 'media_asset_stored_by_fkey') "
+        f"AND constraint_info.conname IN ({fk_list_sql}) "
         "ORDER BY constraint_info.conname, constraint_info.conrelid"
     ).splitlines()
     foreign_keys = [json.loads(line) for line in foreign_key_lines]
@@ -756,6 +934,12 @@ def verify_schema(app, scope):
     for line in unique_index_lines:
         name, table, key_columns = line.split(':', 2)
         unique_indexes[name] = (table, key_columns)
+    trigger_names = (
+        tuple(PHASE3_REQUIRED_TRIGGERS)
+        if scope == 'available-phase-3'
+        else tuple(PHASE2_REQUIRED_TRIGGERS)
+    )
+    trigger_list_sql = ', '.join(f"'{name}'" for name in trigger_names)
     trigger_lines = sql(
         "SELECT jsonb_build_object("
         "'name', trigger_info.tgname::text, "
@@ -777,12 +961,11 @@ def verify_schema(app, scope):
         "JOIN pg_namespace table_namespace ON table_namespace.oid=table_class.relnamespace "
         "JOIN pg_proc function_info ON function_info.oid=trigger_info.tgfoid "
         "JOIN pg_namespace function_namespace ON function_namespace.oid=function_info.pronamespace "
-        "WHERE trigger_info.tgname IN ('club_identity', 'stadium_identity', 'media_asset_metadata', "
-        "'club_current_logo_lifecycle', 'media_asset_current_logo_lifecycle') "
+        f"WHERE trigger_info.tgname IN ({trigger_list_sql}) "
         "ORDER BY trigger_info.tgname, trigger_info.tgrelid"
     ).splitlines()
     triggers = [json.loads(line) for line in trigger_lines]
-    validate_phase2_catalog(foreign_keys, unique_indexes, triggers)
+    validate_phase2_catalog(foreign_keys, unique_indexes, triggers, scope)
 
 
 def database(app):

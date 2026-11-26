@@ -1,0 +1,121 @@
+.banner {
+  padding: 14px 18px;
+  border-radius: 12px;
+  border: 1px solid #d9cdf6;
+  background: #f6f3fc;
+  color: #3c1f86;
+  font-size: 13.5px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.bannerWarn {
+  border-color: #f4d299;
+  background: #fff8eb;
+  color: #7a4b00;
+}
+
+.versionTabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.versionTabActive {
+  background: #552cb6 !important;
+  color: #ffffff !important;
+  border-color: #552cb6 !important;
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  border: 1px solid #d8deea;
+  background: #eef1f7;
+  color: #475467;
+  white-space: nowrap;
+}
+
+.pillOk {
+  background: #e8f7ef;
+  color: #137347;
+  border-color: #b9e6ce;
+}
+
+.pillPending {
+  background: #ede9fe;
+  color: #552cb6;
+  border-color: #d1c4f9;
+}
+
+.pillLate {
+  background: #fdeeee;
+  color: #b42318;
+  border-color: #f6c4c0;
+}
+
+.pillApproved {
+  background: #ede9fe;
+  color: #552cb6;
+  border-color: #d1c4f9;
+}
+
+.drawerActionsRow {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.drawerActionsRow button {
+  padding: 7px 11px;
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.dangerSolid {
+  background: #dc2626 !important;
+  border-color: #dc2626 !important;
+  color: #ffffff !important;
+  font-weight: 600 !important;
+}
+
+.dangerSolid:hover:not(:disabled) {
+  background: #b91c1c !important;
+  border-color: #b91c1c !important;
+}
+
+.proposedList {
+  display: grid;
+  gap: 10px;
+}
+
+.proposedRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 100px auto;
+  gap: 8px;
+  align-items: center;
+}
+
+.metaNote {
+  margin: 0;
+  color: #526078;
+  font-size: 13px;
+}
+
+@media (max-width: 640px) {
+  .proposedRow {
+    grid-template-columns: 1fr;
+  }
+
+  .drawerActionsRow {
+    flex-wrap: wrap;
+  }
+}
