@@ -235,6 +235,8 @@ export function ClubApplicationForm({
     <Modal
       open
       title={title}
+      width={740}
+      className={pageCss.phase3Modal}
       closable={!busy}
       maskClosable={!busy}
       keyboard={!busy}
@@ -257,8 +259,7 @@ export function ClubApplicationForm({
 
         {mode === 'new-round' && frozenInitial?.versionNumber && (
           <p className={pageCss.metaNote}>
-            Khởi tạo dữ liệu từ Phiên bản {frozenInitial.versionNumber}. Phiên bản bổ sung mới sẽ
-            nối tiếp vòng xử lý gần nhất của hồ sơ này.
+            Khởi tạo từ Phiên bản {frozenInitial.versionNumber}.
           </p>
         )}
 
@@ -280,127 +281,131 @@ export function ClubApplicationForm({
           onChange={setClubId}
         />
 
-        <label>
-          <span>Huấn luyện viên trưởng</span>
-          <input
-            value={coachName}
-            disabled={busy}
-            maxLength={200}
-            placeholder="Nhập họ tên huấn luyện viên trưởng"
-            onChange={(event) => setCoachName(event.target.value)}
-          />
-        </label>
+        <div className={pageCss.formGrid2}>
+          <label>
+            <span>Huấn luyện viên trưởng</span>
+            <input
+              value={coachName}
+              disabled={busy}
+              maxLength={200}
+              placeholder="Nhập họ tên huấn luyện viên trưởng"
+              onChange={(event) => setCoachName(event.target.value)}
+            />
+          </label>
 
-        <AdminSelect
-          label="Sân nhà đăng ký"
-          hideLabel={false}
-          searchable
-          disabled={busy}
-          value={homeStadiumId}
-          options={[
-            { value: '', label: 'Chọn sân nhà đăng ký' },
-            ...references.stadiums.map((s) => ({
-              value: s.id,
-              label: `${s.name} (${s.code})${s.discontinuedAt ? ' · Đã ngừng sử dụng' : ''}`,
-              disabled: !!s.discontinuedAt && s.id !== homeStadiumId,
-            })),
-          ]}
-          onChange={setHomeStadiumId}
-        />
-
-        <label>
-          <span>Người đại diện</span>
-          <input
-            value={representativeName}
+          <AdminSelect
+            label="Sân nhà đăng ký"
+            hideLabel={false}
+            searchable
             disabled={busy}
-            maxLength={200}
-            placeholder="Nhập họ tên người đại diện câu lạc bộ"
-            onChange={(event) => setRepresentativeName(event.target.value)}
+            value={homeStadiumId}
+            options={[
+              { value: '', label: 'Chọn sân nhà đăng ký' },
+              ...references.stadiums.map((s) => ({
+                value: s.id,
+                label: `${s.name} (${s.code})${s.discontinuedAt ? ' · Đã ngừng sử dụng' : ''}`,
+                disabled: !!s.discontinuedAt && s.id !== homeStadiumId,
+              })),
+            ]}
+            onChange={setHomeStadiumId}
           />
-        </label>
+        </div>
 
-        <label>
-          <span>Số điện thoại đại diện</span>
-          <input
-            value={representativePhone}
-            disabled={busy}
-            maxLength={32}
-            placeholder="Ví dụ: +44 (20) 7946-0123 hoặc 0901234567"
-            onChange={(event) => setRepresentativePhone(event.target.value)}
-          />
-        </label>
+        <div className={pageCss.formGrid2}>
+          <label>
+            <span>Người đại diện</span>
+            <input
+              value={representativeName}
+              disabled={busy}
+              maxLength={200}
+              placeholder="Nhập họ tên người đại diện câu lạc bộ"
+              onChange={(event) => setRepresentativeName(event.target.value)}
+            />
+          </label>
 
-        <label>
-          <span>Địa chỉ liên hệ</span>
-          <textarea
-            rows={2}
-            value={contactAddress}
-            disabled={busy}
-            maxLength={500}
-            placeholder="Nhập địa chỉ trụ sở hoặc địa chỉ liên hệ chính thức"
-            onChange={(event) => setContactAddress(event.target.value)}
-          />
-        </label>
+          <label>
+            <span>Số điện thoại đại diện</span>
+            <input
+              value={representativePhone}
+              disabled={busy}
+              maxLength={32}
+              placeholder="Ví dụ: +44 (20) 7946-0123 hoặc 0901234567"
+              onChange={(event) => setRepresentativePhone(event.target.value)}
+            />
+          </label>
+        </div>
 
-        <label>
-          <span>Ghi chú (không bắt buộc)</span>
-          <textarea
-            rows={2}
-            value={notes}
-            disabled={busy}
-            maxLength={2000}
-            placeholder="Thông tin bổ sung cho quá trình tiếp nhận"
-            onChange={(event) => setNotes(event.target.value)}
-          />
-        </label>
+        <div className={pageCss.formGrid2}>
+          <label>
+            <span>Địa chỉ liên hệ</span>
+            <textarea
+              rows={2}
+              value={contactAddress}
+              disabled={busy}
+              maxLength={500}
+              placeholder="Nhập địa chỉ trụ sở hoặc địa chỉ liên hệ chính thức"
+              onChange={(event) => setContactAddress(event.target.value)}
+            />
+          </label>
+
+          <label>
+            <span>Ghi chú (không bắt buộc)</span>
+            <textarea
+              rows={2}
+              value={notes}
+              disabled={busy}
+              maxLength={2000}
+              placeholder="Thông tin bổ sung cho quá trình tiếp nhận"
+              onChange={(event) => setNotes(event.target.value)}
+            />
+          </label>
+        </div>
 
         <div className={reviewCss.review}>
-          <div className={css.sectionHeader} style={{ marginBottom: 10 }}>
-            <strong>Danh sách cầu thủ dự kiến</strong>
+          <div className={css.sectionHeader} style={{ marginBottom: rows.length > 0 ? 10 : 0 }}>
+            <strong>Danh sách cầu thủ dự kiến ({rows.length})</strong>
             <button type="button" onClick={addPlayerRow} disabled={busy}>
               Thêm cầu thủ
             </button>
           </div>
-          <p className={pageCss.metaNote}>
-            Bản nháp có thể lưu trước khi hoàn thiện; khi trình phê duyệt cần đủ thông tin và ít
-            nhất 1 cầu thủ dự kiến.
-          </p>
-          <div className={pageCss.proposedList} style={{ marginTop: 10 }}>
-            {rows.map((row) => (
-              <div key={row.key} className={pageCss.proposedRow}>
-                <AdminSelect
-                  label="Chọn cầu thủ dự kiến"
-                  searchable
-                  disabled={busy}
-                  value={row.playerId}
-                  options={[
-                    { value: '', label: 'Chọn cầu thủ' },
-                    ...references.players.map((p) => ({
-                      value: p.id,
-                      label: `${p.fullName} (${p.code} · ${p.positionCode})`,
-                    })),
-                  ]}
-                  onChange={(value) => updateRow(row.key, { playerId: value })}
-                />
-                <input
-                  aria-label="Số áo dự kiến"
-                  value={row.shirtNumber}
-                  disabled={busy}
-                  inputMode="numeric"
-                  placeholder="Số áo"
-                  onChange={(event) => updateRow(row.key, { shirtNumber: event.target.value })}
-                />
-                <button
-                  type="button"
-                  className={css.danger}
-                  disabled={busy}
-                  onClick={() => removeRow(row.key)}
-                >
-                  Xóa
-                </button>
-              </div>
-            ))}
-          </div>
+          {rows.length > 0 && (
+            <div className={pageCss.proposedList}>
+              {rows.map((row) => (
+                <div key={row.key} className={pageCss.proposedRow}>
+                  <AdminSelect
+                    label="Chọn cầu thủ dự kiến"
+                    searchable
+                    disabled={busy}
+                    value={row.playerId}
+                    options={[
+                      { value: '', label: 'Chọn cầu thủ' },
+                      ...references.players.map((p) => ({
+                        value: p.id,
+                        label: `${p.fullName} (${p.code} · ${p.positionCode})`,
+                      })),
+                    ]}
+                    onChange={(value) => updateRow(row.key, { playerId: value })}
+                  />
+                  <input
+                    aria-label="Số áo dự kiến"
+                    value={row.shirtNumber}
+                    disabled={busy}
+                    inputMode="numeric"
+                    placeholder="Số áo"
+                    onChange={(event) => updateRow(row.key, { shirtNumber: event.target.value })}
+                  />
+                  <button
+                    type="button"
+                    className={css.danger}
+                    disabled={busy}
+                    onClick={() => removeRow(row.key)}
+                  >
+                    Xóa
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
         <div className={css.actions}>

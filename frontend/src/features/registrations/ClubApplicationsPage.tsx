@@ -1055,9 +1055,8 @@ function ClubApplicationDrawer({
                   </p>
                 ) : canTargetException ? (
                   <p className={pageCss.metaNote} style={{ marginTop: 8 }}>
-                    Phiên bản này được tiếp nhận ngoài khung thời gian quy định. Cần có ngoại lệ
-                    tiếp nhận được quản lý mùa giải độc lập phê duyệt cho đúng phiên bản này trước
-                    khi trình duyệt.
+                    Phiên bản này được tiếp nhận ngoài khung thời gian và cần ngoại lệ được phê
+                    duyệt trước khi trình duyệt.
                   </p>
                 ) : null}
 
@@ -1169,11 +1168,6 @@ function ClubApplicationDrawer({
                                     Từ chối ngoại lệ
                                   </button>
                                 </>
-                              )}
-                              {canTargetException && detail.capabilities.canApprove && exIsSelf && (
-                                <span className={pageCss.metaNote}>
-                                  Người đề xuất ngoại lệ không thể tự phê duyệt.
-                                </span>
                               )}
                               {detail.capabilities.canPrepare && (
                                 <button
@@ -1426,11 +1420,6 @@ function ClubApplicationDrawer({
                       </button>
                     </>
                   )}
-                  {detail.capabilities.canApprove && isFormerEditor && (
-                    <p className={pageCss.metaNote} role="status">
-                      Nhân sự từng soạn thảo hoặc chỉnh sửa phiên bản này không thể tự phê duyệt.
-                    </p>
-                  )}
                   {detail.capabilities.canPrepare && (
                     <>
                       <button
@@ -1670,6 +1659,7 @@ function WorkflowActionModal({
     <Modal
       open
       title={title}
+      className={pageCss.phase3Modal}
       closable={!busy}
       maskClosable={!busy}
       keyboard={!busy}
@@ -1687,9 +1677,8 @@ function WorkflowActionModal({
 
         {actionSpec.kind === 'exception-propose' ? (
           <>
-            <p className={pageCss.metaNote}>
-              Ngoại lệ tiếp nhận chỉ áp dụng cho Phiên bản {actionSpec.version.versionNumber}. Nếu
-              bổ sung thành phiên bản mới, cần đánh giá lại thời hạn tiếp nhận.
+            <p className={pageCss.confirmBody}>
+              Đề xuất ngoại lệ tiếp nhận cho <strong>Phiên bản {actionSpec.version.versionNumber}</strong>.
             </p>
             <label>
               <span>Lý do đề xuất ngoại lệ</span>
@@ -1717,16 +1706,14 @@ function WorkflowActionModal({
         ) : (
           <>
             {actionSpec.kind === 'application' && actionSpec.action === 'receive' && (
-              <p className={pageCss.metaNote}>
-                Hệ thống sẽ ghi nhận thời điểm tiếp nhận theo giờ máy chủ và đối chiếu khung thời
-                gian của quy định đang có hiệu lực. Nội dung sau khi tiếp nhận không thể chỉnh sửa
-                trực tiếp.
+              <p className={pageCss.confirmBody}>
+                Xác nhận tiếp nhận hồ sơ theo thời điểm hiện tại. Sau khi tiếp nhận, nội dung phiên
+                bản sẽ được khóa.
               </p>
             )}
             {actionSpec.kind === 'application' && actionSpec.action === 'submit' && (
-              <p className={pageCss.metaNote}>
-                Hệ thống sẽ kiểm tra đầy đủ các trường bắt buộc, danh sách cầu thủ dự kiến và điều
-                kiện thời hạn tiếp nhận trước khi chuyển sang Chờ phê duyệt.
+              <p className={pageCss.confirmBody}>
+                Xác nhận trình phê duyệt phiên bản hồ sơ này cho Quản lý mùa giải.
               </p>
             )}
             {(actionSpec.requireReason || actionSpec.action === 'withdraw') && (

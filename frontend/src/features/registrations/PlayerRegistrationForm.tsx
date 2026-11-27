@@ -73,12 +73,9 @@ export type RegistrationInitialDraftValues = {
 };
 
 function clubOptionLabel(club: ReferenceRegistrationClub): string {
-  const status = club.discontinuedAt
-    ? ' — Đã ngừng hoạt động'
-    : club.hasApprovedApplication
-      ? ' — Đã duyệt hồ sơ tham dự'
-      : ' — Chưa duyệt hồ sơ tham dự';
-  return `${club.name} (${club.code})${status}`;
+  if (club.discontinuedAt) return `${club.name} (${club.code}) · Đã ngừng hoạt động`;
+  if (!club.hasApprovedApplication) return `${club.name} (${club.code}) · Chưa duyệt hồ sơ`;
+  return `${club.name} (${club.code})`;
 }
 
 export function PlayerRegistrationForm({
@@ -291,7 +288,8 @@ export function PlayerRegistrationForm({
           ? `Chỉnh sửa bản nháp (Phiên bản ${frozenInitial.versionNumber})`
           : 'Tạo bản nháp đăng ký cầu thủ'
       }
-      width={760}
+      width={780}
+      className={pageCss.phase3Modal}
       closable={!busy}
       maskClosable={!busy}
       keyboard={!busy}
@@ -329,50 +327,36 @@ export function PlayerRegistrationForm({
         )}
 
         <div className={regPageCss.twoColRow}>
-          <div>
-            <AdminSelect
-              label="Câu lạc bộ *"
-              hideLabel={false}
-              value={clubId}
-              disabled={mode === 'edit' || busy}
-              searchable
-              options={[
-                { value: '', label: 'Chọn câu lạc bộ' },
-                ...references.clubs.map((club) => ({
-                  value: club.id,
-                  label: clubOptionLabel(club),
-                })),
-              ]}
-              onChange={setClubId}
-            />
-            {mode === 'edit' && (
-              <p className={pageCss.metaNote} style={{ marginTop: 4 }}>
-                Câu lạc bộ cố định theo hồ sơ đăng ký đã tạo.
-              </p>
-            )}
-          </div>
-          <div>
-            <AdminSelect
-              label="Cầu thủ *"
-              hideLabel={false}
-              value={playerId}
-              disabled={mode === 'edit' || busy}
-              searchable
-              options={[
-                { value: '', label: 'Chọn cầu thủ' },
-                ...references.players.map((player) => ({
-                  value: player.id,
-                  label: `${player.fullName} (${player.code} · ${formatDisplayDate(player.birthDate)})`,
-                })),
-              ]}
-              onChange={setPlayerId}
-            />
-            {mode === 'edit' && (
-              <p className={pageCss.metaNote} style={{ marginTop: 4 }}>
-                Hồ sơ cầu thủ cố định theo lượt đăng ký này.
-              </p>
-            )}
-          </div>
+          <AdminSelect
+            label="Câu lạc bộ *"
+            hideLabel={false}
+            value={clubId}
+            disabled={mode === 'edit' || busy}
+            searchable
+            options={[
+              { value: '', label: 'Chọn câu lạc bộ' },
+              ...references.clubs.map((club) => ({
+                value: club.id,
+                label: clubOptionLabel(club),
+              })),
+            ]}
+            onChange={setClubId}
+          />
+          <AdminSelect
+            label="Cầu thủ *"
+            hideLabel={false}
+            value={playerId}
+            disabled={mode === 'edit' || busy}
+            searchable
+            options={[
+              { value: '', label: 'Chọn cầu thủ' },
+              ...references.players.map((player) => ({
+                value: player.id,
+                label: `${player.fullName} (${player.code} · ${formatDisplayDate(player.birthDate)})`,
+              })),
+            ]}
+            onChange={setPlayerId}
+          />
         </div>
 
         <div className={regPageCss.twoColRow}>
@@ -390,7 +374,7 @@ export function PlayerRegistrationForm({
             />
           </label>
           <div className={regPageCss.checkboxField}>
-            <span className={regPageCss.checkboxLabelTitle}>Tùy chọn diện đào tạo nội địa</span>
+            <span className={regPageCss.checkboxLabelTitle}>Diện đăng ký</span>
             <label className={regPageCss.checkboxCard}>
               <input
                 type="checkbox"
@@ -412,9 +396,6 @@ export function PlayerRegistrationForm({
               disabled={busy}
               onChange={setPlayingStart}
             />
-            <span className={regPageCss.cellSub}>
-              Định dạng DD/MM/YYYY HH:mm (giờ Việt Nam). Cần lớn hơn hoặc bằng thời điểm xác nhận.
-            </span>
           </label>
           <label>
             Kết thúc hiệu lực dự kiến (tùy chọn)
@@ -424,116 +405,104 @@ export function PlayerRegistrationForm({
               disabled={busy}
               onChange={setPlayingEnd}
             />
-            <span className={regPageCss.cellSub}>Để trống nếu chưa ấn định ngày kết thúc.</span>
           </label>
         </div>
 
-        <section className={regPageCss.evidenceSection} aria-label="Xác minh đào tạo nội địa">
-          <div className={regPageCss.evidenceHeader}>
-            <h3>Xác minh điều kiện đào tạo nội địa</h3>
-            {effectiveReg && (
-              <span className={regPageCss.cellSub}>
-                Ngưỡng hiện hành: tối thiểu {effectiveReg.homegrownSeasons ?? '—'} mùa hoặc{' '}
-                {effectiveReg.homegrownMonths ?? '—'} tháng
-                {effectiveReg.homegrownAgeStart !== null && effectiveReg.homegrownAgeEnd !== null
-                  ? ` (độ tuổi ${effectiveReg.homegrownAgeStart}–${effectiveReg.homegrownAgeEnd})`
-                  : ''}
-              </span>
+        {!nonHomegrownOptIn && (
+          <section className={regPageCss.evidenceSection} aria-label="Xác minh đào tạo nội địa">
+            <div className={regPageCss.evidenceHeader}>
+              <h3>Xác minh đào tạo nội địa</h3>
+              {playerIsU21 ? (
+                <span className={`${pageCss.pill} ${pageCss.pillPending}`}>
+                  Cầu thủ trẻ U21 · Không bắt buộc minh chứng
+                </span>
+              ) : effectiveReg ? (
+                <span className={pageCss.pill}>
+                  Tối thiểu {effectiveReg.homegrownSeasons ?? '—'} mùa hoặc{' '}
+                  {effectiveReg.homegrownMonths ?? '—'} tháng
+                </span>
+              ) : null}
+            </div>
+
+            {!playerIsU21 && (
+              <>
+                <div className={regPageCss.evidenceGridThree}>
+                  <AdminSelect
+                    label="Nhánh xác minh"
+                    hideLabel={false}
+                    value={evidenceBranch}
+                    disabled={busy}
+                    options={[
+                      { value: '', label: 'Chưa chọn nhánh' },
+                      { value: 'SEASONS', label: 'Theo số mùa giải' },
+                      { value: 'MONTHS', label: 'Theo số tháng đào tạo' },
+                    ]}
+                    onChange={setEvidenceBranch}
+                  />
+                  <label>
+                    Giá trị tích lũy
+                    <input
+                      type="number"
+                      min={0}
+                      max={1000}
+                      inputMode="numeric"
+                      value={qualifyingValue}
+                      disabled={busy}
+                      placeholder="Ví dụ: 3 hoặc 36"
+                      onChange={(event) => setQualifyingValue(event.target.value)}
+                    />
+                  </label>
+                  <AdminSelect
+                    label="Thuộc LĐBĐ Anh / Xứ Wales"
+                    hideLabel={false}
+                    value={affiliatedBasis}
+                    disabled={busy}
+                    options={[
+                      { value: '', label: 'Chưa xác nhận' },
+                      { value: 'YES', label: 'Đáp ứng điều kiện' },
+                      { value: 'NO', label: 'Không đáp ứng' },
+                    ]}
+                    onChange={setAffiliatedBasis}
+                  />
+                </div>
+
+                <div className={regPageCss.twoColRow}>
+                  <label>
+                    Tóm tắt minh chứng đào tạo
+                    <input
+                      type="text"
+                      maxLength={1000}
+                      value={evidenceSummary}
+                      disabled={busy}
+                      placeholder="Mô tả ngắn quá trình đào tạo…"
+                      onChange={(event) => setEvidenceSummary(event.target.value)}
+                    />
+                  </label>
+                  <label>
+                    Mã tham chiếu hồ sơ xác minh
+                    <input
+                      type="text"
+                      maxLength={300}
+                      value={evidenceReference}
+                      disabled={busy}
+                      placeholder="Ví dụ: HS-DTND-2026-01"
+                      onChange={(event) => setEvidenceReference(event.target.value)}
+                    />
+                  </label>
+                </div>
+              </>
             )}
-          </div>
-
-          {nonHomegrownOptIn ? (
-            <p className={pageCss.metaNote}>
-              Cầu thủ đang được chọn xử lý theo diện ngoài đào tạo nội địa nên không yêu cầu minh
-              chứng đào tạo nội địa.
-            </p>
-          ) : playerIsU21 ? (
-            <p className={pageCss.metaNote}>
-              Cầu thủ sinh ngày {formatDisplayDate(selectedPlayer.birthDate)}, đạt diện cầu thủ trẻ
-              U21 theo quy định hiện hành (từ {formatDisplayDate(effectiveReg!.u21Cutoff!)} trở về
-              sau) nên không bắt buộc xác minh đào tạo nội địa.
-            </p>
-          ) : (
-            <p className={pageCss.metaNote}>
-              Quốc tịch không thay thế căn cứ đào tạo nội địa. Cần xác minh đầy đủ minh chứng hoặc
-              chọn xử lý diện ngoài đào tạo nội địa nếu còn hạn mức.
-            </p>
-          )}
-
-          <div className={regPageCss.evidenceGridThree}>
-            <AdminSelect
-              label="Nhánh xác minh"
-              hideLabel={false}
-              value={evidenceBranch}
-              disabled={busy || nonHomegrownOptIn}
-              options={[
-                { value: '', label: 'Chưa chọn nhánh' },
-                { value: 'SEASONS', label: 'Theo số mùa giải' },
-                { value: 'MONTHS', label: 'Theo số tháng đào tạo' },
-              ]}
-              onChange={setEvidenceBranch}
-            />
-            <label>
-              Giá trị tích lũy
-              <input
-                type="number"
-                min={0}
-                max={1000}
-                inputMode="numeric"
-                value={qualifyingValue}
-                disabled={busy || nonHomegrownOptIn}
-                placeholder="Ví dụ: 3 hoặc 36"
-                onChange={(event) => setQualifyingValue(event.target.value)}
-              />
-            </label>
-            <AdminSelect
-              label="CLB thuộc LĐBĐ Anh / Xứ Wales"
-              hideLabel={false}
-              value={affiliatedBasis}
-              disabled={busy || nonHomegrownOptIn}
-              options={[
-                { value: '', label: 'Chưa xác nhận' },
-                { value: 'YES', label: 'Đáp ứng điều kiện' },
-                { value: 'NO', label: 'Không đáp ứng' },
-              ]}
-              onChange={setAffiliatedBasis}
-            />
-          </div>
-
-          <div className={regPageCss.twoColRow}>
-            <label>
-              Tóm tắt minh chứng đào tạo
-              <input
-                type="text"
-                maxLength={1000}
-                value={evidenceSummary}
-                disabled={busy || nonHomegrownOptIn}
-                placeholder="Mô tả ngắn quá trình đào tạo hợp lệ…"
-                onChange={(event) => setEvidenceSummary(event.target.value)}
-              />
-            </label>
-            <label>
-              Mã tham chiếu hồ sơ xác minh
-              <input
-                type="text"
-                maxLength={300}
-                value={evidenceReference}
-                disabled={busy || nonHomegrownOptIn}
-                placeholder="Ví dụ: HS-DTND-2026-01"
-                onChange={(event) => setEvidenceReference(event.target.value)}
-              />
-            </label>
-          </div>
-        </section>
+          </section>
+        )}
 
         <label>
           Ghi chú nội bộ
-          <textarea
-            rows={2}
+          <input
+            type="text"
             maxLength={2000}
             value={notes}
             disabled={busy}
-            placeholder="Thông tin bổ sung cho quá trình rà soát đăng ký…"
+            placeholder="Thông tin bổ sung (không bắt buộc)…"
             onChange={(event) => setNotes(event.target.value)}
           />
         </label>
