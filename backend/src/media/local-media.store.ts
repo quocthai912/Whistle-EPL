@@ -53,9 +53,11 @@ export class LocalMediaStore {
 
   async put(key: string, bytes: Buffer): Promise<void> {
     if (!bytes.length || bytes.length > CLUB_LOGO_MAX_BYTES) throw unavailable();
+    let createdPath: string | null = null;
     try {
       const { root, path } = await this.location(key);
       const file = await open(path, 'wx', 0o600);
+      createdPath = path;
       try {
         await file.writeFile(bytes);
         await file.sync();
@@ -64,6 +66,9 @@ export class LocalMediaStore {
       }
       await this.syncRoot(root);
     } catch {
+      if (createdPath) {
+        await unlink(createdPath).catch(() => undefined);
+      }
       throw unavailable();
     }
   }
