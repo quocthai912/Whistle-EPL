@@ -1,10 +1,11 @@
 # Component ownership and audited baseline
 
-Audited on 2026-11-20 against repository HEAD
-`8d20e934f01cff12fe1cd0d3184245d5e41c7b43`. The audit covers the current
-authentication, administration, delegation, audit, season/lifecycle, regulation,
-club and stadium UI families and their shared HTTP/control contracts. Future
-Phases still require their own specification and design decisions.
+Audited on 2026-11-27 against repository HEAD
+`23ce0c231239fdfea56ffa035c4d3d79d1d9ab01`. The audit covers the current Phase 1–3
+surfaces—authentication, administration, delegation, audit, season/lifecycle,
+regulation, club, stadium, club applications, player profiles, player registrations,
+transfers/plans and official corrections—and their shared HTTP/control contracts.
+Future Phases still require their own specification and design decisions.
 
 Paths below are owning sources, not permission to edit them for every task.
 Re-read current owners when they change; this map is not a frozen second theme.
@@ -41,6 +42,10 @@ Re-read current owners when they change; this map is not a frozen second theme.
 | Club identity and media | [ClubsPage](../../../../frontend/src/features/clubs/ClubsPage.tsx), [ClubLogo](../../../../frontend/src/features/clubs/ClubLogo.tsx), [LogoFileField](../../../../frontend/src/features/clubs/LogoFileField.tsx). Reuse localized upload, validation and accessible preview rather than raw browser file chrome. |
 | Stadium lists and profiles | [StadiumsPage](../../../../frontend/src/features/stadiums/StadiumsPage.tsx). Read current approved field scope; a mockup does not authorize extra statistics/fields. |
 | Activity/history labels | [audit-filters](../../../../frontend/src/features/audit/audit-filters.ts), [AuditPage](../../../../frontend/src/features/audit/AuditPage.tsx), [season-model](../../../../frontend/src/features/seasons/season-model.ts). Map new Phase events/fields to Vietnamese in all relevant history surfaces. |
+| Player master profiles and portraits | [PlayersPage](../../../../frontend/src/features/players/PlayersPage.tsx), [PlayerForm](../../../../frontend/src/features/players/PlayerForm.tsx), [PlayerPortrait](../../../../frontend/src/features/players/PlayerPortrait.tsx), [its CSS](../../../../frontend/src/features/players/PlayersPage.module.css). Reuse portrait upload/fallback, duplicate-suspect confirmation and impact review patterns. |
+| Season-scoped applications, registrations and exceptions | [ClubApplicationsPage](../../../../frontend/src/features/registrations/ClubApplicationsPage.tsx), [ClubApplicationForm](../../../../frontend/src/features/registrations/ClubApplicationForm.tsx), [PlayerRegistrationsPage](../../../../frontend/src/features/registrations/PlayerRegistrationsPage.tsx), [PlayerRegistrationForm](../../../../frontend/src/features/registrations/PlayerRegistrationForm.tsx) and their CSS modules. Reuse the unified season picker/header, concise status tables, `phase3Modal` spacing/DateTimePicker fixes, structured 2-column exception cards and non-overflowing history table modal. |
+| Paired transitions and future plans | [RegistrationPlansPanel](../../../../frontend/src/features/registrations/RegistrationPlansPanel.tsx), [its CSS](../../../../frontend/src/features/registrations/RegistrationPlansPanel.module.css). Reuse side-by-side comparison cards, pill mode tabs, collapsible history and balanced full-width action grids. |
+| Official record corrections and multi-stage diffs | [OfficialCorrectionsPanel](../../../../frontend/src/features/registrations/OfficialCorrectionsPanel.tsx), [its CSS](../../../../frontend/src/features/registrations/OfficialCorrectionsPanel.module.css). Reuse 3-column before/after diff tables, structured regulation-period decision rows and 2-column correction forms. |
 
 ## Stable conventions versus contextual values
 

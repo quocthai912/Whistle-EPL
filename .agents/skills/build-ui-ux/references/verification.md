@@ -70,10 +70,13 @@ agree. Technical keys stay internal. Include enough data for the state being sho
 Save local screenshots, raw reviews and transient scripts under ignored
 `.verification/`. A fresh clone must not need those files to use the skill.
 For a full gallery, group by screen with related states/device variants; remove
-identical duplicates. A long page may need labeled sections, not repeated full-page
-images scattered across unrelated groups. Show only affected/requested captures
-for a focused change, and exactly the requested number when specified. Inspect
-captures before handoff; do not turn a screenshot-only request into a test run.
+identical duplicates. When a modal or form scrolls internally, capture both the top
+view and the scrolled bottom (including final fields and footer actions) so lower
+layout defects are never clipped out of review. A long page may need labeled sections,
+not repeated full-page images scattered across unrelated groups. Show only
+affected/requested captures for a focused change, and exactly the requested number
+when specified. Inspect captures before handoff; do not turn a screenshot-only
+request into a test run.
 
 ## Completion
 
@@ -88,8 +91,9 @@ Examples of correct effort:
 
 - Replace the access icon with the original logo, user requests two images/no tests:
   change the image/style, capture two fresh screens, deliver them inline; no suite.
-- Add a PHASE 3 registration form: load its spec, map fields/permissions, inspect
-  analogous master/season forms, approve a preview for the new layout, implement
-  with shared controls, inspect populated/invalid/long states and verify its workflow.
+- Add a PHASE 4 scheduling or match-report form: load its spec, map fields/permissions,
+  inspect analogous registration/season forms, approve a preview for the new layout,
+  implement with shared controls, inspect populated/invalid/long states (including
+  scrolled modal bottoms) and verify its workflow.
 - Fix one shared correction-impact layout: audit every caller first, fix the common
   owner, then check both club and stadium states rather than patching one screenshot.
