@@ -71,7 +71,7 @@
 
 .sectionBox {
   display: grid;
-  gap: 10px;
+  gap: 12px;
   padding: 16px;
   border-radius: 12px;
   border: 1px solid #e3e7f2;
@@ -107,7 +107,7 @@
   grid-template-columns: minmax(0, 1fr) auto;
   gap: 12px;
   align-items: start;
-  padding: 10px 14px;
+  padding: 11px 14px;
   background: #ffffff;
   border-top: 1px solid #eef1f7;
 }
@@ -152,6 +152,58 @@
   white-space: nowrap;
 }
 
+.exceptionList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 10px;
+}
+
+.exceptionCard {
+  display: grid;
+  gap: 10px;
+  padding: 14px;
+  border-radius: 10px;
+  border: 1px solid #e3e7f2;
+  background: #fafbfe;
+}
+
+.exceptionCardHeader {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.exceptionMetaGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px 14px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid #e6eaf3;
+  background: #ffffff;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.exceptionMetaLabel {
+  display: block;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #65718a;
+  margin-bottom: 2px;
+}
+
+.exceptionActions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
 .evidenceSection {
   display: grid;
   gap: 12px;
@@ -164,14 +216,14 @@
 .evidenceHeader {
   display: flex;
   flex-wrap: wrap;
-  align-items: baseline;
+  align-items: center;
   justify-content: space-between;
   gap: 8px;
 }
 
 .evidenceHeader h3 {
   margin: 0;
-  font-size: 14.5px;
+  font-size: 14px;
   font-weight: 700;
   color: #17213b;
 }
@@ -179,8 +231,8 @@
 .twoColRow {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 16px;
-  align-items: start;
+  gap: 14px;
+  align-items: end;
 }
 
 .twoColRow > * {
@@ -191,7 +243,7 @@
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 12px;
-  align-items: start;
+  align-items: end;
 }
 
 .evidenceGridThree > * {
@@ -206,7 +258,7 @@
 
 .checkboxLabelTitle {
   font-size: 13.5px;
-  font-weight: 600;
+  font-weight: 500;
   color: #17213b;
 }
 
@@ -215,42 +267,46 @@
   flex-direction: row !important;
   align-items: center !important;
   gap: 10px !important;
-  height: 40px;
   min-height: 40px;
-  padding: 0 12px;
+  padding: 8px 12px;
   margin: 0 !important;
   border-radius: 8px;
   border: 1px solid #e3e7f2;
   background: #f8f9fc;
   cursor: pointer;
-  font-size: 13px !important;
+  font-size: 13.5px !important;
   color: #17213b !important;
   font-weight: 500 !important;
+  line-height: 1.4;
 }
 
 .checkboxCard input {
   width: 16px !important;
   height: 16px !important;
   min-height: 16px !important;
+  padding: 0 !important;
   accent-color: #552cb6;
   margin: 0;
   flex-shrink: 0;
 }
 
 .drawerFooterActions {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px;
-  padding-top: 8px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(132px, 1fr));
+  align-items: stretch;
+  gap: 10px;
+  width: 100%;
+  padding-top: 12px;
   border-top: 1px solid #e6eaf3;
 }
 
 .drawerFooterActions button {
-  min-height: 36px;
-  padding: 7px 13px;
+  width: 100%;
+  min-height: 40px;
+  padding: 8px 12px;
   font-size: 13px;
-  white-space: nowrap;
+  line-height: 1.3;
+  text-align: center;
 }
 
 .snapshotDetails summary {
@@ -264,10 +320,77 @@
   margin-top: 10px;
 }
 
+.historyTableWrap {
+  max-width: 100%;
+  overflow-x: auto;
+  border: 1px solid #e6eaf3;
+  border-radius: 10px;
+  background: #ffffff;
+}
+
+.historyTable {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 13px;
+}
+
+.historyTable th {
+  background: #f2f4f8;
+  color: #526078;
+  font-size: 11.5px;
+  text-transform: uppercase;
+  font-weight: 600;
+  white-space: nowrap;
+  padding: 11px 14px;
+  border-bottom: 1px solid #e6eaf3;
+}
+
+.historyTable td {
+  padding: 12px 14px;
+  border-bottom: 1px solid #eef1f7;
+  vertical-align: top;
+  color: #17213b;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.historyTable tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.historyTable tbody tr:hover {
+  background: #fbfaff;
+}
+
+.historyTimeCol {
+  white-space: nowrap;
+  width: 136px;
+  color: #526078;
+  font-variant-numeric: tabular-nums;
+}
+
+.historyActionCol {
+  width: 190px;
+  font-weight: 600;
+}
+
+.historyActorCol {
+  white-space: nowrap;
+  width: 145px;
+}
+
+.historyFooter {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 4px;
+}
+
 @media (max-width: 720px) {
   .summaryStrip,
   .twoColRow,
   .evidenceGridThree,
+  .exceptionMetaGrid,
   .findingItem {
     grid-template-columns: 1fr;
   }
