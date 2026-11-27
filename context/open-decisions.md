@@ -4,13 +4,15 @@ This register contains only unresolved work. O identifiers retain their source p
 
 The separately approved [D099 PHASE 2 preparation extension](README.md#phase-2-preparation-approval---d099), 2026-11-10, resolves club/stadium discontinuation and resumption. It is indexed with the confirmed decisions and is not remaining open work; operational inputs and unexecuted evidence below remain open.
 
-The [D100 PHASE 3 preparation extension](README.md#phase-3-preparation-approval---d100) resolves the correction path for descriptive errors in an approved BM1 application. Its technical mapping and execution evidence remain future work.
+The [D100 PHASE 3 preparation extension](README.md#phase-3-preparation-approval---d100) resolves the correction path for descriptive errors in an approved BM1 application; its implementation and verification are completed under accepted PHASE 3 (`T019`–`T020`, `T023`, `T026`, `2026-11-28`). Operational inputs and later-Phase evidence below remain open.
 
 ## Actual inputs and unexecuted preparation
 
 These items track operational inputs and implementation or verification deliverables. The [Phase ledger](progress-checker.md#phase-1-audit-and-verification-evidence---2026-11-06) records completed PHASE 1 foundation acceptance. The open portions of O08, O12, O13 and O14 apply to production deployment or later verification in their owning Phases. Future Specifications and Plans elaborate approved contracts when separately authorized. Source identifiers remain traceable through sources, ADRs and the owning documents.
 
 PHASE 2's [accepted and published verification](../docs/verification/phase-2/acceptance.md), 2026-11-18, records its completed isolated security/browser/load and twenty-logo/two-season recovery scope. These checks, synthetic-asset authorization and explicit human acceptance do not supply real operational calendars/configuration/assets or complete the later integrated/profile-specific evidence in the rows below; their remaining scope stays open.
+
+PHASE 3's [accepted and published verification](../docs/verification/phase-3/acceptance.md), 2026-11-28 (published at [`10452f65c481c3300bb94e31ca0b139d924a563a`](https://github.com/quocthai912/Whistle-EPL/commit/10452f65c481c3300bb94e31ca0b139d924a563a), Issues `#103`–`#130` Closed Completed, explicitly approved by the Team Leader on 2026-11-28), records its completed BM1/UC08–UC11/D057/D100 functional, security, recovery, scale (`20` clubs / `600` players / `300` real WebP portraits), and automated TD-01 scope. Real operational inputs (`O01`, `O02`, `O08`, `O09`, `O12`–`O14`), the Team-Leader-confirmed open live 5-human-participant TD-01 usability observation (under `O13`), and later-Phase gates (PHASE 4–10) remain open in the rows below.
 
 | ID | Source | Remaining input or evidence |
 |---|---|---|
