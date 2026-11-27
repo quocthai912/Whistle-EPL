@@ -505,8 +505,8 @@ export function PlayerRegistrationForm({
 
         <label>
           Ghi chú nội bộ
-          <input
-            type="text"
+          <textarea
+            rows={2}
             maxLength={2000}
             value={notes}
             disabled={busy}
