@@ -537,7 +537,7 @@ function SeasonClubApplicationsList({ seasonId }: { seasonId: string }) {
   const seasonOpen = refData?.season.state === 'OPEN';
 
   return (
-    <div style={{ display: 'grid', gap: 16 }}>
+    <div className={pageCss.workspaceStack}>
       {references.error && (
         <ListFeedback loading={false} error={references.error} onRetry={references.reload} />
       )}

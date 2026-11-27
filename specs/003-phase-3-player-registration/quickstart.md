@@ -32,7 +32,14 @@ pnpm verify:commands
 pnpm test:e2e
 ```
 
-Use the D097 reference configuration, one-minute warm-up and ten-minute measurement. Record results by lookup group and separately for API and UI. Exercise authorized portrait management and rendering on the scale dataset. Run the PHASE 3 lookup load scenario and portrait recovery drill once their approved test assets are available. Use the existing Linux reference operations tooling for same-set restore. The existing authentication load entry point measures authentication. Register and report the PHASE 3 lookup scenario separately. Capture complete regression results and the exact executed revision.
+Use the D097 reference configuration (`4 vCPU`, `8 GiB RAM`, SSD), one-minute warm-up and ten-minute measurement. Record results by lookup group and separately for API and UI. Exercise authorized portrait management and rendering on the scale dataset.
+
+### T027 scale lookup and usability entry points
+
+- **API scale fixture & HQ-01 load**: Prepare an empty migrated loopback `whistle_test_phase3_lookup` database and isolated local `MEDIA_ROOT` (`NODE_ENV=test`, `MEDIA_STORAGE_PROFILE=local`, protected `PHASE3_LOOKUP_FIXTURE`), run `node backend/scripts/prepare-phase3-lookup.cjs`, then run `k6 run tests/performance/phase-3-lookups.js` with `PHASE3_ISOLATED=ISOLATED_PHASE3_LOOKUP`, trusted HTTPS `PHASE3_ORIGIN`, `SSL_CERT_FILE`, and `PHASE3_FIXTURE`.
+- **Browser scale, TT-02 viewports, portraits & TD-01**: Supply `E2E_BASE_URL`, dedicated `E2E_TEST_DATABASE_URL` (`whistle_test_browser_*`), `E2E_RESET_ACK=RESET_ISOLATED_TEST_DATABASE`, and isolated `E2E_MEDIA_ROOT` matching the running test backend's `MEDIA_ROOT`, then run `pnpm test:e2e` (or focused `pnpm exec playwright test tests/e2e/phase-3-scale-usability.spec.ts`). See [scale and usability evidence](../../docs/verification/phase-3/scale-and-usability.md).
+
+Use the existing Linux reference operations tooling for same-set restore. The existing authentication load entry point measures authentication. Register and report the PHASE 3 lookup scenario separately. Capture complete regression results and the exact executed revision.
 
 ## End-to-end walkthrough
 
