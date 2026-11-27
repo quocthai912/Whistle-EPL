@@ -48,6 +48,7 @@ if (
 
 const accepted = new Rate('phase3_lookup_success');
 const samples = new Counter('phase3_lookup_samples');
+const interrupted = new Counter('phase3_interrupted_iterations');
 const complete = new Rate('phase3_paging_complete');
 const authenticationFailure = new Error('Synthetic Phase 3 lookup authentication failed.');
 
@@ -88,9 +89,18 @@ export const options = {
       exec: 'measured',
       gracefulStop: '10s',
     },
+    verifyNoInterruptions: {
+      executor: 'shared-iterations',
+      vus: 1,
+      iterations: 1,
+      startTime: '11m21s',
+      exec: 'verifyNoInterruptions',
+      gracefulStop: '5s',
+    },
   },
   thresholds: {
     phase3_lookup_samples: ['count>0'],
+    phase3_interrupted_iterations: ['count==0'],
     phase3_lookup_success: ['rate==1'],
     phase3_paging_complete: ['rate==1'],
     p3_player_list_within_2s: ['rate>=0.95'],
@@ -353,4 +363,8 @@ export function warmup() {
 
 export function measured() {
   lookup(true);
+}
+
+export function verifyNoInterruptions() {
+  interrupted.add(exec.instance.iterationsInterrupted);
 }

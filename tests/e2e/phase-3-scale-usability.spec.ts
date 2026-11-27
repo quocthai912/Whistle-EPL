@@ -682,12 +682,60 @@ async function assertWithinViewport(locator: Locator, viewport: { width: number;
   expect(bounds!.y + bounds!.height).toBeLessThanOrEqual(viewport.height + 1);
 }
 
+async function resetPlayerPortraitIfPresent(page: Page, playerCode: string) {
+  const result = await page.evaluate(async (code) => {
+    const listRes = await fetch(
+      `/api/v1/players?search=${encodeURIComponent(code)}&pageSize=20&page=1`,
+      { credentials: 'same-origin' },
+    );
+    if (!listRes.ok) return { ok: false, step: 'list', status: listRes.status };
+    const listBody = (await listRes.json()) as {
+      data?: {
+        items?: Array<{
+          id: string;
+          code: string;
+          revision: string;
+          portrait: { id: string } | null;
+        }>;
+      };
+    };
+    const match = listBody.data?.items?.find((item) => item.code === code);
+    if (!match?.portrait) return { ok: true, step: 'none', status: 200 };
+
+    const csrfRes = await fetch('/api/v1/auth/csrf', { credentials: 'same-origin' });
+    if (!csrfRes.ok) return { ok: false, step: 'csrf', status: csrfRes.status };
+    const csrfBody = (await csrfRes.json()) as { data?: { csrfToken?: string } };
+    const csrfToken = csrfBody.data?.csrfToken;
+    if (!csrfToken) return { ok: false, step: 'csrf-empty', status: 0 };
+
+    const removeRes = await fetch(`/api/v1/players/${match.id}/portrait/remove`, {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRF-Token': csrfToken,
+      },
+      body: JSON.stringify({
+        expectedRevision: match.revision,
+        mediaAssetId: match.portrait.id,
+      }),
+    });
+    return { ok: removeRes.ok, step: 'remove', status: removeRes.status };
+  }, playerCode);
+  expect(result.ok).toBe(true);
+}
+
 async function selectFilterOption(page: Page, label: string, optionText: string) {
   const control = page.getByRole('combobox', { name: label, exact: true });
-  await control.locator('..').click();
+  await control.focus();
+  await control.press('ArrowDown');
   await expect(control).toHaveAttribute('aria-expanded', 'true');
-  const popup = page.locator('.ant-select-dropdown:not(.ant-select-dropdown-hidden)');
-  const option = popup.locator('.ant-select-item-option', { hasText: optionText }).first();
+  const controlsId = await control.getAttribute('aria-controls');
+  const listbox = controlsId
+    ? page.locator(`[id=${JSON.stringify(controlsId)}]`)
+    : page.getByRole('listbox');
+  await expect(listbox).toBeVisible();
+  const option = listbox.getByRole('option', { name: optionText }).first();
   await expect(option).toBeVisible();
   await option.hover();
   await control.press('Enter');
@@ -745,6 +793,8 @@ test.describe.serial('T027: Scale lookups, TT-02 viewports, portraits and TD-01 
       };
 
       await login(page, seed.personas[0]);
+      const mutablePlayerCode = testInfo.project.name === 'chrome' ? 'SC3_PLR_002' : 'SC3_PLR_004';
+      await resetPlayerPortraitIfPresent(page, mutablePlayerCode);
 
       // 1. Players lookup at 600-profile / 300-portrait scale
       let start = Date.now();
@@ -810,7 +860,6 @@ test.describe.serial('T027: Scale lookups, TT-02 viewports, portraits and TD-01 
         .toBe(true);
 
       // Live portrait upload, replace, remove & fallback at this viewport (distinct player per browser)
-      const mutablePlayerCode = testInfo.project.name === 'chrome' ? 'SC3_PLR_002' : 'SC3_PLR_004';
       await page.getByLabel('Tìm cầu thủ').fill(mutablePlayerCode);
       await expect(page.getByRole('cell', { name: mutablePlayerCode, exact: true })).toBeVisible();
       await expect(page.getByRole('table').locator('tbody tr')).toHaveCount(1);

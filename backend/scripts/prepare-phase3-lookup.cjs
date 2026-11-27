@@ -261,7 +261,7 @@ async function prepare() {
     const batchSize = 20;
     for (let offset = 0; offset < portraitSpecs.length; offset += batchSize) {
       const batch = portraitSpecs.slice(offset, offset + batchSize);
-      const rendered = await Promise.all(
+      const settled = await Promise.allSettled(
         batch.map(async (spec) => {
           const img = await generateSyntheticPortraitWebp(spec.idx);
           const objectKey = `${spec.assetId}.webp`;
@@ -283,7 +283,11 @@ async function prepare() {
           };
         }),
       );
-      mediaAssets.push(...rendered);
+      const firstFailure = settled.find((result) => result.status === 'rejected');
+      if (firstFailure) throw firstFailure.reason;
+      for (const result of settled) {
+        if (result.status === 'fulfilled') mediaAssets.push(result.value);
+      }
     }
 
     const clubApplications = clubs.map((club, clubIdx) => {
