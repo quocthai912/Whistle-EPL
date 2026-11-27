@@ -1,6 +1,6 @@
 ---
 name: build-ui-ux
-description: Design, implement and refine Whistle-EPL UI using the approved Phase 1–3 components and visual conventions. Apply to Phase 4 onward UI work, new screens, forms, workflow reviews and shared layout changes; use the lightweight path for cosmetic adjustments.
+description: Design, implement and refine Whistle-EPL UI using the approved Phase 1–3 components and visual conventions. Apply to Phase 3 onward UI work, new screens, forms, workflow reviews and shared layout changes; use the lightweight path for cosmetic adjustments.
 ---
 
 # Build UI/UX for Whistle-EPL

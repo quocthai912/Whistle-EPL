@@ -332,8 +332,8 @@ export function RegistrationPlansPanel({
             !activePlan.canManageBothSides && (
               <div className={`${pageCss.banner} ${pageCss.bannerWarn}`} role="status">
                 <span>
-                  <strong>Giới hạn quyền liên mùa:</strong> Cần quyền Cán bộ đăng ký ở cả hai mùa
-                  giải đang mở để điều chỉnh hoặc hủy kế hoạch này.
+                  <strong>Hạn chế phạm vi quyền liên mùa giải:</strong> Cần quyền Cán bộ đăng ký ở
+                  cả hai mùa giải đang mở để điều chỉnh hoặc hủy kế hoạch này.
                 </span>
               </div>
             )}
@@ -364,6 +364,11 @@ export function RegistrationPlansPanel({
               <span className={regPageCss.summaryValue}>
                 {current.playingEnd ? formatSeasonInstant(current.playingEnd) : 'Chưa ấn định'}
               </span>
+              {plans.playingEffectivityStatus === 'CANCELLED_BEFORE_EFFECTIVITY' && (
+                <span className={regPageCss.cellSub}>
+                  Kế hoạch đã bị hủy trước khi bắt đầu hiệu lực
+                </span>
+              )}
             </div>
             <div className={regPageCss.summaryItem}>
               <span className={regPageCss.summaryLabel}>Số áo &amp; phiên bản</span>
@@ -406,10 +411,10 @@ export function RegistrationPlansPanel({
                   </span>
                   <span className={planCss.sideMeta}>
                     {activePlan.oldSide.accessRestricted || !activePlan.oldSide.season
-                      ? 'Ngoài phạm vi quyền'
+                      ? 'Ngoài phạm vi quyền tra cứu liên mùa giải'
                       : `${activePlan.oldSide.season.name}${
                           activePlan.oldSide.afterVersion
-                            ? ` · #${activePlan.oldSide.afterVersion.shirtNumber ?? '—'}`
+                            ? ` · Số áo #${activePlan.oldSide.afterVersion.shirtNumber ?? '—'}`
                             : ''
                         }`}
                   </span>
@@ -445,10 +450,10 @@ export function RegistrationPlansPanel({
                   </span>
                   <span className={planCss.sideMeta}>
                     {activePlan.newSide.accessRestricted || !activePlan.newSide.season
-                      ? 'Ngoài phạm vi quyền'
+                      ? 'Ngoài phạm vi quyền tra cứu liên mùa giải'
                       : `${activePlan.newSide.season.name}${
                           activePlan.newSide.version
-                            ? ` · #${activePlan.newSide.version.shirtNumber ?? '—'}`
+                            ? ` · Số áo #${activePlan.newSide.version.shirtNumber ?? '—'}`
                             : ''
                         }`}
                   </span>
@@ -566,9 +571,9 @@ export function RegistrationPlansPanel({
             </div>
           )}
 
-          {/* 5. Transfer & Plan History (collapsed by default; only shown when non-empty) */}
+          {/* 5. Transfer & Plan History (only shown when non-empty) */}
           {plans.transferHistory.length > 0 && (
-            <details className={planCss.historyDetails}>
+            <details open className={planCss.historyDetails}>
               <summary>
                 Lịch sử chuyển nhượng &amp; kế hoạch ({plans.transferHistory.length} bản ghi)
               </summary>
@@ -586,7 +591,7 @@ export function RegistrationPlansPanel({
                       {formatTransferSideSummary(item.newSide)} · Hiệu lực:{' '}
                       <strong>{formatSeasonInstant(item.effectiveAt)}</strong>
                       {item.operationKind === 'PLAN_CANCEL'
-                        ? ' · Hủy trước hiệu lực'
+                        ? ' · Hồ sơ đích: Hủy trước hiệu lực'
                         : item.newSide.version?.shirtNumber
                           ? ` · #${item.newSide.version.shirtNumber}`
                           : ''}
@@ -1024,8 +1029,8 @@ function TransferModal({
         {!uncertain && basisChanged && (
           <div className={`${pageCss.banner} ${pageCss.bannerWarn}`} role="status">
             <span>
-              <strong>Dữ liệu đã thay đổi:</strong> Vui lòng tải lại dữ liệu mới nhất trước khi
-              tiếp tục.
+              <strong>Dữ liệu đã thay đổi:</strong> Vui lòng tải lại dữ liệu mới nhất trước khi tiếp
+              tục.
             </span>
             <button type="button" onClick={onReload} disabled={busy}>
               Tải lại dữ liệu mới nhất
@@ -1036,7 +1041,9 @@ function TransferModal({
         {/* Live 2-side Before -> After Preview */}
         <div className={planCss.pairedCard}>
           <div className={planCss.pairedHeader}>
-            <span className={planCss.pairedTitle}>Xem trước chuyển câu lạc bộ</span>
+            <span className={planCss.pairedTitle}>
+              Xem trước tác động hai phía cùng mốc hiệu lực
+            </span>
             <span className={`${pageCss.pill} ${pageCss.pillPending}`}>
               {previewEffectiveLabel}
             </span>
@@ -1501,8 +1508,8 @@ function TerminateModal({
         {!uncertain && basisChanged && (
           <div className={`${pageCss.banner} ${pageCss.bannerWarn}`} role="status">
             <span>
-              <strong>Dữ liệu đã thay đổi:</strong> Vui lòng tải lại dữ liệu mới nhất trước khi
-              tiếp tục.
+              <strong>Dữ liệu đã thay đổi:</strong> Vui lòng tải lại dữ liệu mới nhất trước khi tiếp
+              tục.
             </span>
             <button type="button" onClick={onReload} disabled={busy}>
               Tải lại dữ liệu mới nhất
@@ -2138,8 +2145,8 @@ function PlanCancelModal({
             {activePlan ? (
               <>
                 <li>
-                  Hồ sơ đích (<strong>{activePlan.newSide.club?.name ?? 'CLB đích'}</strong>): chuyển
-                  sang <strong>Hủy trước hiệu lực</strong>.
+                  Hồ sơ đích (<strong>{activePlan.newSide.club?.name ?? 'CLB đích'}</strong>):
+                  chuyển sang <strong>Hủy trước hiệu lực</strong>.
                 </li>
                 <li>
                   Hồ sơ nguồn (<strong>{activePlan.oldSide.club?.name ?? 'CLB nguồn'}</strong>):

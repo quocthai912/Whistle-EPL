@@ -452,11 +452,7 @@ export function PlayerRegistrationsPage() {
         </div>
       </header>
 
-      <ListFeedback
-        loading={seasons.loading}
-        error={seasons.error}
-        onRetry={seasons.reload}
-      />
+      <ListFeedback loading={seasons.loading} error={seasons.error} onRetry={seasons.reload} />
 
       {seasonId ? (
         <SeasonPlayerRegistrationsWorkspace
@@ -482,9 +478,7 @@ export function PlayerRegistrationsPage() {
         </ul>
       ) : (
         !seasons.loading &&
-        !seasons.error && (
-          <p>Bạn chưa được phân công mùa giải nào để quản lý đăng ký cầu thủ.</p>
-        )
+        !seasons.error && <p>Bạn chưa được phân công mùa giải nào để quản lý đăng ký cầu thủ.</p>
       )}
     </section>
   );
@@ -1958,7 +1952,8 @@ function RegistrationActionModal({
         {action.kind === 'exception-propose' ? (
           <>
             <p className={pageCss.confirmBody}>
-              Đề xuất ngoại lệ tiếp nhận cho <strong>Phiên bản {action.version.versionNumber}</strong>.
+              Đề xuất ngoại lệ tiếp nhận cho{' '}
+              <strong>Phiên bản {action.version.versionNumber}</strong>.
             </p>
             <label>
               Lý do đề xuất ngoại lệ *
@@ -2001,9 +1996,7 @@ function RegistrationActionModal({
             />
           </label>
         ) : (
-          <p className={pageCss.confirmBody}>
-            Xác nhận thực hiện thao tác trên phiên bản đã chọn.
-          </p>
+          <p className={pageCss.confirmBody}>Xác nhận thực hiện thao tác trên phiên bản đã chọn.</p>
         )}
 
         <div className={css.actions}>

@@ -560,7 +560,7 @@ function ClubApplicationCorrectionsSection({
           </span>
         ) : baseline ? (
           <span className={`${pageCss.pill} ${pageCss.pillOk}`}>
-            Chính thức: Phiên bản {officialVersionNumber}
+            Nội dung chính thức: Phiên bản {officialVersionNumber}
           </span>
         ) : null}
       </div>
@@ -1561,7 +1561,7 @@ function PlayerRegistrationCorrectionsSection({
           </span>
         ) : baseline ? (
           <span className={`${pageCss.pill} ${pageCss.pillOk}`}>
-            Chính thức: Phiên bản {officialVersionNumber}
+            Nội dung chính thức: Phiên bản {officialVersionNumber}
           </span>
         ) : null}
       </div>
@@ -2639,7 +2639,10 @@ function RegistrationCorrectionDecisionModal({
                     <strong>{formatSegmentRange(seg.segmentStart, seg.segmentEnd)}</strong>
                     <span className={corrCss.segmentSub}>
                       {' '}
-                      · Quy định phiên bản {seg.regulationVersionNumber}
+                      ·{' '}
+                      {seg.regulationVersionNumber !== null
+                        ? `Quy định phiên bản ${seg.regulationVersionNumber}`
+                        : 'Thiếu quy định lịch sử'}
                     </span>
                   </div>
                   {seg.outcome !== 'MET' && (
@@ -2659,7 +2662,11 @@ function RegistrationCorrectionDecisionModal({
                         : pageCss.pillPending
                   }`}
                 >
-                  {seg.outcome === 'MET' ? 'Đạt' : seg.outcome === 'UNMET' ? 'Chưa đạt' : 'Thiếu căn cứ'}
+                  {seg.outcome === 'MET'
+                    ? 'Đạt'
+                    : seg.outcome === 'UNMET'
+                      ? 'Chưa đạt'
+                      : 'Thiếu căn cứ'}
                 </span>
               </div>
             ))}

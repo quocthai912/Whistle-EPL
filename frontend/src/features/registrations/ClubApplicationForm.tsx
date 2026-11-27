@@ -258,9 +258,7 @@ export function ClubApplicationForm({
         )}
 
         {mode === 'new-round' && frozenInitial?.versionNumber && (
-          <p className={pageCss.metaNote}>
-            Khởi tạo từ Phiên bản {frozenInitial.versionNumber}.
-          </p>
+          <p className={pageCss.metaNote}>Khởi tạo từ Phiên bản {frozenInitial.versionNumber}.</p>
         )}
 
         <AdminSelect

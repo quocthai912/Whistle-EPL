@@ -202,8 +202,10 @@ export function PlayerRegistrationForm({
       return;
     }
 
+    const evidenceApplicable = !nonHomegrownOptIn && !playerIsU21;
+
     let parsedQualifying: number | null = null;
-    if (qualifyingValue.trim()) {
+    if (evidenceApplicable && qualifyingValue.trim()) {
       const q = Number(qualifyingValue.trim());
       if (!Number.isInteger(q) || q < 0 || q > 1000) {
         setError('Giá trị tích lũy đào tạo nội địa phải là số nguyên từ 0 đến 1000.');
@@ -213,7 +215,11 @@ export function PlayerRegistrationForm({
     }
 
     const parsedAffiliated =
-      affiliatedBasis === 'YES' ? true : affiliatedBasis === 'NO' ? false : null;
+      evidenceApplicable && affiliatedBasis === 'YES'
+        ? true
+        : evidenceApplicable && affiliatedBasis === 'NO'
+          ? false
+          : null;
 
     const payload = {
       shirtNumber: parsedShirt,
@@ -221,10 +227,12 @@ export function PlayerRegistrationForm({
       playingEnd: endIso,
       nonHomegrownOptIn,
       evidenceBranch:
-        evidenceBranch === 'SEASONS' || evidenceBranch === 'MONTHS' ? evidenceBranch : null,
+        evidenceApplicable && (evidenceBranch === 'SEASONS' || evidenceBranch === 'MONTHS')
+          ? evidenceBranch
+          : null,
       qualifyingValue: parsedQualifying,
-      evidenceSummary: evidenceSummary.trim() || null,
-      evidenceReference: evidenceReference.trim() || null,
+      evidenceSummary: evidenceApplicable ? evidenceSummary.trim() || null : null,
+      evidenceReference: evidenceApplicable ? evidenceReference.trim() || null : null,
       affiliatedAssociationBasis: parsedAffiliated,
       notes: notes.trim() || null,
     };

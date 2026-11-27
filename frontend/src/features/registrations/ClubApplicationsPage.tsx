@@ -1678,7 +1678,8 @@ function WorkflowActionModal({
         {actionSpec.kind === 'exception-propose' ? (
           <>
             <p className={pageCss.confirmBody}>
-              Đề xuất ngoại lệ tiếp nhận cho <strong>Phiên bản {actionSpec.version.versionNumber}</strong>.
+              Đề xuất ngoại lệ tiếp nhận cho{' '}
+              <strong>Phiên bản {actionSpec.version.versionNumber}</strong>.
             </p>
             <label>
               <span>Lý do đề xuất ngoại lệ</span>
