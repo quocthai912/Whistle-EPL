@@ -552,13 +552,7 @@ function ClubApplicationCorrectionsSection({
       aria-label="Đính chính thông tin hồ sơ tham dự"
     >
       <div className={regPageCss.sectionBoxHeader}>
-        <div>
-          <h3>Đính chính thông tin hồ sơ tham dự</h3>
-          <p className={corrCss.panelSub}>
-            Đính chính sai sót ghi chép ban đầu ở phần thông tin chung; giữ nguyên thời điểm tiếp
-            nhận gốc và danh sách cầu thủ dự kiến.
-          </p>
-        </div>
+        <h3>Đính chính thông tin hồ sơ tham dự</h3>
         {activeItem ? (
           <span className={statePillClass(activeItem.state)}>
             Phiên bản {activeItem.versionNumber} ·{' '}
@@ -1133,7 +1127,8 @@ function ClubCorrectionProposalModal({
           ? `Chỉnh sửa đề xuất đính chính (Phiên bản ${savedDraft.versionNumber})`
           : 'Tạo đề xuất đính chính hồ sơ tham dự'
       }
-      width={620}
+      width={780}
+      className={pageCss.phase3Modal}
       closable={!busy}
       maskClosable={!busy}
       keyboard={!busy}
@@ -1154,7 +1149,7 @@ function ClubCorrectionProposalModal({
         )}
 
         <p className={pageCss.metaNote}>
-          {clubName} · Mùa giải {seasonName} · Đối chiếu với{' '}
+          {clubName} · {seasonName} · Đối chiếu{' '}
           <strong>Phiên bản chính thức {baseline.versionNumber}</strong>
         </p>
 
@@ -1215,62 +1210,64 @@ function ClubCorrectionProposalModal({
           </label>
         </div>
 
-        <label>
-          Địa chỉ liên hệ *
-          <input
-            value={contactAddress}
-            disabled={busy}
-            maxLength={500}
-            onChange={(e) => {
-              setContactAddress(e.target.value);
-              markDirty();
-            }}
-          />
-        </label>
+        <div className={corrCss.formGrid2}>
+          <label>
+            Địa chỉ liên hệ *
+            <input
+              value={contactAddress}
+              disabled={busy}
+              maxLength={500}
+              onChange={(e) => {
+                setContactAddress(e.target.value);
+                markDirty();
+              }}
+            />
+          </label>
+          <label>
+            Hồ sơ / lịch thi đấu liên quan cần rà soát (tùy chọn)
+            <input
+              value={relatedNote}
+              disabled={busy}
+              maxLength={500}
+              placeholder="Ví dụ: Lịch thi đấu các trận sân nhà lượt đi…"
+              onChange={(e) => {
+                setRelatedNote(e.target.value);
+                markDirty();
+              }}
+            />
+          </label>
+        </div>
 
-        <label>
-          Lý do đính chính *
-          <textarea
-            rows={2}
-            value={correctionReason}
-            disabled={busy}
-            maxLength={2000}
-            placeholder="Mô tả rõ thông tin bị ghi sai so với hồ sơ gốc…"
-            onChange={(e) => {
-              setCorrectionReason(e.target.value);
-              markDirty();
-            }}
-          />
-        </label>
-
-        <label>
-          Căn cứ / tài liệu chứng minh *
-          <textarea
-            rows={2}
-            value={correctionEvidence}
-            disabled={busy}
-            maxLength={2000}
-            placeholder="Số hiệu công văn, biên bản hoặc tài liệu gốc đính kèm…"
-            onChange={(e) => {
-              setCorrectionEvidence(e.target.value);
-              markDirty();
-            }}
-          />
-        </label>
-
-        <label>
-          Hồ sơ / lịch thi đấu liên quan cần rà soát (tùy chọn)
-          <input
-            value={relatedNote}
-            disabled={busy}
-            maxLength={500}
-            placeholder="Ví dụ: Lịch thi đấu các trận sân nhà lượt đi…"
-            onChange={(e) => {
-              setRelatedNote(e.target.value);
-              markDirty();
-            }}
-          />
-        </label>
+        <div className={corrCss.formGrid2}>
+          <label>
+            Lý do đính chính *
+            <textarea
+              rows={2}
+              value={correctionReason}
+              disabled={busy}
+              maxLength={2000}
+              placeholder="Mô tả rõ thông tin bị ghi sai so với hồ sơ gốc…"
+              onChange={(e) => {
+                setCorrectionReason(e.target.value);
+                markDirty();
+              }}
+            />
+          </label>
+          <label>
+            Căn cứ / tài liệu chứng minh *
+            <textarea
+              rows={2}
+              value={correctionEvidence}
+              disabled={busy}
+              maxLength={2000}
+              placeholder="Số hiệu công văn, biên bản hoặc tài liệu gốc đính kèm…"
+              onChange={(e) => {
+                setCorrectionEvidence(e.target.value);
+                markDirty();
+              }}
+            />
+          </label>
+        </div>
 
         <div className={css.actions}>
           <button type="button" disabled={busy} onClick={handleDismiss}>
@@ -1358,6 +1355,7 @@ function ClubCorrectionDecisionModal({
       open
       title={spec.title}
       width={560}
+      className={pageCss.phase3Modal}
       closable={!busy}
       maskClosable={!busy}
       keyboard={!busy}
@@ -1555,13 +1553,7 @@ function PlayerRegistrationCorrectionsSection({
       aria-label="Đính chính hồ sơ đăng ký"
     >
       <div className={regPageCss.sectionBoxHeader}>
-        <div>
-          <h3>Đính chính hồ sơ đăng ký</h3>
-          <p className={corrCss.panelSub}>
-            Đối chiếu và kiểm tra điều kiện theo từng giai đoạn quy định lịch sử bị ảnh hưởng; chỉ
-            cập nhật hồ sơ chính thức sau khi Quản lý mùa giải phê duyệt độc lập.
-          </p>
-        </div>
+        <h3>Đính chính hồ sơ đăng ký</h3>
         {activeItem ? (
           <span className={statePillClass(activeItem.state)}>
             Đề xuất lần {activeItem.versionNumber} ·{' '}
@@ -1569,7 +1561,7 @@ function PlayerRegistrationCorrectionsSection({
           </span>
         ) : baseline ? (
           <span className={`${pageCss.pill} ${pageCss.pillOk}`}>
-            Hồ sơ chính thức: Phiên bản {officialVersionNumber}
+            Nội dung chính thức: Phiên bản {officialVersionNumber}
           </span>
         ) : null}
       </div>
@@ -1582,16 +1574,14 @@ function PlayerRegistrationCorrectionsSection({
             Hồ sơ cầu thủ vừa cập nhật ngày sinh (
             {formatDateVi(data.pendingSourceCorrection.currentPlayerBirthDate)}):
           </strong>{' '}
-          Khác với thông tin lúc xác nhận Phiên bản {officialVersionNumber} (
-          {formatDateVi(data.pendingSourceCorrection.snapshotBirthDate)}). Phiên bản{' '}
-          {officialVersionNumber} vẫn giữ hiệu lực cho đến khi đính chính được phê duyệt.
+          Khác bản chụp Phiên bản {officialVersionNumber} (
+          {formatDateVi(data.pendingSourceCorrection.snapshotBirthDate)}).
         </div>
       )}
 
       {data && !seasonOpen && (
         <div className={`${corrCss.banner} ${corrCss.bannerErr}`} role="status">
-          <strong>Mùa giải đã đóng:</strong> Chỉ có thể tra cứu lịch sử, không thể trình duyệt hoặc
-          phê duyệt đính chính mới.
+          <strong>Mùa giải đã đóng:</strong> Chỉ hỗ trợ tra cứu lịch sử.
         </div>
       )}
 
@@ -1760,23 +1750,25 @@ function PlayerRegistrationCorrectionsSection({
           {(activeItem.affectedReferences?.declared?.length ?? 0) > 0 && (
             <div className={corrCss.referenceBar}>
               <div>
-                <strong>Trận đấu liên quan cần rà soát riêng:</strong>{' '}
+                <strong>Trận đấu cần rà soát riêng:</strong>{' '}
                 {(activeItem.affectedReferences?.declared ?? [])
                   .map((r) => cleanUserFacingText(r.note))
                   .join('; ')}
               </div>
-              <span className={pageCss.metaNote}>Không tự động thay đổi kết quả đã công bố</span>
             </div>
           )}
 
-          <div className={corrCss.actionBar}>
-            <span className={pageCss.metaNote}>
-              {isCurrentOfficial
-                ? `Phiên bản ${afterVerNum} đang là hồ sơ chính thức hiện hành.`
-                : activeItem.state === 'APPROVED'
-                  ? `Phiên bản ${afterVerNum} là bản đính chính đã phê duyệt trong lịch sử (hiện hành là Phiên bản ${officialVersionNumber}).`
-                  : `Phiên bản ${officialVersionNumber} vẫn là hồ sơ chính thức hiện hành.`}
-            </span>
+          <div
+            className={`${corrCss.actionBar} ${
+              activeItem.state === 'APPROVED' && !isCurrentOfficial ? corrCss.actionBarWithNote : ''
+            }`}
+          >
+            {activeItem.state === 'APPROVED' && !isCurrentOfficial && (
+              <span className={pageCss.metaNote}>
+                Phiên bản {afterVerNum} là bản đính chính đã phê duyệt trong lịch sử (hiện hành là
+                Phiên bản {officialVersionNumber}).
+              </span>
+            )}
             <div className={corrCss.actionButtons}>
               {seasonOpen && data?.capabilities.canPrepare && activeItem.state === 'DRAFT' && (
                 <>
@@ -2302,7 +2294,8 @@ function RegistrationCorrectionProposalModal({
           ? `Chỉnh sửa đề xuất đính chính (Đề xuất lần ${savedDraft.versionNumber})`
           : 'Tạo đề xuất đính chính đăng ký cầu thủ'
       }
-      width={620}
+      width={780}
+      className={pageCss.phase3Modal}
       closable={!busy}
       maskClosable={!busy}
       keyboard={!busy}
@@ -2323,8 +2316,8 @@ function RegistrationCorrectionProposalModal({
         )}
 
         <p className={pageCss.metaNote}>
-          {playerName} · {clubName} · Mùa giải {seasonName} · Đối chiếu{' '}
-          <strong>Phiên bản chính thức {baseline.versionNumber}</strong>
+          {playerName} · {clubName} · {seasonName} · Đối chiếu{' '}
+          <strong>Phiên bản {baseline.versionNumber}</strong>
         </p>
 
         <div className={corrCss.formGrid2}>
@@ -2356,7 +2349,7 @@ function RegistrationCorrectionProposalModal({
         </div>
 
         <div className={corrCss.formGrid2}>
-          <div>
+          <div className={corrCss.fieldGroup}>
             <span>Bắt đầu hiệu lực *</span>
             <DateTimePicker
               label="Bắt đầu hiệu lực"
@@ -2369,7 +2362,7 @@ function RegistrationCorrectionProposalModal({
               }}
             />
           </div>
-          <div>
+          <div className={corrCss.fieldGroup}>
             <span>Kết thúc hiệu lực</span>
             <DateTimePicker
               label="Kết thúc hiệu lực"
@@ -2383,7 +2376,7 @@ function RegistrationCorrectionProposalModal({
           </div>
         </div>
 
-        <label className={regPageCss.checkboxRow}>
+        <label className={regPageCss.checkboxCard}>
           <input
             type="checkbox"
             checked={nonHomegrownOptIn}
@@ -2397,8 +2390,8 @@ function RegistrationCorrectionProposalModal({
         </label>
 
         {!nonHomegrownOptIn && (
-          <>
-            <div className={corrCss.formGrid2}>
+          <section className={regPageCss.evidenceSection} aria-label="Minh chứng đào tạo nội địa">
+            <div className={regPageCss.evidenceGridThree}>
               <AdminSelect
                 label="Nhánh đào tạo nội địa"
                 hideLabel={false}
@@ -2425,8 +2418,6 @@ function RegistrationCorrectionProposalModal({
                   }}
                 />
               </label>
-            </div>
-            <div className={corrCss.formGrid2}>
               <AdminSelect
                 label="Điều kiện liên đoàn đào tạo"
                 hideLabel={false}
@@ -2438,6 +2429,21 @@ function RegistrationCorrectionProposalModal({
                   markDirty();
                 }}
               />
+            </div>
+            <div className={corrCss.formGrid2}>
+              <label>
+                Tóm tắt minh chứng đào tạo nội địa
+                <input
+                  value={evidenceSummary}
+                  disabled={busy}
+                  maxLength={2000}
+                  placeholder="Ghi nhận ngắn gọn thời gian và cơ sở đào tạo…"
+                  onChange={(e) => {
+                    setEvidenceSummary(e.target.value);
+                    markDirty();
+                  }}
+                />
+              </label>
               <label>
                 Mã tài liệu tham chiếu đào tạo
                 <input
@@ -2452,51 +2458,39 @@ function RegistrationCorrectionProposalModal({
                 />
               </label>
             </div>
-            <label>
-              Tóm tắt minh chứng đào tạo nội địa
-              <input
-                value={evidenceSummary}
-                disabled={busy}
-                maxLength={2000}
-                placeholder="Ghi nhận ngắn gọn thời gian và cơ sở đào tạo…"
-                onChange={(e) => {
-                  setEvidenceSummary(e.target.value);
-                  markDirty();
-                }}
-              />
-            </label>
-          </>
+          </section>
         )}
 
-        <label>
-          Lý do đính chính *
-          <textarea
-            rows={2}
-            value={reason}
-            disabled={busy}
-            maxLength={2000}
-            placeholder="Trình bày nội dung sai sót cần đính chính…"
-            onChange={(e) => {
-              setReason(e.target.value);
-              markDirty();
-            }}
-          />
-        </label>
-
-        <label>
-          Căn cứ / tài liệu chứng minh *
-          <textarea
-            rows={2}
-            value={basis}
-            disabled={busy}
-            maxLength={2000}
-            placeholder="Quyết định, biên bản hoặc tài liệu gốc chứng minh…"
-            onChange={(e) => {
-              setBasis(e.target.value);
-              markDirty();
-            }}
-          />
-        </label>
+        <div className={corrCss.formGrid2}>
+          <label>
+            Lý do đính chính *
+            <textarea
+              rows={2}
+              value={reason}
+              disabled={busy}
+              maxLength={2000}
+              placeholder="Trình bày nội dung sai sót cần đính chính…"
+              onChange={(e) => {
+                setReason(e.target.value);
+                markDirty();
+              }}
+            />
+          </label>
+          <label>
+            Căn cứ / tài liệu chứng minh *
+            <textarea
+              rows={2}
+              value={basis}
+              disabled={busy}
+              maxLength={2000}
+              placeholder="Quyết định, biên bản hoặc tài liệu gốc chứng minh…"
+              onChange={(e) => {
+                setBasis(e.target.value);
+                markDirty();
+              }}
+            />
+          </label>
+        </div>
 
         <label>
           Trận đấu liên quan cần rà soát riêng (tùy chọn)
@@ -2603,7 +2597,8 @@ function RegistrationCorrectionDecisionModal({
     <Modal
       open
       title={spec.title}
-      width={580}
+      width={620}
+      className={pageCss.phase3Modal}
       closable={!busy}
       maskClosable={!busy}
       keyboard={!busy}
@@ -2633,35 +2628,67 @@ function RegistrationCorrectionDecisionModal({
         )}
 
         {spec.item.segments.length > 0 && (
-          <div className={corrCss.banner}>
+          <div className={corrCss.segmentBox}>
             {spec.item.segments.map((seg) => (
-              <div key={seg.segmentOrder}>
-                •{' '}
-                <strong>
-                  Giai đoạn {formatSegmentRange(seg.segmentStart, seg.segmentEnd)} (Quy định phiên
-                  bản {seg.regulationVersionNumber}):
-                </strong>{' '}
-                {seg.outcome === 'MET'
-                  ? 'Đạt điều kiện'
-                  : cleanUserFacingText(
-                      seg.findings?.blockingCriteria?.[0]?.reason ?? 'Chưa đạt điều kiện',
-                    )}
+              <div
+                key={seg.segmentOrder}
+                className={`${corrCss.segmentRow} ${seg.outcome !== 'MET' ? corrCss.segmentRowFail : ''}`}
+              >
+                <div className={corrCss.segmentMain}>
+                  <div>
+                    <strong>{formatSegmentRange(seg.segmentStart, seg.segmentEnd)}</strong>
+                    <span className={corrCss.segmentSub}>
+                      {' '}
+                      ·{' '}
+                      {seg.regulationVersionNumber !== null
+                        ? `Quy định phiên bản ${seg.regulationVersionNumber}`
+                        : 'Thiếu quy định lịch sử'}
+                    </span>
+                  </div>
+                  {seg.outcome !== 'MET' && (
+                    <div className={corrCss.segmentFailText}>
+                      {cleanUserFacingText(
+                        seg.findings?.blockingCriteria?.[0]?.reason ?? 'Chưa đạt điều kiện',
+                      )}
+                    </div>
+                  )}
+                </div>
+                <span
+                  className={`${pageCss.pill} ${
+                    seg.outcome === 'MET'
+                      ? pageCss.pillOk
+                      : seg.outcome === 'UNMET'
+                        ? pageCss.pillLate
+                        : pageCss.pillPending
+                  }`}
+                >
+                  {seg.outcome === 'MET'
+                    ? 'Đạt'
+                    : seg.outcome === 'UNMET'
+                      ? 'Chưa đạt'
+                      : 'Thiếu căn cứ'}
+                </span>
               </div>
             ))}
             {spec.item.disposition && (
-              <div>
-                • <strong>Phương án xử lý:</strong>{' '}
-                {dispositionLabels[spec.item.disposition] ?? spec.item.disposition}
+              <div className={corrCss.segmentRow}>
+                <div className={corrCss.segmentMain}>
+                  <span>
+                    <strong>Phương án xử lý:</strong>{' '}
+                    {dispositionLabels[spec.item.disposition] ?? spec.item.disposition}
+                  </span>
+                </div>
               </div>
             )}
           </div>
         )}
 
-        <p className={pageCss.metaNote}>
-          {spec.action === 'approve'
-            ? `Sau khi phê duyệt, Phiên bản ${afterVerNum} sẽ trở thành hồ sơ chính thức hiện hành và giữ nguyên lịch sử Phiên bản ${officialVersionNumber}.`
-            : `Phiên bản ${officialVersionNumber} vẫn giữ nguyên là hồ sơ chính thức hiện hành sau thao tác này.`}
-        </p>
+        {spec.action === 'approve' && (
+          <p className={pageCss.metaNote}>
+            Phiên bản {afterVerNum} sẽ trở thành hồ sơ chính thức (giữ nguyên lịch sử Phiên bản{' '}
+            {officialVersionNumber}).
+          </p>
+        )}
 
         {spec.requireReason && (
           <label>

@@ -1,6 +1,6 @@
 ---
 name: build-ui-ux
-description: Design, implement and refine Whistle-EPL UI using the approved Phase 1–2 components and visual conventions. Apply to Phase 3 onward UI work, new screens, forms, workflow reviews and shared layout changes; use the lightweight path for cosmetic adjustments.
+description: Design, implement and refine Whistle-EPL UI using the approved Phase 1–3 components and visual conventions. Apply to Phase 3 onward UI work, new screens, forms, workflow reviews and shared layout changes; use the lightweight path for cosmetic adjustments.
 ---
 
 # Build UI/UX for Whistle-EPL
@@ -67,8 +67,10 @@ feature; extract shared presentation only when callers actually need it.
 
 Preserve accepted typography, effects, permission predicates and command semantics.
 Display Vietnamese business wording, readable names/codes and DD/MM/YYYY through
-the existing owners. Keep original brand-image colors. Use the approved complete
-canvas for dense editing/review instead of squeezing content to accommodate navigation.
+the existing owners. Show only operational facts, inputs, decision comparisons and
+exceptions needed for the task; leave staff policy manuals outside the UI. Keep
+original brand-image colors. Use the approved complete canvas for dense editing/review
+instead of squeezing content to accommodate navigation.
 
 Implement real loading, empty, validation, read-only, conflict and uncertain-result
 states where the selected contract requires them. A layout refactor must retain

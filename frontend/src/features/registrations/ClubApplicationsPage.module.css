@@ -1,15 +1,16 @@
 .banner {
-  padding: 14px 18px;
+  padding: 13px 16px;
   border-radius: 12px;
   border: 1px solid #d9cdf6;
   background: #f6f3fc;
   color: #3c1f86;
   font-size: 13.5px;
+  line-height: 1.55;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 10px;
+  gap: 8px 16px;
 }
 
 .bannerWarn {
@@ -68,16 +69,20 @@
 }
 
 .drawerActionsRow {
-  display: flex;
-  flex-wrap: nowrap;
-  align-items: center;
-  gap: 8px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(135px, 1fr));
+  align-items: stretch;
+  gap: 10px;
+  width: 100%;
 }
 
 .drawerActionsRow button {
-  padding: 7px 11px;
+  width: 100%;
+  min-height: 40px;
+  padding: 8px 12px;
   font-size: 13px;
-  white-space: nowrap;
+  line-height: 1.3;
+  text-align: center;
 }
 
 .dangerSolid {
@@ -94,12 +99,12 @@
 
 .proposedList {
   display: grid;
-  gap: 10px;
+  gap: 8px;
 }
 
 .proposedRow {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 100px auto;
+  grid-template-columns: minmax(0, 1fr) 110px auto;
   gap: 8px;
   align-items: center;
 }
@@ -108,14 +113,63 @@
   margin: 0;
   color: #526078;
   font-size: 13px;
+  line-height: 1.55;
+}
+
+.confirmBody {
+  margin: 0;
+  color: #17213b;
+  font-size: 14.5px;
+  line-height: 1.65;
+}
+
+.formGrid2 {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  align-items: end;
+}
+
+.formGrid2 > * {
+  min-width: 0;
+}
+
+/* Scoped PHASE 3 modal refinements without modifying PHASE 1-2 WorkspaceDialog.module.css */
+.phase3Modal form {
+  gap: 14px;
+}
+
+.phase3Modal form textarea {
+  min-height: 76px;
+}
+
+.phase3Modal :global(.ant-picker-clear) {
+  min-height: 0 !important;
+  height: 16px !important;
+  width: 16px !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 50% !important;
+  background: #ffffff !important;
+  color: #8c96ab !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  box-shadow: none !important;
+}
+
+.phase3Modal :global(.ant-picker-clear:hover) {
+  color: #552cb6 !important;
+  background: #f2eefc !important;
 }
 
 @media (max-width: 640px) {
-  .proposedRow {
+  .proposedRow,
+  .formGrid2 {
     grid-template-columns: 1fr;
   }
 
   .drawerActionsRow {
-    flex-wrap: wrap;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }

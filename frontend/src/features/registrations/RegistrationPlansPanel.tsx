@@ -278,7 +278,7 @@ export function RegistrationPlansPanel({
       aria-label="Khoảng hiệu lực thi đấu và kế hoạch chuyển câu lạc bộ"
     >
       <div className={regPageCss.sectionBoxHeader}>
-        <h3>Khoảng hiệu lực thi đấu &amp; kế hoạch chuyển câu lạc bộ</h3>
+        <h3>Khoảng hiệu lực thi đấu &amp; chuyển câu lạc bộ</h3>
         {plans && (
           <span
             className={
@@ -293,10 +293,6 @@ export function RegistrationPlansPanel({
           </span>
         )}
       </div>
-      <p className={planCss.panelSub}>
-        Quản lý khoảng hiệu lực nửa mở [bắt đầu, kết thúc), chuyển câu lạc bộ cùng mốc hiệu lực và
-        điều chỉnh hoặc hủy kế hoạch tương lai trước khi bắt đầu hiệu lực.
-      </p>
 
       {successNotice && (
         <div className={css.notice} role="status">
@@ -316,9 +312,7 @@ export function RegistrationPlansPanel({
           {!plans.capabilities.seasonOpen && (
             <div className={`${pageCss.banner} ${pageCss.bannerWarn}`} role="status">
               <span>
-                <strong>Chế độ chỉ xem:</strong> Mùa giải đã đóng nên không thể thực hiện chấm dứt,
-                chuyển câu lạc bộ hay thay đổi kế hoạch mới. Toàn bộ lịch sử vẫn được giữ nguyên để
-                tra cứu.
+                <strong>Mùa giải đã đóng:</strong> Chỉ hỗ trợ tra cứu lịch sử hiệu lực.
               </span>
             </div>
           )}
@@ -326,9 +320,8 @@ export function RegistrationPlansPanel({
           {plans.capabilities.seasonOpen && !plans.capabilities.canManageSource && (
             <div className={`${pageCss.banner} ${pageCss.bannerWarn}`} role="status">
               <span>
-                <strong>Chế độ chỉ xem:</strong> Tài khoản hiện tại chỉ có quyền tra cứu trong mùa
-                giải này; thao tác chấm dứt, chuyển câu lạc bộ hoặc quản lý kế hoạch yêu cầu vai trò
-                Cán bộ đăng ký.
+                <strong>Chế độ chỉ xem:</strong> Thao tác chuyển câu lạc bộ hoặc chấm dứt hiệu lực
+                yêu cầu vai trò Cán bộ đăng ký.
               </span>
             </div>
           )}
@@ -339,10 +332,8 @@ export function RegistrationPlansPanel({
             !activePlan.canManageBothSides && (
               <div className={`${pageCss.banner} ${pageCss.bannerWarn}`} role="status">
                 <span>
-                  <strong>Hạn chế phạm vi quyền liên mùa giải:</strong> Kế hoạch chuyển câu lạc bộ
-                  này liên kết với một mùa giải ngoài phạm vi phân công hoặc đã đóng. Bạn cần quyền
-                  Cán bộ đăng ký ở cả hai mùa giải đang mở để điều chỉnh hoặc hủy cặp chuyển câu lạc
-                  bộ này.
+                  <strong>Hạn chế phạm vi quyền liên mùa giải:</strong> Cần quyền Cán bộ đăng ký ở
+                  cả hai mùa giải đang mở để điều chỉnh hoặc hủy kế hoạch này.
                 </span>
               </div>
             )}
@@ -354,9 +345,8 @@ export function RegistrationPlansPanel({
             plans.capabilities.canTransfer && (
               <div className={pageCss.banner} role="status">
                 <span>
-                  <strong>Câu lạc bộ nguồn đã ngừng hoạt động:</strong> Hồ sơ hợp lệ trước đó vẫn
-                  được bảo toàn. Bạn có thể chuyển cầu thủ sang câu lạc bộ đích đủ điều kiện mà
-                  không cần tiếp nhận hay xác nhận lại hồ sơ nguồn.
+                  <strong>Câu lạc bộ nguồn đã ngừng hoạt động:</strong> Có thể chuyển cầu thủ sang
+                  câu lạc bộ đích đủ điều kiện.
                 </span>
               </div>
             )}
@@ -368,29 +358,23 @@ export function RegistrationPlansPanel({
               <span className={regPageCss.summaryValue}>
                 {current.playingStart ? formatSeasonInstant(current.playingStart) : 'Chưa ấn định'}
               </span>
-              <span className={regPageCss.cellSub}>Tính từ mốc này trở đi</span>
             </div>
             <div className={regPageCss.summaryItem}>
               <span className={regPageCss.summaryLabel}>Kết thúc hiệu lực</span>
               <span className={regPageCss.summaryValue}>
                 {current.playingEnd ? formatSeasonInstant(current.playingEnd) : 'Chưa ấn định'}
               </span>
-              <span className={regPageCss.cellSub}>
-                {plans.playingEffectivityStatus === 'CANCELLED_BEFORE_EFFECTIVITY'
-                  ? 'Kế hoạch đã bị hủy trước khi bắt đầu hiệu lực'
-                  : current.playingEnd
-                    ? 'Hiệu lực kết thúc ngay trước mốc này'
-                    : 'Hiệu lực đến khi chấm dứt hoặc chuyển câu lạc bộ'}
-              </span>
+              {plans.playingEffectivityStatus === 'CANCELLED_BEFORE_EFFECTIVITY' && (
+                <span className={regPageCss.cellSub}>
+                  Kế hoạch đã bị hủy trước khi bắt đầu hiệu lực
+                </span>
+              )}
             </div>
             <div className={regPageCss.summaryItem}>
-              <span className={regPageCss.summaryLabel}>Số áo &amp; phiên bản chính thức</span>
+              <span className={regPageCss.summaryLabel}>Số áo &amp; phiên bản</span>
               <span className={regPageCss.summaryValue}>
                 {current.shirtNumber ? `#${current.shirtNumber}` : 'Chưa nhập'} · Phiên bản{' '}
                 {current.versionNumber}
-              </span>
-              <span className={regPageCss.cellSub}>
-                {plans.club.name} ({plans.club.code})
               </span>
             </div>
           </div>
@@ -399,15 +383,13 @@ export function RegistrationPlansPanel({
           {activePlan && (
             <div className={planCss.pairedCard} aria-label="Kế hoạch chuyển câu lạc bộ ghép cặp">
               <div className={planCss.pairedHeader}>
-                <span className={planCss.pairedTitle}>
-                  Kế hoạch chuyển câu lạc bộ ghép cặp đang chờ hiệu lực
-                </span>
+                <span className={planCss.pairedTitle}>Kế hoạch chuyển câu lạc bộ</span>
                 <span
                   className={`${pageCss.pill} ${
                     activePlan.canManageBothSides ? pageCss.pillPending : regPageCss.pillWarn
                   }`}
                 >
-                  Mốc hiệu lực chung: {formatSeasonInstant(activePlan.effectiveAt)}
+                  Hiệu lực: {formatSeasonInstant(activePlan.effectiveAt)}
                 </span>
               </div>
               <div className={planCss.pairedGrid}>
@@ -420,7 +402,7 @@ export function RegistrationPlansPanel({
                 >
                   <span className={planCss.sideRole}>
                     Câu lạc bộ nguồn
-                    {activePlan.direction === 'OUTGOING' ? ' (Hồ sơ hiện tại)' : ''}
+                    {activePlan.direction === 'OUTGOING' ? ' · Hiện tại' : ''}
                   </span>
                   <span className={planCss.sideClub}>
                     {activePlan.oldSide.accessRestricted || !activePlan.oldSide.club
@@ -430,9 +412,9 @@ export function RegistrationPlansPanel({
                   <span className={planCss.sideMeta}>
                     {activePlan.oldSide.accessRestricted || !activePlan.oldSide.season
                       ? 'Ngoài phạm vi quyền tra cứu liên mùa giải'
-                      : `Mùa giải ${activePlan.oldSide.season.name}${
+                      : `${activePlan.oldSide.season.name}${
                           activePlan.oldSide.afterVersion
-                            ? ` · Số áo #${activePlan.oldSide.afterVersion.shirtNumber ?? '—'} · Phiên bản ${activePlan.oldSide.afterVersion.versionNumber}`
+                            ? ` · Số áo #${activePlan.oldSide.afterVersion.shirtNumber ?? '—'}`
                             : ''
                         }`}
                   </span>
@@ -442,7 +424,7 @@ export function RegistrationPlansPanel({
                           activePlan.oldSide.afterVersion.playingStart,
                           activePlan.oldSide.afterVersion.playingEnd,
                         )
-                      : `Kết thúc tại mốc ${formatSeasonInstant(activePlan.effectiveAt)}`}
+                      : `Kết thúc lúc ${formatSeasonInstant(activePlan.effectiveAt)}`}
                   </div>
                 </div>
 
@@ -459,7 +441,7 @@ export function RegistrationPlansPanel({
                 >
                   <span className={planCss.sideRole}>
                     Câu lạc bộ đích
-                    {activePlan.direction === 'INCOMING' ? ' (Hồ sơ hiện tại)' : ''}
+                    {activePlan.direction === 'INCOMING' ? ' · Hiện tại' : ''}
                   </span>
                   <span className={planCss.sideClub}>
                     {activePlan.newSide.accessRestricted || !activePlan.newSide.club
@@ -469,9 +451,9 @@ export function RegistrationPlansPanel({
                   <span className={planCss.sideMeta}>
                     {activePlan.newSide.accessRestricted || !activePlan.newSide.season
                       ? 'Ngoài phạm vi quyền tra cứu liên mùa giải'
-                      : `Mùa giải ${activePlan.newSide.season.name}${
+                      : `${activePlan.newSide.season.name}${
                           activePlan.newSide.version
-                            ? ` · Số áo #${activePlan.newSide.version.shirtNumber ?? '—'} · Phiên bản ${activePlan.newSide.version.versionNumber}`
+                            ? ` · Số áo #${activePlan.newSide.version.shirtNumber ?? '—'}`
                             : ''
                         }`}
                   </span>
@@ -481,33 +463,25 @@ export function RegistrationPlansPanel({
                           activePlan.newSide.version.playingStart,
                           activePlan.newSide.version.playingEnd,
                         )
-                      : `Bắt đầu từ mốc ${formatSeasonInstant(activePlan.effectiveAt)}`}
+                      : `Bắt đầu lúc ${formatSeasonInstant(activePlan.effectiveAt)}`}
                   </div>
                 </div>
               </div>
               <div className={regPageCss.cellSub}>
-                <strong>Lý do:</strong> {activePlan.reason} · Ghi nhận bởi{' '}
-                {activePlan.actor.fullName} ({activePlan.actor.personnelCode}) lúc{' '}
-                {formatSeasonInstant(activePlan.createdAt)}.
+                <strong>Lý do:</strong> {activePlan.reason}
               </div>
             </div>
           )}
 
-          {/* 3. Dependencies & Related Registrations */}
-          <div className={planCss.stackSection}>
-            <div className={regPageCss.sectionBoxHeader}>
-              <strong className={planCss.sectionSubtitle}>
-                Hồ sơ liên quan &amp; phụ thuộc của cầu thủ
-              </strong>
-              <span className={regPageCss.cellSub}>
-                {plans.dependencies.length} hồ sơ hợp lệ khác
-              </span>
-            </div>
-            {plans.dependencies.length === 0 ? (
-              <div className={planCss.depEmpty}>
-                Không có hồ sơ đăng ký hợp lệ nào khác của cầu thủ này cần đối chiếu phụ thuộc.
+          {/* 3. Dependencies & Related Registrations (only when present) */}
+          {plans.dependencies.length > 0 && (
+            <div className={planCss.stackSection}>
+              <div className={regPageCss.sectionBoxHeader}>
+                <strong className={planCss.sectionSubtitle}>Hồ sơ đăng ký liên quan</strong>
+                <span className={regPageCss.cellSub}>
+                  {plans.dependencies.length} hồ sơ hợp lệ khác
+                </span>
               </div>
-            ) : (
               <ul className={regPageCss.findingsList}>
                 {plans.dependencies.map((dep, idx) => {
                   const restricted = dep.accessRestricted || !dep.club || !dep.season;
@@ -517,14 +491,14 @@ export function RegistrationPlansPanel({
                         <div className={regPageCss.findingTitle}>
                           {restricted
                             ? 'Hồ sơ đăng ký thuộc mùa giải ngoài phạm vi quyền'
-                            : `${dep.club!.name} (${dep.club!.code}) · Mùa giải ${dep.season!.name}${
-                                dep.shirtNumber ? ` · Số áo #${dep.shirtNumber}` : ''
+                            : `${dep.club!.name} (${dep.club!.code}) · ${dep.season!.name}${
+                                dep.shirtNumber ? ` · #${dep.shirtNumber}` : ''
                               }`}
                         </div>
                         <p className={regPageCss.findingReason}>
                           {restricted
-                            ? 'Thông tin mùa giải, câu lạc bộ và khoảng hiệu lực chi tiết được ẩn theo giới hạn phạm vi quyền.'
-                            : `Hiệu lực thi đấu: ${formatRange(dep.playingStart, dep.playingEnd)}`}
+                            ? 'Chi tiết ẩn theo phạm vi phân công.'
+                            : formatRange(dep.playingStart, dep.playingEnd)}
                         </p>
                       </div>
                       <div className={regPageCss.findingBadges}>
@@ -541,80 +515,70 @@ export function RegistrationPlansPanel({
                   );
                 })}
               </ul>
-            )}
-          </div>
+            </div>
+          )}
 
-          {/* 4. Action Bar */}
-          <div className={planCss.actionBar}>
-            {plans.capabilities.canTransfer && (
-              <button
-                type="button"
-                className={css.primary}
-                disabled={resource.loading}
-                onClick={() => openPlanModal('transfer')}
-              >
-                {plans.club.discontinuedAt
-                  ? 'Chuyển rời câu lạc bộ ngừng hoạt động'
-                  : 'Chuyển câu lạc bộ'}
-              </button>
-            )}
-
-            {plans.capabilities.canTerminate && (
-              <button
-                type="button"
-                disabled={resource.loading}
-                onClick={() => openPlanModal('terminate')}
-              >
-                Chấm dứt hiệu lực
-              </button>
-            )}
-
-            {plans.capabilities.canPlanChange && (
-              <button
-                type="button"
-                className={css.primary}
-                disabled={resource.loading}
-                onClick={() => openPlanModal('plan-change')}
-              >
-                Điều chỉnh kế hoạch
-              </button>
-            )}
-
-            {plans.capabilities.canPlanCancel && (
-              <button
-                type="button"
-                className={css.danger}
-                disabled={resource.loading}
-                onClick={() => openPlanModal('plan-cancel')}
-              >
-                Hủy kế hoạch trước hiệu lực
-              </button>
-            )}
-
-            {!plans.capabilities.canTransfer &&
-              !plans.capabilities.canTerminate &&
-              !plans.capabilities.canPlanChange &&
-              !plans.capabilities.canPlanCancel && (
-                <span className={regPageCss.cellSub}>
-                  {activePlan && !activePlan.canManageBothSides
-                    ? 'Cần quyền Cán bộ đăng ký ở cả hai mùa giải đang mở để thay đổi hoặc hủy kế hoạch này.'
-                    : 'Không có thao tác chuyển câu lạc bộ hoặc điều chỉnh kế hoạch khả dụng ở trạng thái hiện tại.'}
-                </span>
+          {/* 4. Action Bar (only rendered when at least one action is available) */}
+          {(plans.capabilities.canTransfer ||
+            plans.capabilities.canTerminate ||
+            plans.capabilities.canPlanChange ||
+            plans.capabilities.canPlanCancel) && (
+            <div className={planCss.actionBar}>
+              {plans.capabilities.canTransfer && (
+                <button
+                  type="button"
+                  className={css.primary}
+                  disabled={resource.loading}
+                  onClick={() => openPlanModal('transfer')}
+                >
+                  {plans.club.discontinuedAt
+                    ? 'Chuyển rời câu lạc bộ ngừng hoạt động'
+                    : 'Chuyển câu lạc bộ'}
+                </button>
               )}
-          </div>
 
-          {/* 5. Transfer & Plan History */}
-          <details className={planCss.historyDetails} open={plans.transferHistory.length > 0}>
-            <summary>
-              Lịch sử chuyển nhượng &amp; thay đổi kế hoạch ({plans.transferHistory.length} bản ghi)
-            </summary>
-            <ul className={planCss.historyList}>
-              {plans.transferHistory.length === 0 ? (
-                <li className={regPageCss.cellSub}>
-                  Chưa có thao tác chuyển câu lạc bộ hoặc thay đổi kế hoạch tương lai nào.
-                </li>
-              ) : (
-                plans.transferHistory.map((item) => (
+              {plans.capabilities.canTerminate && (
+                <button
+                  type="button"
+                  disabled={resource.loading}
+                  onClick={() => openPlanModal('terminate')}
+                >
+                  Chấm dứt hiệu lực
+                </button>
+              )}
+
+              {plans.capabilities.canPlanChange && (
+                <button
+                  type="button"
+                  className={css.primary}
+                  disabled={resource.loading}
+                  onClick={() => openPlanModal('plan-change')}
+                >
+                  Điều chỉnh kế hoạch
+                </button>
+              )}
+
+              {plans.capabilities.canPlanCancel && (
+                <button
+                  type="button"
+                  className={css.danger}
+                  disabled={resource.loading}
+                  onClick={() => openPlanModal('plan-cancel')}
+                >
+                  Hủy kế hoạch trước hiệu lực
+                </button>
+              )}
+            </div>
+          )}
+
+          {/* 5. Transfer & Plan History (only shown when non-empty) */}
+          {plans.transferHistory.length > 0 && (
+            <details open className={planCss.historyDetails}>
+              <summary>
+                Lịch sử chuyển nhượng &amp; kế hoạch ({plans.transferHistory.length} bản ghi)
+              </summary>
+              <ul className={planCss.historyList}>
+                {plans.transferHistory.map((item) => (
                   <li key={item.id} className={planCss.historyItem}>
                     <div className={planCss.historyItemHeader}>
                       <span>{operationKindLabels[item.operationKind]}</span>
@@ -624,23 +588,22 @@ export function RegistrationPlansPanel({
                     </div>
                     <div className={planCss.sideMeta}>
                       {formatTransferSideSummary(item.oldSide)} →{' '}
-                      {formatTransferSideSummary(item.newSide)} · Mốc hiệu lực chung:{' '}
+                      {formatTransferSideSummary(item.newSide)} · Hiệu lực:{' '}
                       <strong>{formatSeasonInstant(item.effectiveAt)}</strong>
                       {item.operationKind === 'PLAN_CANCEL'
                         ? ' · Hồ sơ đích: Hủy trước hiệu lực'
                         : item.newSide.version?.shirtNumber
-                          ? ` · Số áo đích #${item.newSide.version.shirtNumber}`
+                          ? ` · #${item.newSide.version.shirtNumber}`
                           : ''}
                     </div>
                     <div className={regPageCss.cellSub}>
-                      <strong>Lý do:</strong> {item.reason} · <strong>Người thực hiện:</strong>{' '}
-                      {item.actor.fullName} ({item.actor.personnelCode})
+                      <strong>Lý do:</strong> {item.reason} · {item.actor.fullName}
                     </div>
                   </li>
-                ))
-              )}
-            </ul>
-          </details>
+                ))}
+              </ul>
+            </details>
+          )}
         </>
       )}
 
@@ -835,17 +798,17 @@ function TransferModal({
 
   const seasonOptions = plans.authorizedTargetSeasons.map((s) => ({
     value: s.id,
-    label: `${s.name} (${s.code})${s.effectiveRegulationVersionNumber !== null ? ` · Quy định phiên bản ${s.effectiveRegulationVersionNumber}` : ' · Chưa có quy định hiệu lực'}`,
+    label: s.hasEffectiveRegulation ? s.name : `${s.name} · Chưa có quy định`,
   }));
 
   const clubOptions = (selectedSeason?.eligibleClubs ?? []).map((c) => ({
     value: c.id,
-    label: `${c.name} (${c.code}) — Đã duyệt hồ sơ tham dự`,
+    label: `${c.name} (${c.code})`,
   }));
 
   const candidateOptions = allReceivedCandidates.map((c) => ({
     value: c.versionId,
-    label: `${c.club.name} (${c.seasonName}) · Phiên bản ${c.versionNumber} · Số áo #${c.shirtNumber ?? '—'}${c.receiptTimingStatus === 'LATE' ? (c.hasApprovedException ? ' · Ngoài hạn (Đã duyệt ngoại lệ)' : ' · Ngoài hạn (Chưa có ngoại lệ)') : ' · Đúng hạn'}`,
+    label: `${c.club.name} (${c.seasonName}) · PB ${c.versionNumber} · #${c.shirtNumber ?? '—'}${c.receiptTimingStatus === 'LATE' ? (c.hasApprovedException ? ' · Ngoài hạn (đã duyệt)' : ' · Ngoài hạn') : ''}`,
   }));
 
   function setValidationError(message: string) {
@@ -1039,7 +1002,8 @@ function TransferModal({
     <Modal
       open
       title="Chuyển câu lạc bộ cho cầu thủ"
-      width={680}
+      width={740}
+      className={pageCss.phase3Modal}
       closable={!busy}
       maskClosable={!busy}
       keyboard={!busy}
@@ -1065,22 +1029,12 @@ function TransferModal({
         {!uncertain && basisChanged && (
           <div className={`${pageCss.banner} ${pageCss.bannerWarn}`} role="status">
             <span>
-              <strong>Dữ liệu đã thay đổi:</strong> Hồ sơ đăng ký vừa được cập nhật sang phiên bản
-              mới hơn. Vui lòng tải lại dữ liệu trước khi tiếp tục thao tác.
+              <strong>Dữ liệu đã thay đổi:</strong> Vui lòng tải lại dữ liệu mới nhất trước khi tiếp
+              tục.
             </span>
             <button type="button" onClick={onReload} disabled={busy}>
               Tải lại dữ liệu mới nhất
             </button>
-          </div>
-        )}
-
-        {plans.club.discontinuedAt && (
-          <div className={pageCss.banner}>
-            <span>
-              <strong>Câu lạc bộ nguồn đã ngừng hoạt động:</strong> Hệ thống sẽ chấm dứt hồ sơ nguồn
-              mà không kiểm tra tiếp nhận lại câu lạc bộ cũ; chỉ hồ sơ đích chịu đầy đủ điều kiện
-              xác nhận mới.
-            </span>
           </div>
         )}
 
@@ -1096,12 +1050,12 @@ function TransferModal({
           </div>
           <div className={planCss.pairedGrid}>
             <div className={planCss.sideBox}>
-              <span className={planCss.sideRole}>Câu lạc bộ nguồn (Chấm dứt)</span>
+              <span className={planCss.sideRole}>CLB nguồn · Chấm dứt</span>
               <span className={planCss.sideClub}>
                 {plans.club.name} ({plans.club.code})
               </span>
               <span className={planCss.sideMeta}>
-                Mùa giải {plans.season.name} · Số áo #{current.shirtNumber ?? '—'}
+                {plans.season.name} · #{current.shirtNumber ?? '—'}
               </span>
               <div className={planCss.sideInterval}>
                 {current.playingStart ? formatSeasonInstant(current.playingStart) : '—'} →{' '}
@@ -1112,7 +1066,7 @@ function TransferModal({
               →
             </div>
             <div className={`${planCss.sideBox} ${planCss.sideBoxDest}`}>
-              <span className={planCss.sideRole}>Câu lạc bộ đích (Bắt đầu hiệu lực)</span>
+              <span className={planCss.sideRole}>CLB đích · Bắt đầu</span>
               <span className={planCss.sideClub}>
                 {destMode === 'existing'
                   ? selectedCandidate
@@ -1120,14 +1074,14 @@ function TransferModal({
                     : 'Chưa chọn hồ sơ đích'
                   : selectedClub
                     ? `${selectedClub.name} (${selectedClub.code})`
-                    : 'Chưa chọn câu lạc bộ đích'}
+                    : 'Chưa chọn CLB đích'}
               </span>
               <span className={planCss.sideMeta}>
                 {destMode === 'existing'
                   ? selectedCandidate
-                    ? `Mùa giải ${selectedCandidate.seasonName} · Số áo #${selectedCandidate.shirtNumber ?? '—'}`
+                    ? `${selectedCandidate.seasonName} · #${selectedCandidate.shirtNumber ?? '—'}`
                     : '—'
-                  : `Mùa giải ${selectedSeason?.name ?? '—'} · Số áo #${shirtNumber || '—'}`}
+                  : `${selectedSeason?.name ?? '—'} · #${shirtNumber || '—'}`}
               </span>
               <div className={planCss.sideInterval}>
                 {previewEffectiveLabel} →{' '}
@@ -1137,7 +1091,7 @@ function TransferModal({
           </div>
         </div>
 
-        {/* Mode switch */}
+        {/* Clean segmented mode switch */}
         <div className={planCss.segmented} role="group" aria-label="Phương thức lập hồ sơ đích">
           <button
             type="button"
@@ -1149,8 +1103,7 @@ function TransferModal({
               setDestMode('inline');
             }}
           >
-            <span>Tạo đăng ký đích mới</span>
-            <span className={planCss.segHint}>Áp dụng trong khung tiếp nhận đang mở</span>
+            Tạo đăng ký đích mới
           </button>
           <button
             type="button"
@@ -1162,12 +1115,8 @@ function TransferModal({
               setDestMode('existing');
             }}
           >
-            <span>Ghép phiên bản đích đã tiếp nhận</span>
-            <span className={planCss.segHint}>
-              {allReceivedCandidates.length > 0
-                ? `${allReceivedCandidates.length} phiên bản sẵn sàng (hỗ trợ ngoại lệ ngoài hạn)`
-                : 'Chưa có phiên bản đích ở trạng thái Đã tiếp nhận'}
-            </span>
+            Ghép phiên bản đã tiếp nhận
+            {allReceivedCandidates.length > 0 ? ` (${allReceivedCandidates.length})` : ''}
           </button>
         </div>
 
@@ -1264,101 +1213,99 @@ function TransferModal({
               </div>
             </div>
 
-            <div className={regPageCss.checkboxField}>
-              <label className={regPageCss.checkboxCard}>
-                <input
-                  type="checkbox"
-                  checked={nonHomegrownOptIn}
-                  disabled={busy || uncertain}
-                  onChange={(event) => {
-                    clearDefinitiveError();
-                    setNonHomegrownOptIn(event.target.checked);
-                  }}
-                />
-                <span>Xử lý hồ sơ đích theo diện ngoài đào tạo nội địa</span>
-              </label>
-            </div>
+            <label className={regPageCss.checkboxCard}>
+              <input
+                type="checkbox"
+                checked={nonHomegrownOptIn}
+                disabled={busy || uncertain}
+                onChange={(event) => {
+                  clearDefinitiveError();
+                  setNonHomegrownOptIn(event.target.checked);
+                }}
+              />
+              <span>Xử lý hồ sơ đích theo diện ngoài đào tạo nội địa</span>
+            </label>
 
             {!nonHomegrownOptIn && (
-              <div className={regPageCss.evidenceSection}>
-                <div className={regPageCss.evidenceHeader}>
-                  <h3>Minh chứng đào tạo nội địa cho hồ sơ đích (tùy chọn nếu thuộc diện U21)</h3>
-                </div>
-                <div className={regPageCss.evidenceGridThree}>
-                  <AdminSelect
-                    label="Nhánh tính thời gian"
-                    hideLabel={false}
-                    value={evidenceBranch}
-                    options={[
-                      { value: '', label: 'Chưa chọn' },
-                      { value: 'SEASONS', label: 'Theo mùa giải' },
-                      { value: 'MONTHS', label: 'Theo tháng' },
-                    ]}
-                    disabled={busy || uncertain}
-                    onChange={(val) => {
-                      clearDefinitiveError();
-                      setEvidenceBranch(val);
-                    }}
-                  />
-                  <label className={dialogCss.field}>
-                    Số mùa / số tháng
-                    <input
-                      type="number"
-                      min={1}
-                      max={1000}
-                      value={qualifyingValue}
+              <details className={planCss.evidenceDisclosure}>
+                <summary>Minh chứng đào tạo nội địa cho hồ sơ đích (tùy chọn)</summary>
+                <div className={planCss.evidenceDisclosureBody}>
+                  <div className={regPageCss.evidenceGridThree}>
+                    <AdminSelect
+                      label="Nhánh tính thời gian"
+                      hideLabel={false}
+                      value={evidenceBranch}
+                      options={[
+                        { value: '', label: 'Chưa chọn' },
+                        { value: 'SEASONS', label: 'Theo mùa giải' },
+                        { value: 'MONTHS', label: 'Theo tháng' },
+                      ]}
                       disabled={busy || uncertain}
-                      onChange={(event) => {
+                      onChange={(val) => {
                         clearDefinitiveError();
-                        setQualifyingValue(event.target.value);
+                        setEvidenceBranch(val);
                       }}
                     />
-                  </label>
-                  <AdminSelect
-                    label="Thuộc liên đoàn Anh / Xứ Wales"
-                    hideLabel={false}
-                    value={affiliatedBasis}
-                    options={[
-                      { value: '', label: 'Chưa xác nhận' },
-                      { value: 'YES', label: 'Đáp ứng' },
-                      { value: 'NO', label: 'Không đáp ứng' },
-                    ]}
-                    disabled={busy || uncertain}
-                    onChange={(val) => {
-                      clearDefinitiveError();
-                      setAffiliatedBasis(val);
-                    }}
-                  />
-                </div>
-                <div className={regPageCss.twoColRow}>
-                  <label className={dialogCss.field}>
-                    Tóm tắt minh chứng
-                    <input
-                      type="text"
-                      maxLength={1000}
-                      value={evidenceSummary}
+                    <label className={dialogCss.field}>
+                      Số mùa / số tháng
+                      <input
+                        type="number"
+                        min={1}
+                        max={1000}
+                        value={qualifyingValue}
+                        disabled={busy || uncertain}
+                        onChange={(event) => {
+                          clearDefinitiveError();
+                          setQualifyingValue(event.target.value);
+                        }}
+                      />
+                    </label>
+                    <AdminSelect
+                      label="Thuộc LĐBĐ Anh / Xứ Wales"
+                      hideLabel={false}
+                      value={affiliatedBasis}
+                      options={[
+                        { value: '', label: 'Chưa xác nhận' },
+                        { value: 'YES', label: 'Đáp ứng' },
+                        { value: 'NO', label: 'Không đáp ứng' },
+                      ]}
                       disabled={busy || uncertain}
-                      onChange={(event) => {
+                      onChange={(val) => {
                         clearDefinitiveError();
-                        setEvidenceSummary(event.target.value);
+                        setAffiliatedBasis(val);
                       }}
                     />
-                  </label>
-                  <label className={dialogCss.field}>
-                    Mã tham chiếu hồ sơ
-                    <input
-                      type="text"
-                      maxLength={300}
-                      value={evidenceReference}
-                      disabled={busy || uncertain}
-                      onChange={(event) => {
-                        clearDefinitiveError();
-                        setEvidenceReference(event.target.value);
-                      }}
-                    />
-                  </label>
+                  </div>
+                  <div className={regPageCss.twoColRow}>
+                    <label className={dialogCss.field}>
+                      Tóm tắt minh chứng
+                      <input
+                        type="text"
+                        maxLength={1000}
+                        value={evidenceSummary}
+                        disabled={busy || uncertain}
+                        onChange={(event) => {
+                          clearDefinitiveError();
+                          setEvidenceSummary(event.target.value);
+                        }}
+                      />
+                    </label>
+                    <label className={dialogCss.field}>
+                      Mã tham chiếu hồ sơ
+                      <input
+                        type="text"
+                        maxLength={300}
+                        value={evidenceReference}
+                        disabled={busy || uncertain}
+                        onChange={(event) => {
+                          clearDefinitiveError();
+                          setEvidenceReference(event.target.value);
+                        }}
+                      />
+                    </label>
+                  </div>
                 </div>
-              </div>
+              </details>
             )}
           </>
         ) : (
@@ -1374,17 +1321,14 @@ function TransferModal({
                 setSelectedCandidateKey(val);
               }}
             />
-            <p className={pageCss.metaNote}>
-              Thời điểm chuyển câu lạc bộ sẽ tự động gắn khớp chính xác với mốc bắt đầu của phiên
-              bản đích đã tiếp nhận.
-            </p>
           </div>
         )}
 
         <label>
           Lý do chuyển câu lạc bộ *
           <textarea
-            rows={3}
+            className={planCss.compactReason}
+            rows={2}
             maxLength={2000}
             value={reason}
             disabled={busy || uncertain}
@@ -1537,7 +1481,8 @@ function TerminateModal({
     <Modal
       open
       title="Chấm dứt hiệu lực thi đấu"
-      width={580}
+      width={600}
+      className={pageCss.phase3Modal}
       closable={!busy}
       maskClosable={!busy}
       keyboard={!busy}
@@ -1563,8 +1508,8 @@ function TerminateModal({
         {!uncertain && basisChanged && (
           <div className={`${pageCss.banner} ${pageCss.bannerWarn}`} role="status">
             <span>
-              <strong>Dữ liệu đã thay đổi:</strong> Hồ sơ đăng ký vừa được cập nhật sang phiên bản
-              mới hơn. Vui lòng tải lại dữ liệu trước khi tiếp tục thao tác.
+              <strong>Dữ liệu đã thay đổi:</strong> Vui lòng tải lại dữ liệu mới nhất trước khi tiếp
+              tục.
             </span>
             <button type="button" onClick={onReload} disabled={busy}>
               Tải lại dữ liệu mới nhất
@@ -1574,10 +1519,9 @@ function TerminateModal({
 
         <div className={pageCss.banner}>
           <span>
-            <strong>Khoảng hiệu lực sau khi chấm dứt:</strong>{' '}
+            <strong>Hiệu lực sau chấm dứt:</strong>{' '}
             {current.playingStart ? formatSeasonInstant(current.playingStart) : '—'} →{' '}
-            <strong>{previewEndLabel}</strong>. Không được chấm dứt hồi tố trước thời điểm hệ thống
-            ghi nhận.
+            <strong>{previewEndLabel}</strong>
           </span>
         </div>
 
@@ -1832,7 +1776,8 @@ export function PlanChangeModal({
           ? 'Điều chỉnh kế hoạch đăng ký tương lai'
           : 'Điều chỉnh kế hoạch chuyển câu lạc bộ tương lai'
       }
-      width={660}
+      width={680}
+      className={pageCss.phase3Modal}
       closable={!busy}
       maskClosable={!busy}
       keyboard={!busy}
@@ -1866,14 +1811,6 @@ export function PlanChangeModal({
             </button>
           </div>
         )}
-
-        <div className={`${pageCss.banner} ${pageCss.bannerWarn}`}>
-          <span>
-            <strong>Lưu ý điều kiện tiếp nhận:</strong> Điều chỉnh kế hoạch tương lai phải thực hiện
-            trước thời điểm bắt đầu hiệu lực, nằm trong khung thời gian tiếp nhận thay đổi cầu thủ
-            hiện hành và được kiểm tra lại toàn bộ điều kiện đội hình, số áo.
-          </span>
-        </div>
 
         {activePlan ? (
           <div className={planCss.pairedCard}>
@@ -2167,6 +2104,7 @@ function PlanCancelModal({
           : 'Hủy kế hoạch đăng ký trước hiệu lực'
       }
       width={600}
+      className={pageCss.phase3Modal}
       closable={!busy}
       maskClosable={!busy}
       keyboard={!busy}
@@ -2202,39 +2140,31 @@ function PlanCancelModal({
         )}
 
         <div className={planCss.dispositionBox}>
-          <strong>Hậu quả khi xác nhận hủy kế hoạch trước hiệu lực:</strong>
+          <strong>Tác động khi hủy trước hiệu lực:</strong>
           <ul>
             {activePlan ? (
               <>
                 <li>
-                  Hồ sơ đích tại{' '}
-                  <strong>{activePlan.newSide.club?.name ?? 'câu lạc bộ đích'}</strong> chuyển trạng
-                  thái hiệu lực sang <strong>Hủy trước hiệu lực</strong> (giữ nguyên lịch sử xác
-                  nhận trước đó, không xóa bản ghi).
+                  Hồ sơ đích (<strong>{activePlan.newSide.club?.name ?? 'CLB đích'}</strong>):
+                  chuyển sang <strong>Hủy trước hiệu lực</strong>.
                 </li>
                 <li>
-                  Hồ sơ nguồn tại{' '}
-                  <strong>{activePlan.oldSide.club?.name ?? 'câu lạc bộ nguồn'}</strong> sẽ được{' '}
-                  <strong>khôi phục thời điểm kết thúc trước chuyển câu lạc bộ</strong> (
-                  <em>
+                  Hồ sơ nguồn (<strong>{activePlan.oldSide.club?.name ?? 'CLB nguồn'}</strong>):
+                  khôi phục mốc kết thúc →{' '}
+                  <strong>
                     {restoredEnd.known
                       ? restoredEnd.endIso
                         ? formatSeasonInstant(restoredEnd.endIso)
                         : 'Chưa ấn định'
                       : 'theo phiên bản trước chuyển câu lạc bộ'}
-                  </em>
-                  ) nếu không gây chồng lấn đăng ký, trùng số áo hoặc vượt hạn mức đội hình.
-                </li>
-                <li>
-                  Nếu việc khôi phục xung đột với một hồ sơ khác, thao tác hủy sẽ bị từ chối toàn bộ
-                  và kế hoạch hiện tại được bảo toàn, không tự động hủy hồ sơ phụ thuộc.
+                  </strong>
+                  .
                 </li>
               </>
             ) : (
               <li>
-                Kế hoạch đăng ký tại <strong>{plans.club.name}</strong> sẽ chuyển sang trạng thái{' '}
-                <strong>Hủy trước hiệu lực</strong> và vẫn lưu giữ toàn bộ lịch sử xác nhận trước
-                đó.
+                Kế hoạch đăng ký tại <strong>{plans.club.name}</strong> chuyển sang trạng thái{' '}
+                <strong>Hủy trước hiệu lực</strong>.
               </li>
             )}
           </ul>

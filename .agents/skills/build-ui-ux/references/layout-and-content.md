@@ -19,6 +19,10 @@ every surface into one font size, card width or button arrangement.
 - Give dense multi-section editors a complete readable canvas. Put navigation above
   the editor when a side column would compress it. Group optional details with
   disclosure while keeping required decision evidence available.
+- Fit ordinary forms and modals within one desktop viewport by pairing short fields,
+  keeping compact vertical spacing and collapsing optional detail blocks. Hide empty
+  or inapplicable sections (such as auto-qualified fields or empty history lists)
+  rather than displaying blank disabled inputs.
 - Avoid duplicate titles such as repeating the active History tab as a heading.
   Show a state/fact once unless repetition has a clear decision-making purpose.
 
@@ -27,6 +31,10 @@ every surface into one font size, card width or button arrangement.
 - Use the existing theme and CSS Modules, inherited Be Vietnam Pro, localized
   component wrappers and normal/hover/focus/disabled states. Retain the accepted
   dropdown and calendar interactions; native selects/date inputs are not replacements.
+- Verify embedded controls against the final CSS cascade: keep `DateTimePicker` clear
+  icons compact inside their input frame, render modal checkboxes in styled card rows,
+  use pill tabs for sibling dialog modes and size modal history tables so timestamp
+  and actor columns stay single-line without horizontal overflow.
 - Keep one primary action per decision group. Place secondary/cancel actions beside
   it and destructive actions in an appropriate separate context. Use the existing
   balanced profile-action grid for sibling commands instead of accidental wrapping.
@@ -56,9 +64,12 @@ every surface into one font size, card width or button arrangement.
   Keep decisions blocked until their required identity/basis has resolved.
 - New Phase audit events and changed fields need Vietnamese labels and readable
   before/after values in both global logs and object-specific histories.
-- Keep user-facing copy about the task. Backend enum names, revision machinery,
-  idempotency internals and implementation-scope commentary belong outside normal
-  product copy unless needed to explain a recovery decision.
+- Show only what the operator needs to complete or verify the task: current status,
+  required inputs, decision diffs and actionable exceptions. Leave policy lectures,
+  staff-training manuals and repetitive normal-state captions outside the UI (show
+  row sub-lines only for abnormal states such as a discontinued or unapproved club).
+  Backend enum names, revision machinery, idempotency internals and implementation-scope
+  commentary belong outside normal product copy unless needed for a recovery decision.
 - Preserve business distinctions when simplifying text: custom goal/card names,
   classifications, correction reason/basis and saved-version evidence still matter.
 

@@ -22,6 +22,7 @@ import { useSearchTerm } from '../accounts/use-search-term';
 import { WorkspaceDialog as Modal } from '../accounts/WorkspaceDialog';
 import { actions } from '../audit/audit-filters';
 import clubCss from '../clubs/ClubsPage.module.css';
+import regCss from '../regulations/RegulationVersionsPage.module.css';
 import dialogCss from '../seasons/SeasonCreateForm.module.css';
 import {
   formatSeasonInstant,
@@ -415,99 +416,71 @@ export function PlayerRegistrationsPage() {
     }
   }, [seasonId, accessibleSeasons, navigate]);
 
-  if (!seasonId) {
-    return (
-      <div className={css.page}>
-        <div className={css.pageHead}>
-          <div>
-            <h1>Đăng ký cầu thủ theo mùa</h1>
-            <p>
-              Chọn mùa giải được phân công để tiếp nhận, kiểm tra điều kiện và xác nhận đăng ký cầu
-              thủ.
-            </p>
-          </div>
-        </div>
-        <section className={css.panel}>
-          <ListFeedback
-            loading={seasons.loading}
-            error={seasons.error}
-            empty={!seasons.loading && !seasons.error && accessibleSeasons.length === 0}
-            onRetry={seasons.reload}
-          />
-          {accessibleSeasons.length > 0 && (
-            <div className={css.tableWrap}>
-              <table className={css.table}>
-                <thead>
-                  <tr>
-                    <th>Mã mùa giải</th>
-                    <th>Tên mùa giải</th>
-                    <th>Trạng thái</th>
-                    <th className={regPageCss.actionCell}>Thao tác</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {accessibleSeasons.map((item) => (
-                    <tr key={item.id}>
-                      <td>
-                        <strong>{item.code}</strong>
-                      </td>
-                      <td>{item.name}</td>
-                      <td>
-                        <span
-                          className={`${pageCss.pill} ${item.state === 'OPEN' ? pageCss.pillOk : ''}`}
-                        >
-                          {item.state === 'OPEN' ? 'Đang mở' : 'Đã đóng'}
-                        </span>
-                      </td>
-                      <td className={regPageCss.actionCell}>
-                        <Link to={seasonPath(item.id)} className={css.primary}>
-                          Mở danh sách
-                        </Link>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </section>
-      </div>
-    );
-  }
-
   return (
-    <div className={css.page}>
-      <div className={css.pageHead}>
+    <section className={regCss.page} aria-label="Đăng ký cầu thủ theo mùa">
+      <header className={regCss.pageHeader}>
         <div>
-          <h1>Đăng ký cầu thủ theo mùa</h1>
+          <h1 className={css.pageTitle}>Đăng ký cầu thủ theo mùa</h1>
           <p>
-            Tiếp nhận hồ sơ, kiểm tra điều kiện hợp lệ theo quy định mùa giải và theo dõi hiệu lực
-            thi đấu của từng cầu thủ.
+            Tiếp nhận hồ sơ, kiểm tra điều kiện hợp lệ và theo dõi hiệu lực thi đấu của cầu thủ theo
+            mùa giải.
           </p>
         </div>
-        {accessibleSeasons.length > 0 && (
-          <div style={{ minWidth: 260 }}>
-            <AdminSelect
-              label="Mùa giải"
-              value={seasonId}
-              options={accessibleSeasons.map((item) => ({
-                value: item.id,
-                label: `${item.name} (${item.code})`,
-              }))}
-              onChange={(nextId) => {
-                if (nextId && nextId !== seasonId) navigate(seasonPath(nextId));
-              }}
-            />
-          </div>
-        )}
-      </div>
+        <div className={regCss.seasonPicker}>
+          <span className={regCss.seasonPickerLabel} aria-hidden="true">
+            Mùa giải
+          </span>
+          <AdminSelect
+            label="Mùa giải"
+            className={regCss.seasonControl}
+            value={selectedSeason?.id ?? ''}
+            onChange={(nextId) =>
+              void navigate(nextId ? seasonPath(nextId) : '/workspace/seasons/player-registrations')
+            }
+            options={[
+              { value: '', label: 'Chọn mùa giải' },
+              ...accessibleSeasons.map((item) => ({ value: item.id, label: item.name })),
+            ]}
+          />
+          {selectedSeason && (
+            <span
+              className={`${regCss.seasonState} ${selectedSeason.state === 'OPEN' ? regCss.open : regCss.closed}`}
+            >
+              {selectedSeason.state === 'OPEN' ? 'Đang mở' : 'Đã đóng'}
+            </span>
+          )}
+        </div>
+      </header>
 
-      <SeasonPlayerRegistrationsWorkspace
-        key={seasonId}
-        seasonId={seasonId}
-        seasonName={selectedSeason?.name}
-      />
-    </div>
+      <ListFeedback loading={seasons.loading} error={seasons.error} onRetry={seasons.reload} />
+
+      {seasonId ? (
+        <SeasonPlayerRegistrationsWorkspace
+          key={seasonId}
+          seasonId={seasonId}
+          seasonName={selectedSeason?.name}
+        />
+      ) : accessibleSeasons.length > 0 ? (
+        <ul className={regCss.seasonChoices} aria-label="Danh sách mùa giải">
+          {accessibleSeasons.map((item) => (
+            <li key={item.id}>
+              <Link to={seasonPath(item.id)}>
+                <strong>{item.name}</strong>
+                <span>{item.code}</span>
+              </Link>
+              <span
+                className={`${regCss.seasonState} ${item.state === 'OPEN' ? regCss.open : regCss.closed}`}
+              >
+                {item.state === 'OPEN' ? 'Đang mở' : 'Đã đóng'}
+              </span>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        !seasons.loading &&
+        !seasons.error && <p>Bạn chưa được phân công mùa giải nào để quản lý đăng ký cầu thủ.</p>
+      )}
+    </section>
   );
 }
 
@@ -564,38 +537,37 @@ function SeasonPlayerRegistrationsWorkspace({
         >
           {!seasonOpen ? (
             <span>
-              <strong>Mùa giải {seasonName ?? refData.season.name} đã đóng:</strong> chỉ có thể tra
-              cứu hồ sơ đăng ký đã lưu, không thể chỉnh sửa hoặc xác nhận mới.
+              <strong>Mùa giải {seasonName ?? refData.season.name} đã đóng:</strong> chỉ hỗ trợ tra
+              cứu hồ sơ đã lưu.
             </span>
           ) : !effectiveReg ? (
             <span>
-              <strong>Chưa có quy định mùa giải đang có hiệu lực:</strong> có thể chuẩn bị bản nháp
-              và kiểm tra trước, nhưng chưa thể tiếp nhận hoặc xác nhận hợp lệ.
+              <strong>Chưa có quy định hiệu lực:</strong> chỉ có thể tạo bản nháp, chưa thể tiếp
+              nhận hoặc xác nhận hợp lệ.
             </span>
           ) : (
-            <>
-              <span>
-                <strong>Quy định đang áp dụng:</strong> Phiên bản {effectiveReg.versionNumber} · Đội
-                hình tối đa <strong>{effectiveReg.squadLimit ?? '—'}</strong> · Ngoài đào tạo nội
-                địa tối đa <strong>{effectiveReg.nonHomegrownLimit ?? '—'}</strong>
-                {effectiveReg.u21Cutoff && (
-                  <>
-                    {' · '}Mốc U21: <strong>{formatDisplayDate(effectiveReg.u21Cutoff)}</strong>
-                  </>
-                )}
-              </span>
+            <span>
+              <strong>Quy định áp dụng:</strong> Phiên bản {effectiveReg.versionNumber} · Đội hình
+              tối đa <strong>{effectiveReg.squadLimit ?? '—'}</strong> · Ngoài nội địa tối đa{' '}
+              <strong>{effectiveReg.nonHomegrownLimit ?? '—'}</strong>
+              {effectiveReg.u21Cutoff && (
+                <>
+                  {' · '}Mốc U21: <strong>{formatDisplayDate(effectiveReg.u21Cutoff)}</strong>
+                </>
+              )}
               {effectiveReg.windows.length > 0 && (
-                <span>
-                  <strong>Khung tiếp nhận cầu thủ:</strong>{' '}
+                <>
+                  {' · '}
+                  <strong>Tiếp nhận:</strong>{' '}
                   {effectiveReg.windows
                     .map(
                       (w) =>
                         `${formatSeasonInstant(w.opensAt)} – ${formatSeasonInstant(w.closesAt)}`,
                     )
                     .join('; ')}
-                </span>
+                </>
               )}
-            </>
+            </span>
           )}
         </div>
       )}
@@ -604,10 +576,6 @@ function SeasonPlayerRegistrationsWorkspace({
         <div className={css.sectionHeader}>
           <div>
             <h2>Danh sách hồ sơ đăng ký cầu thủ</h2>
-            <p>
-              Theo dõi tách biệt trạng thái xử lý hồ sơ và trạng thái hiệu lực thi đấu của cầu thủ
-              tại từng câu lạc bộ.
-            </p>
           </div>
           {list.data?.capabilities.canManage && seasonOpen && (
             <button type="button" className={css.primary} onClick={() => setCreating(true)}>
@@ -705,23 +673,24 @@ function SeasonPlayerRegistrationsWorkspace({
         />
 
         {items.length > 0 && (
-          <div className={css.tableWrap}>
+          <div className={css.scroll}>
             <table className={css.table}>
               <thead>
                 <tr>
-                  <th>Cầu thủ</th>
-                  <th>Câu lạc bộ</th>
-                  <th>Số áo</th>
-                  <th>Phân loại</th>
-                  <th>Trạng thái hồ sơ</th>
-                  <th>Hiệu lực thi đấu</th>
-                  <th className={regPageCss.actionCell}>Thao tác</th>
+                  <th scope="col">Cầu thủ</th>
+                  <th scope="col">Câu lạc bộ</th>
+                  <th scope="col">Số áo</th>
+                  <th scope="col">Phân loại</th>
+                  <th scope="col">Trạng thái hồ sơ</th>
+                  <th scope="col">Hiệu lực thi đấu</th>
+                  <th scope="col" className={regPageCss.actionCell}>
+                    Thao tác
+                  </th>
                 </tr>
               </thead>
               <tbody>
                 {items.map((item) => {
                   const latest = item.latestVersion;
-                  const validated = item.currentValidatedVersion;
                   const badge = latest ? classificationBadge(latest) : null;
                   return (
                     <tr key={item.id}>
@@ -735,17 +704,13 @@ function SeasonPlayerRegistrationsWorkspace({
                         <strong>{item.club.name}</strong> ({item.club.code})
                         {item.club.discontinuedAt ? (
                           <span className={`${regPageCss.cellSub} ${regPageCss.cellSubDanger}`}>
-                            Câu lạc bộ đã ngừng hoạt động
+                            Đã ngừng hoạt động
                           </span>
-                        ) : item.club.hasApprovedApplication ? (
-                          <span className={`${regPageCss.cellSub} ${regPageCss.cellSubOk}`}>
-                            Hồ sơ tham dự đã phê duyệt
-                          </span>
-                        ) : (
+                        ) : !item.club.hasApprovedApplication ? (
                           <span className={`${regPageCss.cellSub} ${regPageCss.cellSubWarn}`}>
-                            Hồ sơ tham dự chưa phê duyệt
+                            Chưa duyệt hồ sơ tham dự
                           </span>
-                        )}
+                        ) : null}
                       </td>
                       <td>
                         <strong>{latest?.shirtNumber ? `#${latest.shirtNumber}` : '—'}</strong>
@@ -755,37 +720,17 @@ function SeasonPlayerRegistrationsWorkspace({
                       </td>
                       <td>
                         {latest ? (
-                          <div className={regPageCss.statusStack}>
-                            <span className={statePillClass(latest.state)}>
-                              {stateLabels[latest.state]}
-                            </span>
-                            <span className={regPageCss.cellSub}>
-                              Phiên bản {latest.versionNumber}
-                              {latest.receiptTimingStatus === 'ON_TIME' && ' · Đúng hạn'}
-                              {latest.receiptTimingStatus === 'LATE' &&
-                                (latest.hasApprovedException
-                                  ? ' · Ngoài hạn (đã duyệt ngoại lệ)'
-                                  : ' · Ngoài hạn')}
-                            </span>
-                          </div>
+                          <span className={statePillClass(latest.state)}>
+                            {stateLabels[latest.state]}
+                          </span>
                         ) : (
                           '—'
                         )}
                       </td>
                       <td>
-                        <div className={regPageCss.statusStack}>
-                          <span className={playingPillClass(item.playingEffectivityStatus)}>
-                            {playingStatusLabels[item.playingEffectivityStatus]}
-                          </span>
-                          {validated?.playingStart && (
-                            <span className={regPageCss.cellSub}>
-                              {formatSeasonInstant(validated.playingStart)}
-                              {validated.playingEnd
-                                ? ` – ${formatSeasonInstant(validated.playingEnd)}`
-                                : ''}
-                            </span>
-                          )}
-                        </div>
+                        <span className={playingPillClass(item.playingEffectivityStatus)}>
+                          {playingStatusLabels[item.playingEffectivityStatus]}
+                        </span>
                       </td>
                       <td className={regPageCss.actionCell}>
                         <button
@@ -1246,13 +1191,6 @@ function PlayerRegistrationDrawer({
                 )}
               </div>
 
-              {activeVersion.state !== 'VALID' && (
-                <p className={pageCss.metaNote}>
-                  Kết quả kiểm tra trước chỉ phục vụ đối chiếu điều kiện, không giữ chỗ hạn mức đội
-                  hình và sẽ được kiểm tra lại đầy đủ khi xác nhận hợp lệ.
-                </p>
-              )}
-
               {precheckError && (
                 <div className={css.error} role="alert">
                   <p style={{ margin: 0 }}>{precheckError}</p>
@@ -1305,8 +1243,8 @@ function PlayerRegistrationDrawer({
               ) : (
                 <p className={pageCss.metaNote}>
                   {detail.capabilities.canManage
-                    ? 'Nhấn nút “Kiểm tra điều kiện” ở thanh thao tác bên dưới để xem chi tiết từng tiêu chí và lý do cụ thể.'
-                    : 'Chưa có kết quả xác nhận chính thức được lưu cho phiên bản này.'}
+                    ? 'Chưa chạy kiểm tra điều kiện cho phiên bản này.'
+                    : 'Chưa có kết quả xác nhận chính thức.'}
                 </p>
               )}
             </section>
@@ -1319,72 +1257,92 @@ function PlayerRegistrationDrawer({
                   <h3>Ngoại lệ tiếp nhận ngoài hạn</h3>
                   {approvedException ? (
                     <span className={`${pageCss.pill} ${pageCss.pillOk}`}>
-                      Đã phê duyệt ngoại lệ cho phiên bản này
+                      Đã phê duyệt ngoại lệ
                     </span>
-                  ) : (
+                  ) : activeVersion.receiptExceptions.length === 0 ? (
                     <span className={`${pageCss.pill} ${regPageCss.pillWarn}`}>
-                      Chưa có ngoại lệ được phê duyệt
+                      Chưa có ngoại lệ
                     </span>
-                  )}
+                  ) : null}
                 </div>
 
                 {activeVersion.receiptExceptions.length === 0 ? (
                   <p className={pageCss.metaNote}>
-                    Phiên bản này được tiếp nhận ngoài khung thời gian quy định. Ngoại lệ tiếp nhận
-                    chỉ miễn điều kiện thời hạn cho đúng phiên bản này và không thay thế kiểm tra
-                    điều kiện hợp lệ.
+                    Phiên bản tiếp nhận ngoài hạn cần ngoại lệ được phê duyệt trước khi xác nhận hợp
+                    lệ.
                   </p>
                 ) : (
-                  <ul className={regPageCss.findingsList}>
+                  <ul className={regPageCss.exceptionList}>
                     {activeVersion.receiptExceptions.map((ex) => {
                       const exIsSelf =
                         !!currentAccountId &&
                         (ex.preparedBy === currentAccountId ||
                           ex.editorIds.includes(currentAccountId));
+                      const hasCardActions =
+                        seasonOpen &&
+                        ((ex.state === 'DRAFT' && detail.capabilities.canManage) ||
+                          (ex.state === 'SUBMITTED' &&
+                            ((detail.capabilities.canDecideExceptions && !exIsSelf) ||
+                              detail.capabilities.canManage)));
                       return (
-                        <li key={ex.id} className={regPageCss.findingItem}>
-                          <div>
+                        <li key={ex.id} className={regPageCss.exceptionCard}>
+                          <div className={regPageCss.exceptionCardHeader}>
                             <div className={regPageCss.findingTitle}>
-                              Đề xuất ngoại lệ lần {ex.versionNumber} ·{' '}
-                              {exceptionStateLabels[ex.state] ?? ex.state}
+                              Đề xuất ngoại lệ lần {ex.versionNumber}
                             </div>
-                            <p className={regPageCss.findingReason}>
-                              <strong>Lý do:</strong> {ex.reason ?? '—'} · <strong>Căn cứ:</strong>{' '}
+                            <span
+                              className={`${pageCss.pill} ${
+                                ex.state === 'APPROVED'
+                                  ? pageCss.pillOk
+                                  : ex.state === 'SUBMITTED'
+                                    ? pageCss.pillPending
+                                    : pageCss.pillLate
+                              }`}
+                            >
+                              {exceptionStateLabels[ex.state] ?? ex.state}
+                            </span>
+                          </div>
+                          <div className={regPageCss.exceptionMetaGrid}>
+                            <div>
+                              <span className={regPageCss.exceptionMetaLabel}>Lý do</span>
+                              {ex.reason ?? '—'}
+                            </div>
+                            <div>
+                              <span className={regPageCss.exceptionMetaLabel}>Căn cứ</span>
                               {ex.basis ?? '—'}
+                            </div>
+                          </div>
+                          {ex.decisionReason && (
+                            <p className={regPageCss.findingReason}>
+                              <strong>Phản hồi:</strong> {ex.decisionReason}
+                              {ex.decider && ex.decidedAt
+                                ? ` (${ex.decider.fullName} · ${formatSeasonInstant(ex.decidedAt)})`
+                                : ''}
                             </p>
-                            {ex.decisionReason && (
-                              <p className={regPageCss.findingReason}>
-                                <strong>Phản hồi quyết định:</strong> {ex.decisionReason}
-                                {ex.decider && ex.decidedAt
-                                  ? ` (${ex.decider.fullName} · ${formatSeasonInstant(ex.decidedAt)})`
-                                  : ''}
-                              </p>
-                            )}
-                            {seasonOpen &&
-                              ex.state === 'DRAFT' &&
-                              detail.capabilities.canManage && (
-                                <div className={css.actions} style={{ marginTop: 8 }}>
-                                  <button
-                                    type="button"
-                                    className={css.primary}
-                                    onClick={() =>
-                                      setModalAction({
-                                        kind: 'exception-action',
-                                        action: 'submit',
-                                        exception: ex,
-                                        requireReason: false,
-                                        title: 'Gửi đề xuất ngoại lệ tiếp nhận',
-                                        submitLabel: 'Gửi đề xuất',
-                                      })
-                                    }
-                                  >
-                                    Gửi đề xuất ngoại lệ
-                                  </button>
-                                </div>
+                          )}
+                          {hasCardActions && (
+                            <div className={regPageCss.exceptionActions}>
+                              {ex.state === 'DRAFT' && detail.capabilities.canManage && (
+                                <button
+                                  type="button"
+                                  className={css.primary}
+                                  onClick={() =>
+                                    setModalAction({
+                                      kind: 'exception-action',
+                                      action: 'submit',
+                                      exception: ex,
+                                      requireReason: false,
+                                      title: 'Gửi đề xuất ngoại lệ tiếp nhận',
+                                      submitLabel: 'Gửi đề xuất',
+                                    })
+                                  }
+                                >
+                                  Gửi đề xuất ngoại lệ
+                                </button>
                               )}
-                            {seasonOpen && ex.state === 'SUBMITTED' && (
-                              <div className={css.actions} style={{ marginTop: 8 }}>
-                                {detail.capabilities.canDecideExceptions && !exIsSelf && (
+                              {ex.state === 'SUBMITTED' &&
+                                detail.capabilities.canDecideExceptions &&
+                                !exIsSelf && (
                                   <>
                                     {canTargetException && (
                                       <button
@@ -1438,42 +1396,25 @@ function PlayerRegistrationDrawer({
                                     </button>
                                   </>
                                 )}
-                                {detail.capabilities.canDecideExceptions && exIsSelf && (
-                                  <span className={pageCss.metaNote}>
-                                    Người đề xuất ngoại lệ không thể tự phê duyệt.
-                                  </span>
-                                )}
-                                {detail.capabilities.canManage && (
-                                  <button
-                                    type="button"
-                                    onClick={() =>
-                                      setModalAction({
-                                        kind: 'exception-action',
-                                        action: 'withdraw',
-                                        exception: ex,
-                                        requireReason: false,
-                                        title: 'Rút đề xuất ngoại lệ',
-                                        submitLabel: 'Rút đề xuất',
-                                      })
-                                    }
-                                  >
-                                    Rút đề xuất
-                                  </button>
-                                )}
-                              </div>
-                            )}
-                          </div>
-                          <span
-                            className={`${pageCss.pill} ${
-                              ex.state === 'APPROVED'
-                                ? pageCss.pillOk
-                                : ex.state === 'SUBMITTED'
-                                  ? pageCss.pillPending
-                                  : pageCss.pillLate
-                            }`}
-                          >
-                            {exceptionStateLabels[ex.state] ?? ex.state}
-                          </span>
+                              {ex.state === 'SUBMITTED' && detail.capabilities.canManage && (
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    setModalAction({
+                                      kind: 'exception-action',
+                                      action: 'withdraw',
+                                      exception: ex,
+                                      requireReason: false,
+                                      title: 'Rút đề xuất ngoại lệ',
+                                      submitLabel: 'Rút đề xuất',
+                                    })
+                                  }
+                                >
+                                  Rút đề xuất
+                                </button>
+                              )}
+                            </div>
+                          )}
                         </li>
                       );
                     })}
@@ -1945,6 +1886,7 @@ function RegistrationActionModal({
       open
       title={title}
       width={600}
+      className={pageCss.phase3Modal}
       closable={!busy}
       maskClosable={!busy}
       keyboard={!busy}
@@ -1992,7 +1934,7 @@ function RegistrationActionModal({
               · {detail.club.name} ({detail.club.code})
             </div>
             <div className={regPageCss.cellSub}>
-              Phiên bản thao tác: <strong>Phiên bản {action.version.versionNumber}</strong> · Số áo:{' '}
+              Phiên bản {action.version.versionNumber} · Số áo{' '}
               <strong>
                 {action.version.shirtNumber ? `#${action.version.shirtNumber}` : 'Chưa nhập'}
               </strong>{' '}
@@ -2000,27 +1942,18 @@ function RegistrationActionModal({
               <strong>
                 {formatIntervalLabel(action.version.playingStart, action.version.playingEnd)}
               </strong>
+              {action.action === 'confirm-valid' && effectiveRegVersionNumber !== null
+                ? ` · Quy định phiên bản ${effectiveRegVersionNumber}`
+                : ''}
             </div>
-            {action.action === 'confirm-valid' && (
-              <div className={regPageCss.cellSub}>
-                Hệ thống sẽ đánh giá lại toàn bộ điều kiện theo{' '}
-                <strong>
-                  {effectiveRegVersionNumber !== null
-                    ? `Quy định phiên bản ${effectiveRegVersionNumber}`
-                    : 'quy định đang có hiệu lực'}
-                </strong>
-                , ghi nhận bản chụp thông tin chính thức và lưu lịch sử thao tác.
-              </div>
-            )}
           </div>
         )}
 
         {action.kind === 'exception-propose' ? (
           <>
-            <p className={pageCss.metaNote}>
-              Ngoại lệ tiếp nhận chỉ áp dụng cho{' '}
-              <strong>Phiên bản {action.version.versionNumber}</strong> đã tiếp nhận ngoài hạn và
-              cần Quản lý mùa giải phê duyệt độc lập.
+            <p className={pageCss.confirmBody}>
+              Đề xuất ngoại lệ tiếp nhận cho{' '}
+              <strong>Phiên bản {action.version.versionNumber}</strong>.
             </p>
             <label>
               Lý do đề xuất ngoại lệ *
@@ -2063,9 +1996,7 @@ function RegistrationActionModal({
             />
           </label>
         ) : (
-          <p className={pageCss.metaNote}>
-            Vui lòng xác nhận thực hiện thao tác trên đúng phiên bản đã chọn.
-          </p>
+          <p className={pageCss.confirmBody}>Xác nhận thực hiện thao tác trên phiên bản đã chọn.</p>
         )}
 
         <div className={css.actions}>
@@ -2181,7 +2112,8 @@ function RegistrationHistoryModal({
     <Modal
       open
       title={`Lịch sử thao tác · ${playerName}`}
-      width={820}
+      width={960}
+      className={pageCss.phase3Modal}
       onCancel={onClose}
       footer={null}
     >
@@ -2193,24 +2125,34 @@ function RegistrationHistoryModal({
           onRetry={history.reload}
         />
         {items.length > 0 && (
-          <div className={css.tableWrap}>
-            <table className={css.table}>
+          <div className={regPageCss.historyTableWrap}>
+            <table className={regPageCss.historyTable}>
               <thead>
                 <tr>
-                  <th>Thời điểm</th>
-                  <th>Thao tác</th>
-                  <th>Thay đổi</th>
-                  <th>Người thực hiện</th>
-                  <th>Lý do</th>
+                  <th scope="col" className={regPageCss.historyTimeCol}>
+                    Thời điểm
+                  </th>
+                  <th scope="col" className={regPageCss.historyActionCol}>
+                    Thao tác
+                  </th>
+                  <th scope="col">Thay đổi</th>
+                  <th scope="col" className={regPageCss.historyActorCol}>
+                    Người thực hiện
+                  </th>
+                  <th scope="col">Lý do</th>
                 </tr>
               </thead>
               <tbody>
                 {items.map((item) => (
                   <tr key={item.id}>
-                    <td>{formatSeasonInstant(item.occurredAt)}</td>
-                    <td>{actions[item.actionCode] ?? item.actionCode}</td>
+                    <td className={regPageCss.historyTimeCol}>
+                      {formatSeasonInstant(item.occurredAt)}
+                    </td>
+                    <td className={regPageCss.historyActionCol}>
+                      {actions[item.actionCode] ?? item.actionCode}
+                    </td>
                     <td>{formatRegistrationHistoryChange(item.before, item.after)}</td>
-                    <td>{item.actorName ?? 'Hệ thống'}</td>
+                    <td className={regPageCss.historyActorCol}>{item.actorName ?? 'Hệ thống'}</td>
                     <td>{item.reason ?? '—'}</td>
                   </tr>
                 ))}
@@ -2219,7 +2161,7 @@ function RegistrationHistoryModal({
           </div>
         )}
         {history.meta && <Pagination data={{ ...history.meta, items }} change={setPage} />}
-        <div className={css.actions}>
+        <div className={regPageCss.historyFooter}>
           <button type="button" onClick={onClose}>
             Đóng
           </button>
